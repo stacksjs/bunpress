@@ -1,7 +1,7 @@
 import { CAC } from 'cac'
 import { version } from '../package.json'
 
-const cli = new CAC('my-cli')
+const cli = new CAC('bunpress')
 
 interface CliOption {
   from: string

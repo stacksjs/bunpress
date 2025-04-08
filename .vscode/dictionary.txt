@@ -3,6 +3,7 @@ biomejs
 booleanish
 bumpp
 bunfig
+bunpress
 bunx
 changelogen
 changelogithub
