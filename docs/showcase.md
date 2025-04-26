@@ -1,6 +1,6 @@
 # Showcase
 
-Here are all the cool projects that people have built using `rpx`.
+Here are all the cool projects that people have built using `bunpress`.
 
 ## Community Projects
 
@@ -10,7 +10,7 @@ If you authored a project you’d like to showcase, please share it with us in a
 
 ## First-Party
 
-The whole Stacks ecosystem is built using `rpx`. Here are some of the projects utilizing it:
+The whole Stacks ecosystem is built using `bunpress`. Here are some of the projects utilizing it:
 
 - [`rpx`](https://github.com/stacksjs/rpx) _(A modern, fast reverse proxy)_
 - [`tlsx`](https://github.com/stacksjs/tlsx) _(A TLS library with automation. HTTPS by default through a light-weight library. Similar to mkcert.)_

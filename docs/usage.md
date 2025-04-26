@@ -7,8 +7,8 @@ There are two ways of using this reverse proxy: _as a library or as a CLI._
 Given the npm package is installed:
 
 ```ts
-import type { TlsConfig } from '@stacksjs/rpx'
-import { startProxy } from '@stacksjs/rpx'
+import type { TlsConfig } from '@stacksjs/bunpress'
+import { startProxy } from '@stacksjs/bunpress'
 
 export interface CleanupConfig {
   hosts: boolean // clean up /etc/hosts, defaults to false
@@ -39,7 +39,7 @@ In case you are trying to start multiple proxies, you may use this configuration
 
 ```ts
 // reverse-proxy.config.{ts,js}
-import type { ReverseProxyOptions } from '@stacksjs/rpx'
+import type { ReverseProxyOptions } from '@stacksjs/bunpress'
 import os from 'node:os'
 import path from 'node:path'
 
@@ -76,10 +76,10 @@ export default config
 ## CLI
 
 ```bash
-rpx --from localhost:3000 --to my-project.localhost
-rpx --from localhost:8080 --to my-project.test --keyPath ./key.pem --certPath ./cert.pem
-rpx --help
-rpx --version
+bunpress --from localhost:3000 --to my-project.localhost
+bunpress --from localhost:8080 --to my-project.test --keyPath ./key.pem --certPath ./cert.pem
+bunpress --help
+bunpress --version
 ```
 
 ## Testing
