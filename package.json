@@ -36,6 +36,7 @@
   },
   "files": ["README.md", "dist"],
   "scripts": {
+    "dev": "bun run dev:docs",
     "build": "bun --bun build.ts && bun run compile",
     "compile": "bun build ./bin/cli.ts --compile --minify --outfile bin/bunpress",
     "compile:all": "bun run compile:linux-x64 && bun run compile:linux-arm64 && bun run compile:windows-x64 && bun run compile:darwin-x64 && bun run compile:darwin-arm64",
@@ -51,9 +52,9 @@
     "prepublishOnly": "bun --bun run build && bun run compile:all",
     "release": "bun run changelog && bunx bumpp package.json --all",
     "test": "bun test",
-    "dev:docs": "bun --bun vitepress dev docs",
-    "build:docs": "bun --bun vitepress build docs",
-    "preview:docs": "bun --bun vitepress preview docs",
+    "dev:docs": "bun run build:docs && bun ./dist/docs/**/*.html",
+    "build:docs": "bun build.ts",
+    "preview:docs": "bun serve --port 3000 dist",
     "typecheck": "bun --bun tsc --noEmit"
   },
   "dependencies": {

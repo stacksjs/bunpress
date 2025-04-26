@@ -127,7 +127,8 @@ ${css}
 
           // Log that we wrote the file
           if (config.verbose) {
-            console.error(`Markdown: Generated ${htmlFilePath}`)
+            // eslint-disable-next-line no-console
+            console.log(`Markdown: Generated ${htmlFilePath}`)
           }
         }
 

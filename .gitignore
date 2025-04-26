@@ -9,4 +9,6 @@ lib-cov
 logs
 node_modules
 temp
-docs/.vitepress/cache
+docs/.bunpress/cache
+bin/bunpress
+bin/bunpress*
