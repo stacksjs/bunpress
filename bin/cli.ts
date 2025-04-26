@@ -111,7 +111,7 @@ async function generateIndexHtml(outdir: string, markdownFiles: string[]) {
     const displayName = name.charAt(0).toUpperCase()
       + name.slice(1).replace(/-/g, ' ')
 
-    return `<li><a href="docs/${htmlPath}">${displayName}</a></li>`
+    return `<li><a href="${htmlPath}">${displayName}</a></li>`
   }).join('\n      ')
 
   const indexHtml = `<!DOCTYPE html>
