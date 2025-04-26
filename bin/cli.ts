@@ -1,6 +1,6 @@
 import { Glob } from 'bun'
 import { mkdir, readdir } from 'node:fs/promises'
-import { join, resolve } from 'node:path'
+import { join } from 'node:path'
 import process from 'node:process'
 import { CAC } from 'cac'
 import { version } from '../package.json'
@@ -16,6 +16,7 @@ interface CliOption {
   open?: boolean
   watch?: boolean
   verbose?: boolean
+  dir?: string
 }
 
 const defaultOptions = {
@@ -194,7 +195,7 @@ cli
   })
 
 cli
-  .command('dev', 'Start development server')
+  .command('dev', 'Build and serve documentation using Bun\'s HTML server')
   .option('--port <port>', 'Port to listen on', { default: defaultOptions.port })
   .option('--outdir <outdir>', 'Output directory', { default: defaultOptions.outdir })
   .option('--open', 'Open in browser', { default: defaultOptions.open })
@@ -215,43 +216,20 @@ cli
       process.exit(1)
     }
 
-    // Start dev server
-    console.log(`Starting development server at http://localhost:${port}`)
-    Bun.serve({
-      port,
-      async fetch(req) {
-        const url = new URL(req.url)
-        let path = url.pathname
+    console.log(`Documentation built successfully in ${outdir}`)
+    console.log(`Starting Bun's HTML server at http://localhost:${port}`)
 
-        // Serve index.html for root
-        if (path === '/')
-          path = '/index.html'
-
-        // Add .html extension if not present and not a file with extension
-        if (!path.includes('.') && !path.endsWith('/'))
-          path = `${path}.html`
-
-        // Remove trailing slash and add .html
-        if (path.endsWith('/'))
-          path = `${path}index.html`
-
-        const filePath = resolve(outdir, path.slice(1))
-        const file = Bun.file(filePath)
-
-        const exists = await file.exists()
-        if (exists)
-          return new Response(file)
-        else
-          return new Response('Not Found', { status: 404 })
-      },
+    // Start Bun's HTML server
+    const server = Bun.spawn(['bun', `${outdir}/**/*.html`, '--port', port.toString()], {
+      stdout: 'inherit',
+      stderr: 'inherit',
+      stdin: 'inherit',
     })
 
-    console.log(`Server running at http://localhost:${port}`)
-
-    // Open in browser
+    // Open in browser if requested
     if (options.open) {
       const openUrl = `http://localhost:${port}`
-      Bun.spawn(['open', openUrl])
+      setTimeout(() => Bun.spawn(['open', openUrl]), 500)
     }
 
     // Watch for changes
@@ -292,8 +270,7 @@ cli
       watchDir()
     }
 
-    // Keep process alive
-    await new Promise(() => {})
+    await server.exited
   })
 
 cli.command('version', 'Show the version of the CLI').action(() => {
