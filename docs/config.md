@@ -1,67 +1,61 @@
 # Configuration
 
-_This is just an example of the ts-starter docs._
+BunPress can be configured through a `bunpress.config.ts` file in your project root.
 
-The Reverse Proxy can be configured using a `reverse-proxy.config.ts` _(or `reverse-proxy.config.js`)_ file and it will be automatically loaded when running the `reverse-proxy` command.
+## Basic Configuration
 
-```ts
-// reverse-proxy.config.{ts,js}
-import type { ReverseProxyOptions } from '@stacksjs/rpx'
-import os from 'node:os'
-import path from 'node:path'
+```typescript
+// bunpress.config.ts
+export default {
+  // Enable verbose logging
+  verbose: true,
 
-const config: ReverseProxyOptions = {
-  /**
-   * The from URL to proxy from.
-   * Default: localhost:5173
-   */
-  from: 'localhost:5173',
-
-  /**
-   * The to URL to proxy to.
-   * Default: stacks.localhost
-   */
-  to: 'stacks.localhost',
-
-  /**
-   * The HTTPS settings.
-   * Default: true
-   * If set to false, the proxy will use HTTP.
-   * If set to true, the proxy will use HTTPS.
-   * If set to an object, the proxy will use HTTPS with the provided settings.
-   */
-  https: {
-    domain: 'stacks.localhost',
-    hostCertCN: 'stacks.localhost',
-    caCertPath: path.join(os.homedir(), '.stacks', 'ssl', `stacks.localhost.ca.crt`),
-    certPath: path.join(os.homedir(), '.stacks', 'ssl', `stacks.localhost.crt`),
-    keyPath: path.join(os.homedir(), '.stacks', 'ssl', `stacks.localhost.crt.key`),
-    altNameIPs: ['127.0.0.1'],
-    altNameURIs: ['localhost'],
-    organizationName: 'stacksjs.org',
-    countryName: 'US',
-    stateName: 'California',
-    localityName: 'Playa Vista',
-    commonName: 'stacks.localhost',
-    validityDays: 180,
-    verbose: false,
+  // Markdown plugin configuration
+  markdown: {
+    title: 'My Documentation',
+    meta: {
+      description: 'My project documentation',
+      author: 'Your Name',
+    },
+    scripts: [
+      '/js/highlight.js',
+    ],
   },
-
-  /**
-   * The verbose setting.
-   * Default: false
-   * If set to true, the proxy will log more information.
-   */
-  verbose: false,
 }
-
-export default config
 ```
 
-_Then run:_
+## Available Options
 
-```bash
-./rpx start
+### General Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `verbose` | `boolean` | `true` | Enable verbose logging |
+
+### Markdown Plugin Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `title` | `string` | `'BunPress Documentation'` | Default title for HTML documents |
+| `meta` | `Record<string, string>` | See below | Metadata for HTML documents |
+| `css` | `string` | See below | Custom CSS to be included in the head of the document |
+| `scripts` | `string[]` | `[]` | List of script URLs to be included at the end of the body |
+| `template` | `string` | `undefined` | Custom HTML template with `{{content}}` placeholder |
+| `markedOptions` | `object` | `{}` | Custom options for the Marked Markdown parser |
+| `preserveDirectoryStructure` | `boolean` | `true` | Whether to preserve the directory structure in the output |
+
+## Default Metadata
+
+By default, BunPress includes the following metadata:
+
+```typescript
+{
+  description: 'Documentation built with BunPress',
+  generator: 'BunPress',
+  viewport: 'width=device-width, initial-scale=1.0',
+}
 ```
 
-To learn more, head over to the [documentation](https://reverse-proxy.sh/).
+## Default CSS
+
+BunPress includes a default stylesheet that provides a clean, responsive layout for your documentation.
