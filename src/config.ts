@@ -15,13 +15,31 @@ export const defaultConfig: BunPressOptions = {
         font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         line-height: 1.6;
         color: #333;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 2rem;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
       }
 
       .markdown-body {
         padding: 1rem;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      /* Layout specific styles */
+      body[data-layout="doc"] .markdown-body {
+        padding: 2rem;
+      }
+
+      body[data-layout="home"] .markdown-body {
+        padding: 0;
+        max-width: 100%;
+      }
+
+      body[data-layout="home"] .home-content {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
       }
 
       pre {

@@ -54,3 +54,70 @@ export interface MarkdownPluginConfig {
    */
   preserveDirectoryStructure?: boolean
 }
+
+/**
+ * Plugin options for the Markdown plugin
+ */
+export type MarkdownPluginOptions = Partial<MarkdownPluginConfig>
+
+/**
+ * Action link in hero section
+ */
+export interface HeroAction {
+  theme?: 'brand' | 'alt'
+  text: string
+  link: string
+}
+
+/**
+ * Hero section configuration
+ */
+export interface Hero {
+  name?: string
+  text: string
+  tagline?: string
+  image?: string
+  actions?: HeroAction[]
+}
+
+/**
+ * Feature item configuration
+ */
+export interface Feature {
+  title: string
+  icon?: string
+  details: string
+}
+
+/**
+ * Frontmatter structure extracted from markdown files
+ */
+export interface Frontmatter {
+  /**
+   * Page title
+   */
+  title?: string
+
+  /**
+   * Page layout
+   * doc - Default documentation layout with sidebar
+   * home - Home page layout
+   * page - Plain page without sidebar
+   */
+  layout?: 'home' | 'doc' | 'page'
+
+  /**
+   * Hero section configuration (for home layout)
+   */
+  hero?: Hero
+
+  /**
+   * Features section configuration (for home layout)
+   */
+  features?: Feature[]
+
+  /**
+   * Other frontmatter properties
+   */
+  [key: string]: any
+}

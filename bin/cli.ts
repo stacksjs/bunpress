@@ -1,11 +1,11 @@
 import { Glob } from 'bun'
-import { mkdir, readdir } from 'node:fs/promises'
+import { mkdir, readdir, copyFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import process from 'node:process'
 import { CAC } from 'cac'
 import { version } from '../package.json'
 import { config } from '../src/config'
-import { markdown } from '../src/plugin'
+import { markdown, stx } from '../src/plugin'
 
 const cli: CAC = new CAC('bunpress')
 
@@ -42,6 +42,37 @@ export async function findMarkdownFiles(dir: string): Promise<string[]> {
 }
 
 /**
+ * Copy static assets from docs/public to the output directory
+ */
+async function copyStaticAssets(outdir: string, verbose: boolean = false): Promise<void> {
+  const publicDir = './docs/public'
+
+  try {
+    // Check if public directory exists
+    await readdir(publicDir)
+
+    // Copy all files from public directory to output directory
+    const publicGlob = new Glob('**/*')
+    for await (const file of publicGlob.scan(publicDir)) {
+      const sourcePath = join(publicDir, file)
+      const targetPath = join(outdir, file)
+
+      // Ensure target directory exists
+      await mkdir(join(outdir, file.split('/').slice(0, -1).join('/')), { recursive: true })
+
+      // Copy the file
+      await copyFile(sourcePath, targetPath)
+    }
+  }
+  catch (err) {
+    // Public directory doesn't exist, which is fine
+    if (verbose) {
+      console.log('No public directory found, skipping static assets copy')
+    }
+  }
+}
+
+/**
  * Build the documentation files
  */
 export async function buildDocs(options: CliOption = {}): Promise<boolean> {
@@ -69,7 +100,7 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
     const result = await Bun.build({
       entrypoints: markdownFiles,
       outdir,
-      plugins: [markdown()],
+      plugins: [markdown(), stx()],
     })
 
     if (!result.success) {
@@ -79,6 +110,9 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
       }
       return false
     }
+
+    // Copy static assets from docs/public to output directory
+    await copyStaticAssets(outdir, verbose)
 
     if (verbose) {
       console.log('Build successful!')
@@ -219,12 +253,87 @@ cli
     console.log(`Documentation built successfully in ${outdir}`)
     console.log(`Starting Bun's HTML server at http://localhost:${port}`)
 
-    // Start Bun's HTML server
-    const server = Bun.spawn(['bun', `${outdir}/**/*.html`, '--port', port.toString()], {
-      stdout: 'inherit',
-      stderr: 'inherit',
-      stdin: 'inherit',
+    // Start Bun's HTML server using the modern server API
+    const server = Bun.serve({
+      port,
+      async fetch(req) {
+        const url = new URL(req.url)
+        const path = url.pathname
+
+        // Try to serve static files first (images, css, js, etc.)
+        const staticPath = `${outdir}${path}`
+        try {
+          const file = Bun.file(staticPath)
+          if (await file.exists()) {
+            return new Response(file)
+          }
+        } catch (e) {
+          // File doesn't exist, continue to HTML routing
+        }
+
+        // Also try serving from the docs subdirectory
+        const docsStaticPath = `${outdir}/docs${path}`
+        try {
+          const docsFile = Bun.file(docsStaticPath)
+          if (await docsFile.exists()) {
+            return new Response(docsFile)
+          }
+        } catch (e) {
+          // File doesn't exist, continue to HTML routing
+        }
+
+        // Handle HTML files - try direct path first
+        let htmlPath = `${outdir}${path}`
+        if (!htmlPath.endsWith('.html')) {
+          htmlPath += '.html'
+        }
+
+        try {
+          const htmlFile = Bun.file(htmlPath)
+          if (await htmlFile.exists()) {
+            return new Response(htmlFile, {
+              headers: { 'Content-Type': 'text/html' }
+            })
+          }
+        } catch (e) {
+          // HTML file doesn't exist
+        }
+
+        // Try HTML files in docs subdirectory
+        let docsHtmlPath = `${outdir}/docs${path}`
+        if (!docsHtmlPath.endsWith('.html')) {
+          docsHtmlPath += '.html'
+        }
+
+        try {
+          const docsHtmlFile = Bun.file(docsHtmlPath)
+          if (await docsHtmlFile.exists()) {
+            return new Response(docsHtmlFile, {
+              headers: { 'Content-Type': 'text/html' }
+            })
+          }
+        } catch (e) {
+          // HTML file doesn't exist
+        }
+
+        // Fallback to index.html
+        const indexPath = `${outdir}/index.html`
+        try {
+          const indexFile = Bun.file(indexPath)
+          if (await indexFile.exists()) {
+            return new Response(indexFile, {
+              headers: { 'Content-Type': 'text/html' }
+            })
+          }
+        } catch (e) {
+          // Index file doesn't exist
+        }
+
+        return new Response('Not Found', { status: 404 })
+      }
     })
+
+    console.log(`Server running at http://localhost:${server.port}`)
 
     // Open in browser if requested
     if (options.open) {
@@ -270,7 +379,8 @@ cli
       watchDir()
     }
 
-    await server.exited
+    // Keep the server running
+    await new Promise(() => {})
   })
 
 cli.command('version', 'Show the version of the CLI').action(() => {
