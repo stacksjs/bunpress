@@ -253,7 +253,7 @@ cli
     console.log(`Documentation built successfully in ${outdir}`)
     console.log(`Starting Bun's HTML server at http://localhost:${port}`)
 
-    // Start Bun's HTML server using the modern server API
+    // Use our custom server implementation that provides both HTML formatting and static asset serving
     const server = Bun.serve({
       port,
       async fetch(req) {
@@ -282,24 +282,7 @@ cli
           // File doesn't exist, continue to HTML routing
         }
 
-        // Handle HTML files - try direct path first
-        let htmlPath = `${outdir}${path}`
-        if (!htmlPath.endsWith('.html')) {
-          htmlPath += '.html'
-        }
-
-        try {
-          const htmlFile = Bun.file(htmlPath)
-          if (await htmlFile.exists()) {
-            return new Response(htmlFile, {
-              headers: { 'Content-Type': 'text/html' }
-            })
-          }
-        } catch (e) {
-          // HTML file doesn't exist
-        }
-
-        // Try HTML files in docs subdirectory
+        // Handle HTML files - try docs subdirectory first (where the formatted HTML is)
         let docsHtmlPath = `${outdir}/docs${path}`
         if (!docsHtmlPath.endsWith('.html')) {
           docsHtmlPath += '.html'
@@ -316,7 +299,37 @@ cli
           // HTML file doesn't exist
         }
 
-        // Fallback to index.html
+        // Try direct path as fallback
+        let htmlPath = `${outdir}${path}`
+        if (!htmlPath.endsWith('.html')) {
+          htmlPath += '.html'
+        }
+
+        try {
+          const htmlFile = Bun.file(htmlPath)
+          if (await htmlFile.exists()) {
+            return new Response(htmlFile, {
+              headers: { 'Content-Type': 'text/html' }
+            })
+          }
+        } catch (e) {
+          // HTML file doesn't exist
+        }
+
+        // Fallback to docs/index.html
+        const docsIndexPath = `${outdir}/docs/index.html`
+        try {
+          const docsIndexFile = Bun.file(docsIndexPath)
+          if (await docsIndexFile.exists()) {
+            return new Response(docsIndexFile, {
+              headers: { 'Content-Type': 'text/html' }
+            })
+          }
+        } catch (e) {
+          // Index file doesn't exist
+        }
+
+        // Final fallback to root index.html
         const indexPath = `${outdir}/index.html`
         try {
           const indexFile = Bun.file(indexPath)
