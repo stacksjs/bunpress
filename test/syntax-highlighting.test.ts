@@ -30,7 +30,7 @@ function greet(user: User): string {
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'language-ts')).toBe(true)
       expect(assertHtmlContains(html, 'shiki')).toBe(true)
       expect(assertHtmlContains(html, 'interface User')).toBe(true)
@@ -62,7 +62,7 @@ async function readConfig() {
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'language-js')).toBe(true)
       expect(assertHtmlContains(html, 'const { readFile }')).toBe(true)
       expect(assertHtmlContains(html, 'async function')).toBe(true)
@@ -105,7 +105,7 @@ echo "Build completed!"
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'language-python')).toBe(true)
       expect(assertHtmlContains(html, 'language-css')).toBe(true)
       expect(assertHtmlContains(html, 'language-bash')).toBe(true)
@@ -135,7 +135,7 @@ console.log(greeting)
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'shiki-theme-dark-plus')).toBe(true)
       expect(assertHtmlContains(html, 'const greeting')).toBe(true)
     })
@@ -156,7 +156,7 @@ more lines here
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'language-unknownlang')).toBe(true)
       expect(assertHtmlContains(html, 'some code in unknown language')).toBe(true)
     })
@@ -179,7 +179,7 @@ console.log(message)
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'copy-code-btn')).toBe(true)
       expect(assertHtmlContains(html, 'copy-button')).toBe(true)
       expect(assertHtmlContains(html, 'Copy')).toBe(true)
@@ -202,7 +202,7 @@ function test() {
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'clipboard-copy')).toBe(true)
       expect(assertHtmlContains(html, 'data-clipboard-text')).toBe(true)
       expect(assertHtmlContains(html, 'function test()')).toBe(true)
@@ -223,7 +223,7 @@ print("Hello, World!")
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'copy-success')).toBe(true)
       expect(assertHtmlContains(html, 'copy-feedback')).toBe(true)
     })
@@ -243,7 +243,7 @@ SELECT * FROM users WHERE active = 1
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'copy-error')).toBe(true)
       expect(assertHtmlContains(html, 'copy-failed')).toBe(true)
     })
@@ -268,7 +268,7 @@ function hello() {
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'line-numbers')).toBe(true)
       expect(assertHtmlContains(html, 'line-number')).toBe(true)
       expect(assertHtmlContains(html, 'function hello()')).toBe(true)
@@ -291,7 +291,7 @@ console.log('line 12')
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'line-numbers')).toBe(true)
       expect(assertHtmlContains(html, 'start="10"')).toBe(true)
       expect(assertHtmlContains(html, 'console.log(\'line 10\')')).toBe(true)
@@ -316,7 +316,7 @@ def func1():
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'line-numbers')).toBe(true)
       expect(assertHtmlContains(html, 'line-highlight')).toBe(true)
       expect(assertHtmlContains(html, 'print("line 2")')).toBe(true)
@@ -342,7 +342,7 @@ interface Config {
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'code-filename')).toBe(true)
       expect(assertHtmlContains(html, 'config.ts')).toBe(true)
       expect(assertHtmlContains(html, 'interface Config')).toBe(true)
@@ -363,7 +363,7 @@ console.log('Hello from example.js')
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'code-title')).toBe(true)
       expect(assertHtmlContains(html, 'example.js')).toBe(true)
     })
@@ -385,7 +385,7 @@ console.log('Hello from example.js')
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'language-diff')).toBe(true)
       expect(assertHtmlContains(html, 'diff-add')).toBe(true)
       expect(assertHtmlContains(html, 'diff-remove')).toBe(true)
@@ -410,7 +410,7 @@ const theme = 'light'
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'shiki-theme-light')).toBe(true)
       expect(assertHtmlContains(html, 'light-mode')).toBe(true)
     })
@@ -435,7 +435,7 @@ const theme = 'dark'
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'shiki-theme-dark')).toBe(true)
       expect(assertHtmlContains(html, 'dark-mode')).toBe(true)
     })
@@ -455,7 +455,7 @@ console.log('theme switch test')
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'theme-switcher')).toBe(true)
       expect(assertHtmlContains(html, 'data-theme')).toBe(true)
     })
@@ -483,7 +483,7 @@ const cached = 'This should be cached'
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'cached-highlight')).toBe(true)
       expect(assertHtmlContains(html, 'cache-hit')).toBe(true)
     })
@@ -507,7 +507,7 @@ ${largeCode}
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'large-code-block')).toBe(true)
       expect(assertHtmlContains(html, 'virtual-scroll')).toBe(true)
     })

@@ -178,7 +178,7 @@ This example showcases all the enhanced markdown features. Try building this fil
       },
       toc: {
         enabled: true,
-        position: ['sidebar'],
+        position: 'sidebar' as const,
         maxDepth: 3
       }
     }

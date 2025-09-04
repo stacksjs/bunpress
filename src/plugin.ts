@@ -8,7 +8,7 @@ import { marked } from 'marked'
 import markedAlert from 'marked-alert'
 import { markedEmoji } from 'marked-emoji'
 import { markedHighlight } from 'marked-highlight'
-import hljs from 'highlight.js'
+import { createHighlighter, type Highlighter } from 'shiki'
 import {
   generateTocData,
   generateTocPositions,
@@ -214,111 +214,230 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
     preserveDirectoryStructure = defaultOptions.preserveDirectoryStructure !== false,
   } = options
 
-  // Set up marked options for parsing
-  const renderer = new marked.Renderer()
-
-  // Configure marked extensions
-  marked.use(markedAlert())
-  marked.use(markedEmoji({
-    emojis: {
-      heart: '❤️',
-      thumbsup: '👍',
-      smile: '😊',
-      rocket: '🚀',
-      sparkles: '✨',
-      wave: '👋',
-      bulb: '💡'
-    }
-  }))
-  marked.use(markedHighlight({
-    highlight(code, lang) {
-      const language = hljs.getLanguage(lang) ? lang : 'plaintext'
-      return hljs.highlight(code, { language }).value
-    }
-  }))
-
-  // Custom math extension for inline and block math
-  marked.use({
-    extensions: [
-      {
-        name: 'inlineMath',
-        level: 'inline' as const,
-        start: (src: string): number => src.indexOf('$'),
-        tokenizer(src: string) {
-          const match = src.match(/^\$([^$\n]+)\$/)
-          if (match) {
-            return {
-              type: 'inlineMath' as const,
-              raw: match[0],
-              text: match[1]
-            }
-          }
-        },
-        renderer(token: { text: string }): string {
-          return `<span class="math inline">${token.text}</span>`
-        }
-      },
-      {
-        name: 'blockMath',
-        level: 'block' as const,
-        start: (src: string): number => src.indexOf('$$'),
-        tokenizer(src: string) {
-          const match = src.match(/^\$\$([\s\S]*?)\$\$/)
-          if (match) {
-            return {
-              type: 'blockMath' as const,
-              raw: match[0],
-              text: match[1]
-            }
-          }
-        },
-        renderer(token: { text: string }): string {
-          return `<div class="math block">${token.text}</div>`
-        }
-      }
-    ]
-  })
-
-  // Custom renderer for line highlighting
-  const originalCodeRenderer = renderer.code
-  renderer.code = function(code: string, language?: string | undefined, escaped?: boolean | undefined): string {
-    // Handle line highlighting syntax: ```ts {1,3-5}
-    const match = language?.match(/^(\w+)(?:\s*\{([^}]+)\})?$/)
-    if (match) {
-      const [_, lang, lines] = match
-      language = lang
-
-      if (lines) {
-        // Parse line numbers: "1,3-5" -> [1, 3, 4, 5]
-        const lineNumbers: number[] = lines.split(',').flatMap(range => {
-          if (range.includes('-')) {
-            const [start, end] = range.split('-').map(n => parseInt(n))
-            return Array.from({ length: end - start + 1 }, (_, i) => start + i)
-          }
-          return [parseInt(range)]
-        })
-
-        // Split code into lines and add highlighting
-        const codeLines: string[] = code.split('\n')
-        const highlightedCode: string = codeLines.map((line, index) => {
-          const lineNum = index + 1
-          const isHighlighted = lineNumbers.includes(lineNum)
-          const className = isHighlighted ? 'line-highlight' : ''
-          return `<span class="${className}">${line}</span>`
-        }).join('\n')
-
-        return `<pre><code class="language-${language} line-numbers">${highlightedCode}</code></pre>`
-      }
-    }
-
-    return originalCodeRenderer.call(this, code, language, escaped)
-  }
-
   return {
     name: 'markdown-plugin',
-
-    // Target .md files only
     setup(build) {
+      let highlighter: Highlighter | null = null
+
+      build.onStart(async () => {
+        // Initialize Shiki highlighter
+        highlighter = await createHighlighter({
+          themes: ['light-plus', 'dark-plus'],
+          langs: [
+            'javascript',
+            'typescript',
+            'python',
+            'css',
+            'html',
+            'json',
+            'bash',
+            'shell',
+            'sql',
+            'markdown',
+            'yaml',
+            'xml',
+            'php',
+            'java',
+            'cpp',
+            'c',
+            'go',
+            'rust',
+            'ruby',
+            'swift',
+            'kotlin',
+            'scala',
+            'dart',
+            'lua',
+            'perl',
+            'r',
+            'matlab',
+            'powershell',
+            'dockerfile',
+            'nginx',
+            'apache',
+            'toml',
+            'ini',
+            'diff',
+            'log',
+            'plaintext'
+          ]
+        })
+      })
+
+      // Set up marked options for parsing
+      const renderer = new marked.Renderer()
+
+      // Configure marked extensions
+      marked.use(markedAlert())
+      marked.use(markedEmoji({
+        emojis: {
+          heart: '❤️',
+          thumbsup: '👍',
+          smile: '😊',
+          rocket: '🚀',
+          sparkles: '✨',
+          wave: '👋',
+          bulb: '💡'
+        }
+      }))
+
+      // Add Shiki highlighting
+      marked.use(markedHighlight({
+        highlight(code, lang) {
+          if (!highlighter) return code
+
+          try {
+            const language = highlighter.getLoadedLanguages().includes(lang as any) ? lang : 'plaintext'
+            const html = highlighter.codeToHtml(code, {
+              lang: language,
+              theme: 'light-plus'
+            })
+
+
+            // Shiki returns HTML string
+            if (typeof html === 'string') {
+              // Extract just the inner content (remove <pre><code> wrapper)
+              const match = html.match(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/s)
+              return match ? match[1] : code
+            }
+
+            return code
+          } catch (error) {
+            console.warn(`Shiki highlighting failed for language "${lang}":`, error)
+            return code
+          }
+        }
+      }))
+
+      // Custom math extension for inline and block math
+      marked.use({
+        extensions: [
+          {
+            name: 'inlineMath',
+            level: 'inline' as const,
+            start: (src: string): number => src.indexOf('$'),
+            tokenizer(src: string) {
+              const match = src.match(/^\$([^$\n]+)\$/)
+              if (match) {
+                return {
+                  type: 'inlineMath' as const,
+                  raw: match[0],
+                  text: match[1]
+                }
+              }
+            },
+            renderer(token: { text: string }): string {
+              return `<span class="math inline">${token.text}</span>`
+            }
+          },
+          {
+            name: 'blockMath',
+            level: 'block' as const,
+            start: (src: string): number => src.indexOf('$$'),
+            tokenizer(src: string) {
+              const match = src.match(/^\$\$([\s\S]*?)\$\$/)
+              if (match) {
+                return {
+                  type: 'blockMath' as const,
+                  raw: match[0],
+                  text: match[1]
+                }
+              }
+            },
+            renderer(token: { text: string }): string {
+              return `<div class="math block">${token.text}</div>`
+            }
+          }
+        ]
+      })
+
+      // Custom renderer for code blocks with copy-to-clipboard and line highlighting
+      const originalCodeRenderer = renderer.code
+      renderer.code = function(code: string, language?: string | undefined, escaped?: boolean | undefined): string {
+        // Ensure code is a string
+        const codeString = typeof code === 'string' ? code : String(code || '')
+        const langString = typeof language === 'string' ? language : ''
+
+        // Handle line highlighting syntax: ```ts {1,3-5}
+        let finalLanguage = langString || ''
+        let lineNumbers: number[] = []
+        let hasLineNumbers = false
+
+        const match = langString?.match(/^(\w+)(?::line-numbers)?(?:\s*\{([^}]+)\})?$/)
+        if (match) {
+          const [_, lang, lines] = match
+          finalLanguage = lang
+          hasLineNumbers = langString?.includes(':line-numbers') || false
+
+          if (lines) {
+            // Parse line numbers: "1,3-5" -> [1, 3, 4, 5]
+            lineNumbers = lines.split(',').flatMap(range => {
+              if (range.includes('-')) {
+                const [start, end] = range.split('-').map(n => parseInt(n))
+                return Array.from({ length: end - start + 1 }, (_, i) => start + i)
+              }
+              return [parseInt(range)]
+            })
+            hasLineNumbers = true
+          }
+        }
+
+        // Apply syntax highlighting
+        let highlightedCode = codeString
+        let langClass = ''
+
+        if (finalLanguage) {
+          if (highlighter) {
+            try {
+              const language = highlighter.getLoadedLanguages().includes(finalLanguage as any) ? finalLanguage : 'plaintext'
+              const html = highlighter.codeToHtml(codeString, {
+                lang: language,
+                theme: 'light-plus'
+              })
+
+              // Extract just the inner content (remove <pre><code> wrapper)
+              const match = html.match(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/s)
+              if (match) {
+                highlightedCode = match[1]
+                langClass = `language-${finalLanguage}`
+              }
+            } catch (error) {
+              console.warn(`Shiki highlighting failed for language "${finalLanguage}":`, error)
+              langClass = `language-${finalLanguage}`
+            }
+          } else {
+            // Fallback to basic highlighting
+            langClass = `language-${finalLanguage}`
+          }
+        }
+
+        // If we have line highlighting, wrap lines with classes
+        if (lineNumbers.length > 0) {
+          const lines = highlightedCode.split('\n')
+          const highlightedLines = lines.map((line, index) => {
+            const lineNum = index + 1
+            const isHighlighted = lineNumbers.includes(lineNum)
+            if (isHighlighted) {
+              return `<span class="line-highlight">${line}</span>`
+            }
+            return line
+          })
+          highlightedCode = highlightedLines.join('\n')
+        }
+
+        const lineNumbersClass = hasLineNumbers ? 'line-numbers' : ''
+        const copyButtonId = `copy-btn-${Math.random().toString(36).substr(2, 9)}`
+
+        // Create the copy-to-clipboard button and functionality
+        const copyButton = `<button class="copy-code-btn" id="${copyButtonId}" data-clipboard-text="${codeString.replace(/"/g, '&quot;')}" onclick="copyToClipboard('${copyButtonId}', '${codeString.replace(/'/g, '\\\'').replace(/"/g, '&quot;')}')">Copy</button>`
+
+        return `<div class="code-block-container">
+          ${copyButton}
+          <pre><code class="${langClass} ${lineNumbersClass}">${highlightedCode}</code></pre>
+        </div>`
+      }
+
+      // Target .md files only
       build.onLoad({ filter: /\.md$/ }, async (args) => {
         // Read the markdown file
         const mdContent = await fs.promises.readFile(args.path, 'utf8')
@@ -436,6 +555,147 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
           pageContent = createHomePageHtml(frontmatter as Frontmatter, cleanedHtmlContent)
         }
 
+        // Add copy-to-clipboard styles and scripts
+        const copyStyles = `
+/* Copy-to-clipboard button styles */
+.code-block-container {
+  position: relative;
+  margin: 1rem 0;
+}
+
+.copy-code-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, background-color 0.2s;
+  z-index: 10;
+}
+
+.code-block-container:hover .copy-code-btn {
+  opacity: 1;
+}
+
+.copy-code-btn:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.copy-code-btn.copied {
+  background: #10b981;
+}
+
+.copy-code-btn.copied::after {
+  content: 'Copied!';
+  margin-left: 0.5rem;
+}
+
+/* Line highlighting styles */
+.line-highlight {
+  background-color: rgba(255, 255, 0, 0.2);
+  display: block;
+  margin: 0 -1rem;
+  padding: 0 1rem;
+}
+
+/* Line numbers styles */
+.line-numbers {
+  counter-reset: line-number;
+}
+
+.line-numbers code {
+  display: block;
+  position: relative;
+}
+
+.line-numbers code::before {
+  content: counter(line-number);
+  counter-increment: line-number;
+  position: absolute;
+  left: -3rem;
+  width: 2rem;
+  text-align: right;
+  color: #666;
+  font-size: 0.875rem;
+  user-select: none;
+}
+`
+
+        const copyScripts = `
+// Copy-to-clipboard functionality
+function copyToClipboard(buttonId, text) {
+  const button = document.getElementById(buttonId)
+
+  if (navigator.clipboard && window.isSecureContext) {
+    // Use the Clipboard API when available
+    navigator.clipboard.writeText(text).then(() => {
+      showCopyFeedback(button)
+    }).catch(() => {
+      fallbackCopyTextToClipboard(text, button)
+    })
+  } else {
+    // Fallback for older browsers
+    fallbackCopyTextToClipboard(text, button)
+  }
+}
+
+function fallbackCopyTextToClipboard(text, button) {
+  const textArea = document.createElement('textarea')
+  textArea.value = text
+
+  // Avoid scrolling to bottom
+  textArea.style.top = '0'
+  textArea.style.left = '0'
+  textArea.style.position = 'fixed'
+  textArea.style.opacity = '0'
+
+  document.body.appendChild(textArea)
+  textArea.focus()
+  textArea.select()
+
+  try {
+    const successful = document.execCommand('copy')
+    if (successful) {
+      showCopyFeedback(button)
+    } else {
+      showCopyError(button)
+    }
+  } catch (err) {
+    showCopyError(button)
+  }
+
+  document.body.removeChild(textArea)
+}
+
+function showCopyFeedback(button) {
+  const originalText = button.textContent
+  button.textContent = 'Copied!'
+  button.classList.add('copied')
+
+  setTimeout(() => {
+    button.textContent = originalText
+    button.classList.remove('copied')
+  }, 2000)
+}
+
+function showCopyError(button) {
+  const originalText = button.textContent
+  button.textContent = 'Failed'
+  button.style.background = '#ef4444'
+
+  setTimeout(() => {
+    button.textContent = originalText
+    button.style.background = ''
+  }, 2000)
+}
+`
+
         let finalHtml: string
 
         if (template) {
@@ -454,6 +714,12 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
           if (tocScripts && !finalHtml.includes('initToc')) {
             finalHtml = finalHtml.replace('</body>', `<script>${tocScripts}</script></body>`)
           }
+
+          // Add copy styles and scripts
+          if (!finalHtml.includes('copy-code-btn')) {
+            finalHtml = finalHtml.replace('</head>', `<style>${copyStyles}</style></head>`)
+            finalHtml = finalHtml.replace('</body>', `<script>${copyScripts}</script></body>`)
+          }
         }
         else {
           // Default HTML template
@@ -468,6 +734,7 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
     <style>
 ${css}
 ${tocStyles}
+${copyStyles}
     </style>
     ${frontmatterScript}
   </head>
@@ -479,6 +746,7 @@ ${tocStyles}
     ${floatingTocHtml}
     ${scriptTags}
     <script>${tocScripts}</script>
+    <script>${copyScripts}</script>
   </body>
 </html>`
         }
@@ -502,7 +770,7 @@ ${tocStyles}
           loader: 'js',
         }
       })
-    },
+    }
   }
 }
 

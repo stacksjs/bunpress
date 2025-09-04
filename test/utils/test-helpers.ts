@@ -480,8 +480,10 @@ ${tocStyles}
 export async function readBuiltFile(fullPathOrOutDir: string, filePath?: string): Promise<string> {
   let fullPath: string
   if (filePath) {
+    // If filePath is provided, join it with fullPathOrOutDir
     fullPath = join(fullPathOrOutDir, filePath)
   } else {
+    // If no filePath provided, fullPathOrOutDir is the complete path
     fullPath = fullPathOrOutDir
   }
   const fileHandle = file(fullPath)

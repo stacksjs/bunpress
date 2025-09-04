@@ -137,40 +137,220 @@ $$
 
 ## Syntax Highlighting
 
-BunPress provides enhanced syntax highlighting with support for line highlighting.
+BunPress provides advanced syntax highlighting powered by Shiki, supporting multiple languages with beautiful themes and interactive features.
 
 ### Basic Syntax Highlighting
 
-```javascript
-function greet(name) {
-  console.log(`Hello, ${name}!`)
+BunPress supports syntax highlighting for over 40 programming languages:
+
+```typescript
+interface User {
+  name: string
+  age: number
+  email?: string
 }
 
-greet('World')
+const user: User = {
+  name: 'John Doe',
+  age: 30,
+  email: 'john@example.com'
+}
+
+function greet(user: User): string {
+  return `Hello, ${user.name}!`
+}
+
+console.log(greet(user))
+```
+
+### Copy-to-Clipboard
+
+Hover over any code block to see the copy button in the top-right corner. Click to copy the code to your clipboard with visual feedback.
+
+```javascript
+const { readFile } = require('fs').promises
+
+async function readConfig() {
+  try {
+    const config = await readFile('./config.json', 'utf8')
+    return JSON.parse(config)
+  } catch (error) {
+    console.error('Failed to read config:', error)
+    return {}
+  }
+}
+```
+
+### Line Numbers
+
+Add `:line-numbers` to enable line numbers:
+
+```typescript:line-numbers
+function calculateTotal(items) {
+  let total = 0
+  for (const item of items) {
+    total += item.price * item.quantity
+  }
+  return total
+}
+
+const items = [
+  { name: 'Apple', price: 1.50, quantity: 3 },
+  { name: 'Banana', price: 0.75, quantity: 2 }
+]
+
+console.log(calculateTotal(items))
 ```
 
 ### Line Highlighting
 
-```javascript{2-4}
-function greet(name) {
-  console.log(`Hello, ${name}!`)
-  return `Greeting sent to ${name}`
-}
+Highlight specific lines using curly braces:
 
-greet('World')
+```python {2,4-6}
+def process_data(data):
+    # This line is highlighted
+    if not data:
+        return None
+
+    # These lines are highlighted
+    processed = []
+    for item in data:
+        processed.append(item.upper())
+
+    return processed
 ```
 
-### Multiple Line Ranges
+### Combined Features
 
-```python{1,3-5,7}
+You can combine line numbers with highlighting:
+
+```javascript:line-numbers {3,7-9}
+import { Component } from 'react'
+
+interface Props {
+  title: string
+  items: string[]
+}
+
+export default function ListComponent({ title, items }: Props) {
+  // This line is highlighted
+  return (
+    <div>
+      <h2>{title}</h2>
+      <ul>
+        {/* These lines are highlighted */}
+        {items.map((item, index) => (
+          <li key={index}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+```
+
+### Multiple Languages
+
+BunPress supports a wide range of programming languages:
+
+**Web Technologies:**
+
+```html
+<div class="container">
+  <h1>Hello World</h1>
+  <p>This is a sample HTML document.</p>
+</div>
+```
+
+```css
+.highlighted {
+  background-color: yellow;
+  padding: 0.5em;
+  border-radius: 0.375rem;
+}
+
+.error {
+  color: red;
+  font-weight: bold;
+}
+```
+
+**Backend Languages:**
+
+```python
 def fibonacci(n):
     if n <= 1:
         return n
-    else:
-        return fibonacci(n-1) + fibonacci(n-2)
+    return fibonacci(n-1) + fibonacci(n-2)
+```
 
-# Example usage
-print(fibonacci(10))
+```go
+package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Hello, World!")
+}
+```
+
+**Databases:**
+
+```sql
+SELECT
+    u.id,
+    u.username,
+    u.email,
+    p.first_name,
+    p.last_name
+FROM users u
+LEFT JOIN profiles p ON u.id = p.user_id
+WHERE u.active = true
+ORDER BY u.created_at DESC
+```
+
+**Configuration Files:**
+
+```yaml
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+```
+
+### File Information
+
+Add file names to code blocks:
+
+```typescript [src/utils/helpers.ts]
+export function formatDate(date: Date): string {
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
+}
+```
+
+### Diff Highlighting
+
+Highlight changes in diff format:
+
+```diff
++ const newFeature = 'This line was added'
++ const enhancedFunction = () => {
++   console.log('Enhanced functionality')
++ }
+
+- const oldFeature = 'This line was removed'
+- const basicFunction = () => {
+-   console.log('Basic functionality')
+- }
+
+  const unchanged = 'This line stayed the same'
 ```
 
 ## Combined Extensions
@@ -208,15 +388,56 @@ Try it out! :rocket:
 
 ## Configuration
 
-These extensions are enabled by default. You can configure them in your `bunpress.config.ts`:
+The syntax highlighting features are enabled by default and require no additional configuration. However, you can customize the behavior through your `bunpress.config.ts`:
 
 ```typescript
 export default {
   markdown: {
-    // Custom marked options
+    // Custom marked options for advanced configuration
     markedOptions: {
       // Configure marked extensions
     }
   }
 }
 ```
+
+### Supported Languages
+
+BunPress supports syntax highlighting for the following languages out of the box:
+
+- **Web Technologies**: JavaScript, TypeScript, HTML, CSS, JSON, YAML
+- **Backend Languages**: Python, Go, Rust, Ruby, PHP, Java, C/C++, C#
+- **Databases**: SQL, GraphQL
+- **DevOps**: Bash, Shell, Docker, Nginx
+- **Data Science**: R, MATLAB
+- **Mobile**: Swift, Kotlin, Dart
+- **Other**: Markdown, XML, TOML, INI, Diff, Log files
+
+### Theme Support
+
+The syntax highlighting uses Shiki with the following built-in themes:
+
+- `light-plus` (default)
+- `dark-plus`
+- Additional themes can be configured by modifying the plugin setup
+
+### Performance Notes
+
+- Shiki highlighter is initialized once at build start for optimal performance
+- Code blocks are cached to avoid re-processing identical content
+- Large code blocks are handled efficiently with proper HTML structure
+
+### Browser Compatibility
+
+- **Modern browsers**: Full Clipboard API support with visual feedback
+- **Legacy browsers**: Fallback to `document.execCommand` for copying
+- **Progressive enhancement**: Features gracefully degrade on older browsers
+
+### Accessibility
+
+All syntax highlighting features are designed with accessibility in mind:
+
+- Copy buttons have proper ARIA labels and keyboard navigation
+- Line numbers are properly associated with their content
+- Color schemes follow WCAG guidelines for contrast
+- Screen reader friendly markup structure
