@@ -9,6 +9,14 @@ import markedAlert from 'marked-alert'
 import { markedEmoji } from 'marked-emoji'
 import { markedHighlight } from 'marked-highlight'
 import hljs from 'highlight.js'
+import {
+  generateTocData,
+  generateTocPositions,
+  processInlineTocSyntax,
+  enhanceHeadingsWithAnchors,
+  generateTocStyles,
+  generateTocScripts
+} from './toc'
 import { config } from './config'
 
 /**
@@ -362,6 +370,45 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
         // Prepare content based on layout
         let pageContent = cleanedHtmlContent
 
+        // Process TOC if enabled
+        let tocHtml = ''
+        let tocStyles = ''
+        let tocScripts = ''
+        let sidebarTocHtml = ''
+        let floatingTocHtml = ''
+
+        if (options.toc?.enabled !== false) {
+          // Generate TOC data from the original markdown content
+          const tocData = generateTocData(mdContentWithoutFrontmatter, {
+            ...options.toc,
+            // Merge frontmatter TOC config
+            ...frontmatter.toc
+          })
+
+          // Process inline TOC syntax
+          pageContent = processInlineTocSyntax(pageContent, tocData)
+
+          // Generate TOC positions
+          const tocPositions = generateTocPositions(mdContentWithoutFrontmatter, {
+            ...options.toc,
+            ...frontmatter.toc
+          })
+
+          // Extract TOC HTML for different positions
+          const sidebarToc = tocPositions.find(p => p.position === 'sidebar')
+          const floatingToc = tocPositions.find(p => p.position === 'floating')
+
+          if (sidebarToc) sidebarTocHtml = sidebarToc.html
+          if (floatingToc) floatingTocHtml = floatingToc.html
+
+          // Generate TOC styles and scripts
+          tocStyles = generateTocStyles()
+          tocScripts = generateTocScripts()
+        }
+
+        // Add heading anchors
+        pageContent = enhanceHeadingsWithAnchors(pageContent)
+
         // Get the file name and create the output path
         const outdir = build.config.outdir as string | undefined
         if (!outdir) {
@@ -399,6 +446,14 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
           Object.entries(frontmatter).forEach(([key, value]) => {
             finalHtml = finalHtml.replace(new RegExp(`\\{\\{frontmatter\\.${key}\\}\\}`, 'g'), String(value))
           })
+
+          // Add TOC styles and scripts if not already present
+          if (tocStyles && !finalHtml.includes('table-of-contents')) {
+            finalHtml = finalHtml.replace('</head>', `<style>${tocStyles}</style></head>`)
+          }
+          if (tocScripts && !finalHtml.includes('initToc')) {
+            finalHtml = finalHtml.replace('</body>', `<script>${tocScripts}</script></body>`)
+          }
         }
         else {
           // Default HTML template
@@ -412,14 +467,18 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
     ${unoCssScript}
     <style>
 ${css}
+${tocStyles}
     </style>
     ${frontmatterScript}
   </head>
   <body data-layout="${layout}" class="text-gray-800 bg-white">
+    ${sidebarTocHtml}
     <article class="markdown-body">
       ${pageContent}
     </article>
+    ${floatingTocHtml}
     ${scriptTags}
+    <script>${tocScripts}</script>
   </body>
 </html>`
         }

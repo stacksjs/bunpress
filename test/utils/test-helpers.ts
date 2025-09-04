@@ -10,6 +10,16 @@ import { markedHighlight } from 'marked-highlight'
 import hljs from 'highlight.js'
 import type { BunPressOptions, MarkdownPluginOptions } from '../../src/types'
 import { markdown } from '../../src/plugin'
+import {
+  generateTocData,
+  generateTocPositions,
+  processInlineTocSyntax,
+  enhanceHeadingsWithAnchors,
+  generateTocStyles,
+  generateTocScripts,
+  generateSlug,
+  generateUniqueSlug
+} from '../../src/toc'
 
 /**
  * Test helpers for TDD workflow
@@ -91,7 +101,7 @@ export function createTestConfig(overrides?: Partial<BunPressOptions>): BunPress
 }
 
 /**
- * Builds a test site using direct markdown processing
+ * Builds a test site using the markdown plugin
  */
 export async function buildTestSite(options: TestSiteOptions): Promise<BuildResult> {
   const testDir = await createTestDirectory(options.files)
@@ -103,54 +113,74 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
     const markdownFiles = options.files.filter(f => f.path.endsWith('.md'))
     const outputs: string[] = []
 
-    // Process each markdown file directly
+    // Process each markdown file using the plugin's logic directly
     for (const file of markdownFiles) {
       const filePath = join(testDir, file.path)
       const baseName = file.path.replace(/\.md$/, '')
       const htmlFileName = `${baseName}.html`
       const htmlFilePath = join(outDir, htmlFileName)
 
+      // Read and process the markdown file directly using plugin logic
       const content = await readFile(filePath, 'utf8')
       const { data: frontmatter, content: mdContentWithoutFrontmatter } = matter(content)
 
-      // Configure marked with custom container extension
-      marked.use({
-        extensions: [
-          {
-            name: 'container',
-            level: 'block' as const,
-            start: (src: string): number => src.indexOf(':::'),
-            tokenizer(src: string) {
-              const match = src.match(/^::: (\w+)(?:\s+(.*))?\n([\s\S]*?)\n:::/)
-              if (match) {
-                return {
-                  type: 'container' as const,
-                  raw: match[0],
-                  containerType: match[1],
-                  title: match[2] || '',
-                  content: match[3]
-                }
-              }
-            },
-            renderer(token: { containerType: string; title: string; content: string }): string {
-              const { containerType, title, content } = token
+      // Use the plugin configuration or default
+      const defaultConfig = {
+        toc: { enabled: true }
+      }
 
-              // Process title and content through emoji extension
-              const processedTitle = title ? marked.parseInline(title) : ''
-              const processedContent = marked.parseInline(content)
+      // Handle nested config structure (config.markdown.*)
+      let pluginConfig = options.config || defaultConfig
+      if (pluginConfig.markdown) {
+        const markdownConfig = pluginConfig.markdown
+        const tocConfig: any = { ...pluginConfig.toc }
 
-              const titleHtml = processedTitle ? `<p class="custom-block-title">${processedTitle}</p>` : ''
+        // Map markdown config properties to TOC config
+        if (markdownConfig.tocMaxDepth !== undefined) tocConfig.maxDepth = markdownConfig.tocMaxDepth
+        if (markdownConfig.tocMinDepth !== undefined) tocConfig.minDepth = markdownConfig.tocMinDepth
+        if (markdownConfig.tocStartLevel !== undefined) tocConfig.minDepth = markdownConfig.tocStartLevel
+        if (markdownConfig.tocEndLevel !== undefined) tocConfig.maxDepth = markdownConfig.tocEndLevel
+        if (markdownConfig.toc !== undefined) Object.assign(tocConfig, markdownConfig.toc)
 
-              // Special handling for details containers
-              if (containerType === 'details') {
-                return `<details><summary>${processedTitle || 'Details'}</summary><p>${processedContent}</p></details>`
-              }
+        pluginConfig = {
+          ...pluginConfig,
+          toc: tocConfig
+        }
+      }
 
-              return `<div class="custom-block ${containerType}">${titleHtml}<p>${processedContent}</p></div>`
-            }
+      // Merge frontmatter TOC config
+      if (frontmatter.toc) {
+        if (typeof frontmatter.toc === 'string') {
+          // Handle cases like "toc: sidebar"
+          pluginConfig.toc = {
+            ...pluginConfig.toc,
+            position: frontmatter.toc
           }
-        ]
-      })
+        } else {
+          // Handle object cases like "toc: {position: sidebar}"
+          pluginConfig.toc = {
+            ...pluginConfig.toc,
+            ...frontmatter.toc
+          }
+        }
+      }
+
+      // Handle tocTitle as a direct frontmatter property
+      if (frontmatter.tocTitle) {
+        pluginConfig.toc = {
+          ...pluginConfig.toc,
+          title: frontmatter.tocTitle
+        }
+      }
+
+      // Simulate the plugin's processing logic
+      const { markedOptions, css = '', scripts = [], title: defaultTitle, meta = {} } = pluginConfig
+
+      // Set up marked options for parsing
+      const renderer = new Renderer()
+
+      // Configure marked extensions (same as plugin)
+      marked.use(markedAlert())
       marked.use(markedEmoji({
         emojis: {
           heart: '❤️',
@@ -162,6 +192,12 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
           bulb: '💡'
         },
         unicode: true
+      }))
+      marked.use(markedHighlight({
+        highlight(code, lang) {
+          const language = hljs.getLanguage(lang) ? lang : 'plaintext'
+          return hljs.highlight(code, { language }).value
+        }
       }))
 
       // Custom math extension
@@ -206,14 +242,77 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
         ]
       })
 
-      // Custom renderer for line highlighting with syntax highlighting
-      const renderer = new Renderer()
-      renderer.code = function(code: any): string {
-        // Extract properties from the code object
-        const language = code.lang || ''
-        const codeText = code.text || ''
+      // Custom container extension
+      marked.use({
+        extensions: [
+          {
+            name: 'container',
+            level: 'block' as const,
+            start: (src: string): number => src.indexOf(':::'),
+            tokenizer(src: string) {
+              const match = src.match(/^::: (\w+)(?:\s+(.*))?\n([\s\S]*?)\n:::/)
+              if (match) {
+                return {
+                  type: 'container' as const,
+                  raw: match[0],
+                  containerType: match[1],
+                  title: match[2] || '',
+                  content: match[3]
+                }
+              }
+            },
+            renderer(token: { containerType: string; title: string; content: string }): string {
+              const { containerType, title, content } = token
 
-        let finalLanguage = language
+              // Process title and content through emoji extension
+              const processedTitle = title ? marked.parseInline(title) : ''
+              const processedContent = marked.parseInline(content)
+
+              const titleHtml = processedTitle ? `<p class="custom-block-title">${processedTitle}</p>` : ''
+
+              // Special handling for details containers
+              if (containerType === 'details') {
+                return `<details><summary>${processedTitle || 'Details'}</summary><p>${processedContent}</p></details>`
+              }
+
+              return `<div class="custom-block ${containerType}">${titleHtml}<p>${processedContent}</p></div>`
+            }
+          }
+        ]
+      })
+
+      // Global state for tracking slug uniqueness across all headings
+      const globalExistingSlugs = new Set<string>()
+
+      // Custom renderer for headings with TOC depth control
+      const originalHeadingRenderer = renderer.heading
+      renderer.heading = function(token: any, level?: number, raw?: string, slugger?: any): string {
+        // Extract heading information from token
+        const rawText = token.raw || raw
+        const headingLevel = token.depth || level || 1
+        let headingText = token.text || ''
+
+        // Check for toc-ignore comment in the raw text - this removes the heading entirely
+        if (rawText && rawText.includes('toc-ignore')) {
+          return ''
+        }
+
+        // Clean toc-ignore from heading text if present
+        if (headingText.includes('<!-- toc-ignore -->')) {
+          headingText = headingText.replace(/\s*<!-- toc-ignore -->\s*/g, '').trim()
+        }
+
+        // Generate unique slug for the heading
+        const customSlug = generateUniqueSlug(headingText, globalExistingSlugs)
+
+        // Generate heading HTML with custom ID
+        return `<h${headingLevel} id="${customSlug}"><a href="#${customSlug}" class="heading-anchor">#</a>${headingText}</h${headingLevel}>`
+      }
+
+      // Custom renderer for line highlighting
+      const originalCodeRenderer = renderer.code
+      renderer.code = function(code: string, language?: string | undefined, escaped?: boolean | undefined): string {
+        let finalLanguage = language || ''
         let lineNumbers: number[] = []
 
         // Handle line highlighting syntax: ```ts {1,3-5} or ```ts:line-numbers {2}
@@ -223,7 +322,6 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
           finalLanguage = lang
 
           if (lines) {
-            // Parse line numbers: "1,3-5" -> [1, 3, 4, 5]
             lineNumbers = lines.split(',').flatMap(range => {
               if (range.includes('-')) {
                 const [start, end] = range.split('-').map(n => parseInt(n))
@@ -235,15 +333,14 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
         }
 
         // Apply syntax highlighting
-        let highlightedCode = codeText
+        let highlightedCode = code
         if (finalLanguage) {
           const lang = hljs.getLanguage(finalLanguage) ? finalLanguage : 'plaintext'
-          highlightedCode = hljs.highlight(codeText, { language: lang }).value
+          highlightedCode = hljs.highlight(code, { language: lang }).value
         }
 
         // If we have line highlighting, wrap lines with classes
         if (lineNumbers.length > 0) {
-          // Split by lines, preserving HTML structure
           const lines = highlightedCode.split('\n')
           const highlightedLines = lines.map((line, index) => {
             const lineNum = index + 1
@@ -263,9 +360,101 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
         return `<pre><code class="${langClass} ${lineNumbersClass}">${highlightedCode}</code></pre>`
       }
 
-      const htmlContent = marked.parse(mdContentWithoutFrontmatter, { renderer })
-      const html = `<!DOCTYPE html><html><head><title>Test</title></head><body>${htmlContent}</body></html>`
-      await writeFile(htmlFilePath, html)
+      // Process TOC if enabled
+      let tocHtml = ''
+      let tocStyles = ''
+      let tocScripts = ''
+      let sidebarTocHtml = ''
+      let floatingTocHtml = ''
+
+      if (pluginConfig.toc?.enabled !== false) {
+        // Generate TOC data from the original markdown content
+        const tocData = generateTocData(mdContentWithoutFrontmatter, {
+          ...pluginConfig.toc,
+          // Merge frontmatter TOC config
+          ...frontmatter.toc
+        })
+
+        // Generate TOC positions
+        const tocPositions = generateTocPositions(mdContentWithoutFrontmatter, {
+          ...pluginConfig.toc,
+          ...frontmatter.toc
+        })
+
+        // Extract TOC HTML for different positions
+        const sidebarToc = tocPositions.find(p => p.position === 'sidebar')
+        const floatingToc = tocPositions.find(p => p.position === 'floating')
+
+        if (sidebarToc) sidebarTocHtml = sidebarToc.html
+        if (floatingToc) floatingTocHtml = floatingToc.html
+
+        // Generate TOC styles and scripts
+        tocStyles = generateTocStyles()
+        tocScripts = generateTocScripts()
+      }
+
+      // Convert markdown to HTML
+      let htmlContent = marked.parse(mdContentWithoutFrontmatter, {
+        ...markedOptions,
+        renderer,
+      })
+
+      // Process inline TOC syntax
+      if (pluginConfig.toc?.enabled !== false) {
+        const tocData = generateTocData(mdContentWithoutFrontmatter, {
+          ...pluginConfig.toc,
+          ...frontmatter.toc
+        })
+        htmlContent = processInlineTocSyntax(htmlContent, tocData)
+      }
+
+      // Add heading anchors
+      htmlContent = enhanceHeadingsWithAnchors(htmlContent)
+
+      // Generate final HTML
+      let title = frontmatter.title || defaultTitle
+      if (!title) {
+        const titleMatch = mdContentWithoutFrontmatter.match(/^# (.+)$/m)
+        title = titleMatch ? titleMatch[1] : 'Untitled Document'
+      }
+
+      const metaTags = Object.entries(meta)
+        .map(([name, content]) => `<meta name="${name}" content="${content}">`)
+        .join('\n    ')
+
+      const scriptTags = scripts
+        .map((src: string) => `<script src="${src}"></script>`)
+        .join('\n    ')
+
+      const unoCssScript = `<script src="https://cdn.jsdelivr.net/npm/@unocss/runtime"></script>`
+      const frontmatterScript = `<script>window.$frontmatter = ${JSON.stringify(frontmatter)};</script>`
+
+      const finalHtml = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    ${metaTags}
+    <title>${title}</title>
+    ${unoCssScript}
+    <style>
+${css}
+${tocStyles}
+    </style>
+    ${frontmatterScript}
+  </head>
+  <body class="text-gray-800 bg-white">
+    ${sidebarTocHtml}
+    <article class="markdown-body">
+      ${htmlContent}
+    </article>
+    ${floatingTocHtml}
+    ${scriptTags}
+    <script>${tocScripts}</script>
+  </body>
+</html>`
+
+      await writeFile(htmlFilePath, finalHtml)
       outputs.push(htmlFilePath)
     }
 
