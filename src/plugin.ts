@@ -5,6 +5,10 @@ import path from 'node:path'
 import process from 'node:process'
 import matter from 'gray-matter'
 import { marked } from 'marked'
+import markedAlert from 'marked-alert'
+import { markedEmoji } from 'marked-emoji'
+import { markedHighlight } from 'marked-highlight'
+import hljs from 'highlight.js'
 import { config } from './config'
 
 /**
@@ -204,6 +208,103 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
 
   // Set up marked options for parsing
   const renderer = new marked.Renderer()
+
+  // Configure marked extensions
+  marked.use(markedAlert())
+  marked.use(markedEmoji({
+    emojis: {
+      heart: '❤️',
+      thumbsup: '👍',
+      smile: '😊',
+      rocket: '🚀',
+      sparkles: '✨',
+      wave: '👋',
+      bulb: '💡'
+    }
+  }))
+  marked.use(markedHighlight({
+    highlight(code, lang) {
+      const language = hljs.getLanguage(lang) ? lang : 'plaintext'
+      return hljs.highlight(code, { language }).value
+    }
+  }))
+
+  // Custom math extension for inline and block math
+  marked.use({
+    extensions: [
+      {
+        name: 'inlineMath',
+        level: 'inline' as const,
+        start: (src: string): number => src.indexOf('$'),
+        tokenizer(src: string) {
+          const match = src.match(/^\$([^$\n]+)\$/)
+          if (match) {
+            return {
+              type: 'inlineMath' as const,
+              raw: match[0],
+              text: match[1]
+            }
+          }
+        },
+        renderer(token: { text: string }): string {
+          return `<span class="math inline">${token.text}</span>`
+        }
+      },
+      {
+        name: 'blockMath',
+        level: 'block' as const,
+        start: (src: string): number => src.indexOf('$$'),
+        tokenizer(src: string) {
+          const match = src.match(/^\$\$([\s\S]*?)\$\$/)
+          if (match) {
+            return {
+              type: 'blockMath' as const,
+              raw: match[0],
+              text: match[1]
+            }
+          }
+        },
+        renderer(token: { text: string }): string {
+          return `<div class="math block">${token.text}</div>`
+        }
+      }
+    ]
+  })
+
+  // Custom renderer for line highlighting
+  const originalCodeRenderer = renderer.code
+  renderer.code = function(code: string, language?: string | undefined, escaped?: boolean | undefined): string {
+    // Handle line highlighting syntax: ```ts {1,3-5}
+    const match = language?.match(/^(\w+)(?:\s*\{([^}]+)\})?$/)
+    if (match) {
+      const [_, lang, lines] = match
+      language = lang
+
+      if (lines) {
+        // Parse line numbers: "1,3-5" -> [1, 3, 4, 5]
+        const lineNumbers: number[] = lines.split(',').flatMap(range => {
+          if (range.includes('-')) {
+            const [start, end] = range.split('-').map(n => parseInt(n))
+            return Array.from({ length: end - start + 1 }, (_, i) => start + i)
+          }
+          return [parseInt(range)]
+        })
+
+        // Split code into lines and add highlighting
+        const codeLines: string[] = code.split('\n')
+        const highlightedCode: string = codeLines.map((line, index) => {
+          const lineNum = index + 1
+          const isHighlighted = lineNumbers.includes(lineNum)
+          const className = isHighlighted ? 'line-highlight' : ''
+          return `<span class="${className}">${line}</span>`
+        }).join('\n')
+
+        return `<pre><code class="language-${language} line-numbers">${highlightedCode}</code></pre>`
+      }
+    }
+
+    return originalCodeRenderer.call(this, code, language, escaped)
+  }
 
   return {
     name: 'markdown-plugin',
