@@ -70,7 +70,8 @@
     "marked": "^16.2.1",
     "marked-alert": "^2.1.2",
     "marked-emoji": "^2.0.1",
-    "marked-highlight": "^2.2.2"
+    "marked-highlight": "^2.2.2",
+    "shiki": "^3.12.2"
   },
   "devDependencies": {
     "@stacksjs/bumpx": "^0.1.17",
