@@ -17,6 +17,16 @@ export interface BunPressConfig {
    * Plugin configuration
    */
   plugins?: ConfigPlugin[]
+
+  /**
+   * Sitemap and SEO configuration
+   */
+  sitemap?: SitemapConfig
+
+  /**
+   * Robots.txt configuration
+   */
+  robots?: RobotsConfig
 }
 
 export type BunPressOptions = Partial<BunPressConfig>
@@ -88,6 +98,16 @@ export interface MarkdownPluginConfig {
    * Theme configuration
    */
   themeConfig?: ThemeConfig
+
+  /**
+   * Sitemap and SEO configuration
+   */
+  sitemap?: SitemapConfig
+
+  /**
+   * Robots.txt configuration
+   */
+  robots?: RobotsConfig
 }
 
 /**
@@ -440,4 +460,173 @@ export interface TocPositionData {
    * HTML content for this position
    */
   html: string
+}
+
+/**
+ * Sitemap configuration
+ */
+export interface SitemapConfig {
+  /**
+   * Enable sitemap generation
+   * @default true
+   */
+  enabled?: boolean
+
+  /**
+   * Base URL for the sitemap (required)
+   */
+  baseUrl?: string
+
+  /**
+   * Output filename for the main sitemap
+   * @default 'sitemap.xml'
+   */
+  filename?: string
+
+  /**
+   * Default priority for pages without explicit priority
+   * @default 0.5
+   */
+  defaultPriority?: number
+
+  /**
+   * Default changefreq for pages without explicit changefreq
+   * @default 'monthly'
+   */
+  defaultChangefreq?: SitemapChangefreq
+
+  /**
+   * Custom priority mapping by path patterns
+   */
+  priorityMap?: Record<string, number>
+
+  /**
+   * Custom changefreq mapping by path patterns
+   */
+  changefreqMap?: Record<string, SitemapChangefreq>
+
+  /**
+   * Paths to exclude from sitemap (regex patterns)
+   */
+  exclude?: string[]
+
+  /**
+   * Maximum number of URLs per sitemap file (for large sites)
+   * @default 50000
+   */
+  maxUrlsPerFile?: number
+
+  /**
+   * Enable sitemap index generation for multiple sitemaps
+   * @default false
+   */
+  useSitemapIndex?: boolean
+
+  /**
+   * Custom transformation function for sitemap entries
+   */
+  transform?: (entry: SitemapEntry) => SitemapEntry | null
+
+  /**
+   * Enable verbose logging for sitemap generation
+   * @default false
+   */
+  verbose?: boolean
+}
+
+/**
+ * Sitemap entry
+ */
+export interface SitemapEntry {
+  /**
+   * Page URL (relative to baseUrl)
+   */
+  url: string
+
+  /**
+   * Last modification date
+   */
+  lastmod?: string | Date
+
+  /**
+   * Change frequency
+   */
+  changefreq?: SitemapChangefreq
+
+  /**
+   * Priority (0.0 to 1.0)
+   */
+  priority?: number
+
+  /**
+   * Custom metadata
+   */
+  [key: string]: any
+}
+
+/**
+ * Sitemap change frequency values
+ */
+export type SitemapChangefreq = 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never'
+
+/**
+ * Robots.txt configuration
+ */
+export interface RobotsConfig {
+  /**
+   * Enable robots.txt generation
+   * @default true
+   */
+  enabled?: boolean
+
+  /**
+   * Output filename
+   * @default 'robots.txt'
+   */
+  filename?: string
+
+  /**
+   * User-agent rules
+   */
+  rules?: RobotsRule[]
+
+  /**
+   * Sitemap URLs to include
+   */
+  sitemaps?: string[]
+
+  /**
+   * Host directive
+   */
+  host?: string
+
+  /**
+   * Custom content to append
+   */
+  customContent?: string
+}
+
+/**
+ * Robots.txt rule
+ */
+export interface RobotsRule {
+  /**
+   * User-agent (e.g., '*', 'Googlebot', 'Bingbot')
+   */
+  userAgent: string
+
+  /**
+   * Allow directives
+   */
+  allow?: string[]
+
+  /**
+   * Disallow directives
+   */
+  disallow?: string[]
+
+  /**
+   * Crawl-delay directive
+   */
+  crawlDelay?: number
 }

@@ -9,7 +9,7 @@ import { markedEmoji } from 'marked-emoji'
 import { markedHighlight } from 'marked-highlight'
 import hljs from 'highlight.js'
 import type { BunPressOptions, MarkdownPluginOptions } from '../../src/types'
-import { markdown } from '../../src/plugin'
+import { markdown, generateSitemapAndRobots } from '../../src/plugin'
 import { ConfigManager } from '../../src/config'
 import {
   generateTocData,
@@ -188,6 +188,10 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
     // Apply plugins
     await configManager.applyPlugins()
 
+    // Get the full configuration from the manager (for sitemap generation)
+    const fullConfig = configManager.getConfig()
+    let mergedConfig = { ...fullConfig }
+
     // Process each markdown file using the plugin's logic directly
     for (const file of markdownFiles) {
       const filePath = join(testDir, file.path)
@@ -215,9 +219,6 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
       // Read and process the markdown file directly using plugin logic
       const content = await readFile(filePath, 'utf8')
       const { data: frontmatter, content: mdContentWithoutFrontmatter } = matter(content)
-
-      // Get the full configuration from the manager
-      const fullConfig = configManager.getConfig()
 
       // Handle nested config structure (config.markdown.*)
       let pluginConfig = fullConfig.markdown || {}
@@ -605,6 +606,64 @@ ${themeCss}
 
       await writeFile(htmlFilePath, finalHtml)
       outputs.push(htmlFilePath)
+    }
+
+    // Generate sitemap and robots.txt after all files are processed
+    // Check both top-level and markdown-level configuration
+    const sitemapConfig = mergedConfig.sitemap || mergedConfig.markdown?.sitemap || { enabled: true, baseUrl: 'https://example.com' }
+    const robotsConfig = mergedConfig.robots || mergedConfig.markdown?.robots || { enabled: true }
+
+    // Collect page information for sitemap generation
+    const pages: Array<{ path: string; frontmatter: any }> = []
+
+    // Re-process files to collect accurate frontmatter for sitemap generation
+    for (const file of markdownFiles) {
+      const filePath = join(testDir, file.path)
+      const relativePath = relative(testDir, filePath)
+
+      // Read the original file content to get correct frontmatter
+      const originalContent = await readFile(join(testDir, file.path), 'utf8')
+      const { data: frontmatter } = matter(originalContent)
+
+      pages.push({
+        path: relativePath,
+        frontmatter
+      })
+    }
+
+    // Generate sitemap and robots.txt
+    await generateSitemapAndRobots(pages, outDir, sitemapConfig, robotsConfig)
+
+    // Add generated files to outputs
+    const robotsPath = join(outDir, robotsConfig.filename || 'robots.txt')
+
+    // Check for robots.txt
+    if (await waitForFile(robotsPath, 1000)) {
+      outputs.push(robotsPath)
+    }
+
+    // Check for sitemap files (could be single sitemap, multi-sitemap, or sitemap index)
+    const baseSitemapPath = join(outDir, sitemapConfig.filename || 'sitemap.xml')
+    const indexPath = join(outDir, 'sitemap-index.xml')
+
+    // Check for sitemap index first
+    if (await waitForFile(indexPath, 1000)) {
+      outputs.push(indexPath)
+      // Also check for individual sitemap files
+      let i = 1
+      while (true) {
+        const sitemapFile = join(outDir, `sitemap-${i}.xml`)
+        if (await waitForFile(sitemapFile, 500)) {
+          outputs.push(sitemapFile)
+          i++
+        } else {
+          break
+        }
+      }
+    }
+    // Check for single sitemap file
+    else if (await waitForFile(baseSitemapPath, 1000)) {
+      outputs.push(baseSitemapPath)
     }
 
     return {

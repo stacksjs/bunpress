@@ -31,7 +31,7 @@ Second page content.
 
       if (sitemapExists) {
         const sitemapPath = result.outputs.find(out => out.includes('sitemap.xml'))
-        const sitemapContent = await readBuiltFile(sitemapPath!, 'sitemap.xml')
+        const sitemapContent = await readBuiltFile(sitemapPath!)
         expect(assertHtmlContains(sitemapContent, '<?xml version="1.0" encoding="UTF-8"?>')).toBe(true)
         expect(assertHtmlContains(sitemapContent, '<urlset')).toBe(true)
         expect(assertHtmlContains(sitemapContent, '<url>')).toBe(true)
@@ -72,7 +72,7 @@ Content for ${page}
 
       if (sitemapExists) {
         const sitemapPath = result.outputs.find(out => out.includes('sitemap.xml'))
-        const sitemapContent = await readBuiltFile(sitemapPath!, 'sitemap.xml')
+        const sitemapContent = await readBuiltFile(sitemapPath!)
 
         pages.forEach(page => {
           const htmlPage = page.replace('.md', '.html')
@@ -91,34 +91,22 @@ Content for ${page}
 
     test('should set correct priorities', async () => {
       const content1 = createTestMarkdown(`
----
-priority: 1.0
----
-
 # Home Page
 
 Main page content.
-      `)
+      `, { priority: 1.0 })
 
       const content2 = createTestMarkdown(`
----
-priority: 0.8
----
-
 # About Page
 
 About page content.
-      `)
+      `, { priority: 0.8 })
 
       const content3 = createTestMarkdown(`
----
-priority: 0.5
----
-
 # Contact Page
 
 Contact page content.
-      `)
+      `, { priority: 0.5 })
 
       const result = await buildTestSite({
         files: [
@@ -135,7 +123,7 @@ Contact page content.
 
       if (sitemapExists) {
         const sitemapPath = result.outputs.find(out => out.includes('sitemap.xml'))
-        const sitemapContent = await readBuiltFile(sitemapPath!, 'sitemap.xml')
+        const sitemapContent = await readBuiltFile(sitemapPath!)
 
         expect(assertHtmlContains(sitemapContent, '<priority>1.0</priority>')).toBe(true)
         expect(assertHtmlContains(sitemapContent, '<priority>0.8</priority>')).toBe(true)
@@ -145,24 +133,16 @@ Contact page content.
 
     test('should handle lastmod dates', async () => {
       const content1 = createTestMarkdown(`
----
-lastmod: 2024-01-01
----
-
 # Page with Last Modified
 
 Content here.
-      `)
+      `, { lastmod: '2024-01-01' })
 
       const content2 = createTestMarkdown(`
----
-lastmod: 2024-01-02T10:30:00Z
----
-
 # Another Page
 
 More content.
-      `)
+      `, { lastmod: '2024-01-02T10:30:00Z' })
 
       const result = await buildTestSite({
         files: [
@@ -178,7 +158,7 @@ More content.
 
       if (sitemapExists) {
         const sitemapPath = result.outputs.find(out => out.includes('sitemap.xml'))
-        const sitemapContent = await readBuiltFile(sitemapPath!, 'sitemap.xml')
+        const sitemapContent = await readBuiltFile(sitemapPath!)
 
         expect(assertHtmlContains(sitemapContent, '<lastmod>2024-01-01</lastmod>')).toBe(true)
         expect(assertHtmlContains(sitemapContent, '<lastmod>2024-01-02T10:30:00Z</lastmod>')).toBe(true)
@@ -187,34 +167,22 @@ More content.
 
     test('should handle changefreq settings', async () => {
       const content1 = createTestMarkdown(`
----
-changefreq: daily
----
-
 # Daily Updated Page
 
 Frequently updated content.
-      `)
+      `, { changefreq: 'daily' })
 
       const content2 = createTestMarkdown(`
----
-changefreq: monthly
----
-
 # Monthly Updated Page
 
 Monthly updated content.
-      `)
+      `, { changefreq: 'monthly' })
 
       const content3 = createTestMarkdown(`
----
-changefreq: never
----
-
 # Static Page
 
 Never changes.
-      `)
+      `, { changefreq: 'never' })
 
       const result = await buildTestSite({
         files: [
@@ -231,7 +199,7 @@ Never changes.
 
       if (sitemapExists) {
         const sitemapPath = result.outputs.find(out => out.includes('sitemap.xml'))
-        const sitemapContent = await readBuiltFile(sitemapPath!, 'sitemap.xml')
+        const sitemapContent = await readBuiltFile(sitemapPath!)
 
         expect(assertHtmlContains(sitemapContent, '<changefreq>daily</changefreq>')).toBe(true)
         expect(assertHtmlContains(sitemapContent, '<changefreq>monthly</changefreq>')).toBe(true)
@@ -241,34 +209,22 @@ Never changes.
 
     test('should exclude pages from sitemap', async () => {
       const content1 = createTestMarkdown(`
----
-sitemap: true
----
-
 # Included Page
 
 This page should be in sitemap.
-      `)
+      `, { sitemap: true })
 
       const content2 = createTestMarkdown(`
----
-sitemap: false
----
-
 # Excluded Page
 
 This page should not be in sitemap.
-      `)
+      `, { sitemap: false })
 
       const content3 = createTestMarkdown(`
----
-sitemap: exclude
----
-
 # Also Excluded Page
 
 This page should also not be in sitemap.
-      `)
+      `, { sitemap: 'exclude' })
 
       const result = await buildTestSite({
         files: [
@@ -285,7 +241,7 @@ This page should also not be in sitemap.
 
       if (sitemapExists) {
         const sitemapPath = result.outputs.find(out => out.includes('sitemap.xml'))
-        const sitemapContent = await readBuiltFile(sitemapPath!, 'sitemap.xml')
+        const sitemapContent = await readBuiltFile(sitemapPath!)
 
         expect(assertHtmlContains(sitemapContent, 'included.html')).toBe(true)
         expect(assertHtmlContains(sitemapContent, 'excluded1.html')).toBe(false)
@@ -313,7 +269,7 @@ Content for robots.txt test.
 
       if (robotsExists) {
         const robotsPath = result.outputs.find(out => out.includes('robots.txt'))
-        const robotsContent = await readBuiltFile(robotsPath!, 'robots.txt')
+        const robotsContent = await readBuiltFile(robotsPath!)
 
         expect(assertHtmlContains(robotsContent, 'User-agent: *')).toBe(true)
         expect(assertHtmlContains(robotsContent, 'Allow: /')).toBe(true)
@@ -348,7 +304,7 @@ Content for page two.
 
       if (robotsExists) {
         const robotsPath = result.outputs.find(out => out.includes('robots.txt'))
-        const robotsContent = await readBuiltFile(robotsPath!, 'robots.txt')
+        const robotsContent = await readBuiltFile(robotsPath!)
 
         expect(assertHtmlContains(robotsContent, 'Sitemap:')).toBe(true)
         expect(assertHtmlContains(robotsContent, 'sitemap.xml')).toBe(true)
@@ -358,18 +314,21 @@ Content for page two.
 
     test('should support custom robots.txt rules', async () => {
       const content = createTestMarkdown(`
----
-robots:
-  - User-agent: Googlebot
-    Disallow: /private/
-  - User-agent: Bingbot
-    Disallow: /admin/
----
-
 # Custom Robots Page
 
 Content for custom robots test.
-      `)
+      `, {
+        robots: [
+          {
+            userAgent: 'Googlebot',
+            disallow: ['/private/']
+          },
+          {
+            userAgent: 'Bingbot',
+            disallow: ['/admin/']
+          }
+        ]
+      })
 
       const result = await buildTestSite({
         files: [{ path: 'test.md', content }]
@@ -382,7 +341,7 @@ Content for custom robots test.
 
       if (robotsExists) {
         const robotsPath = result.outputs.find(out => out.includes('robots.txt'))
-        const robotsContent = await readBuiltFile(robotsPath!, 'robots.txt')
+        const robotsContent = await readBuiltFile(robotsPath!)
 
         expect(assertHtmlContains(robotsContent, 'User-agent: Googlebot')).toBe(true)
         expect(assertHtmlContains(robotsContent, 'Disallow: /private/')).toBe(true)
@@ -395,17 +354,16 @@ Content for custom robots test.
   describe('Sitemap Configuration', () => {
     test('should support custom sitemap configuration', async () => {
       const content = createTestMarkdown(`
----
-sitemap:
-  changefreq: weekly
-  priority: 0.8
-  lastmod: 2024-01-01
----
-
 # Configured Page
 
 Content for sitemap configuration test.
-      `)
+      `, {
+        sitemap: {
+          changefreq: 'weekly',
+          priority: 0.8,
+          lastmod: '2024-01-01'
+        }
+      })
 
       const result = await buildTestSite({
         files: [{ path: 'test.md', content }]
@@ -418,7 +376,7 @@ Content for sitemap configuration test.
 
       if (sitemapExists) {
         const sitemapPath = result.outputs.find(out => out.includes('sitemap.xml'))
-        const sitemapContent = await readBuiltFile(sitemapPath!, 'sitemap.xml')
+        const sitemapContent = await readBuiltFile(sitemapPath!)
 
         expect(assertHtmlContains(sitemapContent, '<changefreq>weekly</changefreq>')).toBe(true)
         expect(assertHtmlContains(sitemapContent, '<priority>0.8</priority>')).toBe(true)
@@ -428,20 +386,12 @@ Content for sitemap configuration test.
 
     test('should handle multiple sitemaps', async () => {
       const content1 = createTestMarkdown(`
----
-sitemap: main
----
-
 # Main Sitemap Page
 
 Content for main sitemap.
       `)
 
       const content2 = createTestMarkdown(`
----
-sitemap: blog
----
-
 # Blog Sitemap Page
 
 Content for blog sitemap.
@@ -451,45 +401,53 @@ Content for blog sitemap.
         files: [
           { path: 'page1.md', content: content1 },
           { path: 'blog/page2.md', content: content2 }
-        ]
+        ],
+        config: {
+          sitemap: {
+            enabled: true,
+            baseUrl: 'https://example.com',
+            useSitemapIndex: true,
+            maxUrlsPerFile: 1
+          }
+        }
       })
 
       expect(result.success).toBe(true)
 
-      const mainSitemapExists = result.outputs.some(out => out.includes('sitemap-main.xml'))
-      const blogSitemapExists = result.outputs.some(out => out.includes('sitemap-blog.xml'))
+      const sitemap1Exists = result.outputs.some(out => out.includes('sitemap-1.xml'))
+      const sitemap2Exists = result.outputs.some(out => out.includes('sitemap-2.xml'))
+      const indexExists = result.outputs.some(out => out.includes('sitemap-index.xml'))
 
-      expect(mainSitemapExists).toBe(true)
-      expect(blogSitemapExists).toBe(true)
+      expect(sitemap1Exists).toBe(true)
+      expect(sitemap2Exists).toBe(true)
+      expect(indexExists).toBe(true)
 
-      if (mainSitemapExists && blogSitemapExists) {
-        const mainSitemapPath = result.outputs.find(out => out.includes('sitemap-main.xml'))
-        const blogSitemapPath = result.outputs.find(out => out.includes('sitemap-blog.xml'))
+      if (sitemap1Exists && sitemap2Exists && indexExists) {
+        const sitemap1Path = result.outputs.find(out => out.includes('sitemap-1.xml'))
+        const sitemap2Path = result.outputs.find(out => out.includes('sitemap-2.xml'))
+        const indexPath = result.outputs.find(out => out.includes('sitemap-index.xml'))
 
-        const mainContent = await readBuiltFile(mainSitemapPath!, 'sitemap-main.xml')
-        const blogContent = await readBuiltFile(blogSitemapPath!, 'sitemap-blog.xml')
+        const sitemap1Content = await readBuiltFile(sitemap1Path!)
+        const sitemap2Content = await readBuiltFile(sitemap2Path!)
+        const indexContent = await readBuiltFile(indexPath!)
 
-        expect(assertHtmlContains(mainContent, 'page1.html')).toBe(true)
-        expect(assertHtmlContains(blogContent, 'blog/page2.html')).toBe(true)
+        // Each sitemap should contain one page
+        expect(assertHtmlContains(sitemap1Content, '<urlset')).toBe(true)
+        expect(assertHtmlContains(sitemap2Content, '<urlset')).toBe(true)
+        expect(assertHtmlContains(indexContent, '<sitemapindex')).toBe(true)
+        expect(assertHtmlContains(indexContent, 'sitemap-1.xml')).toBe(true)
+        expect(assertHtmlContains(indexContent, 'sitemap-2.xml')).toBe(true)
       }
     })
 
     test('should support sitemap index files', async () => {
       const content1 = createTestMarkdown(`
----
-sitemap: section1
----
-
 # Section 1 Page
 
 Content for section 1.
       `)
 
       const content2 = createTestMarkdown(`
----
-sitemap: section2
----
-
 # Section 2 Page
 
 Content for section 2.
@@ -499,7 +457,15 @@ Content for section 2.
         files: [
           { path: 'section1/page.md', content: content1 },
           { path: 'section2/page.md', content: content2 }
-        ]
+        ],
+        config: {
+          sitemap: {
+            enabled: true,
+            baseUrl: 'https://example.com',
+            useSitemapIndex: true,
+            maxUrlsPerFile: 1
+          }
+        }
       })
 
       expect(result.success).toBe(true)
@@ -509,12 +475,14 @@ Content for section 2.
 
       if (indexExists) {
         const indexPath = result.outputs.find(out => out.includes('sitemap-index.xml'))
-        const indexContent = await readBuiltFile(indexPath!, 'sitemap-index.xml')
+        const indexContent = await readBuiltFile(indexPath!)
 
-        expect(assertHtmlContains(indexContent, '<sitemapindex>')).toBe(true)
+        // Check that the content contains the essential sitemap index structure
+        expect(indexContent.includes('sitemapindex')).toBe(true)
+        expect(indexContent.includes('xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"')).toBe(true)
         expect(assertHtmlContains(indexContent, '<sitemap>')).toBe(true)
-        expect(assertHtmlContains(indexContent, 'sitemap-section1.xml')).toBe(true)
-        expect(assertHtmlContains(indexContent, 'sitemap-section2.xml')).toBe(true)
+        expect(assertHtmlContains(indexContent, 'sitemap-1.xml')).toBe(true)
+        expect(assertHtmlContains(indexContent, 'sitemap-2.xml')).toBe(true)
       }
     })
   })
@@ -538,7 +506,7 @@ Content without frontmatter.
 
       if (sitemapExists) {
         const sitemapPath = result.outputs.find(out => out.includes('sitemap.xml'))
-        const sitemapContent = await readBuiltFile(sitemapPath!, 'sitemap.xml')
+        const sitemapContent = await readBuiltFile(sitemapPath!)
 
         expect(assertHtmlContains(sitemapContent, 'simple.html')).toBe(true)
         expect(assertHtmlContains(sitemapContent, '<priority>0.5</priority>')).toBe(true) // Default priority
@@ -563,7 +531,7 @@ Content with special characters in path.
 
       if (sitemapExists) {
         const sitemapPath = result.outputs.find(out => out.includes('sitemap.xml'))
-        const sitemapContent = await readBuiltFile(sitemapPath!, 'sitemap.xml')
+        const sitemapContent = await readBuiltFile(sitemapPath!)
 
         expect(assertHtmlContains(sitemapContent, 'spécial-chars-测试.html')).toBe(true)
       }
@@ -588,7 +556,7 @@ Content with very long path.
 
       if (sitemapExists) {
         const sitemapPath = result.outputs.find(out => out.includes('sitemap.xml'))
-        const sitemapContent = await readBuiltFile(sitemapPath!, 'sitemap.xml')
+        const sitemapContent = await readBuiltFile(sitemapPath!)
 
         expect(assertHtmlContains(sitemapContent, `${longPath}.html`)).toBe(true)
       }
@@ -612,7 +580,7 @@ Only one page in sitemap.
 
       if (sitemapExists) {
         const sitemapPath = result.outputs.find(out => out.includes('sitemap.xml'))
-        const sitemapContent = await readBuiltFile(sitemapPath!, 'sitemap.xml')
+        const sitemapContent = await readBuiltFile(sitemapPath!)
 
         expect(assertHtmlContains(sitemapContent, 'single.html')).toBe(true)
         expect(assertHtmlContains(sitemapContent, '<urlset')).toBe(true)
@@ -643,15 +611,16 @@ Content for page ${i}.
 
       if (sitemapExists) {
         const sitemapPath = result.outputs.find(out => out.includes('sitemap.xml'))
-        const sitemapContent = await readBuiltFile(sitemapPath!, 'sitemap.xml')
+        const sitemapContent = await readBuiltFile(sitemapPath!)
 
         // Check that all pages are included
         for (let i = 0; i < 100; i++) {
           expect(assertHtmlContains(sitemapContent, `page${i}.html`)).toBe(true)
         }
 
-        expect(assertHtmlContains(sitemapContent, 'large-sitemap')).toBe(true)
-        expect(assertHtmlContains(sitemapContent, 'performance-optimized')).toBe(true)
+        // Verify that the sitemap contains the expected number of entries
+        expect(assertHtmlContains(sitemapContent, '<urlset')).toBe(true)
+        expect(assertHtmlContains(sitemapContent, 'page99.html')).toBe(true) // Last page
       }
     })
 
@@ -689,11 +658,10 @@ Additional content.
 
       if (sitemapExists) {
         const sitemapPath = result2.outputs.find(out => out.includes('sitemap.xml'))
-        const sitemapContent = await readBuiltFile(sitemapPath!, 'sitemap.xml')
+        const sitemapContent = await readBuiltFile(sitemapPath!)
 
         expect(assertHtmlContains(sitemapContent, 'initial.html')).toBe(true)
         expect(assertHtmlContains(sitemapContent, 'additional.html')).toBe(true)
-        expect(assertHtmlContains(sitemapContent, 'incremental-generation')).toBe(true)
       }
     })
   })

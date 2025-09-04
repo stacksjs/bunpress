@@ -419,6 +419,131 @@ Welcome to our documentation!
 ¡Bienvenido a nuestra documentación!
 ```
 
+## Sitemap Generation
+
+BunPress automatically generates XML sitemaps for better SEO:
+
+### Basic Sitemap Configuration
+
+```typescript
+export default {
+  sitemap: {
+    enabled: true,
+    baseUrl: 'https://example.com',
+    filename: 'sitemap.xml'
+  }
+}
+```
+
+### Advanced Sitemap Features
+
+Configure priorities, change frequencies, and exclusions:
+
+```typescript
+export default {
+  sitemap: {
+    baseUrl: 'https://example.com',
+    defaultPriority: 0.5,
+    defaultChangefreq: 'monthly',
+    exclude: ['/private/**', '/admin/**'],
+    priorityMap: {
+      '/': 1.0,
+      '/docs/**': 0.8,
+      '/blog/**': 0.7
+    },
+    changefreqMap: {
+      '/blog/**': 'weekly',
+      '/docs/**': 'monthly',
+      '/': 'daily'
+    }
+  }
+}
+```
+
+### Frontmatter Sitemap Configuration
+
+Control sitemap settings per page:
+
+```yaml
+---
+title: My Page
+priority: 0.8
+changefreq: weekly
+lastmod: 2024-01-01
+sitemap: true  # or false to exclude
+---
+
+Content here...
+```
+
+### Multi-Sitemap Support
+
+For large sites, BunPress automatically splits sitemaps:
+
+```typescript
+export default {
+  sitemap: {
+    baseUrl: 'https://example.com',
+    maxUrlsPerFile: 50000,  // Split after 50k URLs
+    useSitemapIndex: true   // Generate sitemap index
+  }
+}
+```
+
+## Robots.txt Generation
+
+Configure search engine crawling behavior:
+
+### Basic Robots.txt
+
+```typescript
+export default {
+  robots: {
+    enabled: true,
+    filename: 'robots.txt'
+  }
+}
+```
+
+### Advanced Robots Configuration
+
+```typescript
+export default {
+  robots: {
+    rules: [
+      {
+        userAgent: '*',
+        allow: ['/'],
+        disallow: ['/private/', '/admin/']
+      },
+      {
+        userAgent: 'Googlebot',
+        allow: ['/'],
+        disallow: ['/admin/'],
+        crawlDelay: 1
+      }
+    ],
+    sitemaps: ['https://example.com/sitemap.xml'],
+    host: 'example.com'
+  }
+}
+```
+
+### Frontmatter Robots Configuration
+
+Add custom robots rules per page:
+
+```yaml
+---
+title: Private Page
+robots:
+  - userAgent: '*'
+    disallow: ['/private/']
+---
+
+This page should not be crawled.
+```
+
 ## Custom Error Handling
 
 ```typescript

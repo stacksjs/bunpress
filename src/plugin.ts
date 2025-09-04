@@ -1,5 +1,5 @@
 import type { BunPlugin } from 'bun'
-import type { Frontmatter, MarkdownPluginOptions, NavItem, SidebarItem, SearchConfig, SearchResult, ThemeConfig } from './types'
+import type { Frontmatter, MarkdownPluginOptions, NavItem, SidebarItem, SearchConfig, SearchResult, ThemeConfig, SitemapConfig, SitemapEntry, RobotsConfig, SitemapChangefreq } from './types'
 import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
@@ -290,6 +290,13 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
     preserveDirectoryStructure = defaultOptions.preserveDirectoryStructure !== false,
   } = options
 
+  // Sitemap and robots configuration
+  const sitemapConfig = (options as any).sitemap || (config as any).sitemap || { enabled: true }
+  const robotsConfig = (options as any).robots || (config as any).robots || { enabled: true }
+
+  // Track pages for sitemap generation
+  const pages: Array<{ path: string; frontmatter: any }> = []
+
   return {
     name: 'markdown-plugin',
     setup(build) {
@@ -402,7 +409,7 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
                 }
               }
             },
-            renderer(token: { text: string }): string {
+            renderer(token: any): string {
               return `<span class="math inline">${token.text}</span>`
             }
           },
@@ -420,7 +427,7 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
                 }
               }
             },
-            renderer(token: { text: string }): string {
+            renderer(token: any): string {
               return `<div class="math block">${token.text}</div>`
             }
           }
@@ -429,7 +436,7 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
 
       // Custom renderer for code blocks with copy-to-clipboard and line highlighting
       const originalCodeRenderer = renderer.code
-      renderer.code = function(code: string, language?: string | undefined, escaped?: boolean | undefined): string {
+      renderer.code = function(code: any, language?: string | undefined, escaped?: boolean | undefined): string {
         // Ensure code is a string
         const codeString = typeof code === 'string' ? code : String(code || '')
         const langString = typeof language === 'string' ? language : ''
@@ -520,6 +527,15 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
 
         // Parse frontmatter using gray-matter
         const { data: frontmatter, content: mdContentWithoutFrontmatter } = matter(mdContent)
+
+        // Collect page information for sitemap generation
+        if (sitemapConfig.enabled !== false) {
+          const relativePath = path.relative(process.cwd(), args.path)
+          pages.push({
+            path: relativePath,
+            frontmatter
+          })
+        }
 
         // Convert markdown to HTML
         const htmlContent = marked.parse(mdContentWithoutFrontmatter, {
@@ -876,6 +892,7 @@ ${themeCss}
           loader: 'js',
         }
       })
+
     }
   }
 }
@@ -895,6 +912,119 @@ export function stx(): BunPlugin {
         }
       })
     },
+  }
+}
+
+/**
+ * Generate sitemap and robots.txt files after build completion
+ */
+export async function generateSitemapAndRobots(
+  pages: Array<{ path: string; frontmatter: any }>,
+  outdir: string,
+  sitemapConfig: SitemapConfig,
+  robotsConfig: RobotsConfig
+): Promise<void> {
+  // Generate sitemap
+  if (sitemapConfig.enabled !== false && sitemapConfig.baseUrl) {
+    try {
+      const entries = createSitemapEntries(pages, sitemapConfig, sitemapConfig.baseUrl)
+
+      // Choose the appropriate generation method based on size and configuration
+      const maxUrlsPerFile = sitemapConfig.maxUrlsPerFile || 50000
+      const useMultiSitemap = sitemapConfig.useSitemapIndex || entries.length > maxUrlsPerFile
+      const useStreaming = entries.length > 100000 // Use streaming for very large sitemaps
+
+      if (useStreaming) {
+        // Use memory-efficient streaming for very large sites
+        await generateLargeSitemap(entries, sitemapConfig.baseUrl, sitemapConfig, outdir)
+      } else if (useMultiSitemap) {
+        // Use multi-sitemap generation for large sites
+        await generateMultiSitemap(entries, sitemapConfig.baseUrl, sitemapConfig, outdir)
+      } else {
+        // Use standard single sitemap generation
+        const sitemapXml = generateSitemapXml(entries, sitemapConfig.baseUrl)
+        const sitemapFilename = sitemapConfig.filename || 'sitemap.xml'
+        const sitemapPath = path.join(outdir, sitemapFilename)
+
+        await fs.promises.writeFile(sitemapPath, sitemapXml)
+
+        if (config.verbose) {
+          console.log(`Sitemap: Generated ${sitemapPath} with ${entries.length} entries`)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to generate sitemap:', error)
+    }
+  }
+
+  // Generate robots.txt
+  if (robotsConfig.enabled !== false) {
+    try {
+      // Check for frontmatter-based robots configuration
+      const frontmatterRobots = pages
+        .map(p => p.frontmatter.robots)
+        .filter(Boolean)
+        .flat()
+
+      // Merge frontmatter robots rules with config
+      const mergedRobotsConfig = {
+        ...robotsConfig,
+        rules: robotsConfig.rules ? [...robotsConfig.rules, ...frontmatterRobots] : frontmatterRobots
+      }
+
+      // Prepare sitemap URLs for robots.txt
+      const sitemapUrls: string[] = []
+
+      if (sitemapConfig.enabled !== false && sitemapConfig.baseUrl) {
+        const entries = createSitemapEntries(pages, sitemapConfig, sitemapConfig.baseUrl)
+        const maxUrlsPerFile = sitemapConfig.maxUrlsPerFile || 50000
+        const useMultiSitemap = sitemapConfig.useSitemapIndex || entries.length > maxUrlsPerFile
+        const useStreaming = entries.length > 100000
+
+        if (useStreaming) {
+          // Include single sitemap (streaming)
+          const sitemapFilename = sitemapConfig.filename || 'sitemap.xml'
+          sitemapUrls.push(`${sitemapConfig.baseUrl}/${sitemapFilename}`.replace(/\/+/g, '/'))
+        } else if (useMultiSitemap) {
+          // Include sitemap index and individual sitemaps
+          sitemapUrls.push(`${sitemapConfig.baseUrl}/sitemap-index.xml`.replace(/\/+/g, '/'))
+
+          const chunks = splitSitemapEntries(entries, maxUrlsPerFile)
+          const baseName = (sitemapConfig.filename || 'sitemap.xml').replace('.xml', '')
+
+          for (let i = 0; i < chunks.length; i++) {
+            let filename: string
+            if (chunks.length === 1) {
+              filename = sitemapConfig.filename || 'sitemap.xml'
+            } else {
+              filename = `${baseName}-${i + 1}.xml`
+            }
+            sitemapUrls.push(`${sitemapConfig.baseUrl}/${filename}`.replace(/\/+/g, '/'))
+          }
+        } else {
+          // Include single sitemap
+          const sitemapFilename = sitemapConfig.filename || 'sitemap.xml'
+          sitemapUrls.push(`${sitemapConfig.baseUrl}/${sitemapFilename}`.replace(/\/+/g, '/'))
+        }
+      }
+
+      const robotsConfigWithSitemaps = {
+        ...mergedRobotsConfig,
+        sitemaps: mergedRobotsConfig.sitemaps ? [...mergedRobotsConfig.sitemaps, ...sitemapUrls] : sitemapUrls
+      }
+
+      const robotsTxt = generateRobotsTxt(robotsConfigWithSitemaps)
+      const robotsFilename = robotsConfig.filename || 'robots.txt'
+      const robotsPath = path.join(outdir, robotsFilename)
+
+      await fs.promises.writeFile(robotsPath, robotsTxt)
+
+      if (config.verbose) {
+        console.log(`Robots: Generated ${robotsPath}`)
+      }
+    } catch (error) {
+      console.error('Failed to generate robots.txt:', error)
+    }
   }
 }
 
@@ -1212,6 +1342,424 @@ function getNavStyles(): string {
 }
 `
 }
+
+/**
+ * Generate sitemap XML content (single sitemap)
+ */
+function generateSitemapXml(entries: SitemapEntry[], baseUrl: string): string {
+  const urlEntries = entries.map(entry => {
+    const loc = `${baseUrl}${entry.url}`.replace(/\/$/, '') // Remove trailing slash
+    let xmlEntry = `  <url>\n    <loc>${escapeXml(loc)}</loc>`
+
+    if (entry.lastmod) {
+      const lastmod = entry.lastmod instanceof Date ? entry.lastmod.toISOString().split('T')[0] : entry.lastmod
+      xmlEntry += `\n    <lastmod>${lastmod}</lastmod>`
+    }
+
+    if (entry.changefreq) {
+      xmlEntry += `\n    <changefreq>${entry.changefreq}</changefreq>`
+    }
+
+    if (entry.priority !== undefined && entry.priority >= 0 && entry.priority <= 1) {
+      xmlEntry += `\n    <priority>${entry.priority.toFixed(1)}</priority>`
+    }
+
+    xmlEntry += '\n  </url>'
+    return xmlEntry
+  }).join('\n')
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+${urlEntries}
+</urlset>`
+}
+
+/**
+ * Split entries into multiple sitemaps if needed
+ */
+function splitSitemapEntries(entries: SitemapEntry[], maxUrlsPerFile: number): SitemapEntry[][] {
+  if (entries.length <= maxUrlsPerFile) {
+    return [entries]
+  }
+
+  const chunks: SitemapEntry[][] = []
+  for (let i = 0; i < entries.length; i += maxUrlsPerFile) {
+    chunks.push(entries.slice(i, i + maxUrlsPerFile))
+  }
+
+  return chunks
+}
+
+/**
+ * Generate multiple sitemaps and a sitemap index with performance optimizations
+ */
+async function generateMultiSitemap(
+  entries: SitemapEntry[],
+  baseUrl: string,
+  config: SitemapConfig,
+  outdir: string
+): Promise<void> {
+  const maxUrlsPerFile = config.maxUrlsPerFile || 50000
+  const chunks = splitSitemapEntries(entries, maxUrlsPerFile)
+
+  const sitemapFiles: Array<{ url: string; lastmod: string }> = []
+
+  // Generate individual sitemap files with parallel processing for better performance
+  const writePromises: Promise<void>[] = []
+
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i]
+    const sitemapXml = generateSitemapXml(chunk, baseUrl)
+
+    let filename: string
+    if (chunks.length === 1) {
+      filename = config.filename || 'sitemap.xml'
+    } else {
+      const baseName = (config.filename || 'sitemap.xml').replace('.xml', '')
+      filename = `${baseName}-${i + 1}.xml`
+    }
+
+    const sitemapPath = path.join(outdir, filename)
+
+    // Use parallel file writes for better performance
+    const writePromise = fs.promises.writeFile(sitemapPath, sitemapXml).then(() => {
+      if (config.verbose) {
+        console.log(`Sitemap: Generated ${sitemapPath} with ${chunk.length} entries`)
+      }
+    })
+    writePromises.push(writePromise)
+
+    // Get the latest lastmod from this chunk (optimized)
+    let latestLastmod = new Date(0).toISOString().split('T')[0]
+    for (const entry of chunk) {
+      if (entry.lastmod) {
+        const entryDate = entry.lastmod instanceof Date ? entry.lastmod.toISOString().split('T')[0] : entry.lastmod
+        if (entryDate > latestLastmod) {
+          latestLastmod = entryDate
+        }
+      }
+    }
+
+    sitemapFiles.push({
+      url: `/${filename}`,
+      lastmod: latestLastmod
+    })
+  }
+
+  // Wait for all sitemap files to be written
+  await Promise.all(writePromises)
+
+  // Generate sitemap index if multiple files were created
+  if (chunks.length > 1) {
+    const indexXml = generateSitemapIndexXml(sitemapFiles, baseUrl)
+    const indexFilename = 'sitemap-index.xml'
+    const indexPath = path.join(outdir, indexFilename)
+
+    await fs.promises.writeFile(indexPath, indexXml)
+
+    if (config.verbose) {
+      console.log(`Sitemap: Generated ${indexPath} with ${sitemapFiles.length} sitemaps`)
+    }
+  }
+}
+
+/**
+ * Memory-efficient sitemap generation with streaming for very large sites
+ */
+async function generateLargeSitemap(
+  entries: SitemapEntry[],
+  baseUrl: string,
+  config: SitemapConfig,
+  outdir: string
+): Promise<void> {
+  const filename = config.filename || 'sitemap.xml'
+  const sitemapPath = path.join(outdir, filename)
+
+  // For very large sitemaps, write incrementally to avoid memory issues
+  const writeStream = fs.createWriteStream(sitemapPath)
+
+  // Write XML header
+  writeStream.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+  writeStream.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n')
+  writeStream.write('        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\n')
+  writeStream.write('        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9\n')
+  writeStream.write('        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">\n')
+
+  // Write entries in chunks to avoid memory issues
+  const chunkSize = 1000
+  for (let i = 0; i < entries.length; i += chunkSize) {
+    const chunk = entries.slice(i, i + chunkSize)
+    const xmlChunk = chunk.map(entry => {
+      const loc = `${baseUrl}${entry.url}`.replace(/\/$/, '')
+      let xmlEntry = `  <url>\n    <loc>${escapeXml(loc)}</loc>`
+
+      if (entry.lastmod) {
+        const lastmod = entry.lastmod instanceof Date ? entry.lastmod.toISOString().split('T')[0] : entry.lastmod
+        xmlEntry += `\n    <lastmod>${lastmod}</lastmod>`
+      }
+
+      if (entry.changefreq) {
+        xmlEntry += `\n    <changefreq>${entry.changefreq}</changefreq>`
+      }
+
+      if (entry.priority !== undefined && entry.priority >= 0 && entry.priority <= 1) {
+        xmlEntry += `\n    <priority>${entry.priority.toFixed(1)}</priority>`
+      }
+
+      xmlEntry += '\n  </url>\n'
+      return xmlEntry
+    }).join('')
+
+    writeStream.write(xmlChunk)
+
+    // Allow other operations to proceed
+    if (i % (chunkSize * 10) === 0) {
+      await new Promise(resolve => setImmediate(resolve))
+    }
+  }
+
+  // Write XML footer
+  writeStream.write('</urlset>')
+
+  return new Promise((resolve, reject) => {
+    writeStream.on('finish', () => {
+      if (config.verbose) {
+        console.log(`Sitemap: Generated ${sitemapPath} with ${entries.length} entries (streaming)`)
+      }
+      resolve()
+    })
+    writeStream.on('error', reject)
+    writeStream.end()
+  })
+}
+
+/**
+ * Generate sitemap index XML content
+ */
+function generateSitemapIndexXml(sitemaps: Array<{ url: string; lastmod?: string }>, baseUrl: string): string {
+  const sitemapEntries = sitemaps.map(sitemap => {
+    const loc = `${baseUrl}${sitemap.url}`.replace(/\/$/, '')
+    let xmlEntry = `  <sitemap>\n    <loc>${escapeXml(loc)}</loc>`
+
+    if (sitemap.lastmod) {
+      xmlEntry += `\n    <lastmod>${sitemap.lastmod}</lastmod>`
+    }
+
+    xmlEntry += '\n  </sitemap>'
+    return xmlEntry
+  }).join('\n')
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${sitemapEntries}
+</sitemapindex>`
+}
+
+/**
+ * Generate robots.txt content
+ */
+function generateRobotsTxt(config: RobotsConfig): string {
+  const lines: string[] = []
+
+  // Add user-agent rules
+  if (config.rules && config.rules.length > 0) {
+    for (const rule of config.rules) {
+      lines.push(`User-agent: ${rule.userAgent}`)
+
+      if (rule.allow && rule.allow.length > 0) {
+        for (const allow of rule.allow) {
+          lines.push(`Allow: ${allow}`)
+        }
+      }
+
+      if (rule.disallow && rule.disallow.length > 0) {
+        for (const disallow of rule.disallow) {
+          lines.push(`Disallow: ${disallow}`)
+        }
+      }
+
+      if (rule.crawlDelay !== undefined) {
+        lines.push(`Crawl-delay: ${rule.crawlDelay}`)
+      }
+
+      lines.push('') // Empty line between rules
+    }
+  } else {
+    // Default rule
+    lines.push('User-agent: *')
+    lines.push('Allow: /')
+    lines.push('')
+  }
+
+  // Add sitemap references
+  if (config.sitemaps && config.sitemaps.length > 0) {
+    for (const sitemap of config.sitemaps) {
+      lines.push(`Sitemap: ${sitemap}`)
+    }
+  }
+
+  // Add host directive
+  if (config.host) {
+    lines.push(`Host: ${config.host}`)
+  }
+
+  // Add custom content
+  if (config.customContent) {
+    lines.push('')
+    lines.push(config.customContent)
+  }
+
+  return lines.join('\n')
+}
+
+/**
+ * Escape XML special characters
+ */
+function escapeXml(unsafe: string): string {
+  return unsafe.replace(/[<>&'"]/g, (c) => {
+    switch (c) {
+      case '<': return '&lt;'
+      case '>': return '&gt;'
+      case '&': return '&amp;'
+      case "'": return '&#39;'
+      case '"': return '&quot;'
+      default: return c
+    }
+  })
+}
+
+/**
+ * Create sitemap entries from pages with performance optimizations
+ */
+function createSitemapEntries(
+  pages: Array<{ path: string; frontmatter: any }>,
+  config: SitemapConfig,
+  baseUrl: string
+): SitemapEntry[] {
+  const entries: SitemapEntry[] = []
+  const currentDate = new Date().toISOString().split('T')[0]
+
+  // Pre-compile regex patterns for better performance
+  const excludePatterns = config.exclude?.map(pattern => {
+    try {
+      return new RegExp(pattern)
+    } catch (error) {
+      console.warn(`Invalid exclude pattern: ${pattern}`)
+      return null
+    }
+  }).filter((pattern): pattern is RegExp => pattern !== null) || []
+
+  // Pre-compile priority and changefreq patterns
+  const priorityPatterns = config.priorityMap ? Object.entries(config.priorityMap).map(([pattern, priority]) => {
+    try {
+      return { regex: new RegExp(pattern), priority }
+    } catch (error) {
+      console.warn(`Invalid priority pattern: ${pattern}`)
+      return null
+    }
+  }).filter((pattern): pattern is { regex: RegExp; priority: number } => pattern !== null) : []
+
+  const changefreqPatterns = config.changefreqMap ? Object.entries(config.changefreqMap).map(([pattern, changefreq]) => {
+    try {
+      return { regex: new RegExp(pattern), changefreq }
+    } catch (error) {
+      console.warn(`Invalid changefreq pattern: ${pattern}`)
+      return null
+    }
+  }).filter((pattern): pattern is { regex: RegExp; changefreq: SitemapChangefreq } => pattern !== null) : []
+
+  for (const page of pages) {
+    // Skip pages that should be excluded (optimized with pre-compiled patterns)
+    if (shouldExcludePageOptimized(page.path, excludePatterns)) {
+      continue
+    }
+
+    // Check if page should be excluded from sitemap
+    const sitemapSetting = page.frontmatter.sitemap
+    if (sitemapSetting === false || sitemapSetting === 'exclude') {
+      continue
+    }
+
+    // Convert markdown path to HTML path
+    const htmlPath = page.path.replace(/\.md$/, '.html')
+    const url = htmlPath.startsWith('/') ? htmlPath : `/${htmlPath}`
+
+    // Handle nested sitemap configuration in frontmatter
+    const sitemapConfig = typeof sitemapSetting === 'object' && sitemapSetting !== null ? sitemapSetting : {}
+
+    const entry: SitemapEntry = {
+      url,
+      lastmod: sitemapConfig.lastmod || page.frontmatter.lastmod || currentDate,
+      changefreq: sitemapConfig.changefreq || page.frontmatter.changefreq || getChangefreqFromPathOptimized(url, changefreqPatterns, config),
+      priority: sitemapConfig.priority || page.frontmatter.priority || getPriorityFromPathOptimized(url, priorityPatterns, config)
+    }
+
+    // Apply custom transformation if provided
+    const transformedEntry = config.transform ? config.transform(entry) : entry
+    if (transformedEntry) {
+      entries.push(transformedEntry)
+    }
+  }
+
+  return entries
+}
+
+/**
+ * Optimized version of shouldExcludePage using pre-compiled patterns
+ */
+function shouldExcludePageOptimized(path: string, excludePatterns: RegExp[]): boolean {
+  return excludePatterns.some(pattern => pattern.test(path))
+}
+
+/**
+ * Optimized version of getPriorityFromPath using pre-compiled patterns
+ */
+function getPriorityFromPathOptimized(path: string, priorityPatterns: Array<{ regex: RegExp; priority: number }>, config: SitemapConfig): number {
+  for (const { regex, priority } of priorityPatterns) {
+    if (regex.test(path)) {
+      return priority
+    }
+  }
+
+  // Default priority based on path depth and type (optimized)
+  if (path === '/' || path === '/index.html') {
+    return 1.0
+  } else if (path.includes('/docs/') || path.includes('/guide/')) {
+    return 0.8
+  } else if (path.includes('/blog/') || path.includes('/posts/')) {
+    return 0.7
+  } else if (path.includes('/examples/') || path.includes('/showcase/')) {
+    return 0.6
+  }
+
+  return config.defaultPriority || 0.5
+}
+
+/**
+ * Optimized version of getChangefreqFromPath using pre-compiled patterns
+ */
+function getChangefreqFromPathOptimized(path: string, changefreqPatterns: Array<{ regex: RegExp; changefreq: SitemapChangefreq }>, config: SitemapConfig): SitemapChangefreq {
+  for (const { regex, changefreq } of changefreqPatterns) {
+    if (regex.test(path)) {
+      return changefreq
+    }
+  }
+
+  // Default changefreq based on path type (optimized)
+  if (path.includes('/blog/') || path.includes('/posts/') || path.includes('/news/')) {
+    return 'weekly'
+  } else if (path.includes('/docs/') || path.includes('/guide/')) {
+    return 'monthly'
+  } else if (path === '/' || path === '/index.html') {
+    return 'daily'
+  }
+
+  return config.defaultChangefreq || 'monthly'
+}
+
 
 /**
  * Get sidebar scripts

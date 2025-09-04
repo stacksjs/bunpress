@@ -248,6 +248,22 @@ export const defaultConfig: BunPressConfig = {
   },
 
   verbose: true,
+
+  // Sitemap configuration
+  sitemap: {
+    enabled: true,
+    filename: 'sitemap.xml',
+    defaultPriority: 0.5,
+    defaultChangefreq: 'monthly',
+    maxUrlsPerFile: 50000,
+    useSitemapIndex: false,
+  },
+
+  // Robots.txt configuration
+  robots: {
+    enabled: true,
+    filename: 'robots.txt',
+  },
 }
 
 // Plugin system interfaces

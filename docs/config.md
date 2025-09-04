@@ -208,6 +208,62 @@ By default, BunPress includes the following metadata:
 }
 ```
 
+## Sitemap Configuration
+
+Configure sitemap and SEO optimization:
+
+```typescript
+export default {
+  sitemap: {
+    enabled: true,
+    baseUrl: 'https://example.com',
+    filename: 'sitemap.xml',
+    defaultPriority: 0.5,
+    defaultChangefreq: 'monthly',
+    exclude: ['/private/**', '/admin/**'],
+    priorityMap: {
+      '/': 1.0,
+      '/docs/**': 0.8,
+      '/examples/**': 0.6
+    },
+    changefreqMap: {
+      '/blog/**': 'weekly',
+      '/docs/**': 'monthly'
+    },
+    maxUrlsPerFile: 50000,
+    useSitemapIndex: false
+  }
+}
+```
+
+## Robots.txt Configuration
+
+Configure robots.txt for search engine crawling:
+
+```typescript
+export default {
+  robots: {
+    enabled: true,
+    filename: 'robots.txt',
+    rules: [
+      {
+        userAgent: 'Googlebot',
+        allow: ['/'],
+        disallow: ['/private/', '/admin/']
+      },
+      {
+        userAgent: 'Bingbot',
+        allow: ['/'],
+        disallow: ['/admin/'],
+        crawlDelay: 1
+      }
+    ],
+    sitemaps: ['https://example.com/sitemap.xml'],
+    host: 'example.com'
+  }
+}
+```
+
 ## Default CSS
 
 BunPress includes a default stylesheet that provides a clean, responsive layout for your documentation.
