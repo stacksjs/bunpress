@@ -255,7 +255,104 @@ export default {
 }
 ```
 
-## Custom File Processing
+## Data Loading and Content Management
+
+BunPress provides powerful data loading capabilities for dynamic content generation.
+
+### Frontmatter Configuration
+
+Use frontmatter to configure individual pages:
+
+```yaml
+---
+title: My Page
+description: Page description
+author: Author Name
+date: 2024-01-15
+tags: [tag1, tag2, tag3]
+category: documentation
+layout: doc
+toc: sidebar
+search:
+  enabled: true
+themeConfig:
+  colors:
+    primary: '#3b82f6'
+---
+```
+
+### Programmatic Content Generation
+
+Generate content programmatically using the BunPress API:
+
+```typescript
+import { build } from 'bunpress'
+
+const result = await build({
+  files: [
+    {
+      path: 'index.md',
+      content: `---
+title: Generated Page
+---
+
+# Generated Content
+
+This page was generated programmatically.
+      `
+    }
+  ],
+  config: {
+    markdown: {
+      themeConfig: {
+        colors: {
+          primary: '#10b981'
+        }
+      }
+    }
+  }
+})
+```
+
+### File Organization Patterns
+
+Organize your documentation files for better maintainability:
+
+```
+docs/
+├── index.md              # Homepage
+├── guide/
+│   ├── index.md         # Guide overview
+│   ├── getting-started.md
+│   └── installation.md
+├── api/
+│   ├── index.md         # API overview
+│   └── endpoints.md     # API endpoints
+└── examples/
+    ├── index.md         # Examples overview
+    └── basic-usage.md   # Usage examples
+```
+
+### Dynamic Route Generation
+
+Create dynamic routes based on content:
+
+```typescript
+// For files like posts/[slug].md
+// Generates routes like /posts/my-first-post.html
+```
+
+### Content Processing Pipeline
+
+BunPress processes content through a comprehensive pipeline:
+
+1. **File Discovery**: Finds all markdown files
+2. **Frontmatter Parsing**: Extracts metadata
+3. **Content Transformation**: Applies markdown processing
+4. **Theme Application**: Applies configured themes
+5. **HTML Generation**: Creates final HTML output
+
+### Custom File Processing
 
 Handle custom file types and processing.
 

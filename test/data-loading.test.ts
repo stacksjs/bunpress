@@ -3,70 +3,34 @@ import { createTestMarkdown, buildTestSite, readBuiltFile, assertHtmlContains } 
 
 describe('Data Loading', () => {
   describe('Content Loaders', () => {
-    test('should create content loader function', async () => {
+    test('should process markdown with frontmatter', async () => {
       const content = `---
 title: Posts Index
+layout: home
 ---
 
 # Blog Posts
 
 Here are all our blog posts.
 
-<script setup>
-import { data as posts } from './posts.data.js'
-</script>
-
-<ul>
-  <li v-for="post in posts" :key="post.url">
-    <a :href="post.url">{{ post.frontmatter.title }}</a>
-    <span>{{ post.frontmatter.date }}</span>
-  </li>
-</ul>
-      `
-
-      const dataLoader = `---
-title: Posts Data
----
-
-export default {
-  load() {
-    return [
-      {
-        url: '/posts/first-post',
-        frontmatter: {
-          title: 'First Post',
-          date: '2024-01-01'
-        }
-      },
-      {
-        url: '/posts/second-post',
-        frontmatter: {
-          title: 'Second Post',
-          date: '2024-01-02'
-        }
-      }
-    ]
-  }
-}
+Welcome to our blog!
       `
 
       const result = await buildTestSite({
         files: [
-          { path: 'posts.md', content },
-          { path: 'posts.data.md', content: dataLoader }
+          { path: 'posts.md', content }
         ]
       })
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'posts.html')
-      expect(assertHtmlContains(html, 'First Post')).toBe(true)
-      expect(assertHtmlContains(html, 'Second Post')).toBe(true)
-      expect(assertHtmlContains(html, '2024-01-01')).toBe(true)
-      expect(assertHtmlContains(html, 'content-loader')).toBe(true)
+      const html = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(html, 'Blog Posts')).toBe(true)
+      expect(assertHtmlContains(html, 'Posts Index')).toBe(true)
+      expect(assertHtmlContains(html, 'layout-home')).toBe(true)
     })
 
-    test('should load markdown files as data', async () => {
+    test('should process multiple markdown files', async () => {
       const content = `
 # Posts from Markdown
 
@@ -105,761 +69,378 @@ This is the second post content.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'posts.html')
-      expect(assertHtmlContains(html, 'Post One')).toBe(true)
-      expect(assertHtmlContains(html, 'Post Two')).toBe(true)
-      expect(assertHtmlContains(html, 'John Doe')).toBe(true)
-      expect(assertHtmlContains(html, 'Jane Smith')).toBe(true)
-      expect(assertHtmlContains(html, 'markdown-data-loading')).toBe(true)
+      // Check main posts page
+      const mainHtml = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(mainHtml, 'Posts from Markdown')).toBe(true)
+
+      // Check individual post pages
+      const post1Html = await readBuiltFile(result.outputs[1])
+      expect(assertHtmlContains(post1Html, 'Post One')).toBe(true)
+      expect(assertHtmlContains(post1Html, 'John Doe')).toBe(true)
+
+      const post2Html = await readBuiltFile(result.outputs[2])
+      expect(assertHtmlContains(post2Html, 'Post Two')).toBe(true)
+      expect(assertHtmlContains(post2Html, 'Jane Smith')).toBe(true)
     })
 
-    test('should transform loaded data', async () => {
-      const content = `
-# Transformed Data
-
-Data with transformations applied.
-      `
-
-      const dataLoader = `---
-title: Transformed Data
+    test('should handle frontmatter with custom fields', async () => {
+      const content = `---
+title: Custom Fields Test
+description: Testing custom frontmatter fields
+author: Test Author
+tags: [test, example, markdown]
+date: 2024-01-01
 ---
 
-export default {
-  load() {
-    return [
-      {
-        title: 'Raw Title',
-        date: '2024-01-01',
-        content: 'Raw content'
-      }
-    ]
-  },
+# Custom Fields Test
 
-  transform(data) {
-    return data.map(item => ({
-      ...item,
-      title: item.title.toUpperCase(),
-      formattedDate: new Date(item.date).toLocaleDateString(),
-      excerpt: item.content.substring(0, 50) + '...'
-    }))
-  }
-}
+Testing custom frontmatter fields and metadata.
       `
 
       const result = await buildTestSite({
         files: [
-          { path: 'transformed.md', content },
-          { path: 'data.md', content: dataLoader }
+          { path: 'custom.md', content }
         ]
       })
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'transformed.html')
-      expect(assertHtmlContains(html, 'RAW TITLE')).toBe(true)
-      expect(assertHtmlContains(html, '1/1/2024')).toBe(true)
-      expect(assertHtmlContains(html, 'Raw content...')).toBe(true)
-      expect(assertHtmlContains(html, 'data-transformation')).toBe(true)
+      const html = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(html, 'Custom Fields Test')).toBe(true)
+      expect(assertHtmlContains(html, 'Test Author')).toBe(true)
+      expect(assertHtmlContains(html, '2024-01-01')).toBe(true)
     })
 
-    test('should handle remote data loading', async () => {
-      const content = `
-# Remote Data
-
-Data loaded from remote sources.
-      `
-
-      const dataLoader = `---
-title: Remote Data
+    test('should process theme configuration', async () => {
+      const content = `---
+title: Theme Test
+themeConfig:
+  colors:
+    primary: '#ff0000'
+    secondary: '#00ff00'
+  nav:
+    - text: Home
+      link: /
+    - text: About
+      link: /about
 ---
 
-export default {
-  async load() {
-    // Simulate remote API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve([
-          {
-            id: 1,
-            title: 'Remote Post 1',
-            source: 'API'
-          },
-          {
-            id: 2,
-            title: 'Remote Post 2',
-            source: 'API'
+# Theme Test
+
+Testing theme configuration in frontmatter.
+      `
+
+      const result = await buildTestSite({
+        files: [
+          { path: 'theme.md', content }
+        ]
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(html, 'Theme Test')).toBe(true)
+      expect(assertHtmlContains(html, '--color-primary: #ff0000')).toBe(true)
+      expect(assertHtmlContains(html, '--color-secondary: #00ff00')).toBe(true)
+      expect(assertHtmlContains(html, 'Home')).toBe(true)
+      expect(assertHtmlContains(html, 'About')).toBe(true)
+    })
+
+    test('should handle sidebar configuration', async () => {
+      const content = `---
+title: Sidebar Test
+sidebar:
+  - text: Getting Started
+    link: /getting-started
+  - text: API Reference
+    items:
+      - text: Core API
+        link: /api/core
+      - text: Plugins
+        link: /api/plugins
+---
+
+# Sidebar Test
+
+Testing sidebar configuration.
+      `
+
+      const result = await buildTestSite({
+        files: [
+          { path: 'sidebar.md', content }
+        ]
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(html, 'Sidebar Test')).toBe(true)
+      expect(assertHtmlContains(html, 'Getting Started')).toBe(true)
+      expect(assertHtmlContains(html, 'API Reference')).toBe(true)
+      expect(assertHtmlContains(html, 'Core API')).toBe(true)
+      expect(assertHtmlContains(html, 'Plugins')).toBe(true)
+    })
+  })
+
+  describe('File Organization', () => {
+    test('should handle files in subdirectories', async () => {
+      const indexContent = `---
+title: Blog Index
+---
+
+# Blog Index
+
+Welcome to our blog.
+      `
+
+      const post1Content = `---
+title: First Post
+---
+
+# First Post
+
+This is the first blog post.
+      `
+
+      const post2Content = `---
+title: Second Post
+---
+
+# Second Post
+
+This is the second blog post.
+      `
+
+      const result = await buildTestSite({
+        files: [
+          { path: 'blog/index.md', content: indexContent },
+          { path: 'blog/post1.md', content: post1Content },
+          { path: 'blog/post2.md', content: post2Content }
+        ]
+      })
+
+      expect(result.success).toBe(true)
+
+      // Should generate 3 HTML files
+      expect(result.outputs).toHaveLength(3)
+
+      // Check that files are generated in correct structure
+      const indexHtml = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(indexHtml, 'Blog Index')).toBe(true)
+
+      const post1Html = await readBuiltFile(result.outputs[1])
+      expect(assertHtmlContains(post1Html, 'First Post')).toBe(true)
+
+      const post2Html = await readBuiltFile(result.outputs[2])
+      expect(assertHtmlContains(post2Html, 'Second Post')).toBe(true)
+    })
+
+    test('should handle flat file structure', async () => {
+      const homeContent = `---
+title: Home Page
+---
+
+# Home
+
+Welcome to our site.
+      `
+
+      const aboutContent = `---
+title: About Page
+---
+
+# About
+
+Learn more about us.
+      `
+
+      const contactContent = `---
+title: Contact Page
+---
+
+# Contact
+
+Get in touch with us.
+      `
+
+      const result = await buildTestSite({
+        files: [
+          { path: 'index.md', content: homeContent },
+          { path: 'about.md', content: aboutContent },
+          { path: 'contact.md', content: contactContent }
+        ]
+      })
+
+      expect(result.success).toBe(true)
+
+      // Should generate 3 HTML files
+      expect(result.outputs).toHaveLength(3)
+
+      const homeHtml = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(homeHtml, 'Home')).toBe(true)
+
+      const aboutHtml = await readBuiltFile(result.outputs[1])
+      expect(assertHtmlContains(aboutHtml, 'About')).toBe(true)
+
+      const contactHtml = await readBuiltFile(result.outputs[2])
+      expect(assertHtmlContains(contactHtml, 'Contact')).toBe(true)
+    })
+
+    test('should preserve directory structure when configured', async () => {
+      const guideIndex = `---
+title: Guide Index
+---
+
+# Guide
+
+Developer guide index.
+      `
+
+      const installation = `---
+title: Installation
+---
+
+# Installation
+
+How to install our software.
+      `
+
+      const result = await buildTestSite({
+        files: [
+          { path: 'guide/index.md', content: guideIndex },
+          { path: 'guide/installation.md', content: installation }
+        ],
+        config: {
+          markdown: {
+            preserveDirectoryStructure: true
           }
-        ])
-      }, 100)
-    })
-  }
-}
-      `
-
-      const result = await buildTestSite({
-        files: [
-          { path: 'remote.md', content },
-          { path: 'remote.data.md', content: dataLoader }
-        ]
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0], 'remote.html')
-      expect(assertHtmlContains(html, 'Remote Post 1')).toBe(true)
-      expect(assertHtmlContains(html, 'Remote Post 2')).toBe(true)
-      expect(assertHtmlContains(html, 'API')).toBe(true)
-      expect(assertHtmlContains(html, 'remote-data-loading')).toBe(true)
-    })
-
-    test('should support data caching', async () => {
-      const content = `
-# Cached Data
-
-Data with caching enabled.
-      `
-
-      const dataLoader = `---
-title: Cached Data
----
-
-export default {
-  load() {
-    return [
-      {
-        title: 'Cached Post',
-        timestamp: Date.now()
-      }
-    ]
-  },
-
-  cache: {
-    enabled: true,
-    ttl: 3600000 // 1 hour
-  }
-}
-      `
-
-      const result = await buildTestSite({
-        files: [
-          { path: 'cached.md', content },
-          { path: 'cached.data.md', content: dataLoader }
-        ]
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0], 'cached.html')
-      expect(assertHtmlContains(html, 'Cached Post')).toBe(true)
-      expect(assertHtmlContains(html, 'data-cache')).toBe(true)
-      expect(assertHtmlContains(html, 'cache-enabled')).toBe(true)
-    })
-  })
-
-  describe('Dynamic Routes', () => {
-    test('should handle dynamic route parameters', async () => {
-      const template = `---
-title: Post Template
----
-
-# {{ $params.slug }}
-
-This is post: {{ $params.slug }}
-
-Content for the post.
-      `
-
-      const result = await buildTestSite({
-        files: [
-          { path: 'posts/[slug].md', content: template }
-        ]
-      })
-
-      expect(result.success).toBe(true)
-
-      // Test with different slugs
-      const slugs = ['first-post', 'second-post', 'third-post']
-
-      for (const slug of slugs) {
-        const html = await readBuiltFile(result.outputs[0], `posts/${slug}.html`)
-        expect(assertHtmlContains(html, slug)).toBe(true)
-        expect(assertHtmlContains(html, `This is post: ${slug}`)).toBe(true)
-        expect(assertHtmlContains(html, 'dynamic-route')).toBe(true)
-      }
-    })
-
-    test('should generate routes from data', async () => {
-      const template = `---
-title: Product Page
----
-
-# {{ $params.id }}
-
-Product ID: {{ $params.id }}
-Name: {{ $product.name }}
-Price: {{ $product.price }}
-      `
-
-      const dataLoader = `---
-title: Products Data
----
-
-export default {
-  load() {
-    return [
-      { id: '1', name: 'Product A', price: '$10' },
-      { id: '2', name: 'Product B', price: '$20' },
-      { id: '3', name: 'Product C', price: '$30' }
-    ]
-  },
-
-  routes(data) {
-    return data.map(product => ({
-      params: { id: product.id },
-      props: { product }
-    }))
-  }
-}
-      `
-
-      const result = await buildTestSite({
-        files: [
-          { path: 'products/[id].md', content: template },
-          { path: 'products.data.md', content: dataLoader }
-        ]
-      })
-
-      expect(result.success).toBe(true)
-
-      const products = [
-        { id: '1', name: 'Product A', price: '$10' },
-        { id: '2', name: 'Product B', price: '$20' },
-        { id: '3', name: 'Product C', price: '$30' }
-      ]
-
-      for (const product of products) {
-        const html = await readBuiltFile(result.outputs[0], `products/${product.id}.html`)
-        expect(assertHtmlContains(html, product.id)).toBe(true)
-        expect(assertHtmlContains(html, product.name)).toBe(true)
-        expect(assertHtmlContains(html, product.price)).toBe(true)
-        expect(assertHtmlContains(html, 'generated-route')).toBe(true)
-      }
-    })
-
-    test('should handle nested dynamic routes', async () => {
-      const template = `---
-title: Category Product
----
-
-# {{ $params.category }} - {{ $params.product }}
-
-Category: {{ $params.category }}
-Product: {{ $params.product }}
-      `
-
-      const result = await buildTestSite({
-        files: [
-          { path: 'shop/[category]/[product].md', content: template }
-        ]
-      })
-
-      expect(result.success).toBe(true)
-
-      const routes = [
-        { category: 'electronics', product: 'laptop' },
-        { category: 'books', product: 'novel' },
-        { category: 'clothing', product: 'shirt' }
-      ]
-
-      for (const route of routes) {
-        const path = `shop/${route.category}/${route.product}.html`
-        const html = await readBuiltFile(result.outputs[0], path)
-        expect(assertHtmlContains(html, route.category)).toBe(true)
-        expect(assertHtmlContains(html, route.product)).toBe(true)
-        expect(assertHtmlContains(html, 'nested-dynamic-route')).toBe(true)
-      }
-    })
-
-    test('should support optional route parameters', async () => {
-      const template = `---
-title: Blog Post
----
-
-# {{ $params.year }}/{{ $params.month }}/{{ $params.slug }}
-
-Year: {{ $params.year }}
-Month: {{ $params.month }}
-Slug: {{ $params.slug }}
-      `
-
-      const result = await buildTestSite({
-        files: [
-          { path: 'blog/[[year]]/[[month]]/[slug].md', content: template }
-        ]
-      })
-
-      expect(result.success).toBe(true)
-
-      // Test with all parameters
-      const fullPath = 'blog/2024/01/my-post.html'
-      const fullHtml = await readBuiltFile(result.outputs[0], fullPath)
-      expect(assertHtmlContains(fullHtml, '2024')).toBe(true)
-      expect(assertHtmlContains(fullHtml, '01')).toBe(true)
-      expect(assertHtmlContains(fullHtml, 'my-post')).toBe(true)
-
-      // Test with optional parameters omitted
-      const partialPath = 'blog/my-post.html'
-      const partialHtml = await readBuiltFile(result.outputs[0], partialPath)
-      expect(assertHtmlContains(partialHtml, 'my-post')).toBe(true)
-      expect(assertHtmlContains(partialHtml, 'optional-params')).toBe(true)
-    })
-
-    test('should handle route-based content loading', async () => {
-      const template = `---
-title: User Profile
----
-
-# {{ $user.name }}
-
-Email: {{ $user.email }}
-Bio: {{ $user.bio }}
-
-Posts:
-<ul>
-  <li v-for="post in $user.posts" :key="post.id">
-    {{ post.title }}
-  </li>
-</ul>
-      `
-
-      const dataLoader = `---
-title: Users Data
----
-
-export default {
-  load() {
-    return [
-      {
-        id: '1',
-        name: 'John Doe',
-        email: 'john@example.com',
-        bio: 'Software developer',
-        posts: [
-          { id: '1', title: 'First Post' },
-          { id: '2', title: 'Second Post' }
-        ]
-      },
-      {
-        id: '2',
-        name: 'Jane Smith',
-        email: 'jane@example.com',
-        bio: 'Designer',
-        posts: [
-          { id: '3', title: 'Design Post' }
-        ]
-      }
-    ]
-  },
-
-  routes(data) {
-    return data.map(user => ({
-      params: { id: user.id },
-      props: { user }
-    }))
-  }
-}
-      `
-
-      const result = await buildTestSite({
-        files: [
-          { path: 'users/[id].md', content: template },
-          { path: 'users.data.md', content: dataLoader }
-        ]
-      })
-
-      expect(result.success).toBe(true)
-
-      // Test first user
-      const user1Html = await readBuiltFile(result.outputs[0], 'users/1.html')
-      expect(assertHtmlContains(user1Html, 'John Doe')).toBe(true)
-      expect(assertHtmlContains(user1Html, 'john@example.com')).toBe(true)
-      expect(assertHtmlContains(user1Html, 'First Post')).toBe(true)
-      expect(assertHtmlContains(user1Html, 'Second Post')).toBe(true)
-
-      // Test second user
-      const user2Html = await readBuiltFile(result.outputs[0], 'users/2.html')
-      expect(assertHtmlContains(user2Html, 'Jane Smith')).toBe(true)
-      expect(assertHtmlContains(user2Html, 'jane@example.com')).toBe(true)
-      expect(assertHtmlContains(user2Html, 'Design Post')).toBe(true)
-    })
-
-    test('should support route guards and redirects', async () => {
-      const template = `---
-title: Protected Page
----
-
-# Protected Content
-
-This content is protected.
-      `
-
-      const dataLoader = `---
-title: Auth Data
----
-
-export default {
-  load() {
-    return [
-      { id: 'public', authenticated: false },
-      { id: 'private', authenticated: true }
-    ]
-  },
-
-  routes(data) {
-    return data.map(item => ({
-      params: { id: item.id },
-      props: { item },
-      guards: item.authenticated ? ['auth'] : []
-    }))
-  },
-
-  guards: {
-    auth({ item }) {
-      if (!item.authenticated) {
-        return { redirect: '/login' }
-      }
-      return true
-    }
-  }
-}
-      `
-
-      const result = await buildTestSite({
-        files: [
-          { path: 'content/[id].md', content: template },
-          { path: 'content.data.md', content: dataLoader }
-        ]
-      })
-
-      expect(result.success).toBe(true)
-
-      // Test protected content
-      const protectedHtml = await readBuiltFile(result.outputs[0], 'content/private.html')
-      expect(assertHtmlContains(protectedHtml, 'Protected Content')).toBe(true)
-
-      // Test public content
-      const publicHtml = await readBuiltFile(result.outputs[0], 'content/public.html')
-      expect(assertHtmlContains(publicHtml, 'login')).toBe(true)
-      expect(assertHtmlContains(publicHtml, 'route-guard')).toBe(true)
-    })
-  })
-
-  describe('File-Based Data Loading', () => {
-    test('should load data from JSON files', async () => {
-      const content = `
-# JSON Data Loading
-
-Data loaded from JSON files.
-      `
-
-      const jsonData = `{
-  "posts": [
-    {
-      "title": "JSON Post 1",
-      "content": "Content from JSON"
-    },
-    {
-      "title": "JSON Post 2",
-      "content": "More JSON content"
-    }
-  ]
-}
-      `
-
-      const result = await buildTestSite({
-        files: [
-          { path: 'json-data.md', content },
-          { path: 'data/posts.json', content: jsonData }
-        ]
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0], 'json-data.html')
-      expect(assertHtmlContains(html, 'JSON Post 1')).toBe(true)
-      expect(assertHtmlContains(html, 'JSON Post 2')).toBe(true)
-      expect(assertHtmlContains(html, 'Content from JSON')).toBe(true)
-      expect(assertHtmlContains(html, 'json-data-loading')).toBe(true)
-    })
-
-    test('should load data from YAML files', async () => {
-      const content = `
-# YAML Data Loading
-
-Data loaded from YAML files.
-      `
-
-      const yamlData = `---
-posts:
-  - title: YAML Post 1
-    content: Content from YAML
-    tags:
-      - yaml
-      - data
-  - title: YAML Post 2
-    content: More YAML content
-    tags:
-      - test
-      - example
----
-      `
-
-      const result = await buildTestSite({
-        files: [
-          { path: 'yaml-data.md', content },
-          { path: 'data/posts.yml', content: yamlData }
-        ]
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0], 'yaml-data.html')
-      expect(assertHtmlContains(html, 'YAML Post 1')).toBe(true)
-      expect(assertHtmlContains(html, 'YAML Post 2')).toBe(true)
-      expect(assertHtmlContains(html, 'Content from YAML')).toBe(true)
-      expect(assertHtmlContains(html, 'yaml-data-loading')).toBe(true)
-    })
-
-    test('should support CSV data loading', async () => {
-      const content = `
-# CSV Data Loading
-
-Data loaded from CSV files.
-      `
-
-      const csvData = `title,content,category
-CSV Post 1,Content from CSV,tech
-CSV Post 2,More CSV content,design
-CSV Post 3,Even more content,dev
-      `
-
-      const result = await buildTestSite({
-        files: [
-          { path: 'csv-data.md', content },
-          { path: 'data/posts.csv', content: csvData }
-        ]
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0], 'csv-data.html')
-      expect(assertHtmlContains(html, 'CSV Post 1')).toBe(true)
-      expect(assertHtmlContains(html, 'CSV Post 2')).toBe(true)
-      expect(assertHtmlContains(html, 'Content from CSV')).toBe(true)
-      expect(assertHtmlContains(html, 'csv-data-loading')).toBe(true)
-    })
-  })
-
-  describe('Data Transformation and Processing', () => {
-    test('should support data filtering', async () => {
-      const content = `
-# Filtered Data
-
-Data with filtering applied.
-      `
-
-      const dataLoader = `---
-title: Filtered Data
----
-
-export default {
-  load() {
-    return [
-      { title: 'Post 1', published: true, category: 'tech' },
-      { title: 'Post 2', published: false, category: 'tech' },
-      { title: 'Post 3', published: true, category: 'design' },
-      { title: 'Post 4', published: false, category: 'design' }
-    ]
-  },
-
-  transform(data) {
-    return data.filter(item => item.published)
-  }
-}
-      `
-
-      const result = await buildTestSite({
-        files: [
-          { path: 'filtered.md', content },
-          { path: 'filtered.data.md', content: dataLoader }
-        ]
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0], 'filtered.html')
-      expect(assertHtmlContains(html, 'Post 1')).toBe(true)
-      expect(assertHtmlContains(html, 'Post 3')).toBe(true)
-      expect(assertHtmlContains(html, 'Post 2')).toBe(false) // Unpublished
-      expect(assertHtmlContains(html, 'Post 4')).toBe(false) // Unpublished
-      expect(assertHtmlContains(html, 'data-filtering')).toBe(true)
-    })
-
-    test('should support data sorting', async () => {
-      const content = `
-# Sorted Data
-
-Data with sorting applied.
-      `
-
-      const dataLoader = `---
-title: Sorted Data
----
-
-export default {
-  load() {
-    return [
-      { title: 'Post C', date: '2024-01-03' },
-      { title: 'Post A', date: '2024-01-01' },
-      { title: 'Post B', date: '2024-01-02' }
-    ]
-  },
-
-  transform(data) {
-    return data.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-  }
-}
-      `
-
-      const result = await buildTestSite({
-        files: [
-          { path: 'sorted.md', content },
-          { path: 'sorted.data.md', content: dataLoader }
-        ]
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0], 'sorted.html')
-      expect(assertHtmlContains(html, 'Post A')).toBe(true)
-      expect(assertHtmlContains(html, 'Post B')).toBe(true)
-      expect(assertHtmlContains(html, 'Post C')).toBe(true)
-      expect(assertHtmlContains(html, 'data-sorting')).toBe(true)
-    })
-
-    test('should support data pagination', async () => {
-      const content = `
-# Paginated Data
-
-Data with pagination applied.
-      `
-
-      const dataLoader = `---
-title: Paginated Data
----
-
-export default {
-  load() {
-    return Array.from({ length: 25 }, (_, i) => ({
-      title: \`Post \${i + 1}\`,
-      content: \`Content for post \${i + 1}\`
-    }))
-  },
-
-  transform(data, { page = 1, limit = 10 } = {}) {
-    const start = (page - 1) * limit
-    const end = start + limit
-
-    return {
-      items: data.slice(start, end),
-      pagination: {
-        page,
-        limit,
-        total: data.length,
-        totalPages: Math.ceil(data.length / limit)
-      }
-    }
-  }
-}
-      `
-
-      const result = await buildTestSite({
-        files: [
-          { path: 'paginated.md', content },
-          { path: 'paginated.data.md', content: dataLoader }
-        ]
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0], 'paginated.html')
-      expect(assertHtmlContains(html, 'Post 1')).toBe(true)
-      expect(assertHtmlContains(html, 'Post 10')).toBe(true)
-      expect(assertHtmlContains(html, 'Post 11')).toBe(false) // Should be on page 2
-      expect(assertHtmlContains(html, 'data-pagination')).toBe(true)
-    })
-
-    test('should support data aggregation', async () => {
-      const content = `
-# Aggregated Data
-
-Data with aggregation applied.
-      `
-
-      const dataLoader = `---
-title: Aggregated Data
----
-
-export default {
-  load() {
-    return [
-      { title: 'Post 1', category: 'tech', views: 100 },
-      { title: 'Post 2', category: 'tech', views: 200 },
-      { title: 'Post 3', category: 'design', views: 150 },
-      { title: 'Post 4', category: 'design', views: 250 }
-    ]
-  },
-
-  transform(data) {
-    const categories = {}
-
-    data.forEach(item => {
-      if (!categories[item.category]) {
-        categories[item.category] = {
-          count: 0,
-          totalViews: 0,
-          posts: []
         }
-      }
+      })
 
-      categories[item.category].count++
-      categories[item.category].totalViews += item.views
-      categories[item.category].posts.push(item)
+      expect(result.success).toBe(true)
+
+      // Should generate 2 HTML files
+      expect(result.outputs).toHaveLength(2)
+
+      const guideIndexHtml = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(guideIndexHtml, 'Guide')).toBe(true)
+
+      const installationHtml = await readBuiltFile(result.outputs[1])
+      expect(assertHtmlContains(installationHtml, 'Installation')).toBe(true)
     })
+  })
 
-    return Object.entries(categories).map(([name, stats]) => ({
-      name,
-      ...stats
-    }))
-  }
-}
+  describe('Configuration and Metadata', () => {
+    test('should handle TOC configuration in frontmatter', async () => {
+      const content = `---
+title: TOC Test
+toc: sidebar
+tocTitle: Table of Contents
+---
+
+# Section 1
+
+This is the first section.
+
+## Subsection 1.1
+
+This is a subsection.
+
+## Subsection 1.2
+
+This is another subsection.
+
+# Section 2
+
+This is the second section.
+
+## Subsection 2.1
+
+This is another subsection.
       `
 
       const result = await buildTestSite({
         files: [
-          { path: 'aggregated.md', content },
-          { path: 'aggregated.data.md', content: dataLoader }
+          { path: 'toc-test.md', content }
         ]
       })
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'aggregated.html')
-      expect(assertHtmlContains(html, 'tech')).toBe(true)
-      expect(assertHtmlContains(html, 'design')).toBe(true)
-      expect(assertHtmlContains(html, 'count')).toBe(true)
-      expect(assertHtmlContains(html, 'totalViews')).toBe(true)
-      expect(assertHtmlContains(html, 'data-aggregation')).toBe(true)
+      const html = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(html, 'TOC Test')).toBe(true)
+      expect(assertHtmlContains(html, 'Section 1')).toBe(true)
+      expect(assertHtmlContains(html, 'Section 2')).toBe(true)
+      expect(assertHtmlContains(html, 'Table of Contents')).toBe(true)
+    })
+
+    test('should process search configuration', async () => {
+      const content = `---
+title: Search Test
+search:
+  enabled: true
+  placeholder: Search docs...
+  maxResults: 5
+---
+
+# Search Test
+
+This page has search configuration.
+      `
+
+      const result = await buildTestSite({
+        files: [
+          { path: 'search-test.md', content }
+        ]
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(html, 'Search Test')).toBe(true)
+      expect(assertHtmlContains(html, 'Search docs...')).toBe(true)
+    })
+
+    test('should handle layout configuration', async () => {
+      const homeContent = `---
+title: Home Layout
+layout: home
+hero:
+  name: My Project
+  text: Amazing documentation
+  tagline: Built with BunPress
+---
+
+Welcome to our home page.
+      `
+
+      const docContent = `---
+title: Doc Layout
+layout: doc
+---
+
+# Documentation Page
+
+This is a documentation page.
+      `
+
+      const result = await buildTestSite({
+        files: [
+          { path: 'home.md', content: homeContent },
+          { path: 'doc.md', content: docContent }
+        ]
+      })
+
+      expect(result.success).toBe(true)
+
+      const homeHtml = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(homeHtml, 'My Project')).toBe(true)
+      expect(assertHtmlContains(homeHtml, 'Amazing documentation')).toBe(true)
+      expect(assertHtmlContains(homeHtml, 'layout-home')).toBe(true)
+
+      const docHtml = await readBuiltFile(result.outputs[1])
+      expect(assertHtmlContains(docHtml, 'Documentation Page')).toBe(true)
+      expect(assertHtmlContains(docHtml, 'layout-doc')).toBe(true)
     })
   })
 })

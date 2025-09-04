@@ -9,23 +9,71 @@ This section provides practical examples and best practices for creating excelle
 ```
 my-docs/
 ├── docs/
-│   ├── index.md          # Homepage
+│   ├── index.md                 # Homepage with frontmatter
 │   ├── guide/
-│   │   ├── getting-started.md
-│   │   ├── installation.md
-│   │   └── configuration.md
+│   │   ├── index.md            # Guide overview
+│   │   ├── getting-started.md  # Getting started guide
+│   │   ├── installation.md     # Installation instructions
+│   │   └── configuration.md    # Configuration guide
 │   ├── api/
-│   │   ├── core.md
-│   │   ├── plugins.md
-│   │   └── extensions.md
+│   │   ├── index.md           # API overview
+│   │   ├── core.md            # Core API reference
+│   │   ├── plugins.md         # Plugin API
+│   │   └── extensions.md      # API extensions
 │   ├── examples/
-│   │   ├── basic-usage.md
-│   │   └── advanced-examples.md
+│   │   ├── index.md           # Examples overview
+│   │   ├── basic-usage.md     # Basic usage examples
+│   │   └── advanced-examples.md # Advanced examples
 │   └── _assets/
-│       ├── images/
-│       └── styles/
-├── bunpress.config.ts
-└── package.json
+│       ├── images/            # Images and diagrams
+│       └── styles/            # Custom CSS files
+├── bunpress.config.ts          # Main configuration
+├── package.json
+└── README.md
+```
+
+### Alternative Organization Patterns
+
+#### Feature-Based Structure
+
+```
+docs/
+├── authentication/
+│   ├── index.md
+│   ├── login.md
+│   ├── signup.md
+│   └── permissions.md
+├── database/
+│   ├── index.md
+│   ├── queries.md
+│   ├── migrations.md
+│   └── optimization.md
+└── deployment/
+    ├── index.md
+    ├── docker.md
+    ├── kubernetes.md
+    └── cloud.md
+```
+
+#### Audience-Based Structure
+
+```
+docs/
+├── users/
+│   ├── index.md         # User guide overview
+│   ├── dashboard.md     # Dashboard usage
+│   ├── settings.md      # User settings
+│   └── troubleshooting.md # Common issues
+├── developers/
+│   ├── index.md         # Developer guide
+│   ├── api.md          # API reference
+│   ├── sdk.md          # SDK documentation
+│   └── contributing.md  # Contribution guidelines
+└── administrators/
+    ├── index.md         # Admin guide
+    ├── setup.md        # System setup
+    ├── maintenance.md  # Maintenance tasks
+    └── monitoring.md   # System monitoring
 ```
 
 ### File Naming Convention
@@ -162,6 +210,97 @@ export default {
     }
   }
 }
+```
+
+## Data Loading Best Practices
+
+### Frontmatter Organization
+
+Use consistent frontmatter patterns across your documentation:
+
+```yaml
+---
+title: Page Title
+description: Brief description for SEO
+author: Content Author
+date: 2024-01-15
+tags: [tag1, tag2, tag3]
+category: documentation
+order: 1
+layout: doc
+toc: sidebar
+search:
+  enabled: true
+---
+```
+
+### Programmatic Content Generation
+
+Leverage BunPress's programmatic API for dynamic content:
+
+```typescript
+import { build } from 'bunpress'
+
+// Generate content programmatically
+const result = await build({
+  files: [
+    {
+      path: 'api/index.md',
+      content: generateApiDocs(apiSpec)
+    },
+    {
+      path: 'changelog.md',
+      content: generateChangelog(commits)
+    }
+  ],
+  config: {
+    markdown: {
+      themeConfig: {
+        colors: { primary: '#3b82f6' }
+      }
+    }
+  }
+})
+```
+
+### Configuration Management
+
+#### Global Configuration
+
+```typescript
+// bunpress.config.ts
+export default {
+  verbose: true,
+  markdown: {
+    title: 'My Documentation',
+    meta: {
+      description: 'Project documentation',
+      author: 'Your Name',
+      generator: 'BunPress'
+    },
+    themeConfig: {
+      colors: {
+        primary: '#3b82f6',
+        secondary: '#64748b'
+      },
+      fonts: {
+        heading: 'Inter, sans-serif',
+        body: 'Inter, sans-serif'
+      }
+    }
+  }
+}
+```
+
+#### Page-Specific Overrides
+
+```yaml
+---
+title: Custom Page
+themeConfig:
+  colors:
+    primary: '#10b981'  # Override global primary color
+---
 ```
 
 ## Advanced Examples

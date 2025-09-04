@@ -198,8 +198,13 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
       // Create path for the HTML file
       let htmlFilePath = join(outDir, `${baseName}.html`)
 
+      // Handle dynamic routes (files with brackets)
+      if (baseName.includes('[') && baseName.includes(']')) {
+        // For dynamic routes, don't create subdirectories
+        htmlFilePath = join(outDir, `${baseName}.html`)
+      }
       // If the markdown file is in a subdirectory and preserveDirectoryStructure is true
-      if (options.config?.markdown?.preserveDirectoryStructure !== false && dirPath !== '.') {
+      else if (options.config?.markdown?.preserveDirectoryStructure !== false && dirPath !== '.') {
         // Only use directory path if it's actually a directory, not a file
         const targetDir = join(outDir, dirPath)
         // Ensure the target directory exists
