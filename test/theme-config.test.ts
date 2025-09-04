@@ -30,7 +30,7 @@ Content with merged configuration.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'Test Site')).toBe(true)
       expect(assertHtmlContains(html, 'Home')).toBe(true)
       expect(assertHtmlContains(html, 'Guide')).toBe(true)
@@ -53,7 +53,7 @@ Content with invalid configuration.
       })
 
       expect(result.success).toBe(false)
-      expect(result.logs.some(log => log.includes('validation'))).toBe(true)
+      expect(result.logs.some(log => log.toLowerCase().includes('validation'))).toBe(true)
     })
 
     test('should support custom theme extensions', async () => {
@@ -74,7 +74,7 @@ Content with extended theme.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'theme-extended')).toBe(true)
       expect(assertHtmlContains(html, 'custom-theme')).toBe(true)
       expect(assertHtmlContains(html, 'customOption')).toBe(true)
@@ -106,7 +106,7 @@ Content with nested configuration.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, '#007acc')).toBe(true)
       expect(assertHtmlContains(html, '#ff4081')).toBe(true)
       expect(assertHtmlContains(html, 'Inter')).toBe(true)
@@ -135,7 +135,7 @@ Content with environment-specific configuration.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'environment-config')).toBe(true)
       expect(assertHtmlContains(html, 'debug')).toBe(true)
     })
@@ -174,7 +174,7 @@ Parent configuration.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'child.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'Child Page')).toBe(true)
       expect(assertHtmlContains(html, 'Home')).toBe(true)
       expect(assertHtmlContains(html, 'inherited-config')).toBe(true)
@@ -215,7 +215,7 @@ Parent configuration.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'child.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'Custom Nav')).toBe(true)
       expect(assertHtmlContains(html, 'Parent Nav')).toBe(false)
       expect(assertHtmlContains(html, 'override-config')).toBe(true)
@@ -256,7 +256,7 @@ Parent configuration.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'child.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'Parent Nav')).toBe(true)
       expect(assertHtmlContains(html, 'Child Nav')).toBe(true)
       expect(assertHtmlContains(html, 'merged-arrays')).toBe(true)
@@ -287,7 +287,7 @@ export default {
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'From Config File')).toBe(true)
       expect(assertHtmlContains(html, 'Config Nav')).toBe(true)
     })
@@ -318,7 +318,7 @@ export default {
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'VitePress Style')).toBe(true)
       expect(assertHtmlContains(html, 'VP Nav')).toBe(true)
     })
@@ -344,7 +344,7 @@ module.exports = {
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'JS Config')).toBe(true)
       expect(assertHtmlContains(html, 'JS Nav')).toBe(true)
     })
@@ -392,7 +392,7 @@ Content with runtime configuration.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'runtime-config')).toBe(true)
       expect(assertHtmlContains(html, 'dynamic-update')).toBe(true)
       expect(assertHtmlContains(html, 'Dynamic Nav')).toBe(true)
@@ -419,7 +419,7 @@ export default {
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'hot-reload')).toBe(true)
       expect(assertHtmlContains(html, 'config-watch')).toBe(true)
       expect(assertHtmlContains(html, 'Hot Reload Test')).toBe(true)
@@ -477,7 +477,7 @@ export default {
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'Plugin Modified Title')).toBe(true)
       expect(assertHtmlContains(html, 'Plugin Nav')).toBe(true)
       expect(assertHtmlContains(html, 'config-plugin')).toBe(true)
@@ -519,7 +519,7 @@ export default {
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'Base First Second')).toBe(true)
       expect(assertHtmlContains(html, 'plugin-order')).toBe(true)
     })
@@ -582,7 +582,7 @@ export default config
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'TypeScript Config')).toBe(true)
       expect(assertHtmlContains(html, 'TS Nav')).toBe(true)
     })
@@ -615,7 +615,7 @@ Content with JSON configuration.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'JSON Config')).toBe(true)
       expect(assertHtmlContains(html, 'JSON Nav')).toBe(true)
     })
@@ -642,7 +642,7 @@ themeConfig:
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(html, 'YAML Config')).toBe(true)
       expect(assertHtmlContains(html, 'YAML Nav')).toBe(true)
     })

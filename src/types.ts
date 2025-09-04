@@ -7,6 +7,16 @@ export interface BunPressConfig {
    * Configuration for the markdown-to-html plugin
    */
   markdown: MarkdownPluginConfig
+
+  /**
+   * Navigation configuration
+   */
+  nav?: NavItem[]
+
+  /**
+   * Plugin configuration
+   */
+  plugins?: ConfigPlugin[]
 }
 
 export type BunPressOptions = Partial<BunPressConfig>
@@ -63,6 +73,21 @@ export interface MarkdownPluginConfig {
    * Sidebar navigation configuration
    */
   sidebar?: Record<string, SidebarItem[]>
+
+  /**
+   * Navigation bar configuration
+   */
+  nav?: NavItem[]
+
+  /**
+   * Search configuration
+   */
+  search?: SearchConfig
+
+  /**
+   * Theme configuration
+   */
+  themeConfig?: ThemeConfig
 }
 
 /**
@@ -72,6 +97,17 @@ export interface SidebarItem {
   text: string
   link?: string
   items?: SidebarItem[]
+}
+
+/**
+ * Navigation bar item
+ */
+export interface NavItem {
+  text: string
+  link?: string
+  icon?: string
+  items?: NavItem[]
+  activeMatch?: string
 }
 
 /**
@@ -209,6 +245,127 @@ export interface TocConfig {
  * TOC position options
  */
 export type TocPosition = 'sidebar' | 'inline' | 'floating'
+
+/**
+ * Search configuration
+ */
+export interface SearchConfig {
+  /**
+   * Enable search functionality
+   * @default false
+   */
+  enabled?: boolean
+
+  /**
+   * Search placeholder text
+   * @default "Search..."
+   */
+  placeholder?: string
+
+  /**
+   * Maximum number of search results to show
+   * @default 10
+   */
+  maxResults?: number
+
+  /**
+   * Enable keyboard shortcuts
+   * @default true
+   */
+  keyboardShortcuts?: boolean
+
+  /**
+   * Custom search function
+   */
+  searchFn?: (query: string, content: string[]) => SearchResult[]
+}
+
+/**
+ * Search result item
+ */
+export interface SearchResult {
+  /**
+   * Title of the result
+   */
+  title: string
+
+  /**
+   * URL of the result
+   */
+  url: string
+
+  /**
+   * Content snippet
+   */
+  content: string
+
+  /**
+   * Search score/rank
+   */
+  score: number
+}
+
+/**
+ * Theme configuration
+ */
+export interface ThemeConfig {
+  /**
+   * Color palette
+   */
+  colors?: {
+    primary?: string
+    secondary?: string
+    accent?: string
+    background?: string
+    surface?: string
+    text?: string
+    muted?: string
+  }
+
+  /**
+   * Typography settings
+   */
+  fonts?: {
+    heading?: string
+    body?: string
+    mono?: string
+  }
+
+  /**
+   * Dark mode configuration
+   */
+  darkMode?: boolean | 'auto'
+
+  /**
+   * Custom CSS variables
+   */
+  cssVars?: Record<string, string>
+
+  /**
+   * Custom CSS
+   */
+  css?: string
+}
+
+/**
+ * Configuration plugin interface
+ */
+export interface ConfigPlugin {
+  name: string
+  extendConfig?: (config: BunPressConfig) => BunPressConfig
+  validateConfig?: (config: BunPressConfig) => ConfigValidationResult
+  onConfigLoad?: (config: BunPressConfig) => void | Promise<void>
+  onConfigChange?: (newConfig: BunPressConfig, oldConfig: BunPressConfig) => void | Promise<void>
+}
+
+/**
+ * Configuration validation result
+ */
+export interface ConfigValidationResult {
+  valid: boolean
+  errors: string[]
+  warnings: string[]
+}
 
 /**
  * Heading item in TOC

@@ -1,5 +1,5 @@
 import type { BunPlugin } from 'bun'
-import type { Frontmatter, MarkdownPluginOptions } from './types'
+import type { Frontmatter, MarkdownPluginOptions, NavItem, SidebarItem, SearchConfig, SearchResult, ThemeConfig } from './types'
 import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
@@ -157,6 +157,70 @@ function createFeaturesHTML(features: Frontmatter['features']): string {
 }
 
 /**
+ * Create HTML for navigation bar
+ */
+function createNavHtml(navItems: NavItem[], currentPath: string = '/'): string {
+  if (!navItems || navItems.length === 0) return ''
+
+  const navLinks = navItems.map(item => {
+    const isActive = isNavItemActive(item, currentPath)
+    const hasChildren = item.items && item.items.length > 0
+
+    if (hasChildren) {
+      const dropdownItems = item.items!.map(child => {
+        const childIsActive = isNavItemActive(child, currentPath)
+        const isExternal = child.link && (child.link.startsWith('http://') || child.link.startsWith('https://'))
+        const externalAttrs = isExternal ? ' target="_blank" rel="noopener"' : ''
+        return `<a href="${child.link || '#'}" class="nav-dropdown-item${childIsActive ? ' active' : ''}"${externalAttrs}>${child.icon ? `<span class="nav-icon">${child.icon}</span>` : ''}${child.text}</a>`
+      }).join('\n')
+
+      return `
+        <div class="nav-item dropdown ${isActive ? 'active' : ''}">
+          <button class="nav-link dropdown-toggle" aria-haspopup="true" aria-expanded="false">
+            ${item.icon ? `<span class="nav-icon">${item.icon}</span>` : ''}${item.text}
+          </button>
+          <div class="nav-dropdown">
+            ${dropdownItems}
+          </div>
+        </div>
+      `
+    } else {
+      const isExternal = item.link && (item.link.startsWith('http://') || item.link.startsWith('https://'))
+      const externalAttrs = isExternal ? ' target="_blank" rel="noopener"' : ''
+      return `<a href="${item.link || '#'}" class="nav-link${isActive ? ' active' : ''}"${externalAttrs}>${item.icon ? `<span class="nav-icon">${item.icon}</span>` : ''}${item.text}</a>`
+    }
+  }).join('\n')
+
+  return `
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-brand">
+          <a href="/" class="nav-brand-link">BunPress</a>
+        </div>
+        <div class="nav-menu">
+          ${navLinks}
+        </div>
+        <button class="nav-toggle" aria-label="Toggle navigation">
+          <span class="hamburger"></span>
+        </button>
+      </div>
+    </nav>
+  `
+}
+
+/**
+ * Check if a navigation item is active
+ */
+function isNavItemActive(item: NavItem, currentPath: string): boolean {
+  if (item.link && currentPath === item.link) return true
+  if (item.activeMatch && currentPath.startsWith(item.activeMatch)) return true
+  if (item.items) {
+    return item.items.some(child => isNavItemActive(child, currentPath))
+  }
+  return false
+}
+
+/**
  * Create HTML for a home page layout
  */
 function createHomePageHtml(frontmatter: Frontmatter, htmlContent: string): string {
@@ -200,6 +264,18 @@ function createHomePageHtml(frontmatter: Frontmatter, htmlContent: string): stri
  * })
  * ```
  */
+// Export navigation, sidebar, search, and theme helper functions for testing
+export {
+  createNavHtml,
+  isNavItemActive,
+  createSidebarHtml,
+  isSidebarItemActive,
+  createSearchHtml,
+  generateSearchIndex,
+  performSearch,
+  generateThemeCSS
+}
+
 export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
   // Merge user options with defaults from config
   const defaultOptions = config.markdown || {}
@@ -477,6 +553,26 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
           .map((src: string) => `<script src="${src}"></script>`)
           .join('\n    ')
 
+        // Generate navigation HTML
+        const navItems = options.nav || config.nav || []
+        const currentPath = path.relative(process.cwd(), args.path)
+          .replace(/\.md$/, '.html')
+          .replace(/\\/g, '/')
+          .replace(/^[^/]/, '/$&')
+        const navHtml = createNavHtml(navItems, currentPath)
+
+        // Generate sidebar HTML
+        const sidebarItems = options.sidebar?.['/'] || config.markdown.sidebar?.['/'] || []
+        const sidebarHtml = createSidebarHtml(sidebarItems, currentPath)
+
+        // Generate search HTML
+        const searchConfig = options.search || config.markdown.search || { enabled: false }
+        const searchHtml = createSearchHtml(searchConfig)
+
+        // Generate theme CSS
+        const themeConfig = options.themeConfig || config.markdown.themeConfig || {}
+        const themeCss = generateThemeCSS(themeConfig)
+
         // Add UnoCSS
         const unoCssScript = `<script src="https://cdn.jsdelivr.net/npm/@unocss/runtime"></script>`
 
@@ -735,10 +831,17 @@ function showCopyError(button) {
 ${css}
 ${tocStyles}
 ${copyStyles}
+${getNavStyles()}
+${getSidebarStyles()}
+${getSearchStyles()}
+${themeCss}
     </style>
     ${frontmatterScript}
   </head>
   <body data-layout="${layout}" class="text-gray-800 bg-white">
+    ${navHtml}
+    ${searchHtml}
+    ${sidebarHtml}
     ${sidebarTocHtml}
     <article class="markdown-body">
       ${pageContent}
@@ -747,6 +850,9 @@ ${copyStyles}
     ${scriptTags}
     <script>${tocScripts}</script>
     <script>${copyScripts}</script>
+    <script>${getNavScripts()}</script>
+    <script>${getSidebarScripts()}</script>
+    <script>${getSearchScripts(searchConfig)}</script>
   </body>
 </html>`
         }
@@ -790,4 +896,1052 @@ export function stx(): BunPlugin {
       })
     },
   }
+}
+
+/**
+ * Create HTML for sidebar navigation
+ */
+function createSidebarHtml(sidebarItems: SidebarItem[], currentPath: string = '/'): string {
+  if (!sidebarItems || sidebarItems.length === 0) return ''
+
+  const sidebarLinks = sidebarItems.map(item => {
+    return generateSidebarItemHtml(item, currentPath, 0)
+  }).join('\n')
+
+  return `
+    <aside class="sidebar">
+      <div class="sidebar-content">
+        ${sidebarLinks}
+      </div>
+    </aside>
+  `
+}
+
+/**
+ * Generate HTML for a single sidebar item
+ */
+function generateSidebarItemHtml(item: SidebarItem, currentPath: string, depth: number = 0): string {
+  const isActive = isSidebarItemActive(item, currentPath)
+  const hasChildren = item.items && item.items.length > 0
+  const indentClass = depth > 0 ? `sidebar-indent-${depth}` : ''
+
+  if (hasChildren) {
+    const childrenHtml = item.items!.map(child => generateSidebarItemHtml(child, currentPath, depth + 1)).join('\n')
+    const expandedClass = isActive ? 'sidebar-expanded' : ''
+
+    const groupClasses = ['sidebar-group', indentClass, expandedClass].filter(Boolean).join(' ')
+
+    return `
+      <div class="${groupClasses}">
+        <div class="sidebar-group-header">
+          <span class="sidebar-group-title">${item.text}</span>
+          <button class="sidebar-toggle" aria-expanded="${isActive}">
+            <span class="sidebar-toggle-icon"></span>
+          </button>
+        </div>
+        <div class="sidebar-group-content">
+          ${childrenHtml}
+        </div>
+      </div>
+    `
+  } else {
+    const activeClass = isActive ? 'sidebar-active' : ''
+    const classes = ['sidebar-link', indentClass, activeClass].filter(Boolean).join(' ')
+    return `<a href="${item.link || '#'}" class="${classes}">${item.text}</a>`
+  }
+}
+
+/**
+ * Check if a sidebar item is active
+ */
+function isSidebarItemActive(item: SidebarItem, currentPath: string): boolean {
+  if (item.link && currentPath === item.link) return true
+  if (item.items) {
+    return item.items.some(child => isSidebarItemActive(child, currentPath))
+  }
+  return false
+}
+
+/**
+ * Get navigation styles
+ */
+function getNavStyles(): string {
+  return `
+/* Navigation bar styles */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  padding: 0;
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+}
+
+.nav-brand {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.nav-brand-link {
+  color: #1f2937;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-brand-link:hover {
+  color: #3b82f6;
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav-link {
+  color: #4b5563;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-link:hover {
+  color: #1f2937;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.nav-link.active {
+  color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.nav-icon {
+  font-size: 1.1em;
+}
+
+/* Dropdown styles */
+.nav-item.dropdown {
+  position: relative;
+}
+
+.dropdown-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dropdown-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dropdown-toggle::after {
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid currentColor;
+  margin-left: 0.25rem;
+  transition: transform 0.2s;
+}
+
+.nav-item.dropdown.active .dropdown-toggle {
+  color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.nav-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 0.375rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s;
+  z-index: 1000;
+}
+
+.nav-item.dropdown:hover .nav-dropdown,
+.nav-item.dropdown:focus-within .nav-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.nav-dropdown-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: #4b5563;
+  text-decoration: none;
+  transition: all 0.2s;
+  border-radius: 0.25rem;
+  margin: 0.25rem;
+}
+
+.nav-dropdown-item:hover {
+  color: #1f2937;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.nav-dropdown-item.active {
+  color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Mobile navigation toggle */
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s;
+}
+
+.nav-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.hamburger {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #4b5563;
+  position: relative;
+  transition: background-color 0.2s;
+}
+
+.hamburger::before,
+.hamburger::after {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #4b5563;
+  position: absolute;
+  transition: all 0.2s;
+}
+
+.hamburger::before {
+  top: -6px;
+}
+
+.hamburger::after {
+  top: 6px;
+}
+
+/* Mobile navigation menu */
+.nav-menu.mobile-open {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  gap: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .nav-menu {
+    display: none;
+  }
+
+  .nav-menu.mobile-open {
+    display: flex;
+  }
+
+  .nav-toggle {
+    display: block;
+  }
+
+  .nav-brand {
+    font-size: 1.25rem;
+  }
+
+  .nav-container {
+    padding: 0 0.75rem;
+    height: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-brand {
+    font-size: 1.1rem;
+  }
+
+  .nav-container {
+    padding: 0 0.5rem;
+  }
+}
+`
+}
+
+/**
+ * Get sidebar scripts
+ */
+function getSidebarScripts(): string {
+  return `
+// Sidebar functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const sidebarToggles = document.querySelectorAll('.sidebar-toggle')
+
+  sidebarToggles.forEach(toggle => {
+    toggle.addEventListener('click', function() {
+      const group = toggle.closest('.sidebar-group')
+      const content = group.querySelector('.sidebar-group-content')
+      const isExpanded = toggle.getAttribute('aria-expanded') === 'true'
+
+      if (isExpanded) {
+        group.classList.remove('sidebar-expanded')
+        toggle.setAttribute('aria-expanded', 'false')
+        content.style.maxHeight = '0'
+      } else {
+        group.classList.add('sidebar-expanded')
+        toggle.setAttribute('aria-expanded', 'true')
+        content.style.maxHeight = content.scrollHeight + 'px'
+      }
+    })
+  })
+
+  // Auto-expand active groups
+  const activeLinks = document.querySelectorAll('.sidebar-active')
+  activeLinks.forEach(link => {
+    let parent = link.parentElement
+    while (parent && !parent.classList.contains('sidebar-group')) {
+      parent = parent.parentElement
+    }
+
+    if (parent && parent.classList.contains('sidebar-group')) {
+      const toggle = parent.querySelector('.sidebar-toggle')
+      const content = parent.querySelector('.sidebar-group-content')
+
+      if (toggle && content) {
+        parent.classList.add('sidebar-expanded')
+        toggle.setAttribute('aria-expanded', 'true')
+        content.style.maxHeight = content.scrollHeight + 'px'
+      }
+    }
+  })
+
+  // Mobile sidebar functionality
+  function updateSidebarForScreenSize() {
+    const sidebar = document.querySelector('.sidebar')
+    const overlay = document.querySelector('.sidebar-overlay')
+
+    if (window.innerWidth <= 1024) {
+      // Create overlay if it doesn't exist
+      if (!overlay) {
+        const newOverlay = document.createElement('div')
+        newOverlay.className = 'sidebar-overlay'
+        document.body.appendChild(newOverlay)
+
+        // Add click handler to close sidebar
+        newOverlay.addEventListener('click', function() {
+          sidebar.classList.remove('sidebar-open')
+          newOverlay.classList.remove('sidebar-overlay-visible')
+        })
+      }
+
+      // Add mobile toggle functionality to nav toggle
+      const navToggle = document.querySelector('.nav-toggle')
+      if (navToggle) {
+        navToggle.addEventListener('click', function() {
+          sidebar.classList.toggle('sidebar-open')
+          const overlay = document.querySelector('.sidebar-overlay')
+          if (overlay) {
+            overlay.classList.toggle('sidebar-overlay-visible')
+          }
+        })
+      }
+    } else {
+      // Remove mobile functionality on larger screens
+      if (sidebar) {
+        sidebar.classList.remove('sidebar-open')
+      }
+      if (overlay) {
+        overlay.classList.remove('sidebar-overlay-visible')
+      }
+    }
+  }
+
+  // Update on load and resize
+  updateSidebarForScreenSize()
+  window.addEventListener('resize', updateSidebarForScreenSize)
+})
+`
+}
+
+/**
+ * Create HTML for search input
+ */
+function createSearchHtml(searchConfig: SearchConfig): string {
+  if (!searchConfig.enabled) return ''
+
+  const placeholder = searchConfig.placeholder || 'Search...'
+
+  return `
+    <div class="search-container">
+      <div class="search-box">
+        <input
+          type="search"
+          id="search-input"
+          placeholder="${placeholder}"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button class="search-button" aria-label="Search">
+          <span class="search-icon">🔍</span>
+        </button>
+        ${searchConfig.keyboardShortcuts !== false ? '<div class="search-shortcut">⌘K</div>' : ''}
+      </div>
+      <div class="search-results" id="search-results" style="display: none;"></div>
+    </div>
+  `
+}
+
+/**
+ * Generate search index data from content
+ */
+function generateSearchIndex(mdContent: string, title: string, url: string): string {
+  // Extract headings and content for indexing
+  const headings = mdContent.match(/^#{1,6}\s+.+$/gm) || []
+  const paragraphs = mdContent.split('\n\n').filter(p => p.trim().length > 0)
+
+  const indexData = {
+    title,
+    url,
+    content: paragraphs.slice(0, 5).join(' '), // First 5 paragraphs
+    headings: headings.map(h => h.replace(/^#{1,6}\s+/, '').trim())
+  }
+
+  return JSON.stringify(indexData)
+}
+
+/**
+ * Perform simple text search
+ */
+function performSearch(query: string, searchIndex: any[]): SearchResult[] {
+  if (!query.trim()) return []
+
+  const results: SearchResult[] = []
+  const queryLower = query.toLowerCase()
+
+  for (const item of searchIndex) {
+    let score = 0
+    let matchedContent = ''
+
+    // Title match (highest weight)
+    if (item.title.toLowerCase().includes(queryLower)) {
+      score += 10
+      matchedContent = item.title
+    }
+
+    // Heading match
+    for (const heading of item.headings) {
+      if (heading.toLowerCase().includes(queryLower)) {
+        score += 5
+        matchedContent = heading
+        break
+      }
+    }
+
+    // Content match
+    if (item.content.toLowerCase().includes(queryLower)) {
+      score += 1
+      if (!matchedContent) {
+        // Extract snippet around the match
+        const contentLower = item.content.toLowerCase()
+        const index = contentLower.indexOf(queryLower)
+        const start = Math.max(0, index - 50)
+        const end = Math.min(item.content.length, index + query.length + 50)
+        matchedContent = item.content.substring(start, end)
+      }
+    }
+
+    if (score > 0) {
+      results.push({
+        title: item.title,
+        url: item.url,
+        content: matchedContent,
+        score
+      })
+    }
+  }
+
+  // Sort by score and return top results
+  return results
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10) // Default max results
+}
+
+/**
+ * Generate theme CSS from configuration
+ */
+function generateThemeCSS(themeConfig: ThemeConfig): string {
+  let css = ''
+
+  // Generate CSS custom properties for colors
+  if (themeConfig.colors) {
+    const colors = themeConfig.colors
+    css += `
+/* Theme color variables */
+:root {
+  ${colors.primary ? `--color-primary: ${colors.primary};` : ''}
+  ${colors.secondary ? `--color-secondary: ${colors.secondary};` : ''}
+  ${colors.accent ? `--color-accent: ${colors.accent};` : ''}
+  ${colors.background ? `--color-background: ${colors.background};` : ''}
+  ${colors.surface ? `--color-surface: ${colors.surface};` : ''}
+  ${colors.text ? `--color-text: ${colors.text};` : ''}
+  ${colors.muted ? `--color-muted: ${colors.muted};` : ''}
+}
+`
+  }
+
+  // Generate font family CSS
+  if (themeConfig.fonts) {
+    const fonts = themeConfig.fonts
+    css += `
+/* Theme font variables */
+:root {
+  ${fonts.heading ? `--font-heading: ${fonts.heading};` : ''}
+  ${fonts.body ? `--font-body: ${fonts.body};` : ''}
+  ${fonts.mono ? `--font-mono: ${fonts.mono};` : ''}
+}
+
+/* Apply fonts */
+${fonts.heading ? `h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }` : ''}
+${fonts.body ? `body { font-family: var(--font-body); }` : ''}
+${fonts.mono ? `code, pre, .code-block-container { font-family: var(--font-mono); }` : ''}
+`
+  }
+
+  // Generate dark mode CSS
+  if (themeConfig.darkMode) {
+    css += `
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #1a1a1a;
+    --color-surface: #2a2a2a;
+    --color-text: #ffffff;
+    --color-muted: #888888;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text);
+  }
+}
+`
+  }
+
+  // Add custom CSS variables
+  if (themeConfig.cssVars) {
+    css += `
+/* Custom CSS variables */
+:root {
+${Object.entries(themeConfig.cssVars)
+  .map(([key, value]) => `  --${key}: ${value};`)
+  .join('\n')}
+}
+`
+  }
+
+  // Add custom CSS
+  if (themeConfig.css) {
+    css += `
+/* Custom theme CSS */
+${themeConfig.css}
+`
+  }
+
+  return css
+}
+
+/**
+ * Get search styles
+ */
+function getSearchStyles(): string {
+  return `
+/* Search styles */
+.search-container {
+  position: relative;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+#search-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.9rem;
+}
+
+#search-input:focus {
+  outline: none;
+}
+
+.search-button {
+  background: none;
+  border: none;
+  padding: 0.75rem;
+  cursor: pointer;
+  color: #6b7280;
+  transition: color 0.2s;
+}
+
+.search-button:hover {
+  color: #374151;
+}
+
+.search-icon {
+  font-size: 1rem;
+}
+
+.search-shortcut {
+  position: absolute;
+  right: 3rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.05);
+  color: #6b7280;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  user-select: none;
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 1000;
+  margin-top: 0.5rem;
+}
+
+.search-result-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.search-result-item:hover,
+.search-result-item:focus {
+  background-color: rgba(0, 0, 0, 0.05);
+  outline: none;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-title {
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.search-result-url {
+  color: #3b82f6;
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem;
+  text-decoration: none;
+}
+
+.search-result-content {
+  color: #6b7280;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.search-no-results {
+  padding: 1rem;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* Mobile search */
+@media (max-width: 768px) {
+  .search-container {
+    max-width: 100%;
+    margin: 0 1rem;
+  }
+
+  .search-shortcut {
+    display: none;
+  }
+}
+`
+}
+
+/**
+ * Get search scripts
+ */
+function getSearchScripts(searchConfig: SearchConfig): string {
+  return `
+// Search functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('search-input')
+  const searchResults = document.getElementById('search-results')
+
+  if (!searchInput || !searchResults) return
+
+  let searchIndex = []
+  let searchTimeout = null
+
+  // Load search index
+  fetch('/search-index.json')
+    .then(response => response.json())
+    .then(data => {
+      searchIndex = data
+    })
+    .catch(error => {
+      console.warn('Failed to load search index:', error)
+    })
+
+  // Search function
+  function performSearch(query) {
+    if (!query.trim() || searchIndex.length === 0) {
+      searchResults.style.display = 'none'
+      return
+    }
+
+    const results = performSearch(query, searchIndex)
+    displayResults(results)
+  }
+
+  // Display search results
+  function displayResults(results) {
+    if (results.length === 0) {
+      searchResults.innerHTML = '<div class="search-no-results">No results found</div>'
+      searchResults.style.display = 'block'
+      return
+    }
+
+    const html = results.map(result => \`
+      <div class="search-result-item" onclick="window.location.href='\${result.url}'">
+        <div class="search-result-title">\${result.title}</div>
+        <div class="search-result-url">\${result.url}</div>
+        <div class="search-result-content">\${result.content}</div>
+      </div>
+    \`).join('')
+
+    searchResults.innerHTML = html
+    searchResults.style.display = 'block'
+  }
+
+  // Input event listener
+  searchInput.addEventListener('input', function(e) {
+    const query = e.target.value
+
+    if (searchTimeout) {
+      clearTimeout(searchTimeout)
+    }
+
+    searchTimeout = setTimeout(() => {
+      performSearch(query)
+    }, 300)
+  })
+
+  // Keyboard shortcuts
+  ${searchConfig.keyboardShortcuts !== false ? `
+  document.addEventListener('keydown', function(e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault()
+      searchInput.focus()
+    }
+
+    if (e.key === 'Escape') {
+      searchInput.blur()
+      searchResults.style.display = 'none'
+    }
+  })
+  ` : ''}
+
+  // Hide results when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+      searchResults.style.display = 'none'
+    }
+  })
+
+  // Show results when input is focused
+  searchInput.addEventListener('focus', function() {
+    if (searchInput.value.trim()) {
+      performSearch(searchInput.value)
+    }
+  })
+})
+`
+}
+
+function getNavScripts(): string {
+  return `
+// Navigation functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const navToggle = document.querySelector('.nav-toggle')
+  const navMenu = document.querySelector('.nav-menu')
+
+  if (navToggle && navMenu) {
+    navToggle.addEventListener('click', function() {
+      navMenu.classList.toggle('mobile-open')
+      navToggle.setAttribute('aria-expanded',
+        navToggle.getAttribute('aria-expanded') === 'true' ? 'false' : 'true')
+    })
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', function(event) {
+      if (!navToggle.contains(event.target) && !navMenu.contains(event.target)) {
+        navMenu.classList.remove('mobile-open')
+        navToggle.setAttribute('aria-expanded', 'false')
+      }
+    })
+  }
+
+  // Handle dropdown accessibility
+  const dropdowns = document.querySelectorAll('.nav-item.dropdown')
+  dropdowns.forEach(dropdown => {
+    const toggle = dropdown.querySelector('.dropdown-toggle')
+    const menu = dropdown.querySelector('.nav-dropdown')
+
+    if (toggle && menu) {
+      toggle.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          const isExpanded = toggle.getAttribute('aria-expanded') === 'true'
+          toggle.setAttribute('aria-expanded', !isExpanded)
+        }
+
+        if (event.key === 'Escape') {
+          toggle.setAttribute('aria-expanded', 'false')
+          toggle.focus()
+        }
+      })
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(event) {
+        if (!dropdown.contains(event.target)) {
+          toggle.setAttribute('aria-expanded', 'false')
+        }
+      })
+    }
+  })
+})
+`
+}
+
+/**
+ * Get sidebar styles
+ */
+function getSidebarStyles(): string {
+  return `
+/* Sidebar styles */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 60px;
+  width: 280px;
+  height: calc(100vh - 60px);
+  background: white;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  overflow-y: auto;
+  z-index: 900;
+}
+
+.sidebar-content {
+  padding: 1rem 0;
+}
+
+/* Sidebar links */
+.sidebar-link {
+  display: block;
+  color: #4b5563;
+  text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  margin-bottom: 0.25rem;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.sidebar-link:hover {
+  color: #1f2937;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-link.sidebar-active {
+  color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.1);
+  font-weight: 500;
+}
+
+/* Sidebar groups */
+.sidebar-group {
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s;
+}
+
+.sidebar-group-header:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-group-title {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 0.9rem;
+}
+
+.sidebar-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
+}
+
+.sidebar-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-toggle-icon {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid currentColor;
+  transition: transform 0.2s;
+}
+
+.sidebar-group[aria-expanded="true"] .sidebar-toggle-icon {
+  transform: rotate(90deg);
+}
+
+.sidebar-group-content {
+  margin-left: 0.5rem;
+  margin-top: 0.5rem;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.sidebar-group.sidebar-expanded .sidebar-group-content {
+  max-height: 1000px;
+}
+
+/* Indentation for nested items */
+.sidebar-indent-1 { margin-left: 1rem; }
+.sidebar-indent-2 { margin-left: 2rem; }
+.sidebar-indent-3 { margin-left: 3rem; }
+.sidebar-indent-4 { margin-left: 4rem; }
+
+/* Mobile sidebar */
+@media (max-width: 1024px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+  }
+
+  .sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+  }
+
+  .sidebar-overlay.sidebar-overlay-visible {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 250px;
+  }
+}
+`
 }

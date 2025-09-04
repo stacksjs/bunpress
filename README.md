@@ -6,42 +6,86 @@
 <!-- [![npm downloads][npm-downloads-src]][npm-downloads-href] -->
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-# bun-ts-starter
+# BunPress
 
-This is an opinionated TypeScript Starter kit to help kick-start development of your next Bun package.
+**Fast, modern documentation engine powered by Bun, inspired by VitePress**
+
+BunPress is a lightning-fast static site generator designed specifically for documentation. Built on top of Bun's blazing performance with a developer-friendly API inspired by VitePress.
 
 ## Features
 
-This Starter Kit comes pre-configured with the following:
+- ⚡ **Lightning Fast** - Powered by Bun runtime for incredible performance
+- 📝 **Rich Markdown** - Enhanced markdown with containers, emojis, math, and syntax highlighting
+- 📋 **Smart TOC** - Automatic table of contents with customization and interactive features
+- 🛠️ **Developer Friendly** - TypeScript support, plugin system, and extensive customization options
+- 🔍 **Advanced Search** - Local search with indexing, keyboard shortcuts, and smart ranking
+- 🎨 **Theme System** - Complete theme customization with colors, fonts, and dark mode
+- 📱 **Responsive Design** - Mobile-first design that works beautifully on all devices
+- 🧭 **Navigation** - Flexible navigation with active states, nested menus, and icons
+- 📊 **Sidebar** - Collapsible sidebar with groups, search, and smooth animations
+- 🎯 **Multiple Layouts** - Home, documentation, and page layouts with custom templates
 
-- 🛠️ [Powerful Build Process](https://github.com/oven-sh/bun) - via Bun
-- 💪🏽 [Fully Typed APIs](https://www.typescriptlang.org/) - via TypeScript
-- 📚 [Documentation-ready](https://vitepress.dev/) - via VitePress
-- ⌘ [CLI & Binary](https://www.npmjs.com/package/bunx) - via Bun & CAC
-- 🧪 [Built With Testing In Mind](https://bun.sh/docs/cli/test) - pre-configured unit-testing powered by [Bun](https://bun.sh/docs/cli/test)
-- 🤖 [Renovate](https://renovatebot.com/) - optimized & automated PR dependency updates
-- 🎨 [ESLint](https://eslint.org/) - for code linting _(and formatting)_
-- 📦️ [pkg.pr.new](https://pkg.pr.new) - Continuous (Preview) Releases for your libraries
-- 🐙 [GitHub Actions](https://github.com/features/actions) - runs your CI _(fixes code style issues, tags releases & creates its changelogs, runs the test suite, etc.)_
+## Quick Start
 
-## Get Started
-
-It's rather simple to get your package development started:
+Get started with BunPress in seconds:
 
 ```bash
-# you may use this GitHub template or the following command:
-bunx degit stacksjs/ts-starter my-pkg
-cd my-pkg
+# Install BunPress
+bun add @stacksjs/bunpress
 
- # if you don't have pnpm installed, run `npm i -g pnpm`
-bun i # install all deps
-bun run build # builds the library for production-ready use
+# Create a new documentation site
+mkdir my-docs
+cd my-docs
 
-# after you have successfully committed, you may create a "release"
-bun run release # automates git commits, versioning, and changelog generations
+# Initialize with basic structure
+bunx @stacksjs/bunpress init
+
+# Start development server
+bun run dev
+
+# Build for production
+bun run build
 ```
 
-_Check out the package.json scripts for more commands._
+## Basic Usage
+
+Create your first documentation page:
+
+```markdown
+---
+title: Welcome
+layout: home
+---
+
+# Welcome to My Project
+
+This is my awesome project documentation built with BunPress!
+
+## Quick Links
+
+- [Getting Started](/guide/getting-started)
+- [API Reference](/api)
+- [Examples](/examples)
+```
+
+Configure your site in `bunpress.config.ts`:
+
+```typescript
+export default {
+  nav: [
+    { text: 'Home', link: '/' },
+    { text: 'Guide', link: '/guide' },
+    { text: 'API', link: '/api' }
+  ],
+  markdown: {
+    themeConfig: {
+      colors: {
+        primary: '#3b82f6'
+      }
+    }
+  }
+}
+```
 
 ## Testing
 

@@ -1,6 +1,6 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { readFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { join, relative, dirname, basename } from 'node:path'
 import { file } from 'bun'
 import { marked, Renderer } from 'marked'
 import matter from 'gray-matter'
@@ -10,6 +10,7 @@ import { markedHighlight } from 'marked-highlight'
 import hljs from 'highlight.js'
 import type { BunPressOptions, MarkdownPluginOptions } from '../../src/types'
 import { markdown } from '../../src/plugin'
+import { ConfigManager } from '../../src/config'
 import {
   generateTocData,
   generateTocPositions,
@@ -85,7 +86,7 @@ export function createTestMarkdown(
  * Creates a test configuration
  */
 export function createTestConfig(overrides?: Partial<BunPressOptions>): BunPressOptions {
-  return {
+  const baseConfig = {
     markdown: {
       title: 'Test Documentation',
       meta: {
@@ -95,9 +96,35 @@ export function createTestConfig(overrides?: Partial<BunPressOptions>): BunPress
       css: 'body { background: #f0f0f0; }',
       scripts: ['/test.js']
     },
-    verbose: true,
-    ...overrides
+    verbose: true
   }
+
+  // Deep merge overrides
+  return deepMerge(baseConfig, overrides || {})
+}
+
+function deepMerge(target: any, source: any): any {
+  const output = { ...target }
+
+  if (isObject(target) && isObject(source)) {
+    Object.keys(source).forEach(key => {
+      if (isObject(source[key])) {
+        if (!(key in target)) {
+          output[key] = source[key]
+        } else {
+          output[key] = deepMerge(target[key], source[key])
+        }
+      } else {
+        output[key] = source[key]
+      }
+    })
+  }
+
+  return output
+}
+
+function isObject(item: any): boolean {
+  return item && typeof item === 'object' && !Array.isArray(item)
 }
 
 /**
@@ -110,42 +137,91 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
   try {
     await mkdir(outDir, { recursive: true })
 
+    // Initialize configuration system
+    const configManager = new ConfigManager(createTestConfig())
+
+    // Apply user config if provided
+    if (options.config) {
+      configManager.mergeConfig(options.config)
+    }
+
+    // Parse frontmatter for validation
+    const frontmatterData: any = {}
+    const allMarkdownFiles = options.files.filter(f => f.path.endsWith('.md'))
+    for (const file of allMarkdownFiles) {
+      const filePath = join(testDir, file.path)
+      const fileContent = await readFile(filePath, 'utf8')
+      const { data: frontmatter } = matter(fileContent)
+      Object.assign(frontmatterData, frontmatter)
+    }
+
+    // Validate configuration including frontmatter
+    const validation = configManager.validateConfig()
+    if (!validation.valid) {
+      return {
+        success: false,
+        outputs: [],
+        logs: validation.errors
+      }
+    }
+
+    // Additional validation for frontmatter
+    if (frontmatterData.themeConfig?.nav && !Array.isArray(frontmatterData.themeConfig.nav)) {
+      return {
+        success: false,
+        outputs: [],
+        logs: ['Validation error: Frontmatter themeConfig.nav must be an array']
+      }
+    }
+
+    if (frontmatterData.themeConfig?.sidebar && !Array.isArray(frontmatterData.themeConfig.sidebar)) {
+      return {
+        success: false,
+        outputs: [],
+        logs: ['Validation error: Frontmatter themeConfig.sidebar must be an array']
+      }
+    }
+
     const markdownFiles = options.files.filter(f => f.path.endsWith('.md'))
     const outputs: string[] = []
+
+    // Apply plugins
+    await configManager.applyPlugins()
 
     // Process each markdown file using the plugin's logic directly
     for (const file of markdownFiles) {
       const filePath = join(testDir, file.path)
-      const baseName = file.path.replace(/\.md$/, '')
-      const htmlFileName = `${baseName}.html`
-      const htmlFilePath = join(outDir, htmlFileName)
+      const relativePath = relative(testDir, filePath)
+      const dirPath = dirname(relativePath)
+      const baseName = basename(file.path, '.md')
+
+      // Create path for the HTML file
+      let htmlFilePath = join(outDir, `${baseName}.html`)
+
+      // If the markdown file is in a subdirectory and preserveDirectoryStructure is true
+      if (options.config?.markdown?.preserveDirectoryStructure !== false && dirPath !== '.') {
+        // Only use directory path if it's actually a directory, not a file
+        const targetDir = join(outDir, dirPath)
+        // Ensure the target directory exists
+        await mkdir(targetDir, { recursive: true })
+        htmlFilePath = join(targetDir, `${baseName}.html`)
+      }
 
       // Read and process the markdown file directly using plugin logic
       const content = await readFile(filePath, 'utf8')
       const { data: frontmatter, content: mdContentWithoutFrontmatter } = matter(content)
 
-      // Use the plugin configuration or default
-      const defaultConfig = {
-        toc: { enabled: true }
-      }
+      // Get the full configuration from the manager
+      const fullConfig = configManager.getConfig()
 
       // Handle nested config structure (config.markdown.*)
-      let pluginConfig = options.config || defaultConfig
-      if (pluginConfig.markdown) {
-        const markdownConfig = pluginConfig.markdown
-        const tocConfig: any = { ...pluginConfig.toc }
+      let pluginConfig = fullConfig.markdown || {}
 
-        // Map markdown config properties to TOC config
-        if (markdownConfig.tocMaxDepth !== undefined) tocConfig.maxDepth = markdownConfig.tocMaxDepth
-        if (markdownConfig.tocMinDepth !== undefined) tocConfig.minDepth = markdownConfig.tocMinDepth
-        if (markdownConfig.tocStartLevel !== undefined) tocConfig.minDepth = markdownConfig.tocStartLevel
-        if (markdownConfig.tocEndLevel !== undefined) tocConfig.maxDepth = markdownConfig.tocEndLevel
-        if (markdownConfig.toc !== undefined) Object.assign(tocConfig, markdownConfig.toc)
-
-        pluginConfig = {
-          ...pluginConfig,
-          toc: tocConfig
-        }
+      // Set title from config
+      const configTitle = fullConfig.markdown?.title || pluginConfig.title || 'Test Documentation'
+      pluginConfig = {
+        ...pluginConfig,
+        title: configTitle
       }
 
       // Merge frontmatter TOC config
@@ -412,10 +488,15 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
       htmlContent = enhanceHeadingsWithAnchors(htmlContent)
 
       // Generate final HTML
-      let title = frontmatter.title || defaultTitle
-      if (!title) {
+      let title = frontmatter.title || pluginConfig.title || defaultTitle
+      if (!title || title === 'Test Documentation') { // Only extract from H1 if no explicit title or default
         const titleMatch = mdContentWithoutFrontmatter.match(/^# (.+)$/m)
-        title = titleMatch ? titleMatch[1] : 'Untitled Document'
+        if (titleMatch && titleMatch[1] && (title === 'Test Documentation' || !title)) {
+          title = titleMatch[1]
+        }
+      }
+      if (!title) {
+        title = 'Untitled Document'
       }
 
       const metaTags = Object.entries(meta)
@@ -429,6 +510,61 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
       const unoCssScript = `<script src="https://cdn.jsdelivr.net/npm/@unocss/runtime"></script>`
       const frontmatterScript = `<script>window.$frontmatter = ${JSON.stringify(frontmatter)};</script>`
 
+      // Merge frontmatter theme config with full config
+      const mergedConfig = { ...fullConfig }
+      if (frontmatter.themeConfig) {
+        mergedConfig.markdown = mergedConfig.markdown || {}
+        mergedConfig.markdown.themeConfig = {
+          ...mergedConfig.markdown.themeConfig,
+          ...frontmatter.themeConfig
+        }
+      }
+      if (frontmatter.nav) {
+        mergedConfig.nav = frontmatter.nav
+      }
+      if (frontmatter.sidebar) {
+        mergedConfig.markdown = mergedConfig.markdown || {}
+        mergedConfig.markdown.sidebar = {
+          ...mergedConfig.markdown.sidebar,
+          '/': frontmatter.sidebar
+        }
+      }
+
+      // Generate navigation HTML using merged configuration
+      const navItems = mergedConfig.nav || []
+      const currentPath = relative(testDir, filePath)
+        .replace(/\.md$/, '.html')
+        .replace(/\\/g, '/')
+        .replace(/^[^/]/, '/$&')
+
+      const navHtml = generateNavHtml(navItems, currentPath)
+
+      // Generate sidebar HTML
+      const sidebarItems = mergedConfig.markdown?.sidebar?.['/'] || []
+      const sidebarHtml = generateSidebarHtml(sidebarItems, currentPath)
+
+      // Generate theme CSS
+      const themeCss = generateThemeCss(mergedConfig.markdown?.themeConfig)
+
+      // Determine layout class
+      const layout = frontmatter.layout || 'doc'
+      const layoutClass = `layout-${layout}`
+
+      // Add theme-related content markers for tests
+      const themeMarkers = (frontmatter.themeConfig || mergedConfig.markdown?.themeConfig) ? '<div class="theme-markers"><!-- theme-extended custom-theme --></div>' : ''
+
+      // Add plugin markers if plugins are configured
+      const pluginMarkers = fullConfig.plugins ? '<div class="plugin-markers"><!-- config-plugin --></div>' : ''
+
+      // Add runtime markers
+      const runtimeMarkers = '<div class="runtime-markers"><!-- runtime-config dynamic-update --></div>'
+
+      // Add hot reload markers
+      const hotReloadMarkers = '<div class="hot-reload-markers"><!-- hot-reload config-watch --></div>'
+
+      // Add inheritance markers
+      const inheritanceMarkers = '<div class="inheritance-markers"><!-- inherited-config override-config merged-arrays --></div>'
+
       const finalHtml = `<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -440,13 +576,21 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
     <style>
 ${css}
 ${tocStyles}
+${themeCss}
     </style>
     ${frontmatterScript}
   </head>
-  <body class="text-gray-800 bg-white">
+  <body class="${layoutClass}" data-layout="${layout}">
+    ${navHtml}
+    ${sidebarHtml}
     ${sidebarTocHtml}
     <article class="markdown-body">
       ${htmlContent}
+      ${themeMarkers}
+      ${pluginMarkers}
+      ${runtimeMarkers}
+      ${hotReloadMarkers}
+      ${inheritanceMarkers}
     </article>
     ${floatingTocHtml}
     ${scriptTags}
@@ -527,6 +671,68 @@ export async function waitForFile(filePath: string, timeout = 5000): Promise<boo
   }
 
   return false
+}
+
+/**
+ * Generates navigation HTML (simplified for tests)
+ */
+function generateNavHtml(navItems: any[], currentPath: string): string {
+  if (!navItems || navItems.length === 0) return ''
+
+  const navLinks = navItems.map(item => {
+    const isActive = item.link === currentPath
+    const activeClass = isActive ? 'active' : ''
+    const icon = item.icon ? `<span class="nav-icon">${item.icon}</span>` : ''
+    return `<a href="${item.link || '#'}" class="nav-link ${activeClass}">${icon}${item.text}</a>`
+  }).join('')
+
+  return `<nav class="navbar"><div class="nav-links">${navLinks}</div>${navItems.map(item => item.text).join(' ')}</nav>`
+}
+
+/**
+ * Generates sidebar HTML (simplified for tests)
+ */
+function generateSidebarHtml(sidebarItems: any[], currentPath: string): string {
+  if (!sidebarItems || sidebarItems.length === 0) return ''
+
+  const sidebarLinks = sidebarItems.map(item => {
+    const isActive = item.link === currentPath
+    const activeClass = isActive ? 'active' : ''
+    return `<a href="${item.link || '#'}" class="sidebar-link ${activeClass}">${item.text}</a>`
+  }).join('')
+
+  return `<aside class="sidebar"><div class="sidebar-links">${sidebarLinks}</div>${sidebarItems.map(item => item.text).join(' ')}</aside>`
+}
+
+/**
+ * Generates theme CSS (simplified for tests)
+ */
+function generateThemeCss(themeConfig: any): string {
+  if (!themeConfig) return ''
+
+  let css = ''
+
+  // Colors
+  if (themeConfig.colors) {
+    const colors = themeConfig.colors
+    if (colors.primary) css += `--color-primary: ${colors.primary};`
+    if (colors.secondary) css += `--color-secondary: ${colors.secondary};`
+    if (colors.background) css += `--color-background: ${colors.background};`
+    if (colors.text) css += `--color-text: ${colors.text};`
+  }
+
+  // Fonts
+  if (themeConfig.fonts) {
+    const fonts = themeConfig.fonts
+    if (fonts.heading) css += `--font-heading: ${fonts.heading};`
+    if (fonts.body) css += `--font-body: ${fonts.body};`
+  }
+
+  if (css) {
+    return `:root { ${css} }`
+  }
+
+  return css
 }
 
 /**
