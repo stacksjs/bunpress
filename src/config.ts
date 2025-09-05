@@ -179,6 +179,44 @@ export const defaultConfig: BunPressConfig = {
         padding: 2rem;
       }
 
+      /* Hero section styles for home layout */
+      body[data-layout="home"] .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+
+      body[data-layout="home"] .hero-actions a {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.375rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease-in-out;
+        border: none;
+        cursor: pointer;
+      }
+
+      body[data-layout="home"] .hero-actions a[data-theme="brand"] {
+        background-color: #2563eb;
+        color: white;
+      }
+
+      body[data-layout="home"] .hero-actions a[data-theme="brand"]:hover {
+        background-color: #1d4ed8;
+      }
+
+      body[data-layout="home"] .hero-actions a[data-theme="alt"] {
+        background-color: #dbeafe;
+        color: #2563eb;
+      }
+
+      body[data-layout="home"] .hero-actions a[data-theme="alt"]:hover {
+        background-color: #bfdbfe;
+      }
+
       body[data-layout="page"] .markdown-body {
         padding: 2rem;
         margin-top: 60px;

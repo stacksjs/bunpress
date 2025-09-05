@@ -98,12 +98,7 @@ function createHeroHTML(hero: Frontmatter['hero']): string {
     return ''
 
   const actions = hero.actions?.map((action) => {
-    const baseClasses = 'inline-flex items-center px-4 py-2 rounded-md font-medium transition-colors'
-    const themeClasses = action.theme === 'brand'
-      ? 'bg-primary text-white hover:bg-blue-800'
-      : 'bg-blue-100 text-primary hover:bg-blue-200'
-
-    return `<a href="${action.link}" class="${baseClasses} ${themeClasses}">
+    return `<a href="${action.link}" data-theme="${action.theme || 'alt'}">
       ${action.text}
     </a>`
   }).join('\n') || ''
@@ -116,7 +111,7 @@ function createHeroHTML(hero: Frontmatter['hero']): string {
         ${hero.text ? `<p class="text-4xl font-bold leading-tight mb-4">${hero.text}</p>` : ''}
         ${hero.tagline ? `<p class="text-xl text-gray-600 mb-8">${hero.tagline}</p>` : ''}
 
-        ${actions ? `<div class="flex flex-wrap gap-4">${actions}</div>` : ''}
+        ${actions ? `<div class="hero-actions">${actions}</div>` : ''}
       </div>
 
       ${hero.image
@@ -569,21 +564,24 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
           .map((src: string) => `<script src="${src}"></script>`)
           .join('\n    ')
 
-        // Generate navigation HTML
+        // Check for layout in frontmatter first
+        const layout = frontmatter.layout || 'doc'
+
+        // Generate navigation HTML (only for non-home layouts)
         const navItems = options.nav || config.nav || []
         const currentPath = path.relative(process.cwd(), args.path)
           .replace(/\.md$/, '.html')
           .replace(/\\/g, '/')
           .replace(/^[^/]/, '/$&')
-        const navHtml = createNavHtml(navItems, currentPath)
+        const navHtml = layout === 'home' ? '' : createNavHtml(navItems, currentPath)
 
-        // Generate sidebar HTML
+        // Generate sidebar HTML (only for non-home layouts)
         const sidebarItems = options.sidebar?.['/'] || config.markdown.sidebar?.['/'] || []
-        const sidebarHtml = createSidebarHtml(sidebarItems, currentPath)
+        const sidebarHtml = layout === 'home' ? '' : createSidebarHtml(sidebarItems, currentPath)
 
-        // Generate search HTML
+        // Generate search HTML (only for non-home layouts)
         const searchConfig = options.search || config.markdown.search || { enabled: false }
-        const searchHtml = createSearchHtml(searchConfig)
+        const searchHtml = layout === 'home' ? '' : createSearchHtml(searchConfig)
 
         // Generate theme CSS
         const themeConfig = options.themeConfig || config.markdown.themeConfig || {}
@@ -595,20 +593,18 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
         // Add frontmatter data as a global variable
         const frontmatterScript = `<script>window.$frontmatter = ${JSON.stringify(frontmatter)};</script>`
 
-        // Check for layout in frontmatter
-        const layout = frontmatter.layout || 'doc'
 
         // Prepare content based on layout
         let pageContent = cleanedHtmlContent
 
-        // Process TOC if enabled
+        // Process TOC if enabled (but not for home layout)
         let tocHtml = ''
         let tocStyles = ''
         let tocScripts = ''
         let sidebarTocHtml = ''
         let floatingTocHtml = ''
 
-        if (options.toc?.enabled !== false) {
+        if (layout !== 'home' && options.toc?.enabled !== false) {
           // Generate TOC data from the original markdown content
           const tocData = generateTocData(mdContentWithoutFrontmatter, {
             ...options.toc,
