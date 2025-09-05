@@ -19,25 +19,17 @@ import {
 } from './toc'
 import { config } from './config'
 
-// Global storage for code groups and containers
-const codeGroupStore = new Map<string, any>()
-const containerStore = new Map<string, any>()
+// No global storage needed - direct HTML replacement
 
 /**
  * Process VitePress-style code groups
- * Converts ::: code-group syntax to placeholders that get replaced later
+ * Replace ::: code-group markers directly with HTML
  */
 function processCodeGroups(content: string): string {
-  const codeGroupRegex = /::: code-group\n([\s\S]*?)\n:::/g
-  let result = content
-  let match
-  let processedCount = 0
+  // Use a more specific regex that only matches proper code-group blocks
+  const codeGroupRegex = /::: code-group\n((?:(?!::: (?!code-group))[\s\S])*?)\n:::/g
   
-  // Process all matches by finding them one by one and replacing from the end
-  const matches: Array<{ match: RegExpExecArray; replacement: string }> = []
-  
-  while ((match = codeGroupRegex.exec(content)) !== null) {
-    const groupContent = match[1]
+  return content.replace(codeGroupRegex, (match, groupContent) => {
     const codeBlocks: Array<{ language: string; title: string; code: string }> = []
     
     // Extract all code blocks within the code group
@@ -53,50 +45,57 @@ function processCodeGroups(content: string): string {
       })
     }
     
-    if (codeBlocks.length > 0) {
-      const groupId = Math.random().toString(36).substr(2, 9)
-      const placeholderKey = `CODE_GROUP_${groupId}`
+    if (codeBlocks.length === 0) return match
+    
+    const groupId = Math.random().toString(36).substr(2, 9)
+    
+    // Generate tabs
+    const tabs = codeBlocks.map((block: any, index: number) => {
+      const tabId = `tab-${groupId}-${index}`
+      const checked = index === 0 ? 'checked' : ''
+      return `<input type="radio" name="group-${groupId}" id="${tabId}" ${checked}><label data-title="${block.title}" for="${tabId}">${block.title}</label>`
+    }).join('')
+    
+    // Generate code blocks with syntax highlighting
+    const blocks = codeBlocks.map((block: any, index: number) => {
+      const isActive = index === 0 ? 'active' : ''
+      const copyButtonId = `copy-btn-${Math.random().toString(36).substr(2, 9)}`
       
-      // Store the code group data
-      codeGroupStore.set(placeholderKey, { codeBlocks, groupId })
-      
-      // Store the replacement info
-      matches.push({
-        match,
-        replacement: `<div data-code-group-placeholder="${placeholderKey}"></div>`
-      })
-      processedCount++
-    }
-  }
-  
-  // Replace all matches from the end to avoid index shifting
-  matches.reverse().forEach(({ match, replacement }) => {
-    result = result.substring(0, match.index!) + replacement + result.substring(match.index! + match[0].length)
+      // Create highlighted code using the existing code block structure
+      return `<div class="language-${block.language} vp-adaptive-theme ${isActive}">
+<div class="code-block-container">
+<button class="copy-code-btn" id="${copyButtonId}" onclick="copyToClipboard('${copyButtonId}', '${block.code.replace(/'/g, '\\\'').replace(/"/g, '\\&quot;')}')">Copy</button>
+<pre><code class="language-${block.language}">${block.code}</code></pre>
+</div>
+</div>`
+    }).join('')
+    
+    return `<div class="vp-code-group vp-adaptive-theme">
+<div class="tabs">
+${tabs}
+</div>
+<div class="blocks">
+${blocks}
+</div>
+</div>`
   })
-  
-  return result
 }
 
 /**
  * Process VitePress-style containers (tip, warning, danger, etc.)
+ * Replace entire container blocks with proper HTML
  */
 function processContainers(content: string): string {
-  const containerRegex = /::: (\w+)(?:\s+(.+))?\n([\s\S]*?)\n:::/g
+  // Match complete container blocks, but exclude code-group and avoid matching across HTML blocks
+  const containerRegex = /::: (?!code-group)(\w+)(?:\s+(.+))?\n((?:(?!<div class="vp-code-group|::: code-group)[\s\S])*?)\n:::/g
   
   return content.replace(containerRegex, (match, type, title, containerContent) => {
-    // Skip code-group containers as they're handled separately
-    if (type === 'code-group') return match
-    
-    const containerId = Math.random().toString(36).substr(2, 9)
-    const placeholderKey = `CONTAINER_${containerId}`
-    
     const containerTitle = title || type.toUpperCase()
     
-    // Store the container data
-    containerStore.set(placeholderKey, { type, title: containerTitle, content: containerContent.trim() })
-    
-    // Return a placeholder that won't be processed by markdown
-    return `<div data-container-placeholder="${placeholderKey}"></div>`
+    return `<div class="${type} custom-block">
+<p class="custom-block-title">${containerTitle}</p>
+${containerContent.trim()}
+</div>`
   })
 }
 
@@ -189,74 +188,6 @@ ${content.trim()}
   })
 }
 
-/**
- * Replace placeholders with actual HTML content
- */
-function replacePlaceholders(html: string): string {
-  let result = html
-  
-  // Replace code group placeholders
-  const codeGroupRegex = /<div data-code-group-placeholder="([^"]+)"><\/div>/g
-  result = result.replace(codeGroupRegex, (match, placeholderKey) => {
-    const groupData = codeGroupStore.get(placeholderKey)
-    if (!groupData) return match
-    
-    const { codeBlocks, groupId } = groupData
-    
-    // Generate tabs
-    const tabs = codeBlocks.map((block: any, index: number) => {
-      const tabId = `tab-${groupId}-${index}`
-      const checked = index === 0 ? 'checked' : ''
-      return `<input type="radio" name="group-${groupId}" id="${tabId}" ${checked}><label data-title="${block.title}" for="${tabId}">${block.title}</label>`
-    }).join('')
-    
-    // Generate code blocks with syntax highlighting
-    const blocks = codeBlocks.map((block: any, index: number) => {
-      const isActive = index === 0 ? 'active' : ''
-      const copyButtonId = `copy-btn-${Math.random().toString(36).substr(2, 9)}`
-      const escapedCode = block.code.replace(/'/g, '\\\'').replace(/"/g, '&quot;')
-      
-      // Create highlighted code using the existing code block structure
-      return `<div class="language-${block.language} vp-adaptive-theme ${isActive}">
-<div class="code-block-container">
-<button class="copy-code-btn" id="${copyButtonId}" onclick="copyToClipboard('${copyButtonId}', '${block.code.replace(/'/g, '\\\'').replace(/"/g, '\\&quot;')}')">Copy</button>
-<pre><code class="language-${block.language}">${block.code}</code></pre>
-</div>
-</div>`
-    }).join('')
-    
-    // Clean up the store
-    codeGroupStore.delete(placeholderKey)
-    
-    return `<div class="vp-code-group vp-adaptive-theme">
-<div class="tabs">
-${tabs}
-</div>
-<div class="blocks">
-${blocks}
-</div>
-</div>`
-  })
-  
-  // Replace container placeholders
-  const containerRegex = /<div data-container-placeholder="([^"]+)"><\/div>/g
-  result = result.replace(containerRegex, (match, placeholderKey) => {
-    const containerData = containerStore.get(placeholderKey)
-    if (!containerData) return match
-    
-    const { type, title, content } = containerData
-    
-    // Clean up the store
-    containerStore.delete(placeholderKey)
-    
-    return `<div class="${type} custom-block">
-<p class="custom-block-title">${title}</p>
-${content}
-</div>`
-  })
-  
-  return result
-}
 
 /**
  * Process STX templates (HTML with Blade-like syntax)
@@ -795,8 +726,7 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
           renderer,
         }) as string
 
-        // Replace code group placeholders with actual HTML
-        htmlContent = replacePlaceholders(htmlContent)
+        // No need for placeholder replacement anymore - HTML is directly inserted
 
         // Clean up the Home component reference if it's the only content in a home layout
         let cleanedHtmlContent = htmlContent
@@ -904,6 +834,8 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
 
         // Maintain directory structure relative to the entrypoint
         const relativePath = path.relative(process.cwd(), args.path)
+        
+        
         const dirPath = path.dirname(relativePath)
         const baseName = path.basename(args.path, '.md')
 
