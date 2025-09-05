@@ -1,0 +1,19 @@
+{{!-- VitePress-style Code Group Template --}}
+<div class="vp-code-group vp-adaptive-theme">
+  <div class="tabs">
+    @foreach($codeBlocks as $block)
+      <input type="radio" name="group-{{$groupId}}" id="tab-{{$groupId}}-{{$loop.index}}" {{$loop.first ? 'checked' : ''}}>
+      <label data-title="{{$block.title}}" for="tab-{{$groupId}}-{{$loop.index}}">{{$block.title}}</label>
+    @endforeach
+  </div>
+  <div class="blocks">
+    @foreach($codeBlocks as $block)
+      <div class="language-{{$block.language}} vp-adaptive-theme {{$loop.first ? 'active' : ''}}">
+        <div class="code-block-container">
+          <button class="copy-code-btn" id="copy-btn-{{$block.copyId}}" onclick="copyToClipboard('copy-btn-{{$block.copyId}}', '{{$block.escapedCode}}')">Copy</button>
+          <pre><code class="language-{{$block.language}}">{{$block.code}}</code></pre>
+        </div>
+      </div>
+    @endforeach
+  </div>
+</div>

@@ -1,0 +1,19 @@
+{{!-- VitePress-style Sidebar Template --}}
+<aside class="sidebar">
+  <div class="sidebar-container">
+    @foreach($sidebarItems as $group)
+      <div class="sidebar-group">
+        @if($group.text)
+          <div class="sidebar-group-title">{{$group.text}}</div>
+        @endif
+        @if($group.items)
+          <div class="sidebar-group-content">
+            @foreach($group.items as $item)
+              <a href="{{$item.link}}" class="sidebar-link sidebar-indent-{{$item.level || 1}} {{$item.active ? 'active' : ''}}">{{$item.text}}</a>
+            @endforeach
+          </div>
+        @endif
+      </div>
+    @endforeach
+  </div>
+</aside>

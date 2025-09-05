@@ -29,8 +29,15 @@ const containerStore = new Map<string, any>()
  */
 function processCodeGroups(content: string): string {
   const codeGroupRegex = /::: code-group\n([\s\S]*?)\n:::/g
+  let result = content
+  let match
+  let processedCount = 0
   
-  return content.replace(codeGroupRegex, (match, groupContent) => {
+  // Process all matches by finding them one by one and replacing from the end
+  const matches: Array<{ match: RegExpExecArray; replacement: string }> = []
+  
+  while ((match = codeGroupRegex.exec(content)) !== null) {
+    const groupContent = match[1]
     const codeBlocks: Array<{ language: string; title: string; code: string }> = []
     
     // Extract all code blocks within the code group
@@ -46,17 +53,28 @@ function processCodeGroups(content: string): string {
       })
     }
     
-    if (codeBlocks.length === 0) return match
-    
-    const groupId = Math.random().toString(36).substr(2, 9)
-    const placeholderKey = `CODE_GROUP_${groupId}`
-    
-    // Store the code group data
-    codeGroupStore.set(placeholderKey, { codeBlocks, groupId })
-    
-    // Return a placeholder that won't be processed by markdown
-    return `<div data-code-group-placeholder="${placeholderKey}"></div>`
+    if (codeBlocks.length > 0) {
+      const groupId = Math.random().toString(36).substr(2, 9)
+      const placeholderKey = `CODE_GROUP_${groupId}`
+      
+      // Store the code group data
+      codeGroupStore.set(placeholderKey, { codeBlocks, groupId })
+      
+      // Store the replacement info
+      matches.push({
+        match,
+        replacement: `<div data-code-group-placeholder="${placeholderKey}"></div>`
+      })
+      processedCount++
+    }
+  }
+  
+  // Replace all matches from the end to avoid index shifting
+  matches.reverse().forEach(({ match, replacement }) => {
+    result = result.substring(0, match.index!) + replacement + result.substring(match.index! + match[0].length)
   })
+  
+  return result
 }
 
 /**
@@ -766,8 +784,10 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
 
         // Process VitePress-style extensions before markdown conversion
         let processedContent = mdContentWithoutFrontmatter
-        processedContent = processContainers(processedContent)
+        
+        
         processedContent = processCodeGroups(processedContent)
+        processedContent = processContainers(processedContent)
 
         // Convert markdown to HTML
         let htmlContent = marked.parse(processedContent, {

@@ -1,0 +1,5 @@
+{{!-- VitePress-style Container Template (tip, warning, danger, info) --}}
+<div class="{{$type}} custom-block">
+  <p class="custom-block-title">{{$title}}</p>
+  {{$content}}
+</div>

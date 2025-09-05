@@ -1,0 +1,16 @@
+{{!-- VitePress-style Features Grid Template --}}
+<section class="py-12 px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="grid grid-cols-4 gap-8">
+      @foreach($features as $feature)
+        <div class="bg-gray-50 border border-gray-200 rounded-xl p-6 text-left">
+          @if($feature.icon)
+            <div class="text-5xl mb-4">{{$feature.icon}}</div>
+          @endif
+          <h2 class="text-xl font-semibold text-gray-900 mb-2">{{$feature.title}}</h2>
+          <p class="text-sm text-gray-600 leading-relaxed">{{$feature.details}}</p>
+        </div>
+      @endforeach
+    </div>
+  </div>
+</section>
