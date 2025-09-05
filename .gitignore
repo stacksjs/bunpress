@@ -12,3 +12,5 @@ temp
 docs/.bunpress/cache
 bin/bunpress
 bin/bunpress*
+
+docs/.vitepress/

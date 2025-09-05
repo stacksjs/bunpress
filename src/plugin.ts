@@ -104,22 +104,19 @@ function createHeroHTML(hero: Frontmatter['hero']): string {
   }).join('\n') || ''
 
   return `
-  <section class="py-16 mb-16">
-    <div class="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center gap-8">
-      <div class="flex-1">
-        ${hero.name ? `<h1 class="text-lg font-semibold mb-2">${hero.name}</h1>` : ''}
-        ${hero.text ? `<p class="text-4xl font-bold leading-tight mb-4">${hero.text}</p>` : ''}
-        ${hero.tagline ? `<p class="text-xl text-gray-600 mb-8">${hero.tagline}</p>` : ''}
-
-        ${actions ? `<div class="hero-actions">${actions}</div>` : ''}
+  <section class="hero-section">
+    <div class="hero-container">
+      <div class="hero-main">
+        <div class="hero-content">
+          ${hero.name ? `<h1 class="hero-name">${hero.name}</h1>` : ''}
+          ${hero.text ? `<h2 class="hero-text">${hero.text}</h2>` : ''}
+          ${hero.tagline ? `<p class="hero-tagline">${hero.tagline}</p>` : ''}
+          ${actions ? `<div class="hero-actions">${actions}</div>` : ''}
+        </div>
+        ${hero.image ? `<div class="hero-image">
+          <img src="${hero.image}" alt="Hero Image">
+        </div>` : ''}
       </div>
-
-      ${hero.image
-        ? `
-      <div class="flex-1 text-center">
-        <img src="${hero.image}" alt="Hero Image" class="max-w-full h-auto">
-      </div>`
-        : ''}
     </div>
   </section>
   `
@@ -133,17 +130,17 @@ function createFeaturesHTML(features: Frontmatter['features']): string {
     return ''
 
   const featureItems = features.map(feature => `
-    <div class="p-6 rounded-lg bg-blue-50 bg-opacity-30 transition-transform hover:translate-y-[-5px] hover:shadow-lg">
-      ${feature.icon ? `<div class="text-3xl mb-4">${feature.icon}</div>` : ''}
-      <h2 class="text-xl font-semibold mb-3">${feature.title}</h2>
-      <p class="text-gray-600">${feature.details}</p>
+    <div class="feature-item">
+      ${feature.icon ? `<div class="feature-icon">${feature.icon}</div>` : ''}
+      <h2 class="feature-title">${feature.title}</h2>
+      <p class="feature-details">${feature.details}</p>
     </div>
   `).join('\n')
 
   return `
-  <section class="py-16">
-    <div class="max-w-6xl mx-auto px-4">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${Math.min(4, features.length)} gap-8">
+  <section class="features-section">
+    <div class="features-container">
+      <div class="features-grid">
         ${featureItems}
       </div>
     </div>
@@ -567,13 +564,13 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
         // Check for layout in frontmatter first
         const layout = frontmatter.layout || 'doc'
 
-        // Generate navigation HTML (only for non-home layouts)
+        // Generate navigation HTML (show on all layouts)
         const navItems = options.nav || config.nav || []
         const currentPath = path.relative(process.cwd(), args.path)
           .replace(/\.md$/, '.html')
           .replace(/\\/g, '/')
           .replace(/^[^/]/, '/$&')
-        const navHtml = layout === 'home' ? '' : createNavHtml(navItems, currentPath)
+        const navHtml = createNavHtml(navItems, currentPath)
 
         // Generate sidebar HTML (only for non-home layouts)
         const sidebarItems = options.sidebar?.['/'] || config.markdown.sidebar?.['/'] || []
@@ -1099,9 +1096,9 @@ function getNavStyles(): string {
   top: 0;
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   z-index: 1000;
   padding: 0;
 }
@@ -1109,54 +1106,50 @@ function getNavStyles(): string {
 .nav-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 60px;
+  height: 64px;
 }
 
 .nav-brand {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.375rem;
+  font-weight: 600;
 }
 
 .nav-brand-link {
-  color: #1f2937;
+  color: #1a1a1a;
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
 }
 
 .nav-brand-link:hover {
-  color: #3b82f6;
+  color: #3451b2;
 }
 
 .nav-menu {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 32px;
 }
 
 .nav-link {
-  color: #4b5563;
+  color: #4c4c4c;
   text-decoration: none;
   font-weight: 500;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.375rem;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  font-size: 14px;
+  padding: 8px 0;
+  transition: color 0.25s ease;
+  position: relative;
 }
 
 .nav-link:hover {
-  color: #1f2937;
-  background-color: rgba(0, 0, 0, 0.05);
+  color: #3451b2;
 }
 
 .nav-link.active {
-  color: #3b82f6;
-  background-color: rgba(59, 130, 246, 0.1);
+  color: #3451b2;
 }
 
 .nav-icon {

@@ -32,37 +32,16 @@ export const defaultConfig: BunPressConfig = {
   // Navigation configuration
   nav: [
     {
-      text: 'Home',
-      link: '/',
-      icon: '🏠'
-    },
-    {
       text: 'Guide',
-      activeMatch: '/guide',
-      items: [
-        {
-          text: 'Getting Started',
-          link: '/guide/getting-started'
-        },
-        {
-          text: 'Installation',
-          link: '/guide/installation'
-        },
-        {
-          text: 'Configuration',
-          link: '/guide/configuration'
-        }
-      ]
+      link: '/install'
     },
     {
       text: 'API',
-      link: '/api',
-      activeMatch: '/api'
+      link: '/usage'
     },
     {
       text: 'Examples',
-      link: '/examples',
-      activeMatch: '/examples'
+      link: '/examples'
     }
   ],
 
@@ -169,52 +148,193 @@ export const defaultConfig: BunPressConfig = {
       body[data-layout="home"] .markdown-body {
         padding: 0;
         max-width: 100%;
-        margin-top: 60px;
+        margin-top: 64px;
         margin-left: 0;
       }
 
-      body[data-layout="home"] .home-content {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 2rem;
+      /* Hero Section */
+      .hero-section {
+        padding: 64px 24px 48px;
       }
 
-      /* Hero section styles for home layout */
-      body[data-layout="home"] .hero-actions {
+      .hero-container {
+        max-width: 1152px;
+        margin: 0 auto;
+      }
+
+      .hero-main {
+        display: flex;
+        align-items: center;
+        gap: 48px;
+      }
+
+      .hero-content {
+        flex: 1;
+        text-align: left;
+      }
+
+      .hero-name {
+        font-size: 48px;
+        font-weight: 600;
+        line-height: 1;
+        color: #3451b2;
+        margin: 0 0 16px 0;
+      }
+
+      .hero-text {
+        font-size: 48px;
+        font-weight: 700;
+        line-height: 1.1;
+        color: #1a1a1a;
+        margin: 0 0 16px 0;
+      }
+
+      .hero-tagline {
+        font-size: 18px;
+        color: #666666;
+        margin: 0 0 32px 0;
+        line-height: 1.5;
+      }
+
+      .hero-actions {
         display: flex;
         flex-wrap: wrap;
-        gap: 1rem;
-        margin-top: 2rem;
+        gap: 16px;
+        margin-top: 32px;
       }
 
-      body[data-layout="home"] .hero-actions a {
+      .hero-image {
+        flex-shrink: 0;
+        width: 200px;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .hero-image img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+
+      .hero-actions a {
         display: inline-flex;
         align-items: center;
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.375rem;
-        font-weight: 500;
+        padding: 12px 24px;
+        border-radius: 24px;
+        font-weight: 600;
+        font-size: 14px;
         text-decoration: none;
-        transition: all 0.2s ease-in-out;
-        border: none;
-        cursor: pointer;
+        transition: all 0.25s ease;
+        border: 1px solid transparent;
+        white-space: nowrap;
       }
 
-      body[data-layout="home"] .hero-actions a[data-theme="brand"] {
-        background-color: #2563eb;
+      .hero-actions a[data-theme="brand"] {
+        background: #3451b2;
         color: white;
+        border-color: #3451b2;
       }
 
-      body[data-layout="home"] .hero-actions a[data-theme="brand"]:hover {
-        background-color: #1d4ed8;
+      .hero-actions a[data-theme="brand"]:hover {
+        background: #2f478f;
+        border-color: #2f478f;
       }
 
-      body[data-layout="home"] .hero-actions a[data-theme="alt"] {
-        background-color: #dbeafe;
-        color: #2563eb;
+      .hero-actions a[data-theme="alt"] {
+        background: transparent;
+        color: #3451b2;
+        border-color: #c2c2c4;
       }
 
-      body[data-layout="home"] .hero-actions a[data-theme="alt"]:hover {
-        background-color: #bfdbfe;
+      .hero-actions a[data-theme="alt"]:hover {
+        border-color: #3451b2;
+      }
+
+      /* Features Section */
+      .features-section {
+        padding: 48px 24px;
+      }
+
+      .features-container {
+        max-width: 1152px;
+        margin: 0 auto;
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 32px;
+      }
+
+      .feature-item {
+        background: #f9f9f9;
+        border: 1px solid #e2e2e3;
+        border-radius: 12px;
+        padding: 24px;
+        text-align: left;
+      }
+
+      .feature-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+      }
+
+      .feature-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin: 0 0 8px 0;
+      }
+
+      .feature-details {
+        font-size: 14px;
+        color: #666666;
+        line-height: 1.5;
+        margin: 0;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 1024px) {
+        .features-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .hero-main {
+          flex-direction: column;
+          text-align: center;
+          gap: 32px;
+        }
+        
+        .hero-content {
+          text-align: center;
+        }
+        
+        .hero-name,
+        .hero-text {
+          font-size: 32px;
+        }
+        
+        .hero-tagline {
+          font-size: 16px;
+        }
+        
+        .hero-actions {
+          justify-content: center;
+        }
+        
+        .hero-image {
+          width: 150px;
+          height: 150px;
+        }
+        
+        .features-grid {
+          grid-template-columns: 1fr;
+          gap: 24px;
+        }
       }
 
       body[data-layout="page"] .markdown-body {
