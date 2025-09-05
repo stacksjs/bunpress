@@ -19,6 +19,227 @@ import {
 } from './toc'
 import { config } from './config'
 
+// Global storage for code groups and containers
+const codeGroupStore = new Map<string, any>()
+const containerStore = new Map<string, any>()
+
+/**
+ * Process VitePress-style code groups
+ * Converts ::: code-group syntax to placeholders that get replaced later
+ */
+function processCodeGroups(content: string): string {
+  const codeGroupRegex = /::: code-group\n([\s\S]*?)\n:::/g
+  
+  return content.replace(codeGroupRegex, (match, groupContent) => {
+    const codeBlocks: Array<{ language: string; title: string; code: string }> = []
+    
+    // Extract all code blocks within the code group
+    const codeBlockRegex = /```(\w+)(?:\s*\[([^\]]+)\])?\n([\s\S]*?)\n```/g
+    let blockMatch
+    
+    while ((blockMatch = codeBlockRegex.exec(groupContent)) !== null) {
+      const [, language, title, code] = blockMatch
+      codeBlocks.push({
+        language,
+        title: title || language,
+        code: code.trim()
+      })
+    }
+    
+    if (codeBlocks.length === 0) return match
+    
+    const groupId = Math.random().toString(36).substr(2, 9)
+    const placeholderKey = `CODE_GROUP_${groupId}`
+    
+    // Store the code group data
+    codeGroupStore.set(placeholderKey, { codeBlocks, groupId })
+    
+    // Return a placeholder that won't be processed by markdown
+    return `<div data-code-group-placeholder="${placeholderKey}"></div>`
+  })
+}
+
+/**
+ * Process VitePress-style containers (tip, warning, danger, etc.)
+ */
+function processContainers(content: string): string {
+  const containerRegex = /::: (\w+)(?:\s+(.+))?\n([\s\S]*?)\n:::/g
+  
+  return content.replace(containerRegex, (match, type, title, containerContent) => {
+    // Skip code-group containers as they're handled separately
+    if (type === 'code-group') return match
+    
+    const containerId = Math.random().toString(36).substr(2, 9)
+    const placeholderKey = `CONTAINER_${containerId}`
+    
+    const containerTitle = title || type.toUpperCase()
+    
+    // Store the container data
+    containerStore.set(placeholderKey, { type, title: containerTitle, content: containerContent.trim() })
+    
+    // Return a placeholder that won't be processed by markdown
+    return `<div data-container-placeholder="${placeholderKey}"></div>`
+  })
+}
+
+/**
+ * Process code groups from HTML (post markdown conversion)
+ */
+function processCodeGroupsFromHtml(html: string): string {
+  // Match the pattern that markdown creates from ::: code-group ... :::
+  const htmlCodeGroupRegex = /<p>::: code-group<\/p>([\s\S]*?)<p>:::<\/p>/g
+  
+  return html.replace(htmlCodeGroupRegex, (match, content) => {
+    // Extract code blocks from the HTML content
+    const codeBlockRegex = /<div class="code-block-container">\s*<button[^>]*>[^<]*<\/button>\s*<pre><code[^>]*>([\s\S]*?)<\/code><\/pre>\s*<\/div>/g
+    const codeBlocks: Array<{ language: string; title: string; code: string; html: string }> = []
+    
+    let blockMatch
+    let currentLang = 'sh' // default
+    let currentTitle = ''
+    
+    // Look for language indicators in the content
+    const langMatches = content.match(/```(\w+)(?:\s*\[([^\]]+)\])?/g)
+    let langIndex = 0
+    
+    while ((blockMatch = codeBlockRegex.exec(content)) !== null) {
+      const [fullMatch, codeHtml] = blockMatch
+      
+      // Extract the actual code content from the HTML
+      const codeText = codeHtml.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim()
+      
+      if (langMatches && langIndex < langMatches.length) {
+        const langMatch = langMatches[langIndex].match(/```(\w+)(?:\s*\[([^\]]+)\])?/)
+        if (langMatch) {
+          currentLang = langMatch[1]
+          currentTitle = langMatch[2] || currentLang
+        }
+      }
+      
+      codeBlocks.push({
+        language: currentLang,
+        title: currentTitle,
+        code: codeText,
+        html: fullMatch
+      })
+      
+      langIndex++
+    }
+    
+    if (codeBlocks.length === 0) return match
+    
+    const groupId = Math.random().toString(36).substr(2, 9)
+    
+    // Generate tabs
+    const tabs = codeBlocks.map((block, index) => {
+      const tabId = `tab-${groupId}-${index}`
+      const checked = index === 0 ? 'checked' : ''
+      return `<input type="radio" name="group-${groupId}" id="${tabId}" ${checked}><label data-title="${block.title}" for="${tabId}">${block.title}</label>`
+    }).join('')
+    
+    // Generate code blocks with proper class names
+    const blocks = codeBlocks.map((block, index) => {
+      const isActive = index === 0 ? 'active' : ''
+      return `<div class="language-${block.language} vp-adaptive-theme ${isActive}">${block.html}</div>`
+    }).join('')
+    
+    return `<div class="vp-code-group vp-adaptive-theme">
+<div class="tabs">
+${tabs}
+</div>
+<div class="blocks">
+${blocks}
+</div>
+</div>`
+  })
+}
+
+/**
+ * Process containers from HTML (post markdown conversion)
+ */
+function processContainersFromHtml(html: string): string {
+  // Match the pattern that markdown creates from ::: tip ... :::
+  const htmlContainerRegex = /<p>::: (\w+)(?:\s+(.+?))?<\/p>([\s\S]*?)<p>:::<\/p>/g
+  
+  return html.replace(htmlContainerRegex, (match, type, title, content) => {
+    const containerTitle = title || type.toUpperCase()
+    
+    return `<div class="${type} custom-block">
+<p class="custom-block-title">${containerTitle}</p>
+${content.trim()}
+</div>`
+  })
+}
+
+/**
+ * Replace placeholders with actual HTML content
+ */
+function replacePlaceholders(html: string): string {
+  let result = html
+  
+  // Replace code group placeholders
+  const codeGroupRegex = /<div data-code-group-placeholder="([^"]+)"><\/div>/g
+  result = result.replace(codeGroupRegex, (match, placeholderKey) => {
+    const groupData = codeGroupStore.get(placeholderKey)
+    if (!groupData) return match
+    
+    const { codeBlocks, groupId } = groupData
+    
+    // Generate tabs
+    const tabs = codeBlocks.map((block: any, index: number) => {
+      const tabId = `tab-${groupId}-${index}`
+      const checked = index === 0 ? 'checked' : ''
+      return `<input type="radio" name="group-${groupId}" id="${tabId}" ${checked}><label data-title="${block.title}" for="${tabId}">${block.title}</label>`
+    }).join('')
+    
+    // Generate code blocks with syntax highlighting
+    const blocks = codeBlocks.map((block: any, index: number) => {
+      const isActive = index === 0 ? 'active' : ''
+      const copyButtonId = `copy-btn-${Math.random().toString(36).substr(2, 9)}`
+      const escapedCode = block.code.replace(/'/g, '\\\'').replace(/"/g, '&quot;')
+      
+      // Create highlighted code using the existing code block structure
+      return `<div class="language-${block.language} vp-adaptive-theme ${isActive}">
+<div class="code-block-container">
+<button class="copy-code-btn" id="${copyButtonId}" onclick="copyToClipboard('${copyButtonId}', '${block.code.replace(/'/g, '\\\'').replace(/"/g, '\\&quot;')}')">Copy</button>
+<pre><code class="language-${block.language}">${block.code}</code></pre>
+</div>
+</div>`
+    }).join('')
+    
+    // Clean up the store
+    codeGroupStore.delete(placeholderKey)
+    
+    return `<div class="vp-code-group vp-adaptive-theme">
+<div class="tabs">
+${tabs}
+</div>
+<div class="blocks">
+${blocks}
+</div>
+</div>`
+  })
+  
+  // Replace container placeholders
+  const containerRegex = /<div data-container-placeholder="([^"]+)"><\/div>/g
+  result = result.replace(containerRegex, (match, placeholderKey) => {
+    const containerData = containerStore.get(placeholderKey)
+    if (!containerData) return match
+    
+    const { type, title, content } = containerData
+    
+    // Clean up the store
+    containerStore.delete(placeholderKey)
+    
+    return `<div class="${type} custom-block">
+<p class="custom-block-title">${title}</p>
+${content}
+</div>`
+  })
+  
+  return result
+}
+
 /**
  * Process STX templates (HTML with Blade-like syntax)
  *
@@ -98,23 +319,28 @@ function createHeroHTML(hero: Frontmatter['hero']): string {
     return ''
 
   const actions = hero.actions?.map((action) => {
-    return `<a href="${action.link}" data-theme="${action.theme || 'alt'}">
+    const baseClasses = 'inline-flex items-center px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300 whitespace-nowrap'
+    const themeClasses = action.theme === 'brand'
+      ? 'bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 hover:border-blue-700'
+      : 'bg-transparent text-blue-600 border border-gray-300 hover:border-blue-600'
+    
+    return `<a href="${action.link}" class="${baseClasses} ${themeClasses}">
       ${action.text}
     </a>`
   }).join('\n') || ''
 
   return `
-  <section class="hero-section">
-    <div class="hero-container">
-      <div class="hero-main">
-        <div class="hero-content">
-          ${hero.name ? `<h1 class="hero-name">${hero.name}</h1>` : ''}
-          ${hero.text ? `<h2 class="hero-text">${hero.text}</h2>` : ''}
-          ${hero.tagline ? `<p class="hero-tagline">${hero.tagline}</p>` : ''}
-          ${actions ? `<div class="hero-actions">${actions}</div>` : ''}
+  <section class="pt-16 pb-12 px-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex items-center gap-12">
+        <div class="flex-1 text-left">
+          ${hero.name ? `<h1 class="text-5xl font-semibold leading-none text-blue-600 mb-4">${hero.name}</h1>` : ''}
+          ${hero.text ? `<h2 class="text-5xl font-bold leading-tight text-gray-900 mb-4">${hero.text}</h2>` : ''}
+          ${hero.tagline ? `<p class="text-lg text-gray-600 mb-8 leading-relaxed">${hero.tagline}</p>` : ''}
+          ${actions ? `<div class="flex flex-wrap gap-4 mt-8">${actions}</div>` : ''}
         </div>
-        ${hero.image ? `<div class="hero-image">
-          <img src="${hero.image}" alt="Hero Image">
+        ${hero.image ? `<div class="flex-shrink-0 w-48 h-48 flex items-center justify-center">
+          <img src="${hero.image}" alt="Hero Image" class="max-w-full max-h-full object-contain">
         </div>` : ''}
       </div>
     </div>
@@ -130,17 +356,17 @@ function createFeaturesHTML(features: Frontmatter['features']): string {
     return ''
 
   const featureItems = features.map(feature => `
-    <div class="feature-item">
-      ${feature.icon ? `<div class="feature-icon">${feature.icon}</div>` : ''}
-      <h2 class="feature-title">${feature.title}</h2>
-      <p class="feature-details">${feature.details}</p>
+    <div class="bg-gray-50 border border-gray-200 rounded-xl p-6 text-left">
+      ${feature.icon ? `<div class="text-5xl mb-4">${feature.icon}</div>` : ''}
+      <h2 class="text-xl font-semibold text-gray-900 mb-2">${feature.title}</h2>
+      <p class="text-sm text-gray-600 leading-relaxed">${feature.details}</p>
     </div>
   `).join('\n')
 
   return `
-  <section class="features-section">
-    <div class="features-container">
-      <div class="features-grid">
+  <section class="py-12 px-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="grid grid-cols-4 gap-8">
         ${featureItems}
       </div>
     </div>
@@ -234,7 +460,7 @@ function createHomePageHtml(frontmatter: Frontmatter, htmlContent: string): stri
     <div class="home-page">
       ${createHeroHTML(frontmatter.hero)}
       ${createFeaturesHTML(frontmatter.features)}
-      <div class="home-content max-w-4xl mx-auto px-4 py-8">
+      <div class="max-w-4xl mx-auto px-6 py-8">
         ${htmlContent}
       </div>
     </div>
@@ -429,8 +655,17 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
       // Custom renderer for code blocks with copy-to-clipboard and line highlighting
       const originalCodeRenderer = renderer.code
       renderer.code = function(code: any, language?: string | undefined, escaped?: boolean | undefined): string {
-        // Ensure code is a string
-        const codeString = typeof code === 'string' ? code : String(code || '')
+        // Ensure code is a string and handle object cases properly
+        let codeString = ''
+        if (typeof code === 'string') {
+          codeString = code
+        } else if (code && typeof code === 'object' && 'text' in code) {
+          codeString = code.text || ''
+        } else if (code && typeof code === 'object' && 'raw' in code) {
+          codeString = code.raw || ''
+        } else {
+          codeString = String(code || '')
+        }
         const langString = typeof language === 'string' ? language : ''
 
         // Handle line highlighting syntax: ```ts {1,3-5}
@@ -529,11 +764,19 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
           })
         }
 
+        // Process VitePress-style extensions before markdown conversion
+        let processedContent = mdContentWithoutFrontmatter
+        processedContent = processContainers(processedContent)
+        processedContent = processCodeGroups(processedContent)
+
         // Convert markdown to HTML
-        const htmlContent = marked.parse(mdContentWithoutFrontmatter, {
+        let htmlContent = marked.parse(processedContent, {
           ...markedOptions,
           renderer,
         }) as string
+
+        // Replace code group placeholders with actual HTML
+        htmlContent = replacePlaceholders(htmlContent)
 
         // Clean up the Home component reference if it's the only content in a home layout
         let cleanedHtmlContent = htmlContent
@@ -799,6 +1042,29 @@ function showCopyError(button) {
     button.style.background = ''
   }, 2000)
 }
+
+// Handle code group tab switching
+document.addEventListener('DOMContentLoaded', function() {
+  const codeGroups = document.querySelectorAll('.vp-code-group')
+  
+  codeGroups.forEach(group => {
+    const radios = group.querySelectorAll('input[type="radio"]')
+    const blocks = group.querySelectorAll('.blocks > div')
+    
+    radios.forEach((radio, index) => {
+      radio.addEventListener('change', function() {
+        if (this.checked) {
+          // Hide all blocks
+          blocks.forEach(block => block.classList.remove('active'))
+          // Show selected block
+          if (blocks[index]) {
+            blocks[index].classList.add('active')
+          }
+        }
+      })
+    })
+  })
+})
 `
 
         let finalHtml: string
@@ -809,7 +1075,10 @@ function showCopyError(button) {
 
           // Replace {{frontmatter.X}} placeholders with frontmatter values
           Object.entries(frontmatter).forEach(([key, value]) => {
-            finalHtml = finalHtml.replace(new RegExp(`\\{\\{frontmatter\\.${key}\\}\\}`, 'g'), String(value))
+            const stringValue = typeof value === 'object' && value !== null 
+              ? JSON.stringify(value) 
+              : String(value || '')
+            finalHtml = finalHtml.replace(new RegExp(`\\{\\{frontmatter\\.${key}\\}\\}`, 'g'), stringValue)
           })
 
           // Add TOC styles and scripts if not already present
