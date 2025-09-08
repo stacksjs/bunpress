@@ -81,7 +81,7 @@
     "@stacksjs/ts-i18n": "^0.0.0",
     "@types/bun": "^1.2.10",
     "@types/marked": "^6.0.0",
-    "buddy-bot": "^0.8.9",
+    "buddy-bot": "^0.9.5",
     "bun-git-hooks": "^0.2.19",
     "bun-plugin-dtsx": "^0.21.9",
     "bunfig": "^0.8.3",
