@@ -29,7 +29,7 @@ let instanceCount = 0
 export async function getHighlighter(): Promise<Highlighter> {
   instanceCount++
   if (process.env.NODE_ENV !== 'production') {
-    console.log(`Shiki highlighter requested (total requests: ${instanceCount})`)
+    console.warn(`Shiki highlighter requested (total requests: ${instanceCount})`)
   }
   if (globalHighlighter) {
     return globalHighlighter
@@ -37,13 +37,13 @@ export async function getHighlighter(): Promise<Highlighter> {
 
   if (highlighterPromise) {
     if (process.env.NODE_ENV !== 'production') {
-      console.log('Waiting for existing highlighter promise')
+      console.warn('Waiting for existing highlighter promise')
     }
     return highlighterPromise
   }
 
   if (process.env.NODE_ENV !== 'production') {
-    console.log('Creating new highlighter instance')
+    console.warn('Creating new highlighter instance')
   }
   highlighterPromise = createHighlighter({
     themes: ['light-plus', 'dark-plus'],
@@ -98,7 +98,7 @@ export function disposeHighlighter(): void {
   instanceCount = 0
   if (globalHighlighter) {
     if (process.env.NODE_ENV !== 'production') {
-      console.log('Disposing highlighter instance')
+      console.warn('Disposing highlighter instance')
     }
     globalHighlighter.dispose()
     globalHighlighter = null
@@ -173,7 +173,7 @@ ${blocks}
  * Process VitePress-style containers (tip, warning, danger, etc.)
  * Replace entire container blocks with proper HTML
  */
-async function processContainers(content: string, renderer: any, markedOptions: any, highlighter: Highlighter | null = null): Promise<string> {
+async function processContainers(content: string, renderer: any, markedOptions: any, _highlighter: Highlighter | null = null): Promise<string> {
   // Match complete container blocks, but exclude code-group
   // More flexible regex to handle various whitespace patterns
   const containerRegex = /:::\s+(?!code-group)(\w+)(?:\s+(.*?))?\s*\n([\s\S]*?)\n:::/g
@@ -291,7 +291,7 @@ ${blocks}
 /**
  * Process containers from HTML (post markdown conversion)
  */
-async function processContainersFromHtml(html: string, renderer: any, markedOptions: any, highlighter: Highlighter | null = null): Promise<string> {
+async function processContainersFromHtml(html: string, renderer: any, markedOptions: any, _highlighter: Highlighter | null = null): Promise<string> {
   // Match the pattern that markdown creates from ::: tip ... :::
   const htmlContainerRegex = /<p>::: (\w+)(?:\s+(.+?))?<\/p>([\s\S]*?)<p>:::<\/p>/g
 
@@ -380,7 +380,7 @@ export function processStxTemplate(content: string, frontmatter: any, globalConf
 
     // Handle both arrays and objects
     if (Array.isArray(collection)) {
-      return collection.map((item, index) => {
+      return collection.map((item, _index) => {
         // Replace each occurrence of the item variable with the actual value
         let processedContent = loopContent
         if (typeof item === 'object' && item !== null) {
@@ -697,7 +697,7 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
 
   // Sitemap and robots configuration
   const sitemapConfig = (options as any).sitemap || (config as any).sitemap || { enabled: true }
-  const robotsConfig = (options as any).robots || (config as any).robots || { enabled: true }
+  const _robotsConfig = (options as any).robots || (config as any).robots || { enabled: true }
 
   // Track pages for sitemap generation
   const pages: Array<{ path: string, frontmatter: any }> = []
@@ -809,8 +809,8 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
       })
 
       // Custom renderer for code blocks with copy-to-clipboard and line highlighting
-      const originalCodeRenderer = renderer.code
-      renderer.code = function (code: any, language?: string | undefined, escaped?: boolean | undefined): string {
+      const _originalCodeRenderer = renderer.code
+      renderer.code = function (code: any, language?: string | undefined, _escaped?: boolean | undefined): string {
         // Ensure code is a string and handle object cases properly
         let codeString = ''
         if (typeof code === 'string') {
@@ -1020,7 +1020,7 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
         let pageContent = cleanedHtmlContent
 
         // Process TOC if enabled (but not for home layout)
-        const tocHtml = ''
+        const _tocHtml = ''
         let tocStyles = ''
         let tocScripts = ''
         let sidebarTocHtml = ''
@@ -1400,7 +1400,7 @@ export async function generateSitemapAndRobots(
         await fs.promises.writeFile(sitemapPath, sitemapXml)
 
         if (config.verbose) {
-          console.log(`Sitemap: Generated ${sitemapPath} with ${entries.length} entries`)
+          console.warn(`Sitemap: Generated ${sitemapPath} with ${entries.length} entries`)
         }
       }
     }
@@ -1475,7 +1475,7 @@ export async function generateSitemapAndRobots(
       await fs.promises.writeFile(robotsPath, robotsTxt)
 
       if (config.verbose) {
-        console.log(`Robots: Generated ${robotsPath}`)
+        console.warn(`Robots: Generated ${robotsPath}`)
       }
     }
     catch (error) {
@@ -1883,7 +1883,7 @@ async function generateMultiSitemap(
     // Use parallel file writes for better performance
     const writePromise = fs.promises.writeFile(sitemapPath, sitemapXml).then(() => {
       if (config.verbose) {
-        console.log(`Sitemap: Generated ${sitemapPath} with ${chunk.length} entries`)
+        console.warn(`Sitemap: Generated ${sitemapPath} with ${chunk.length} entries`)
       }
     })
     writePromises.push(writePromise)
@@ -1917,7 +1917,7 @@ async function generateMultiSitemap(
     await fs.promises.writeFile(indexPath, indexXml)
 
     if (config.verbose) {
-      console.log(`Sitemap: Generated ${indexPath} with ${sitemapFiles.length} sitemaps`)
+      console.warn(`Sitemap: Generated ${indexPath} with ${sitemapFiles.length} sitemaps`)
     }
   }
 }
@@ -1983,7 +1983,7 @@ async function generateLargeSitemap(
   return new Promise((resolve, reject) => {
     writeStream.on('finish', () => {
       if (config.verbose) {
-        console.log(`Sitemap: Generated ${sitemapPath} with ${entries.length} entries (streaming)`)
+        console.warn(`Sitemap: Generated ${sitemapPath} with ${entries.length} entries (streaming)`)
       }
       resolve()
     })
@@ -2094,7 +2094,7 @@ function escapeXml(unsafe: string): string {
 function createSitemapEntries(
   pages: Array<{ path: string, frontmatter: any }>,
   config: SitemapConfig,
-  baseUrl: string,
+  _baseUrl: string,
 ): SitemapEntry[] {
   const entries: SitemapEntry[] = []
   const currentDate = new Date().toISOString().split('T')[0]
@@ -2104,7 +2104,7 @@ function createSitemapEntries(
     try {
       return new RegExp(pattern)
     }
-    catch (error) {
+    catch {
       console.warn(`Invalid exclude pattern: ${pattern}`)
       return null
     }
@@ -2116,7 +2116,7 @@ function createSitemapEntries(
         try {
           return { regex: new RegExp(pattern), priority }
         }
-        catch (error) {
+        catch {
           console.warn(`Invalid priority pattern: ${pattern}`)
           return null
         }
@@ -2128,7 +2128,7 @@ function createSitemapEntries(
         try {
           return { regex: new RegExp(pattern), changefreq }
         }
-        catch (error) {
+        catch {
           console.warn(`Invalid changefreq pattern: ${pattern}`)
           return null
         }

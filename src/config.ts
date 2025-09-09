@@ -6,6 +6,7 @@ import type {
 import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import process from 'node:process'
 
 // Configuration file formats supported
 const CONFIG_FILES = [
@@ -388,20 +389,7 @@ export const defaultConfig: BunPressConfig = {
   },
 }
 
-// Plugin system interfaces
-export interface ConfigPlugin {
-  name: string
-  extendConfig?: (config: BunPressConfig) => BunPressConfig
-  validateConfig?: (config: BunPressConfig) => ConfigValidationResult
-  onConfigLoad?: (config: BunPressConfig) => void | Promise<void>
-  onConfigChange?: (newConfig: BunPressConfig, oldConfig: BunPressConfig) => void | Promise<void>
-}
-
-export interface ConfigValidationResult {
-  valid: boolean
-  errors: string[]
-  warnings: string[]
-}
+// Plugin system interfaces are defined in types.ts
 
 // Configuration manager class
 export class ConfigManager {

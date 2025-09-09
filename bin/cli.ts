@@ -64,7 +64,7 @@ async function copyStaticAssets(outdir: string, verbose: boolean = false): Promi
       await copyFile(sourcePath, targetPath)
     }
   }
-  catch (err) {
+  catch {
     // Public directory doesn't exist, which is fine
     if (verbose) {
       console.log('No public directory found, skipping static assets copy')
@@ -268,7 +268,7 @@ cli
             return new Response(file)
           }
         }
-        catch (e) {
+        catch {
           // File doesn't exist, continue to HTML routing
         }
 
@@ -280,7 +280,7 @@ cli
             return new Response(docsFile)
           }
         }
-        catch (e) {
+        catch {
           // File doesn't exist, continue to HTML routing
         }
 
@@ -298,7 +298,7 @@ cli
             })
           }
         }
-        catch (e) {
+        catch {
           // HTML file doesn't exist
         }
 
@@ -316,7 +316,7 @@ cli
             })
           }
         }
-        catch (e) {
+        catch {
           // HTML file doesn't exist
         }
 
@@ -330,7 +330,7 @@ cli
             })
           }
         }
-        catch (e) {
+        catch {
           // Index file doesn't exist
         }
 
@@ -344,7 +344,7 @@ cli
             })
           }
         }
-        catch (e) {
+        catch {
           // Index file doesn't exist
         }
 
