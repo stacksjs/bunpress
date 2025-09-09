@@ -114,6 +114,7 @@ export function disposeHighlighter(): void {
  */
 function processCodeGroups(content: string): string {
   // Use a more specific regex that only matches proper code-group blocks
+  // Make sure to not capture content after the code-group
   const codeGroupRegex = /::: code-group\n((?:(?!::: (?!code-group))[\s\S])*?)\n:::/g
 
   return content.replace(codeGroupRegex, (match, groupContent) => {
@@ -174,9 +175,9 @@ ${blocks}
  * Replace entire container blocks with proper HTML
  */
 async function processContainers(content: string, renderer: any, markedOptions: any, _highlighter: Highlighter | null = null): Promise<string> {
-  // Match complete container blocks, but exclude code-group
+  // Match complete container blocks, but exclude code-group and code blocks
   // More flexible regex to handle various whitespace patterns
-  const containerRegex = /:::\s+(?!code-group)(\w+)(?:\s+(.*?))?\s*\n([\s\S]*?)\n:::/g
+  const containerRegex = /^:::\s*(?!code-group)(\w+)(?:\s+(.*?))?\s*\n([\s\S]*?)\n:::$/gm
 
   const promises: Promise<{ match: string, replacement: string }>[] = []
   const matches: RegExpMatchArray[] = []
@@ -191,18 +192,31 @@ async function processContainers(content: string, renderer: any, markedOptions: 
     const containerTitle = title || type.toUpperCase()
 
     // Process the content inside the container as markdown
-    const processedPromise = marked.parse(containerContent.trim(), {
+    const processedResult = marked.parse(containerContent.trim(), {
       ...markedOptions,
       renderer,
-    }) as Promise<string>
+    })
 
-    promises.push(processedPromise.then(processedContainerContent => ({
-      match: fullMatch,
-      replacement: `<div class="${type} custom-block">
+    // Handle both Promise and direct string returns from marked.parse
+    if (processedResult instanceof Promise) {
+      promises.push(processedResult.then(processedContainerContent => ({
+        match: fullMatch,
+        replacement: `<div class="${type} custom-block">
 <p class="custom-block-title">${containerTitle}</p>
 ${processedContainerContent}
 </div>`,
-    })))
+      })))
+    } else {
+      // Handle direct string return
+      const processedContainerContent = processedResult as string
+      promises.push(Promise.resolve({
+        match: fullMatch,
+        replacement: `<div class="${type} custom-block">
+<p class="custom-block-title">${containerTitle}</p>
+${processedContainerContent}
+</div>`,
+      }))
+    }
   }
 
   const results = await Promise.all(promises)
@@ -293,7 +307,9 @@ ${blocks}
  */
 async function processContainersFromHtml(html: string, renderer: any, markedOptions: any, _highlighter: Highlighter | null = null): Promise<string> {
   // Match the pattern that markdown creates from ::: tip ... :::
-  const htmlContainerRegex = /<p>::: (\w+)(?:\s+(.+?))?<\/p>([\s\S]*?)<p>:::<\/p>/g
+  // Handle various cases of container markup in HTML
+  // This includes cases where the container might be after other elements
+  const htmlContainerRegex = /(?:<p>)?:::\s*(\w+)(?:\s+(.+?))?(?:<\/p>)?([\s\S]*?)(?:<p>)?:::(?:<\/p>)?/g
 
   const promises: Promise<{ match: string, replacement: string }>[] = []
   const matches: RegExpMatchArray[] = []
@@ -308,18 +324,31 @@ async function processContainersFromHtml(html: string, renderer: any, markedOpti
     const containerTitle = title || type.toUpperCase()
 
     // Process the content inside the container as markdown
-    const processedPromise = marked.parse(content.trim(), {
+    const processedResult = marked.parse(content.trim(), {
       ...markedOptions,
       renderer,
-    }) as Promise<string>
+    })
 
-    promises.push(processedPromise.then(processedContainerContent => ({
-      match: fullMatch,
-      replacement: `<div class="${type} custom-block">
+    // Handle both Promise and direct string returns from marked.parse
+    if (processedResult instanceof Promise) {
+      promises.push(processedResult.then(processedContainerContent => ({
+        match: fullMatch,
+        replacement: `<div class="${type} custom-block">
 <p class="custom-block-title">${containerTitle}</p>
 ${processedContainerContent}
 </div>`,
-    })))
+      })))
+    } else {
+      // Handle direct string return
+      const processedContainerContent = processedResult as string
+      promises.push(Promise.resolve({
+        match: fullMatch,
+        replacement: `<div class="${type} custom-block">
+<p class="custom-block-title">${containerTitle}</p>
+${processedContainerContent}
+</div>`,
+      }))
+    }
   }
 
   const results = await Promise.all(promises)
@@ -943,9 +972,10 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
         // Process VitePress-style extensions before markdown conversion
         let processedContent = mdContentWithoutFrontmatter
 
+        // Process code groups first
         processedContent = processCodeGroups(processedContent)
-
-        // Process containers before markdown conversion
+        
+        // Process containers after code groups
         processedContent = await processContainers(processedContent, renderer, markedOptions, highlighter)
 
         // Convert markdown to HTML
@@ -958,6 +988,13 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
         htmlContent = await processContainersFromHtml(htmlContent, renderer, markedOptions, highlighter)
         // Process code groups that weren't handled by pre-processing
         htmlContent = processCodeGroupsFromHtml(htmlContent)
+        
+        // Special case: Handle tip blocks that might appear after code groups
+        // This fixes cases where the tip block is rendered as plain text
+        // Use a more specific regex to avoid interfering with code blocks
+        htmlContent = htmlContent.replace(/(\<\/div\>\s*\<\/div\>\s*\<\/div\>\s*\<\/div\>)(\s*tip\s*)(.*?)(\s*:::)/gs, (match, codeGroupEnd, tipPrefix, tipContent, tipSuffix) => {
+          return `${codeGroupEnd}<div class="custom-block tip"><p class="custom-block-title">TIP</p><p>${tipContent}</p></div>`;
+        })
 
         // No need for placeholder replacement anymore - HTML is directly inserted
 
