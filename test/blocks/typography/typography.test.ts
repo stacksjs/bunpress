@@ -11,17 +11,17 @@ describe('Typography Elements', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
+        { path: 'test.md', content },
       ],
       config: {
         markdown: {
           title: 'Typography Test',
           meta: {
             description: 'Comprehensive test of typography elements',
-            author: 'BunPress'
-          }
-        }
-      }
+            author: 'BunPress',
+          },
+        },
+      },
     })
 
     expect(result.success).toBe(true)
@@ -50,8 +50,8 @@ describe('Typography Elements', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -80,8 +80,8 @@ describe('Typography Elements', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -111,8 +111,8 @@ describe('Typography Elements', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -144,8 +144,8 @@ describe('Typography Elements', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -176,8 +176,8 @@ describe('Typography Elements', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -197,8 +197,8 @@ describe('Typography Elements', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -216,8 +216,8 @@ describe('Typography Elements', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -251,8 +251,8 @@ describe('Typography Elements', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -270,8 +270,8 @@ describe('Typography Elements', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -304,8 +304,8 @@ describe('Typography Elements', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -325,8 +325,8 @@ describe('Typography Elements', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -344,8 +344,8 @@ describe('Typography Elements', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -363,8 +363,8 @@ describe('Typography Elements', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -384,8 +384,8 @@ describe('Typography Elements', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -402,8 +402,8 @@ describe('Typography Elements', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -427,8 +427,8 @@ describe('Typography Elements', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -460,8 +460,8 @@ describe('Typography Elements', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -483,8 +483,8 @@ describe('Typography Elements', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)

@@ -1,5 +1,6 @@
 import type { BunPlugin } from 'bun'
-import type { Frontmatter, MarkdownPluginOptions, NavItem, SidebarItem, SearchConfig, SearchResult, ThemeConfig, SitemapConfig, SitemapEntry, RobotsConfig, SitemapChangefreq } from './types'
+import type { Highlighter } from 'shiki'
+import type { Frontmatter, MarkdownPluginOptions, NavItem, RobotsConfig, SearchConfig, SearchResult, SidebarItem, SitemapChangefreq, SitemapConfig, SitemapEntry, ThemeConfig } from './types'
 import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
@@ -8,14 +9,24 @@ import { marked } from 'marked'
 import markedAlert from 'marked-alert'
 import { markedEmoji } from 'marked-emoji'
 import { markedHighlight } from 'marked-highlight'
-import { createHighlighter, type Highlighter } from 'shiki'
+import { createHighlighter } from 'shiki'
+
+import { config } from './config'
+import {
+  enhanceHeadingsWithAnchors,
+  generateTocData,
+  generateTocPositions,
+  generateTocScripts,
+  generateTocStyles,
+  processInlineTocSyntax,
+} from './toc'
 
 // Singleton highlighter to prevent creating multiple instances
 let globalHighlighter: Highlighter | null = null
 let highlighterPromise: Promise<Highlighter> | null = null
 let instanceCount = 0
 
-async function getHighlighter(): Promise<Highlighter> {
+export async function getHighlighter(): Promise<Highlighter> {
   instanceCount++
   if (process.env.NODE_ENV !== 'production') {
     console.log(`Shiki highlighter requested (total requests: ${instanceCount})`)
@@ -23,7 +34,7 @@ async function getHighlighter(): Promise<Highlighter> {
   if (globalHighlighter) {
     return globalHighlighter
   }
-  
+
   if (highlighterPromise) {
     if (process.env.NODE_ENV !== 'production') {
       console.log('Waiting for existing highlighter promise')
@@ -74,10 +85,10 @@ async function getHighlighter(): Promise<Highlighter> {
       'log',
       'plaintext',
       // STX language support (treat as HTML)
-      'html'
-    ]
+      'html',
+    ],
   })
-  
+
   globalHighlighter = await highlighterPromise
   return globalHighlighter
 }
@@ -95,16 +106,6 @@ export function disposeHighlighter(): void {
   highlighterPromise = null
 }
 
-import {
-  generateTocData,
-  generateTocPositions,
-  processInlineTocSyntax,
-  enhanceHeadingsWithAnchors,
-  generateTocStyles,
-  generateTocScripts
-} from './toc'
-import { config } from './config'
-
 // No global storage needed - direct HTML replacement
 
 /**
@@ -114,39 +115,40 @@ import { config } from './config'
 function processCodeGroups(content: string): string {
   // Use a more specific regex that only matches proper code-group blocks
   const codeGroupRegex = /::: code-group\n((?:(?!::: (?!code-group))[\s\S])*?)\n:::/g
-  
+
   return content.replace(codeGroupRegex, (match, groupContent) => {
-    const codeBlocks: Array<{ language: string; title: string; code: string }> = []
-    
+    const codeBlocks: Array<{ language: string, title: string, code: string }> = []
+
     // Extract all code blocks within the code group
     const codeBlockRegex = /```(\w+)(?:\s*\[([^\]]+)\])?\n([\s\S]*?)\n```/g
     let blockMatch
-    
+
     while ((blockMatch = codeBlockRegex.exec(groupContent)) !== null) {
       const [, language, title, code] = blockMatch
       codeBlocks.push({
         language,
         title: title || language,
-        code: code.trim()
+        code: code.trim(),
       })
     }
-    
-    if (codeBlocks.length === 0) return match
-    
+
+    if (codeBlocks.length === 0)
+      return match
+
     const groupId = Math.random().toString(36).substr(2, 9)
-    
+
     // Generate tabs
     const tabs = codeBlocks.map((block: any, index: number) => {
       const tabId = `tab-${groupId}-${index}`
       const checked = index === 0 ? 'checked' : ''
       return `<input type="radio" name="group-${groupId}" id="${tabId}" ${checked}><label data-title="${block.title}" for="${tabId}">${block.title}</label>`
     }).join('')
-    
+
     // Generate code blocks with syntax highlighting
     const blocks = codeBlocks.map((block: any, index: number) => {
       const isActive = index === 0 ? 'active' : ''
       const copyButtonId = `copy-btn-${Math.random().toString(36).substr(2, 9)}`
-      
+
       // Create highlighted code using the existing code block structure
       return `<div class="language-${block.language} vp-adaptive-theme ${isActive}">
 <div class="code-block-container">
@@ -155,7 +157,7 @@ function processCodeGroups(content: string): string {
 </div>
 </div>`
     }).join('')
-    
+
     return `<div class="vp-code-group vp-adaptive-theme">
 <div class="tabs">
 ${tabs}
@@ -176,14 +178,14 @@ async function processContainers(content: string, renderer: any, markedOptions: 
   // More flexible regex to handle various whitespace patterns
   const containerRegex = /:::\s+(?!code-group)(\w+)(?:\s+(.*?))?\s*\n([\s\S]*?)\n:::/g
 
-  const promises: Promise<{ match: string; replacement: string }>[] = []
+  const promises: Promise<{ match: string, replacement: string }>[] = []
   const matches: RegExpMatchArray[] = []
-  
+
   let match
   while ((match = containerRegex.exec(content)) !== null) {
     matches.push(match)
   }
-  
+
   for (const match of matches) {
     const [fullMatch, type, title, containerContent] = match
     const containerTitle = title || type.toUpperCase()
@@ -193,23 +195,23 @@ async function processContainers(content: string, renderer: any, markedOptions: 
       ...markedOptions,
       renderer,
     }) as Promise<string>
-    
+
     promises.push(processedPromise.then(processedContainerContent => ({
       match: fullMatch,
       replacement: `<div class="${type} custom-block">
 <p class="custom-block-title">${containerTitle}</p>
 ${processedContainerContent}
-</div>`
+</div>`,
     })))
   }
-  
+
   const results = await Promise.all(promises)
   let result = content
-  
+
   for (const { match, replacement } of results) {
     result = result.replace(match, replacement)
   }
-  
+
   return result
 }
 
@@ -219,26 +221,26 @@ ${processedContainerContent}
 function processCodeGroupsFromHtml(html: string): string {
   // Match the pattern that markdown creates from ::: code-group ... :::
   const htmlCodeGroupRegex = /<p>::: code-group<\/p>([\s\S]*?)<p>:::<\/p>/g
-  
+
   return html.replace(htmlCodeGroupRegex, (match, content) => {
     // Extract code blocks from the HTML content
     const codeBlockRegex = /<div class="code-block-container">\s*<button[^>]*>[^<]*<\/button>\s*<pre><code[^>]*>([\s\S]*?)<\/code><\/pre>\s*<\/div>/g
-    const codeBlocks: Array<{ language: string; title: string; code: string; html: string }> = []
-    
+    const codeBlocks: Array<{ language: string, title: string, code: string, html: string }> = []
+
     let blockMatch
     let currentLang = 'sh' // default
     let currentTitle = ''
-    
+
     // Look for language indicators in the content
     const langMatches = content.match(/```(\w+)(?:\s*\[([^\]]+)\])?/g)
     let langIndex = 0
-    
+
     while ((blockMatch = codeBlockRegex.exec(content)) !== null) {
       const [fullMatch, codeHtml] = blockMatch
-      
+
       // Extract the actual code content from the HTML
       const codeText = codeHtml.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim()
-      
+
       if (langMatches && langIndex < langMatches.length) {
         const langMatch = langMatches[langIndex].match(/```(\w+)(?:\s*\[([^\]]+)\])?/)
         if (langMatch) {
@@ -246,34 +248,35 @@ function processCodeGroupsFromHtml(html: string): string {
           currentTitle = langMatch[2] || currentLang
         }
       }
-      
+
       codeBlocks.push({
         language: currentLang,
         title: currentTitle,
         code: codeText,
-        html: fullMatch
+        html: fullMatch,
       })
-      
+
       langIndex++
     }
-    
-    if (codeBlocks.length === 0) return match
-    
+
+    if (codeBlocks.length === 0)
+      return match
+
     const groupId = Math.random().toString(36).substr(2, 9)
-    
+
     // Generate tabs
     const tabs = codeBlocks.map((block, index) => {
       const tabId = `tab-${groupId}-${index}`
       const checked = index === 0 ? 'checked' : ''
       return `<input type="radio" name="group-${groupId}" id="${tabId}" ${checked}><label data-title="${block.title}" for="${tabId}">${block.title}</label>`
     }).join('')
-    
+
     // Generate code blocks with proper class names
     const blocks = codeBlocks.map((block, index) => {
       const isActive = index === 0 ? 'active' : ''
       return `<div class="language-${block.language} vp-adaptive-theme ${isActive}">${block.html}</div>`
     }).join('')
-    
+
     return `<div class="vp-code-group vp-adaptive-theme">
 <div class="tabs">
 ${tabs}
@@ -292,14 +295,14 @@ async function processContainersFromHtml(html: string, renderer: any, markedOpti
   // Match the pattern that markdown creates from ::: tip ... :::
   const htmlContainerRegex = /<p>::: (\w+)(?:\s+(.+?))?<\/p>([\s\S]*?)<p>:::<\/p>/g
 
-  const promises: Promise<{ match: string; replacement: string }>[] = []
+  const promises: Promise<{ match: string, replacement: string }>[] = []
   const matches: RegExpMatchArray[] = []
-  
+
   let match
   while ((match = htmlContainerRegex.exec(html)) !== null) {
     matches.push(match)
   }
-  
+
   for (const match of matches) {
     const [fullMatch, type, title, content] = match
     const containerTitle = title || type.toUpperCase()
@@ -309,35 +312,34 @@ async function processContainersFromHtml(html: string, renderer: any, markedOpti
       ...markedOptions,
       renderer,
     }) as Promise<string>
-    
+
     promises.push(processedPromise.then(processedContainerContent => ({
       match: fullMatch,
       replacement: `<div class="${type} custom-block">
 <p class="custom-block-title">${containerTitle}</p>
 ${processedContainerContent}
-</div>`
+</div>`,
     })))
   }
-  
+
   const results = await Promise.all(promises)
   let result = html
-  
+
   for (const { match, replacement } of results) {
     result = result.replace(match, replacement)
   }
-  
+
   return result
 }
-
 
 /**
  * Process STX templates (HTML with Blade-like syntax)
  *
  * Converts STX template syntax to regular HTML
  */
-export function processStxTemplate(content: string, frontmatter: any): string {
-  // Process @if conditions
-  let result = content.replace(/@if\(\$frontmatter\.([^)]+)\)([\s\S]*?)@endif/g, (_, path, ifContent) => {
+export function processStxTemplate(content: string, frontmatter: any, globalConfig: any = {}): string {
+  // Process @if/@else/@endif conditions
+  let result = content.replace(/@if\(\$frontmatter\.([^)]+)\)([\s\S]*?)@endif/g, (_, path, fullContent) => {
     // Parse the dot path to get the actual value
     const parts = path.split('.')
     let value = frontmatter
@@ -348,7 +350,17 @@ export function processStxTemplate(content: string, frontmatter: any): string {
       value = value[part]
     }
 
-    return value ? ifContent : ''
+    // Split content by @else if it exists
+    const elseIndex = fullContent.indexOf('@else')
+    if (elseIndex !== -1) {
+      const ifContent = fullContent.substring(0, elseIndex).trim()
+      const elseContent = fullContent.substring(elseIndex + 5).trim() // +5 to skip '@else'
+      return value ? ifContent : elseContent
+    }
+    else {
+      // No @else, just return ifContent or empty
+      return value ? fullContent.trim() : ''
+    }
   })
 
   // Process @foreach loops
@@ -363,26 +375,95 @@ export function processStxTemplate(content: string, frontmatter: any): string {
       collection = collection[part]
     }
 
-    if (!Array.isArray(collection))
+    if (!collection)
       return ''
 
-    return collection.map((item) => {
-      // Replace each occurrence of the item variable with the actual value
-      let processedContent = loopContent
-      for (const [key, value] of Object.entries(item)) {
-        const regex = new RegExp(`\\{\\{\\$${itemVar}\\.${key}\\}\\}`, 'g')
-        processedContent = processedContent.replace(regex, String(value))
-      }
-      return processedContent
-    }).join('')
+    // Handle both arrays and objects
+    if (Array.isArray(collection)) {
+      return collection.map((item, index) => {
+        // Replace each occurrence of the item variable with the actual value
+        let processedContent = loopContent
+        if (typeof item === 'object' && item !== null) {
+          for (const [key, value] of Object.entries(item)) {
+            const regex = new RegExp(`\\{\\{\\$${itemVar}\\.${key}\\}\\}`, 'g')
+            processedContent = processedContent.replace(regex, String(value))
+          }
+        }
+        else {
+          // For primitive values, replace the item variable directly
+          processedContent = processedContent.replace(new RegExp(`\\{\\{\\$${itemVar}\\}\\}`, 'g'), String(item))
+        }
+        return processedContent
+      }).join('')
+    }
+    else if (typeof collection === 'object') {
+      // Handle objects - iterate over key-value pairs
+      const result = Object.entries(collection).map(([key, value]) => {
+        let processedContent = loopContent
+        // Replace $key with the object key (with optional spaces)
+        processedContent = processedContent.replace(/\{\{\s*\$key\s*\}\}/g, key)
+        // Replace $value with the object value (with optional spaces)
+        processedContent = processedContent.replace(/\{\{\s*\$value\s*\}\}/g, String(value))
+        return processedContent
+      }).join('')
+      return result
+    }
+
+    return ''
   })
 
   // Process {{ expressions }} for frontmatter variables
   result = result.replace(/\{\{\s*\$frontmatter\.([^}]+)\s*\}\}/g, (_, path) => {
     const trimmedPath = path.trim()
+
+    // Handle expressions with default values (e.g., $frontmatter.title || 'Default')
+    if (trimmedPath.includes(' || ')) {
+      const [varPath, defaultValue] = trimmedPath.split(' || ')
+      const parts = varPath.split('.')
+      let value = frontmatter
+
+      for (const part of parts) {
+        if (value === undefined || value === null)
+          break
+        value = value[part]
+      }
+
+      // Return the value if it exists, otherwise return the default value
+      return value !== undefined && value !== null ? String(value) : defaultValue.replace(/['"]/g, '')
+    }
+
     // Parse the dot path to get the actual value
     const parts = trimmedPath.split('.')
     let value = frontmatter
+
+    for (const part of parts) {
+      if (value === undefined || value === null)
+        return ''
+      value = value[part]
+    }
+
+    return String(value || '')
+  })
+
+  // Process {{ expressions }} for global variables ($site, $config, etc.)
+  result = result.replace(/\{\{\s*\$(\w+)\.([^}]+)\s*\}\}/g, (_, varName, path) => {
+    const trimmedPath = path.trim()
+
+    // Map variable names to their sources
+    let source = globalConfig
+    if (varName === 'site') {
+      source = globalConfig // $site maps to global config
+    }
+    else if (varName === 'config') {
+      source = globalConfig // $config also maps to global config
+    }
+
+    if (!source)
+      return ''
+
+    // Parse the dot path to get the actual value
+    const parts = trimmedPath.split('.')
+    let value = source
 
     for (const part of parts) {
       if (value === undefined || value === null)
@@ -414,7 +495,7 @@ function createHeroHTML(hero: Frontmatter['hero']): string {
     const themeClasses = action.theme === 'brand'
       ? 'bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 hover:border-blue-700'
       : 'bg-transparent text-blue-600 border border-gray-300 hover:border-blue-600'
-    
+
     return `<a href="${action.link}" class="${baseClasses} ${themeClasses}">
       ${action.text}
     </a>`
@@ -430,9 +511,11 @@ function createHeroHTML(hero: Frontmatter['hero']): string {
           ${hero.tagline ? `<p class="text-lg text-gray-600 mb-8 leading-relaxed">${hero.tagline}</p>` : ''}
           ${actions ? `<div class="flex flex-wrap gap-4 mt-8">${actions}</div>` : ''}
         </div>
-        ${hero.image ? `<div class="flex-shrink-0 w-48 h-48 flex items-center justify-center">
+        ${hero.image
+          ? `<div class="flex-shrink-0 w-48 h-48 flex items-center justify-center">
           <img src="${hero.image}" alt="Hero Image" class="max-w-full max-h-full object-contain">
-        </div>` : ''}
+        </div>`
+          : ''}
       </div>
     </div>
   </section>
@@ -469,14 +552,15 @@ function createFeaturesHTML(features: Frontmatter['features']): string {
  * Create HTML for navigation bar
  */
 function createNavHtml(navItems: NavItem[], currentPath: string = '/'): string {
-  if (!navItems || navItems.length === 0) return ''
+  if (!navItems || navItems.length === 0)
+    return ''
 
-  const navLinks = navItems.map(item => {
+  const navLinks = navItems.map((item) => {
     const isActive = isNavItemActive(item, currentPath)
     const hasChildren = item.items && item.items.length > 0
 
     if (hasChildren) {
-      const dropdownItems = item.items!.map(child => {
+      const dropdownItems = item.items!.map((child) => {
         const childIsActive = isNavItemActive(child, currentPath)
         const isExternal = child.link && (child.link.startsWith('http://') || child.link.startsWith('https://'))
         const externalAttrs = isExternal ? ' target="_blank" rel="noopener"' : ''
@@ -493,7 +577,8 @@ function createNavHtml(navItems: NavItem[], currentPath: string = '/'): string {
           </div>
         </div>
       `
-    } else {
+    }
+    else {
       const isExternal = item.link && (item.link.startsWith('http://') || item.link.startsWith('https://'))
       const externalAttrs = isExternal ? ' target="_blank" rel="noopener"' : ''
       return `<a href="${item.link || '#'}" class="nav-link${isActive ? ' active' : ''}"${externalAttrs}>${item.icon ? `<span class="nav-icon">${item.icon}</span>` : ''}${item.text}</a>`
@@ -521,8 +606,10 @@ function createNavHtml(navItems: NavItem[], currentPath: string = '/'): string {
  * Check if a navigation item is active
  */
 function isNavItemActive(item: NavItem, currentPath: string): boolean {
-  if (item.link && currentPath === item.link) return true
-  if (item.activeMatch && currentPath.startsWith(item.activeMatch)) return true
+  if (item.link && currentPath === item.link)
+    return true
+  if (item.activeMatch && currentPath.startsWith(item.activeMatch))
+    return true
   if (item.items) {
     return item.items.some(child => isNavItemActive(child, currentPath))
   }
@@ -532,7 +619,7 @@ function isNavItemActive(item: NavItem, currentPath: string): boolean {
 /**
  * Create HTML for a home page layout
  */
-function createHomePageHtml(frontmatter: Frontmatter, htmlContent: string, mdPath?: string): string {
+function createHomePageHtml(frontmatter: Frontmatter, htmlContent: string, mdPath?: string, globalConfig?: any): string {
   // Check if we have a custom STX template for the Home component
   let stxTemplatePath = path.join(process.cwd(), 'dist/docs/Home.stx')
 
@@ -548,7 +635,7 @@ function createHomePageHtml(frontmatter: Frontmatter, htmlContent: string, mdPat
   if (fs.existsSync(stxTemplatePath)) {
     try {
       const stxTemplate = fs.readFileSync(stxTemplatePath, 'utf8')
-      return processStxTemplate(stxTemplate, frontmatter)
+      return processStxTemplate(stxTemplate, frontmatter, globalConfig)
     }
     catch (error) {
       console.error('Error processing STX template:', error)
@@ -585,13 +672,13 @@ function createHomePageHtml(frontmatter: Frontmatter, htmlContent: string, mdPat
 // Export navigation, sidebar, search, and theme helper functions for testing
 export {
   createNavHtml,
-  isNavItemActive,
-  createSidebarHtml,
-  isSidebarItemActive,
   createSearchHtml,
+  createSidebarHtml,
   generateSearchIndex,
+  generateThemeCSS,
+  isNavItemActive,
+  isSidebarItemActive,
   performSearch,
-  generateThemeCSS
 }
 
 export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
@@ -613,7 +700,7 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
   const robotsConfig = (options as any).robots || (config as any).robots || { enabled: true }
 
   // Track pages for sitemap generation
-  const pages: Array<{ path: string; frontmatter: any }> = []
+  const pages: Array<{ path: string, frontmatter: any }> = []
 
   return {
     name: 'markdown-plugin',
@@ -637,29 +724,32 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
             rocket: '🚀',
             sparkles: '✨',
             wave: '👋',
-            bulb: '💡'
-          }
+            bulb: '💡',
+          },
         }))
 
         // Add Shiki highlighting
         marked.use(markedHighlight({
           highlight(code, lang) {
-            if (!highlighter) return code
+            if (!highlighter)
+              return code
 
             try {
               const language = highlighter.getLoadedLanguages().includes(lang as any) ? lang : 'plaintext'
               const html = highlighter.codeToHtml(code, {
                 lang: language,
-                theme: 'light-plus'
+                theme: 'light-plus',
               })
 
               // Ensure we return a string
               let htmlString: string
               if (typeof html === 'string') {
                 htmlString = html
-              } else if (html && typeof html === 'object' && 'toString' in html) {
+              }
+              else if (html && typeof html === 'object' && 'toString' in html) {
                 htmlString = (html as any).toString()
-              } else {
+              }
+              else {
                 console.warn(`Unexpected type from Shiki codeToHtml:`, typeof html, html)
                 return code
               }
@@ -667,11 +757,12 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
               // Extract just the inner content (remove <pre><code> wrapper)
               const match = htmlString.match(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/s)
               return match ? match[1] : code
-            } catch (error) {
+            }
+            catch (error) {
               console.warn(`Shiki highlighting failed for language "${lang}":`, error)
               return code
             }
-          }
+          },
         }))
       })
 
@@ -688,13 +779,13 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
                 return {
                   type: 'inlineMath' as const,
                   raw: match[0],
-                  text: match[1]
+                  text: match[1],
                 }
               }
             },
             renderer(token: any): string {
               return `<span class="math inline">${token.text}</span>`
-            }
+            },
           },
           {
             name: 'blockMath',
@@ -706,29 +797,32 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
                 return {
                   type: 'blockMath' as const,
                   raw: match[0],
-                  text: match[1]
+                  text: match[1],
                 }
               }
             },
             renderer(token: any): string {
               return `<div class="math block">${token.text}</div>`
-            }
-          }
-        ]
+            },
+          },
+        ],
       })
 
       // Custom renderer for code blocks with copy-to-clipboard and line highlighting
       const originalCodeRenderer = renderer.code
-      renderer.code = function(code: any, language?: string | undefined, escaped?: boolean | undefined): string {
+      renderer.code = function (code: any, language?: string | undefined, escaped?: boolean | undefined): string {
         // Ensure code is a string and handle object cases properly
         let codeString = ''
         if (typeof code === 'string') {
           codeString = code
-        } else if (code && typeof code === 'object' && 'text' in code) {
+        }
+        else if (code && typeof code === 'object' && 'text' in code) {
           codeString = code.text || ''
-        } else if (code && typeof code === 'object' && 'raw' in code) {
+        }
+        else if (code && typeof code === 'object' && 'raw' in code) {
           codeString = code.raw || ''
-        } else {
+        }
+        else {
           codeString = String(code || '')
         }
         const langString = typeof language === 'string' ? language : ''
@@ -746,12 +840,12 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
 
           if (lines) {
             // Parse line numbers: "1,3-5" -> [1, 3, 4, 5]
-            lineNumbers = lines.split(',').flatMap(range => {
+            lineNumbers = lines.split(',').flatMap((range) => {
               if (range.includes('-')) {
-                const [start, end] = range.split('-').map(n => parseInt(n))
+                const [start, end] = range.split('-').map(n => Number.parseInt(n))
                 return Array.from({ length: end - start + 1 }, (_, i) => start + i)
               }
-              return [parseInt(range)]
+              return [Number.parseInt(range)]
             })
             hasLineNumbers = true
           }
@@ -772,7 +866,7 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
               language = highlighter.getLoadedLanguages().includes(language as any) ? language : 'plaintext'
               const html = highlighter.codeToHtml(codeString, {
                 lang: language,
-                theme: 'light-plus'
+                theme: 'light-plus',
               })
 
               // Extract the inner content and preserve classes
@@ -782,7 +876,8 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
                 // Use Shiki's classes and add our language class
                 const shikiClasses = match[1]
                 langClass = `${shikiClasses} language-${finalLanguage}`
-              } else {
+              }
+              else {
                 // Fallback regex if the first one doesn't match
                 const fallbackMatch = html.match(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/s)
                 if (fallbackMatch) {
@@ -790,11 +885,13 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
                   langClass = `language-${finalLanguage}`
                 }
               }
-            } catch (error) {
+            }
+            catch (error) {
               console.warn(`Shiki highlighting failed for language "${finalLanguage}":`, error)
               langClass = `language-${finalLanguage}`
             }
-          } else {
+          }
+          else {
             // Fallback to basic highlighting
             langClass = `language-${finalLanguage}`
           }
@@ -839,13 +936,12 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
           const relativePath = path.relative(process.cwd(), args.path)
           pages.push({
             path: relativePath,
-            frontmatter
+            frontmatter,
           })
         }
 
         // Process VitePress-style extensions before markdown conversion
         let processedContent = mdContentWithoutFrontmatter
-
 
         processedContent = processCodeGroups(processedContent)
 
@@ -920,12 +1016,11 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
         // Add frontmatter data as a global variable
         const frontmatterScript = `<script>window.$frontmatter = ${JSON.stringify(frontmatter)};</script>`
 
-
         // Prepare content based on layout
         let pageContent = cleanedHtmlContent
 
         // Process TOC if enabled (but not for home layout)
-        let tocHtml = ''
+        const tocHtml = ''
         let tocStyles = ''
         let tocScripts = ''
         let sidebarTocHtml = ''
@@ -936,7 +1031,7 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
           const tocData = generateTocData(mdContentWithoutFrontmatter, {
             ...options.toc,
             // Merge frontmatter TOC config
-            ...frontmatter.toc
+            ...frontmatter.toc,
           })
 
           // Process inline TOC syntax
@@ -945,15 +1040,17 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
           // Generate TOC positions
           const tocPositions = generateTocPositions(mdContentWithoutFrontmatter, {
             ...options.toc,
-            ...frontmatter.toc
+            ...frontmatter.toc,
           })
 
           // Extract TOC HTML for different positions
           const sidebarToc = tocPositions.find(p => p.position === 'sidebar')
           const floatingToc = tocPositions.find(p => p.position === 'floating')
 
-          if (sidebarToc) sidebarTocHtml = sidebarToc.html
-          if (floatingToc) floatingTocHtml = floatingToc.html
+          if (sidebarToc)
+            sidebarTocHtml = sidebarToc.html
+          if (floatingToc)
+            floatingTocHtml = floatingToc.html
 
           // Generate TOC styles and scripts
           tocStyles = generateTocStyles()
@@ -971,8 +1068,7 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
 
         // Maintain directory structure relative to the entrypoint
         const relativePath = path.relative(process.cwd(), args.path)
-        
-        
+
         const dirPath = path.dirname(relativePath)
         const baseName = path.basename(args.path, '.md')
 
@@ -989,7 +1085,7 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
 
         // If layout is 'home', use the custom home page layout
         if (layout === 'home') {
-          pageContent = createHomePageHtml(frontmatter as Frontmatter, cleanedHtmlContent, args.path)
+          pageContent = createHomePageHtml(frontmatter as Frontmatter, cleanedHtmlContent, args.path, config)
         }
 
         // Add copy-to-clipboard styles and scripts
@@ -1164,8 +1260,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
           // Replace {{frontmatter.X}} placeholders with frontmatter values
           Object.entries(frontmatter).forEach(([key, value]) => {
-            const stringValue = typeof value === 'object' && value !== null 
-              ? JSON.stringify(value) 
+            const stringValue = typeof value === 'object' && value !== null
+              ? JSON.stringify(value)
               : String(value || '')
             finalHtml = finalHtml.replace(new RegExp(`\\{\\{frontmatter\\.${key}\\}\\}`, 'g'), stringValue)
           })
@@ -1243,8 +1339,7 @@ ${themeCss}
           loader: 'js',
         }
       })
-
-    }
+    },
   }
 }
 
@@ -1258,11 +1353,11 @@ export function stx(): BunPlugin {
         const stxContent = await fs.promises.readFile(args.path, 'utf8')
 
         // Process STX template directives (without frontmatter for now)
-        const processedContent = processStxTemplate(stxContent, {})
+        const processedContent = processStxTemplate(stxContent, {}, {})
 
         return {
           contents: `export default ${JSON.stringify(processedContent)};`,
-          loader: 'js'
+          loader: 'js',
         }
       })
     },
@@ -1273,10 +1368,10 @@ export function stx(): BunPlugin {
  * Generate sitemap and robots.txt files after build completion
  */
 export async function generateSitemapAndRobots(
-  pages: Array<{ path: string; frontmatter: any }>,
+  pages: Array<{ path: string, frontmatter: any }>,
   outdir: string,
   sitemapConfig: SitemapConfig,
-  robotsConfig: RobotsConfig
+  robotsConfig: RobotsConfig,
 ): Promise<void> {
   // Generate sitemap
   if (sitemapConfig.enabled !== false && sitemapConfig.baseUrl) {
@@ -1291,10 +1386,12 @@ export async function generateSitemapAndRobots(
       if (useStreaming) {
         // Use memory-efficient streaming for very large sites
         await generateLargeSitemap(entries, sitemapConfig.baseUrl, sitemapConfig, outdir)
-      } else if (useMultiSitemap) {
+      }
+      else if (useMultiSitemap) {
         // Use multi-sitemap generation for large sites
         await generateMultiSitemap(entries, sitemapConfig.baseUrl, sitemapConfig, outdir)
-      } else {
+      }
+      else {
         // Use standard single sitemap generation
         const sitemapXml = generateSitemapXml(entries, sitemapConfig.baseUrl)
         const sitemapFilename = sitemapConfig.filename || 'sitemap.xml'
@@ -1306,7 +1403,8 @@ export async function generateSitemapAndRobots(
           console.log(`Sitemap: Generated ${sitemapPath} with ${entries.length} entries`)
         }
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to generate sitemap:', error)
     }
   }
@@ -1323,7 +1421,7 @@ export async function generateSitemapAndRobots(
       // Merge frontmatter robots rules with config
       const mergedRobotsConfig = {
         ...robotsConfig,
-        rules: robotsConfig.rules ? [...robotsConfig.rules, ...frontmatterRobots] : frontmatterRobots
+        rules: robotsConfig.rules ? [...robotsConfig.rules, ...frontmatterRobots] : frontmatterRobots,
       }
 
       // Prepare sitemap URLs for robots.txt
@@ -1339,7 +1437,8 @@ export async function generateSitemapAndRobots(
           // Include single sitemap (streaming)
           const sitemapFilename = sitemapConfig.filename || 'sitemap.xml'
           sitemapUrls.push(`${sitemapConfig.baseUrl}/${sitemapFilename}`.replace(/\/+/g, '/'))
-        } else if (useMultiSitemap) {
+        }
+        else if (useMultiSitemap) {
           // Include sitemap index and individual sitemaps
           sitemapUrls.push(`${sitemapConfig.baseUrl}/sitemap-index.xml`.replace(/\/+/g, '/'))
 
@@ -1350,12 +1449,14 @@ export async function generateSitemapAndRobots(
             let filename: string
             if (chunks.length === 1) {
               filename = sitemapConfig.filename || 'sitemap.xml'
-            } else {
+            }
+            else {
               filename = `${baseName}-${i + 1}.xml`
             }
             sitemapUrls.push(`${sitemapConfig.baseUrl}/${filename}`.replace(/\/+/g, '/'))
           }
-        } else {
+        }
+        else {
           // Include single sitemap
           const sitemapFilename = sitemapConfig.filename || 'sitemap.xml'
           sitemapUrls.push(`${sitemapConfig.baseUrl}/${sitemapFilename}`.replace(/\/+/g, '/'))
@@ -1364,7 +1465,7 @@ export async function generateSitemapAndRobots(
 
       const robotsConfigWithSitemaps = {
         ...mergedRobotsConfig,
-        sitemaps: mergedRobotsConfig.sitemaps ? [...mergedRobotsConfig.sitemaps, ...sitemapUrls] : sitemapUrls
+        sitemaps: mergedRobotsConfig.sitemaps ? [...mergedRobotsConfig.sitemaps, ...sitemapUrls] : sitemapUrls,
       }
 
       const robotsTxt = generateRobotsTxt(robotsConfigWithSitemaps)
@@ -1376,7 +1477,8 @@ export async function generateSitemapAndRobots(
       if (config.verbose) {
         console.log(`Robots: Generated ${robotsPath}`)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to generate robots.txt:', error)
     }
   }
@@ -1386,9 +1488,10 @@ export async function generateSitemapAndRobots(
  * Create HTML for sidebar navigation
  */
 function createSidebarHtml(sidebarItems: SidebarItem[], currentPath: string = '/'): string {
-  if (!sidebarItems || sidebarItems.length === 0) return ''
+  if (!sidebarItems || sidebarItems.length === 0)
+    return ''
 
-  const sidebarLinks = sidebarItems.map(item => {
+  const sidebarLinks = sidebarItems.map((item) => {
     return generateSidebarItemHtml(item, currentPath, 0)
   }).join('\n')
 
@@ -1428,7 +1531,8 @@ function generateSidebarItemHtml(item: SidebarItem, currentPath: string, depth: 
         </div>
       </div>
     `
-  } else {
+  }
+  else {
     const activeClass = isActive ? 'sidebar-active' : ''
     const classes = ['sidebar-link', indentClass, activeClass].filter(Boolean).join(' ')
     return `<a href="${item.link || '#'}" class="${classes}">${item.text}</a>`
@@ -1439,7 +1543,8 @@ function generateSidebarItemHtml(item: SidebarItem, currentPath: string, depth: 
  * Check if a sidebar item is active
  */
 function isSidebarItemActive(item: SidebarItem, currentPath: string): boolean {
-  if (item.link && currentPath === item.link) return true
+  if (item.link && currentPath === item.link)
+    return true
   if (item.items) {
     return item.items.some(child => isSidebarItemActive(child, currentPath))
   }
@@ -1697,7 +1802,7 @@ function getNavStyles(): string {
  * Generate sitemap XML content (single sitemap)
  */
 function generateSitemapXml(entries: SitemapEntry[], baseUrl: string): string {
-  const urlEntries = entries.map(entry => {
+  const urlEntries = entries.map((entry) => {
     const loc = `${baseUrl}${entry.url}`.replace(/\/$/, '') // Remove trailing slash
     let xmlEntry = `  <url>\n    <loc>${escapeXml(loc)}</loc>`
 
@@ -1750,12 +1855,12 @@ async function generateMultiSitemap(
   entries: SitemapEntry[],
   baseUrl: string,
   config: SitemapConfig,
-  outdir: string
+  outdir: string,
 ): Promise<void> {
   const maxUrlsPerFile = config.maxUrlsPerFile || 50000
   const chunks = splitSitemapEntries(entries, maxUrlsPerFile)
 
-  const sitemapFiles: Array<{ url: string; lastmod: string }> = []
+  const sitemapFiles: Array<{ url: string, lastmod: string }> = []
 
   // Generate individual sitemap files with parallel processing for better performance
   const writePromises: Promise<void>[] = []
@@ -1767,7 +1872,8 @@ async function generateMultiSitemap(
     let filename: string
     if (chunks.length === 1) {
       filename = config.filename || 'sitemap.xml'
-    } else {
+    }
+    else {
       const baseName = (config.filename || 'sitemap.xml').replace('.xml', '')
       filename = `${baseName}-${i + 1}.xml`
     }
@@ -1795,7 +1901,7 @@ async function generateMultiSitemap(
 
     sitemapFiles.push({
       url: `/${filename}`,
-      lastmod: latestLastmod
+      lastmod: latestLastmod,
     })
   }
 
@@ -1823,7 +1929,7 @@ async function generateLargeSitemap(
   entries: SitemapEntry[],
   baseUrl: string,
   config: SitemapConfig,
-  outdir: string
+  outdir: string,
 ): Promise<void> {
   const filename = config.filename || 'sitemap.xml'
   const sitemapPath = path.join(outdir, filename)
@@ -1842,7 +1948,7 @@ async function generateLargeSitemap(
   const chunkSize = 1000
   for (let i = 0; i < entries.length; i += chunkSize) {
     const chunk = entries.slice(i, i + chunkSize)
-    const xmlChunk = chunk.map(entry => {
+    const xmlChunk = chunk.map((entry) => {
       const loc = `${baseUrl}${entry.url}`.replace(/\/$/, '')
       let xmlEntry = `  <url>\n    <loc>${escapeXml(loc)}</loc>`
 
@@ -1889,8 +1995,8 @@ async function generateLargeSitemap(
 /**
  * Generate sitemap index XML content
  */
-function generateSitemapIndexXml(sitemaps: Array<{ url: string; lastmod?: string }>, baseUrl: string): string {
-  const sitemapEntries = sitemaps.map(sitemap => {
+function generateSitemapIndexXml(sitemaps: Array<{ url: string, lastmod?: string }>, baseUrl: string): string {
+  const sitemapEntries = sitemaps.map((sitemap) => {
     const loc = `${baseUrl}${sitemap.url}`.replace(/\/$/, '')
     let xmlEntry = `  <sitemap>\n    <loc>${escapeXml(loc)}</loc>`
 
@@ -1937,7 +2043,8 @@ function generateRobotsTxt(config: RobotsConfig): string {
 
       lines.push('') // Empty line between rules
     }
-  } else {
+  }
+  else {
     // Default rule
     lines.push('User-agent: *')
     lines.push('Allow: /')
@@ -1974,7 +2081,7 @@ function escapeXml(unsafe: string): string {
       case '<': return '&lt;'
       case '>': return '&gt;'
       case '&': return '&amp;'
-      case "'": return '&#39;'
+      case '\'': return '&#39;'
       case '"': return '&quot;'
       default: return c
     }
@@ -1985,41 +2092,48 @@ function escapeXml(unsafe: string): string {
  * Create sitemap entries from pages with performance optimizations
  */
 function createSitemapEntries(
-  pages: Array<{ path: string; frontmatter: any }>,
+  pages: Array<{ path: string, frontmatter: any }>,
   config: SitemapConfig,
-  baseUrl: string
+  baseUrl: string,
 ): SitemapEntry[] {
   const entries: SitemapEntry[] = []
   const currentDate = new Date().toISOString().split('T')[0]
 
   // Pre-compile regex patterns for better performance
-  const excludePatterns = config.exclude?.map(pattern => {
+  const excludePatterns = config.exclude?.map((pattern) => {
     try {
       return new RegExp(pattern)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`Invalid exclude pattern: ${pattern}`)
       return null
     }
   }).filter((pattern): pattern is RegExp => pattern !== null) || []
 
   // Pre-compile priority and changefreq patterns
-  const priorityPatterns = config.priorityMap ? Object.entries(config.priorityMap).map(([pattern, priority]) => {
-    try {
-      return { regex: new RegExp(pattern), priority }
-    } catch (error) {
-      console.warn(`Invalid priority pattern: ${pattern}`)
-      return null
-    }
-  }).filter((pattern): pattern is { regex: RegExp; priority: number } => pattern !== null) : []
+  const priorityPatterns = config.priorityMap
+    ? Object.entries(config.priorityMap).map(([pattern, priority]) => {
+        try {
+          return { regex: new RegExp(pattern), priority }
+        }
+        catch (error) {
+          console.warn(`Invalid priority pattern: ${pattern}`)
+          return null
+        }
+      }).filter((pattern): pattern is { regex: RegExp, priority: number } => pattern !== null)
+    : []
 
-  const changefreqPatterns = config.changefreqMap ? Object.entries(config.changefreqMap).map(([pattern, changefreq]) => {
-    try {
-      return { regex: new RegExp(pattern), changefreq }
-    } catch (error) {
-      console.warn(`Invalid changefreq pattern: ${pattern}`)
-      return null
-    }
-  }).filter((pattern): pattern is { regex: RegExp; changefreq: SitemapChangefreq } => pattern !== null) : []
+  const changefreqPatterns = config.changefreqMap
+    ? Object.entries(config.changefreqMap).map(([pattern, changefreq]) => {
+        try {
+          return { regex: new RegExp(pattern), changefreq }
+        }
+        catch (error) {
+          console.warn(`Invalid changefreq pattern: ${pattern}`)
+          return null
+        }
+      }).filter((pattern): pattern is { regex: RegExp, changefreq: SitemapChangefreq } => pattern !== null)
+    : []
 
   for (const page of pages) {
     // Skip pages that should be excluded (optimized with pre-compiled patterns)
@@ -2044,7 +2158,7 @@ function createSitemapEntries(
       url,
       lastmod: sitemapConfig.lastmod || page.frontmatter.lastmod || currentDate,
       changefreq: sitemapConfig.changefreq || page.frontmatter.changefreq || getChangefreqFromPathOptimized(url, changefreqPatterns, config),
-      priority: sitemapConfig.priority || page.frontmatter.priority || getPriorityFromPathOptimized(url, priorityPatterns, config)
+      priority: sitemapConfig.priority || page.frontmatter.priority || getPriorityFromPathOptimized(url, priorityPatterns, config),
     }
 
     // Apply custom transformation if provided
@@ -2067,7 +2181,7 @@ function shouldExcludePageOptimized(path: string, excludePatterns: RegExp[]): bo
 /**
  * Optimized version of getPriorityFromPath using pre-compiled patterns
  */
-function getPriorityFromPathOptimized(path: string, priorityPatterns: Array<{ regex: RegExp; priority: number }>, config: SitemapConfig): number {
+function getPriorityFromPathOptimized(path: string, priorityPatterns: Array<{ regex: RegExp, priority: number }>, config: SitemapConfig): number {
   for (const { regex, priority } of priorityPatterns) {
     if (regex.test(path)) {
       return priority
@@ -2077,11 +2191,14 @@ function getPriorityFromPathOptimized(path: string, priorityPatterns: Array<{ re
   // Default priority based on path depth and type (optimized)
   if (path === '/' || path === '/index.html') {
     return 1.0
-  } else if (path.includes('/docs/') || path.includes('/guide/')) {
+  }
+  else if (path.includes('/docs/') || path.includes('/guide/')) {
     return 0.8
-  } else if (path.includes('/blog/') || path.includes('/posts/')) {
+  }
+  else if (path.includes('/blog/') || path.includes('/posts/')) {
     return 0.7
-  } else if (path.includes('/examples/') || path.includes('/showcase/')) {
+  }
+  else if (path.includes('/examples/') || path.includes('/showcase/')) {
     return 0.6
   }
 
@@ -2091,7 +2208,7 @@ function getPriorityFromPathOptimized(path: string, priorityPatterns: Array<{ re
 /**
  * Optimized version of getChangefreqFromPath using pre-compiled patterns
  */
-function getChangefreqFromPathOptimized(path: string, changefreqPatterns: Array<{ regex: RegExp; changefreq: SitemapChangefreq }>, config: SitemapConfig): SitemapChangefreq {
+function getChangefreqFromPathOptimized(path: string, changefreqPatterns: Array<{ regex: RegExp, changefreq: SitemapChangefreq }>, config: SitemapConfig): SitemapChangefreq {
   for (const { regex, changefreq } of changefreqPatterns) {
     if (regex.test(path)) {
       return changefreq
@@ -2101,15 +2218,16 @@ function getChangefreqFromPathOptimized(path: string, changefreqPatterns: Array<
   // Default changefreq based on path type (optimized)
   if (path.includes('/blog/') || path.includes('/posts/') || path.includes('/news/')) {
     return 'weekly'
-  } else if (path.includes('/docs/') || path.includes('/guide/')) {
+  }
+  else if (path.includes('/docs/') || path.includes('/guide/')) {
     return 'monthly'
-  } else if (path === '/' || path === '/index.html') {
+  }
+  else if (path === '/' || path === '/index.html') {
     return 'daily'
   }
 
   return config.defaultChangefreq || 'monthly'
 }
-
 
 /**
  * Get sidebar scripts
@@ -2210,7 +2328,8 @@ document.addEventListener('DOMContentLoaded', function() {
  * Create HTML for search input
  */
 function createSearchHtml(searchConfig: SearchConfig): string {
-  if (!searchConfig.enabled) return ''
+  if (!searchConfig.enabled)
+    return ''
 
   const placeholder = searchConfig.placeholder || 'Search...'
 
@@ -2239,14 +2358,14 @@ function createSearchHtml(searchConfig: SearchConfig): string {
  */
 function generateSearchIndex(mdContent: string, title: string, url: string): string {
   // Extract headings and content for indexing
-  const headings = mdContent.match(/^#{1,6}\s+.+$/gm) || []
+  const headings = mdContent.match(/^#{1,6}\s+(?:\S.*|[\t\v\f \xA0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF])$/gm) || []
   const paragraphs = mdContent.split('\n\n').filter(p => p.trim().length > 0)
 
   const indexData = {
     title,
     url,
     content: paragraphs.slice(0, 5).join(' '), // First 5 paragraphs
-    headings: headings.map(h => h.replace(/^#{1,6}\s+/, '').trim())
+    headings: headings.map(h => h.replace(/^#{1,6}\s+/, '').trim()),
   }
 
   return JSON.stringify(indexData)
@@ -2256,7 +2375,8 @@ function generateSearchIndex(mdContent: string, title: string, url: string): str
  * Perform simple text search
  */
 function performSearch(query: string, searchIndex: any[]): SearchResult[] {
-  if (!query.trim()) return []
+  if (!query.trim())
+    return []
 
   const results: SearchResult[] = []
   const queryLower = query.toLowerCase()
@@ -2298,7 +2418,7 @@ function performSearch(query: string, searchIndex: any[]): SearchResult[] {
         title: item.title,
         url: item.url,
         content: matchedContent,
-        score
+        score,
       })
     }
   }
@@ -2603,7 +2723,8 @@ document.addEventListener('DOMContentLoaded', function() {
   })
 
   // Keyboard shortcuts
-  ${searchConfig.keyboardShortcuts !== false ? `
+  ${searchConfig.keyboardShortcuts !== false
+    ? `
   document.addEventListener('keydown', function(e) {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
       e.preventDefault()
@@ -2615,7 +2736,8 @@ document.addEventListener('DOMContentLoaded', function() {
       searchResults.style.display = 'none'
     }
   })
-  ` : ''}
+  `
+    : ''}
 
   // Hide results when clicking outside
   document.addEventListener('click', function(e) {

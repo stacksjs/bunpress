@@ -47,16 +47,16 @@ export default {
     colors: {
       // Primary brand colors
       primary: {
-        50: '#eff6ff',   // Lightest
+        50: '#eff6ff', // Lightest
         100: '#dbeafe',
         200: '#bfdbfe',
         300: '#93c5fd',
         400: '#60a5fa',
-        500: '#3b82f6',  // Base primary
+        500: '#3b82f6', // Base primary
         600: '#2563eb',
         700: '#1d4ed8',
         800: '#1e40af',
-        900: '#1e3a8a',  // Darkest
+        900: '#1e3a8a', // Darkest
       },
 
       // Semantic colors
@@ -116,9 +116,9 @@ export default {
     colors: {
       // Brand specific colors
       brand: {
-        primary: '#7c3aed',    // Purple
-        secondary: '#06b6d4',  // Cyan
-        accent: '#f59e0b',     // Amber
+        primary: '#7c3aed', // Purple
+        secondary: '#06b6d4', // Cyan
+        accent: '#f59e0b', // Amber
       },
 
       // Status colors
@@ -180,15 +180,15 @@ export default {
 
       // Font sizes
       fontSize: {
-        xs: '0.75rem',    // 12px
-        sm: '0.875rem',   // 14px
-        base: '1rem',     // 16px
-        lg: '1.125rem',   // 18px
-        xl: '1.25rem',    // 20px
-        '2xl': '1.5rem',  // 24px
+        'xs': '0.75rem', // 12px
+        'sm': '0.875rem', // 14px
+        'base': '1rem', // 16px
+        'lg': '1.125rem', // 18px
+        'xl': '1.25rem', // 20px
+        '2xl': '1.5rem', // 24px
         '3xl': '1.875rem', // 30px
         '4xl': '2.25rem', // 36px
-        '5xl': '3rem',    // 48px
+        '5xl': '3rem', // 48px
       },
 
       // Font weights
@@ -225,42 +225,42 @@ export default {
     typography: {
       headings: {
         h1: {
-          fontSize: '2.25rem',    // 36px
+          fontSize: '2.25rem', // 36px
           fontWeight: '700',
           lineHeight: '2.5rem',
           marginBottom: '1rem',
           color: 'var(--color-text-primary)',
         },
         h2: {
-          fontSize: '1.875rem',   // 30px
+          fontSize: '1.875rem', // 30px
           fontWeight: '600',
           lineHeight: '2.25rem',
           marginBottom: '0.875rem',
           color: 'var(--color-text-primary)',
         },
         h3: {
-          fontSize: '1.5rem',     // 24px
+          fontSize: '1.5rem', // 24px
           fontWeight: '600',
           lineHeight: '2rem',
           marginBottom: '0.75rem',
           color: 'var(--color-text-primary)',
         },
         h4: {
-          fontSize: '1.25rem',    // 20px
+          fontSize: '1.25rem', // 20px
           fontWeight: '600',
           lineHeight: '1.75rem',
           marginBottom: '0.5rem',
           color: 'var(--color-text-secondary)',
         },
         h5: {
-          fontSize: '1.125rem',   // 18px
+          fontSize: '1.125rem', // 18px
           fontWeight: '600',
           lineHeight: '1.625rem',
           marginBottom: '0.5rem',
           color: 'var(--color-text-secondary)',
         },
         h6: {
-          fontSize: '1rem',       // 16px
+          fontSize: '1rem', // 16px
           fontWeight: '600',
           lineHeight: '1.5rem',
           marginBottom: '0.5rem',
@@ -282,10 +282,10 @@ export default {
     layout: {
       // Container max widths
       container: {
-        sm: '640px',
-        md: '768px',
-        lg: '1024px',
-        xl: '1280px',
+        'sm': '640px',
+        'md': '768px',
+        'lg': '1024px',
+        'xl': '1280px',
         '2xl': '1536px',
       },
 
@@ -321,10 +321,10 @@ export default {
 export default {
   theme: {
     breakpoints: {
-      sm: '640px',
-      md: '768px',
-      lg: '1024px',
-      xl: '1280px',
+      'sm': '640px',
+      'md': '768px',
+      'lg': '1024px',
+      'xl': '1280px',
       '2xl': '1536px',
     },
 
@@ -374,9 +374,9 @@ export default {
 
         variants: {
           primary: {
-            backgroundColor: 'var(--color-primary-500)',
-            color: 'white',
-            borderColor: 'var(--color-primary-500)',
+            'backgroundColor': 'var(--color-primary-500)',
+            'color': 'white',
+            'borderColor': 'var(--color-primary-500)',
 
             '&:hover': {
               backgroundColor: 'var(--color-primary-600)',
@@ -390,9 +390,9 @@ export default {
           },
 
           secondary: {
-            backgroundColor: 'var(--color-surface-primary)',
-            color: 'var(--color-text-primary)',
-            borderColor: 'var(--color-border)',
+            'backgroundColor': 'var(--color-surface-primary)',
+            'color': 'var(--color-text-primary)',
+            'borderColor': 'var(--color-border)',
 
             '&:hover': {
               backgroundColor: 'var(--color-surface-secondary)',
@@ -400,9 +400,9 @@ export default {
           },
 
           ghost: {
-            backgroundColor: 'transparent',
-            color: 'var(--color-text-primary)',
-            borderColor: 'transparent',
+            'backgroundColor': 'transparent',
+            'color': 'var(--color-text-primary)',
+            'borderColor': 'transparent',
 
             '&:hover': {
               backgroundColor: 'var(--color-surface-secondary)',
@@ -447,12 +447,12 @@ export default {
         `,
 
         block: {
-          backgroundColor: 'var(--color-surface-secondary)',
-          border: '1px solid var(--color-border)',
-          borderRadius: '0.375rem',
-          padding: '1rem',
-          margin: '1rem 0',
-          overflow: 'auto',
+          'backgroundColor': 'var(--color-surface-secondary)',
+          'border': '1px solid var(--color-border)',
+          'borderRadius': '0.375rem',
+          'padding': '1rem',
+          'margin': '1rem 0',
+          'overflow': 'auto',
 
           '& pre': {
             margin: 0,
@@ -607,7 +607,8 @@ class ThemeToggle {
 
   private setupToggle() {
     const toggle = document.querySelector('.theme-toggle')
-    if (!toggle) return
+    if (!toggle)
+      return
 
     toggle.addEventListener('click', () => {
       this.cycleTheme()
@@ -638,7 +639,8 @@ class ThemeToggle {
     if (this.theme === 'system') {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
       root.setAttribute('data-theme', prefersDark ? 'dark' : 'light')
-    } else {
+    }
+    else {
       root.setAttribute('data-theme', this.theme)
     }
 
@@ -794,7 +796,7 @@ export default {
     overrides: {
       // Override specific components
       'button.primary': {
-        backgroundColor: 'var(--color-brand-primary)',
+        'backgroundColor': 'var(--color-brand-primary)',
         '&:hover': {
           backgroundColor: 'var(--color-brand-primary-dark)',
         }

@@ -34,13 +34,13 @@ export default {
   markdown: {
     themeConfig: {
       colors: {
-        primary: '#8b5cf6',     // Purple primary
-        secondary: '#06b6d4',   // Cyan secondary
-        accent: '#f59e0b',      // Amber accent
-        background: '#0f172a',  // Dark background
-        surface: '#1e293b',     // Dark surface
-        text: '#f1f5f9',        // Light text
-        muted: '#64748b'        // Muted text
+        primary: '#8b5cf6', // Purple primary
+        secondary: '#06b6d4', // Cyan secondary
+        accent: '#f59e0b', // Amber accent
+        background: '#0f172a', // Dark background
+        surface: '#1e293b', // Dark surface
+        text: '#f1f5f9', // Light text
+        muted: '#64748b' // Muted text
       }
     }
   }
@@ -73,7 +73,7 @@ Enable automatic dark mode:
 export default {
   markdown: {
     themeConfig: {
-      darkMode: true,  // Enable dark mode
+      darkMode: true, // Enable dark mode
       colors: {
         // Colors will automatically adapt for dark mode
         primary: '#60a5fa',
@@ -141,7 +141,7 @@ Override theme settings for specific pages:
 ---
 themeConfig:
   colors:
-    primary: '#ef4444'  # Red theme for this page
+    primary: '#ef4444' # Red theme for this page
   css: |
     .special-page {
       border: 2px solid var(--color-primary);

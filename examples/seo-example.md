@@ -34,10 +34,10 @@ Your page content here...
 ---
 title: Important Page
 description: This page is very important
-priority: 0.9          # High priority (0.0-1.0)
-changefreq: weekly     # Update frequency
-lastmod: 2024-01-01   # Last modification date
-sitemap: true         # Include in sitemap (default: true)
+priority: 0.9 # High priority (0.0-1.0)
+changefreq: weekly # Update frequency
+lastmod: 2024-01-01 # Last modification date
+sitemap: true # Include in sitemap (default: true)
 ---
 
 # Important Content
@@ -51,10 +51,10 @@ This content will have high priority in search engines.
 ---
 title: Private Page
 description: This page should not be crawled
-sitemap: false        # Exclude from sitemap
+sitemap: false # Exclude from sitemap
 robots:
   - userAgent: '*'
-    disallow: ['/private/']
+    disallow: [/private/]
 ---
 
 # Private Content
@@ -175,11 +175,11 @@ Add JSON-LD structured data for rich snippets:
 title: Product Page
 description: Product description
 structuredData:
-  "@context": "https://schema.org"
-  "@type": "SoftwareApplication"
-  name: "Product Name"
-  description: "Product description"
-  applicationCategory: "DeveloperApplication"
+  '@context': 'https://schema.org'
+  '@type': SoftwareApplication
+  name: Product Name
+  description: Product description
+  applicationCategory: DeveloperApplication
 ---
 
 # Product Name

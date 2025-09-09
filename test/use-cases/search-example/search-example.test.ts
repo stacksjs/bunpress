@@ -12,17 +12,17 @@ describe('Use Case: Search Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
+        { path: 'test.md', content },
       ],
       config: {
         markdown: {
           title: 'Search Example',
           meta: {
             description: 'How to configure search functionality in BunPress',
-            author: 'BunPress'
-          }
-        }
-      }
+            author: 'BunPress',
+          },
+        },
+      },
     })
 
     expect(result.success).toBe(true)
@@ -57,8 +57,8 @@ describe('Use Case: Search Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -90,8 +90,8 @@ describe('Use Case: Search Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)

@@ -37,7 +37,7 @@ This is a programmatically generated documentation site.
 - 📝 Markdown support
 - 🎨 Customizable themes
 - 🔍 Search functionality
-        `
+        `,
       },
       {
         path: 'guide/getting-started.md',
@@ -68,8 +68,8 @@ export default {
   }
 }
 \`\`\`
-        `
-      }
+        `,
+      },
     ]
 
     // Process each file
@@ -87,7 +87,8 @@ export default {
 
     console.log('✅ Basic example completed successfully!')
     console.log(`📁 Generated ${files.length} files with frontmatter`)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ Basic example failed:', error.message)
   }
 }
@@ -130,7 +131,7 @@ sidebar:
 # Advanced Documentation
 
 This example showcases advanced BunPress frontmatter features.
-      `
+      `,
       },
       {
         path: 'advanced/api.md',
@@ -175,8 +176,8 @@ const plugin = markdown({
 - \`title\`: Default page title
 - \`meta\`: HTML meta tags
 - \`themeConfig\`: Theme customization options
-      `
-      }
+      `,
+      },
     ]
 
     // Process each file
@@ -194,7 +195,8 @@ const plugin = markdown({
 
     console.log('✅ Advanced example completed successfully!')
     console.log(`📁 Generated ${files.length} files with advanced frontmatter`)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ Advanced example failed:', error.message)
   }
 }
@@ -218,7 +220,7 @@ description: Main documentation index
 # Documentation Index
 
 Welcome to our organized documentation structure.
-        `
+        `,
       },
       {
         path: 'docs/guide/getting-started.md',
@@ -230,7 +232,7 @@ description: Learn how to get started
 # Getting Started
 
 This guide is organized in the \`docs/guide/\` directory.
-        `
+        `,
       },
       {
         path: 'docs/api/core.md',
@@ -243,7 +245,7 @@ toc: sidebar
 # Core API
 
 API documentation organized in the \`docs/api/\` directory.
-        `
+        `,
       },
       {
         path: 'docs/examples/basic.md',
@@ -255,8 +257,8 @@ description: Basic usage examples
 # Basic Examples
 
 Examples organized in the \`docs/examples/\` directory.
-        `
-      }
+        `,
+      },
     ]
 
     // Process each file
@@ -274,7 +276,8 @@ Examples organized in the \`docs/examples/\` directory.
 
     console.log('✅ File organization example completed successfully!')
     console.log(`📁 Generated ${files.length} organized files`)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ File organization example failed:', error.message)
   }
 }
@@ -294,7 +297,8 @@ async function runAllExamples() {
     console.log()
 
     console.log('🎉 All examples completed successfully!')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('💥 Example execution failed:', error)
     process.exit(1)
   }
@@ -302,9 +306,9 @@ async function runAllExamples() {
 
 // Export individual examples for testing
 export {
-  basicExample,
   advancedExample,
-  organizationExample
+  basicExample,
+  organizationExample,
 }
 
 // Run examples if executed directly

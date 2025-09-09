@@ -1,7 +1,6 @@
-import { mkdir, readdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import process from 'node:process'
-import { markdown, generateSitemapAndRobots } from '../src/plugin'
+import { generateSitemapAndRobots, markdown } from '../src/plugin'
 
 const testDir = './examples/sitemap-output'
 const outDir = './examples/sitemap-output/dist'
@@ -26,7 +25,7 @@ changefreq: daily
 # Welcome to Our Documentation
 
 This is the home page of our documentation site.
-`
+`,
       },
       {
         path: 'docs/getting-started.md',
@@ -40,7 +39,7 @@ changefreq: monthly
 # Getting Started
 
 Learn how to get started with our platform.
-`
+`,
       },
       {
         path: 'docs/advanced.md',
@@ -54,7 +53,7 @@ changefreq: monthly
 # Advanced Features
 
 Explore advanced features and configuration options.
-`
+`,
       },
       {
         path: 'blog/post1.md',
@@ -69,7 +68,7 @@ lastmod: 2024-01-15
 # First Blog Post
 
 This is our first blog post with the latest updates.
-`
+`,
       },
       {
         path: 'blog/post2.md',
@@ -84,7 +83,7 @@ lastmod: 2024-01-20
 # Second Blog Post
 
 This is our second blog post with more updates.
-`
+`,
       },
       {
         path: 'private/admin.md',
@@ -97,7 +96,7 @@ sitemap: false
 # Admin Panel
 
 This page should not appear in the sitemap.
-`
+`,
       },
       {
         path: 'examples/basic.md',
@@ -110,8 +109,8 @@ priority: 0.5
 # Basic Example
 
 This is a basic example page.
-`
-      }
+`,
+      },
     ]
 
     // Write pages to disk
@@ -139,13 +138,13 @@ This is a basic example page.
             '/': 1.0,
             '/docs/**': 0.8,
             '/blog/**': 0.7,
-            '/examples/**': 0.6
+            '/examples/**': 0.6,
           },
           changefreqMap: {
             '/blog/**': 'weekly',
             '/docs/**': 'monthly',
-            '/': 'daily'
-          }
+            '/': 'daily',
+          },
         },
         robots: {
           enabled: true,
@@ -154,18 +153,18 @@ This is a basic example page.
             {
               userAgent: '*',
               allow: ['/'],
-              disallow: ['/private/', '/admin/']
+              disallow: ['/private/', '/admin/'],
             },
             {
               userAgent: 'Googlebot',
               allow: ['/'],
               disallow: ['/admin/'],
-              crawlDelay: 1
-            }
+              crawlDelay: 1,
+            },
           ],
-          host: 'example.com'
-        }
-      })]
+          host: 'example.com',
+        },
+      })],
     })
 
     if (!buildResult.success) {
@@ -184,17 +183,20 @@ This is a basic example page.
         const parsedFrontmatter: any = {}
 
         if (frontmatter) {
-          frontmatter.split('\n').forEach(line => {
+          frontmatter.split('\n').forEach((line) => {
             const [key, ...valueParts] = line.split(':')
             if (key && valueParts.length > 0) {
               const value = valueParts.join(':').trim()
               if (value.startsWith('"') && value.endsWith('"')) {
                 parsedFrontmatter[key.trim()] = value.slice(1, -1)
-              } else if (value === 'true' || value === 'false') {
+              }
+              else if (value === 'true' || value === 'false') {
                 parsedFrontmatter[key.trim()] = value === 'true'
-              } else if (!isNaN(Number(value))) {
+              }
+              else if (!isNaN(Number(value))) {
                 parsedFrontmatter[key.trim()] = Number(value)
-              } else {
+              }
+              else {
                 parsedFrontmatter[key.trim()] = value
               }
             }
@@ -203,9 +205,9 @@ This is a basic example page.
 
         return {
           path: page.path,
-          frontmatter: parsedFrontmatter
+          frontmatter: parsedFrontmatter,
         }
-      })
+      }),
     )
 
     await generateSitemapAndRobots(pageData, outDir, {
@@ -219,13 +221,13 @@ This is a basic example page.
         '/': 1.0,
         '/docs/**': 0.8,
         '/blog/**': 0.7,
-        '/examples/**': 0.6
+        '/examples/**': 0.6,
       },
       changefreqMap: {
         '/blog/**': 'weekly',
         '/docs/**': 'monthly',
-        '/': 'daily'
-      }
+        '/': 'daily',
+      },
     }, {
       enabled: true,
       filename: 'robots.txt',
@@ -233,16 +235,16 @@ This is a basic example page.
         {
           userAgent: '*',
           allow: ['/'],
-          disallow: ['/private/', '/admin/']
+          disallow: ['/private/', '/admin/'],
         },
         {
           userAgent: 'Googlebot',
           allow: ['/'],
           disallow: ['/admin/'],
-          crawlDelay: 1
-        }
+          crawlDelay: 1,
+        },
       ],
-      host: 'example.com'
+      host: 'example.com',
     })
 
     console.log('🎉 Sitemap and robots.txt generation completed!')
@@ -263,15 +265,15 @@ This is a basic example page.
     const sitemapPath = join(outDir, 'sitemap.xml')
     const sitemapContent = await Bun.file(sitemapPath).text()
     const urls = sitemapContent.match(/<loc>(.*?)<\/loc>/g)?.map(match =>
-      match.replace('<loc>', '').replace('</loc>', '').replace('https://example.com', '')
+      match.replace('<loc>', '').replace('</loc>', '').replace('https://example.com', ''),
     ) || []
 
     urls.forEach(url => console.log(`  ✅ ${url}`))
 
     console.log('\n🚫 Excluded from sitemap:')
     console.log('  ❌ /private/admin.html (sitemap: false)')
-
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ Error:', error)
   }
 }

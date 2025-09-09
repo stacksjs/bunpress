@@ -1,4 +1,4 @@
-import { mkdir, readdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import process from 'node:process'
 import { markdown } from '../src/plugin'
@@ -317,14 +317,14 @@ Theme switching can be implemented with CSS custom properties and JavaScript.
         meta: {
           description: 'Comprehensive showcase of syntax highlighting features including Shiki integration, copy-to-clipboard, line numbers, and themes',
           keywords: 'syntax highlighting, code blocks, copy clipboard, line numbers, themes',
-          author: 'bunpress'
+          author: 'bunpress',
         },
         toc: {
           enabled: true,
           position: 'sidebar' as const,
-          maxDepth: 3
-        }
-      }
+          maxDepth: 3,
+        },
+      },
     }
 
     console.log('Building syntax highlighting example...')
@@ -333,7 +333,7 @@ Theme switching can be implemented with CSS custom properties and JavaScript.
     const result = await Bun.build({
       entrypoints: [join(testDir, 'showcase.md')],
       outdir: outDir,
-      plugins: [markdown(buildConfig)]
+      plugins: [markdown(buildConfig)],
     })
 
     if (!result.success) {
@@ -360,8 +360,8 @@ Theme switching can be implemented with CSS custom properties and JavaScript.
     console.log('📖 Open the generated HTML file in your browser to see all the syntax highlighting features in action.')
     console.log('💡 Try hovering over code blocks to see the copy-to-clipboard buttons!')
     console.log('🔢 Check out the line numbers and highlighting features!')
-
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ Error:', error)
     process.exit(1)
   }

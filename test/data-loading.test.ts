@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { createTestMarkdown, buildTestSite, readBuiltFile, assertHtmlContains } from './utils/test-helpers'
+import { assertHtmlContains, buildTestSite, readBuiltFile } from './utils/test-helpers'
 
 describe('Data Loading', () => {
   describe('Content Loaders', () => {
@@ -18,8 +18,8 @@ Welcome to our blog!
 
       const result = await buildTestSite({
         files: [
-          { path: 'posts.md', content }
-        ]
+          { path: 'posts.md', content },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -63,8 +63,8 @@ This is the second post content.
         files: [
           { path: 'posts.md', content },
           { path: 'posts/post1.md', content: post1 },
-          { path: 'posts/post2.md', content: post2 }
-        ]
+          { path: 'posts/post2.md', content: post2 },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -99,8 +99,8 @@ Testing custom frontmatter fields and metadata.
 
       const result = await buildTestSite({
         files: [
-          { path: 'custom.md', content }
-        ]
+          { path: 'custom.md', content },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -132,8 +132,8 @@ Testing theme configuration in frontmatter.
 
       const result = await buildTestSite({
         files: [
-          { path: 'theme.md', content }
-        ]
+          { path: 'theme.md', content },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -167,8 +167,8 @@ Testing sidebar configuration.
 
       const result = await buildTestSite({
         files: [
-          { path: 'sidebar.md', content }
-        ]
+          { path: 'sidebar.md', content },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -215,8 +215,8 @@ This is the second blog post.
         files: [
           { path: 'blog/index.md', content: indexContent },
           { path: 'blog/post1.md', content: post1Content },
-          { path: 'blog/post2.md', content: post2Content }
-        ]
+          { path: 'blog/post2.md', content: post2Content },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -267,8 +267,8 @@ Get in touch with us.
         files: [
           { path: 'index.md', content: homeContent },
           { path: 'about.md', content: aboutContent },
-          { path: 'contact.md', content: contactContent }
-        ]
+          { path: 'contact.md', content: contactContent },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -308,13 +308,13 @@ How to install our software.
       const result = await buildTestSite({
         files: [
           { path: 'guide/index.md', content: guideIndex },
-          { path: 'guide/installation.md', content: installation }
+          { path: 'guide/installation.md', content: installation },
         ],
         config: {
           markdown: {
-            preserveDirectoryStructure: true
-          }
-        }
+            preserveDirectoryStructure: true,
+          },
+        },
       })
 
       expect(result.success).toBe(true)
@@ -361,8 +361,8 @@ This is another subsection.
 
       const result = await buildTestSite({
         files: [
-          { path: 'toc-test.md', content }
-        ]
+          { path: 'toc-test.md', content },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -390,8 +390,8 @@ This page has search configuration.
 
       const result = await buildTestSite({
         files: [
-          { path: 'search-test.md', content }
-        ]
+          { path: 'search-test.md', content },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -427,8 +427,8 @@ This is a documentation page.
       const result = await buildTestSite({
         files: [
           { path: 'home.md', content: homeContent },
-          { path: 'doc.md', content: docContent }
-        ]
+          { path: 'doc.md', content: docContent },
+        ],
       })
 
       expect(result.success).toBe(true)

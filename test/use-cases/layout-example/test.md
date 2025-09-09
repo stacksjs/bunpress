@@ -10,9 +10,9 @@ The home layout is perfect for landing pages and showcases your project with her
 ---
 layout: home
 hero:
-  name: "MyProject"
-  text: "Amazing documentation engine"
-  tagline: "Built with Bun for incredible performance"
+  name: MyProject
+  text: Amazing documentation engine
+  tagline: Built with Bun for incredible performance
   actions:
     - theme: brand
       text: Get Started
@@ -22,15 +22,15 @@ hero:
       link: https://github.com
 
 features:
-  - title: "Lightning Fast"
-    icon: "⚡"
-    details: "Powered by Bun runtime for blazing performance"
-  - title: "Rich Markdown"
-    icon: "📝"
-    details: "Enhanced markdown with syntax highlighting and extensions"
-  - title: "Developer Friendly"
-    icon: "🛠"
-    details: "TypeScript support and extensive customization"
+  - title: Lightning Fast
+    icon: ⚡
+    details: Powered by Bun runtime for blazing performance
+  - title: Rich Markdown
+    icon: 📝
+    details: Enhanced markdown with syntax highlighting and extensions
+  - title: Developer Friendly
+    icon: 🛠
+    details: TypeScript support and extensive customization
 ---
 
 # Welcome to MyProject
@@ -125,7 +125,7 @@ Override the default layout for specific pages:
 
 ```yaml
 ---
-layout: home  # Override to use home layout
+layout: home # Override to use home layout
 ---
 
 # Custom Home Page

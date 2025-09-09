@@ -410,9 +410,9 @@ export default {
   ssr: {
     enabled: true,
     prerender: [
-      '/',           // Homepage
-      '/guide/**',   // All guide pages
-      '/api/**'      // All API pages
+      '/', // Homepage
+      '/guide/**', // All guide pages
+      '/api/**' // All API pages
     ]
   }
 }

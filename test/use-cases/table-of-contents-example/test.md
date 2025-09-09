@@ -56,10 +56,10 @@ Control TOC behavior through frontmatter:
 
 ```yaml
 ---
-toc: true              # Enable TOC (default: true)
-tocTitle: "Contents"   # Custom title (default: "Table of Contents")
-tocDepth: 3           # Maximum depth (default: 3)
-tocPosition: sidebar  # Position: sidebar, floating, or false
+toc: true # Enable TOC (default: true)
+tocTitle: Contents # Custom title (default: "Table of Contents")
+tocDepth: 3 # Maximum depth (default: 3)
+tocPosition: sidebar # Position: sidebar, floating, or false
 ---
 ```
 
@@ -70,7 +70,7 @@ The most common TOC position:
 ```yaml
 ---
 toc: sidebar
-tocTitle: "On This Page"
+tocTitle: On This Page
 ---
 ```
 
@@ -84,13 +84,13 @@ export default {
   markdown: {
     toc: {
       enabled: true,
-      position: 'sidebar',    // 'sidebar', 'floating', or false
-      title: 'Contents',      // Custom title
-      depth: 4,              // Maximum heading depth (1-6)
+      position: 'sidebar', // 'sidebar', 'floating', or false
+      title: 'Contents', // Custom title
+      depth: 4, // Maximum heading depth (1-6)
       ignore: ['toc-ignore'], // CSS classes to ignore
-      ordered: false,        // Use ordered lists (ol) instead of unordered (ul)
-      collapsible: true,     // Allow collapsing sections
-      smoothScroll: true     // Enable smooth scrolling to sections
+      ordered: false, // Use ordered lists (ol) instead of unordered (ul)
+      collapsible: true, // Allow collapsing sections
+      smoothScroll: true // Enable smooth scrolling to sections
     }
   }
 }
@@ -264,10 +264,10 @@ export default {
   markdown: {
     toc: {
       position: 'floating',
-      side: 'right',           // 'left' or 'right'
-      width: '250px',         // Custom width
-      offset: '2rem',         // Distance from edge
-      zIndex: 100            // CSS z-index
+      side: 'right', // 'left' or 'right'
+      width: '250px', // Custom width
+      offset: '2rem', // Distance from edge
+      zIndex: 100 // CSS z-index
     }
   }
 }
@@ -354,7 +354,8 @@ class TocTouchHandler {
   init() {
     const toc = document.querySelector('.toc-mobile-content')
 
-    if (!toc) return
+    if (!toc)
+      return
 
     toc.addEventListener('touchstart', this.handleTouchStart.bind(this))
     toc.addEventListener('touchmove', this.handleTouchMove.bind(this))
@@ -367,7 +368,8 @@ class TocTouchHandler {
   }
 
   private handleTouchMove(e: TouchEvent) {
-    if (!this.isDragging) return
+    if (!this.isDragging)
+      return
 
     this.currentY = e.touches[0].clientY
     const diff = this.currentY - this.startY
@@ -380,14 +382,16 @@ class TocTouchHandler {
   }
 
   private handleTouchEnd() {
-    if (!this.isDragging) return
+    if (!this.isDragging)
+      return
 
     const diff = this.currentY - this.startY
 
     if (diff > 50) {
       // Close TOC if dragged down more than 50px
       this.closeToc()
-    } else {
+    }
+    else {
       // Reset position
       e.currentTarget.style.transform = ''
     }
@@ -449,7 +453,8 @@ class TocKeyboardNavigation {
   private handleKeydown(e: KeyboardEvent) {
     const activeElement = document.activeElement as HTMLAnchorElement
 
-    if (!activeElement?.classList.contains('toc-link')) return
+    if (!activeElement?.classList.contains('toc-link'))
+      return
 
     const currentIndex = Array.from(this.tocLinks).indexOf(activeElement)
 
@@ -513,11 +518,12 @@ class TocKeyboardNavigation {
 function enhanceTocForScreenReaders() {
   const toc = document.querySelector('.table-of-contents')
 
-  if (!toc) return
+  if (!toc)
+    return
 
   // Announce TOC expansion/collapse
   const toggleButtons = toc.querySelectorAll('.toc-toggle')
-  toggleButtons.forEach(button => {
+  toggleButtons.forEach((button) => {
     button.addEventListener('click', () => {
       const isExpanded = button.getAttribute('aria-expanded') === 'true'
       const sectionName = button.textContent?.trim() || 'section'
@@ -598,7 +604,8 @@ class LazyTocLoader {
         placeholder.outerHTML = tocHtml
         this.initTocFunctionality()
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to load TOC:', error)
     }
   }
@@ -753,25 +760,12 @@ export const TableOfContents: React.FC<TocProps> = ({
 ### Vue.js Integration
 
 ```vue
-<template>
-  <nav class="table-of-contents" role="navigation" aria-label="Table of contents">
-    <h2 class="toc-title">{{ title }}</h2>
-    <ul class="toc-list">
-      <toc-item
-        v-for="item in headings"
-        :key="item.link"
-        :item="item"
-        :active-item="activeItem"
-        :collapsed-items="collapsedItems"
-        @toggle-collapse="handleToggleCollapse"
-        @item-click="handleItemClick"
-      />
-    </ul>
-  </nav>
-</template>
-
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
+</script>
+
+<script lang="ts">
+import TocItem from './TocItem.vue'
 
 interface TocItem {
   text: string
@@ -796,22 +790,38 @@ const emit = defineEmits<{
 
 const collapsedItems = ref<Set<string>>(new Set())
 
-const handleToggleCollapse = (itemId: string) => {
+function handleToggleCollapse(itemId: string) {
   if (collapsedItems.value.has(itemId)) {
     collapsedItems.value.delete(itemId)
-  } else {
+  }
+  else {
     collapsedItems.value.add(itemId)
   }
 }
 
-const handleItemClick = (link: string) => {
+function handleItemClick(link: string) {
   emit('itemClick', link)
 }
 </script>
 
-<script lang="ts">
-import TocItem from './TocItem.vue'
-</script>
+<template>
+  <nav class="table-of-contents" role="navigation" aria-label="Table of contents">
+    <h2 class="toc-title">
+      {{ title }}
+    </h2>
+    <ul class="toc-list">
+      <TocItem
+        v-for="item in headings"
+        :key="item.link"
+        :item="item"
+        :active-item="activeItem"
+        :collapsed-items="collapsedItems"
+        @toggle-collapse="handleToggleCollapse"
+        @item-click="handleItemClick"
+      />
+    </ul>
+  </nav>
+</template>
 ```
 
 This comprehensive TOC system provides excellent navigation and user experience for documentation sites.

@@ -143,7 +143,7 @@ sidebar:
 ---
 sidebar:
   - text: Getting Started
-    collapsed: false  # Always expanded
+    collapsed: false # Always expanded
     items:
       - text: Introduction
         link: /guide/introduction
@@ -151,7 +151,7 @@ sidebar:
         link: /guide/quick-start
 
   - text: Advanced Topics
-    collapsed: true   # Collapsed by default
+    collapsed: true # Collapsed by default
     items:
       - text: Performance Tuning
         link: /guide/performance
@@ -166,9 +166,9 @@ sidebar:
 // In your bunpress.config.ts
 export default {
   sidebar: {
-    autoCollapse: true,        // Auto-collapse other groups when one is opened
-    rememberState: true,      // Remember collapse state in localStorage
-    animate: true             // Smooth collapse/expand animations
+    autoCollapse: true, // Auto-collapse other groups when one is opened
+    rememberState: true, // Remember collapse state in localStorage
+    animate: true // Smooth collapse/expand animations
   }
 }
 ```
@@ -251,11 +251,11 @@ The sidebar automatically detects the current page and highlights:
 ```yaml
 sidebar:
   - text: Getting Started
-    link: /guide/getting-started    # Active when on this page
+    link: /guide/getting-started # Active when on this page
   - text: Installation
-    link: /guide/installation       # Active when on this page
+    link: /guide/installation # Active when on this page
   - text: Configuration
-    link: /guide/configuration      # Active when on this page
+    link: /guide/configuration # Active when on this page
 ```
 
 ### Active State Styling
@@ -282,13 +282,16 @@ sidebar:
 // Custom active state detection
 function isLinkActive(link: string, currentPath: string): boolean {
   // Exact match
-  if (link === currentPath) return true
+  if (link === currentPath)
+    return true
 
   // Parent directory match
-  if (currentPath.startsWith(link) && link !== '/') return true
+  if (currentPath.startsWith(link) && link !== '/')
+    return true
 
   // Custom logic for index pages
-  if (currentPath === '/' && link === '/guide/') return true
+  if (currentPath === '/' && link === '/guide/')
+    return true
 
   return false
 }
@@ -364,7 +367,8 @@ document.addEventListener('touchstart', (e) => {
 })
 
 document.addEventListener('touchmove', (e) => {
-  if (!isDragging) return
+  if (!isDragging)
+    return
 
   currentX = e.touches[0].clientX
   const diff = currentX - startX
@@ -391,8 +395,8 @@ document.addEventListener('touchend', () => {
 
 ```typescript
 // Generate sidebar from file system
-import { readdirSync, statSync } from 'fs'
-import { join } from 'path'
+import { readdirSync, statSync } from 'node:fs'
+import { join } from 'node:path'
 
 function generateSidebarFromFiles(dir: string): SidebarItem[] {
   const items: SidebarItem[] = []
@@ -409,7 +413,8 @@ function generateSidebarFromFiles(dir: string): SidebarItem[] {
         text: file.charAt(0).toUpperCase() + file.slice(1),
         items: generateSidebarFromFiles(filePath)
       })
-    } else if (file.endsWith('.md')) {
+    }
+    else if (file.endsWith('.md')) {
       // Create link for markdown file
       const name = file.replace('.md', '')
       items.push({
@@ -463,7 +468,8 @@ export default defineComponent({
     }
 
     const filteredItems = computed(() => {
-      if (!searchQuery.value) return sidebarItems
+      if (!searchQuery.value)
+        return sidebarItems
 
       return sidebarItems.filter(item =>
         item.text.toLowerCase().includes(searchQuery.value.toLowerCase())
@@ -496,9 +502,9 @@ export default defineComponent({
 // Lazy load sidebar content
 export default {
   sidebar: {
-    lazyLoad: true,           // Load sidebar content on demand
-    cache: true,              // Cache sidebar state
-    prefetch: true           // Prefetch linked pages
+    lazyLoad: true, // Load sidebar content on demand
+    cache: true, // Cache sidebar state
+    prefetch: true // Prefetch linked pages
   }
 }
 ```

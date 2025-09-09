@@ -1,4 +1,4 @@
-import { mkdir, readdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import process from 'node:process'
 import { markdown } from '../src/plugin'
@@ -174,13 +174,13 @@ This example showcases all the enhanced markdown features. Try building this fil
       meta: {
         description: 'Comprehensive showcase of enhanced markdown processing features',
         keywords: 'markdown, documentation, showcase, extensions',
-        author: 'bunpress'
+        author: 'bunpress',
       },
       toc: {
         enabled: true,
         position: 'sidebar' as const,
-        maxDepth: 3
-      }
+        maxDepth: 3,
+      },
     }
 
     console.log('Building markdown extensions example...')
@@ -189,7 +189,7 @@ This example showcases all the enhanced markdown features. Try building this fil
     const result = await Bun.build({
       entrypoints: [join(testDir, 'showcase.md')],
       outdir: outDir,
-      plugins: [markdown(buildConfig)]
+      plugins: [markdown(buildConfig)],
     })
 
     if (!result.success) {
@@ -214,11 +214,12 @@ This example showcases all the enhanced markdown features. Try building this fil
 
     console.log('\n🎉 Example completed!')
     console.log('📖 Open the generated HTML file in your browser to see all the markdown extensions in action.')
-
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ Error:', error)
     process.exit(1)
-  } finally {
+  }
+  finally {
     // Note: Not cleaning up automatically so user can examine the output
     console.log('\n📁 Example files are in:', testDir)
     console.log('📁 Built files are in:', outDir)

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { createTestMarkdown, buildTestSite, readBuiltFile, assertHtmlContains } from './utils/test-helpers'
+import { assertHtmlContains, buildTestSite, createTestMarkdown, readBuiltFile } from './utils/test-helpers'
 
 describe('Table of Contents', () => {
   describe('TOC Generation', () => {
@@ -39,7 +39,7 @@ Available endpoints.
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -69,9 +69,9 @@ Available endpoints.
         files: [{ path: 'test.md', content }],
         config: {
           markdown: {
-            tocMaxDepth: 2
-          }
-        }
+            tocMaxDepth: 2,
+          },
+        },
       })
 
       expect(result.success).toBe(true)
@@ -95,7 +95,7 @@ Some content here.
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -116,7 +116,7 @@ Some content here.
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -145,7 +145,7 @@ Some content here.
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -171,7 +171,7 @@ Some content here.
       `, { toc: 'sidebar' })
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -195,7 +195,7 @@ Some content here.
       `, { toc: 'inline' })
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -217,7 +217,7 @@ Some content here.
       `, { toc: 'floating' })
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -241,7 +241,7 @@ Some content here.
       `, { toc: ['sidebar', 'inline'] })
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -263,7 +263,7 @@ Some content here.
       `, { tocTitle: 'Contents' })
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -285,7 +285,7 @@ Some content here.
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -315,7 +315,7 @@ tocEndLevel: 4
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -344,7 +344,7 @@ Some content here.
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -370,7 +370,7 @@ More content here.
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -401,7 +401,7 @@ API content here.
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -426,7 +426,7 @@ Some content here.
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -449,7 +449,7 @@ Some content here.
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -471,7 +471,7 @@ Some content here.
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)

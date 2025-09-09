@@ -78,14 +78,14 @@ Frontmatter allows you to define metadata for your pages:
 ### Layout Configuration
 
 ```yaml
-layout: doc  # or 'home' for landing pages
+layout: doc # or 'home' for landing pages
 ```
 
 ### Table of Contents
 
 ```yaml
-toc: sidebar  # Position: 'sidebar', 'floating', or false
-tocTitle: Contents  # Custom title for TOC
+toc: sidebar # Position: 'sidebar', 'floating', or false
+tocTitle: Contents # Custom title for TOC
 ```
 
 ### Search Configuration

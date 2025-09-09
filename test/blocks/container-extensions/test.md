@@ -87,7 +87,7 @@ Here's a code example inside an info container:
 
 ```javascript
 function greet(name) {
-  return `Hello, ${name}!`;
+  return `Hello, ${name}!`
 }
 ```
 
@@ -213,9 +213,9 @@ Here are multiple code examples:
 
 ```typescript
 interface User {
-  id: number;
-  name: string;
-  email: string;
+  id: number
+  name: string
+  email: string
 }
 ```
 
@@ -245,7 +245,7 @@ Some **bold text** and *italic text*.
 - List item 2
 
 ```javascript
-console.log("Code block");
+console.log('Code block')
 ```
 
 > Blockquote in container

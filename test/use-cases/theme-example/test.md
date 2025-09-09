@@ -106,11 +106,11 @@ export const lightTheme = {
     },
 
     fontSize: {
-      xs: '0.75rem',
-      sm: '0.875rem',
-      base: '1rem',
-      lg: '1.125rem',
-      xl: '1.25rem',
+      'xs': '0.75rem',
+      'sm': '0.875rem',
+      'base': '1rem',
+      'lg': '1.125rem',
+      'xl': '1.25rem',
       '2xl': '1.5rem',
       '3xl': '1.875rem',
       '4xl': '2.25rem',
@@ -147,13 +147,13 @@ export const lightTheme = {
   },
 
   borderRadius: {
-    none: '0',
-    sm: '0.125rem',
-    md: '0.375rem',
-    lg: '0.5rem',
-    xl: '0.75rem',
+    'none': '0',
+    'sm': '0.125rem',
+    'md': '0.375rem',
+    'lg': '0.5rem',
+    'xl': '0.75rem',
     '2xl': '1rem',
-    full: '9999px',
+    'full': '9999px',
   },
 
   shadows: {
@@ -281,11 +281,11 @@ export const darkTheme = {
     },
 
     fontSize: {
-      xs: '0.75rem',
-      sm: '0.875rem',
-      base: '1rem',
-      lg: '1.125rem',
-      xl: '1.25rem',
+      'xs': '0.75rem',
+      'sm': '0.875rem',
+      'base': '1rem',
+      'lg': '1.125rem',
+      'xl': '1.25rem',
       '2xl': '1.5rem',
       '3xl': '1.875rem',
       '4xl': '2.25rem',
@@ -532,11 +532,11 @@ export const developerTheme = {
     },
 
     fontSize: {
-      xs: '0.75rem',
-      sm: '0.875rem',
-      base: '1rem',
-      lg: '1.125rem',
-      xl: '1.25rem',
+      'xs': '0.75rem',
+      'sm': '0.875rem',
+      'base': '1rem',
+      'lg': '1.125rem',
+      'xl': '1.25rem',
       '2xl': '1.5rem',
       '3xl': '1.875rem',
       '4xl': '2.25rem',
@@ -725,7 +725,7 @@ export const paperTheme = {
 
 ```typescript
 // Custom brand theme implementation
-export const createBrandTheme = (brandConfig: BrandConfig) => {
+export function createBrandTheme(brandConfig: BrandConfig) {
   return {
     name: brandConfig.name,
     colors: {
@@ -855,7 +855,7 @@ export const themeManager = new ThemeManager()
 
 ```typescript
 // Theme persistence and initialization
-export const initializeTheme = () => {
+export function initializeTheme() {
   // Load saved theme or use system preference
   const savedTheme = localStorage.getItem('bunpress-theme')
   const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -881,7 +881,8 @@ export const initializeTheme = () => {
 // Initialize theme on page load
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeTheme)
-} else {
+}
+else {
   initializeTheme()
 }
 ```

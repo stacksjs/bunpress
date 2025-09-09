@@ -28,9 +28,9 @@ async function generateExpectedHtml(testCase: string) {
         title: 'Test Documentation',
         meta: {
           description: 'Test description',
-          author: 'BunPress'
-        }
-      })]
+          author: 'BunPress',
+        },
+      })],
     })
 
     if (!result.success) {
@@ -43,7 +43,7 @@ async function generateExpectedHtml(testCase: string) {
 
     // Find the generated HTML file
     const htmlFiles = result.outputs.filter(output =>
-      output.path.endsWith('.html')
+      output.path.endsWith('.html'),
     )
 
     console.log('HTML files found:', htmlFiles.length)
@@ -51,7 +51,7 @@ async function generateExpectedHtml(testCase: string) {
     if (htmlFiles.length === 0) {
       // Try to find HTML files manually
       const findResult = await Bun.spawn(['find', tempOutDir, '-name', '*.html', '-type', 'f'], {
-        stdout: 'pipe'
+        stdout: 'pipe',
       })
       const output = await new Response(findResult.stdout).text()
       const foundPaths = output.trim().split('\n').filter(p => p)
@@ -81,8 +81,8 @@ async function generateExpectedHtml(testCase: string) {
 
     // Clean up temp directory
     await Bun.spawn(['rm', '-rf', tempOutDir])
-
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`❌ Error generating expected HTML for ${testCase}:`, error)
   }
 }
@@ -91,7 +91,7 @@ async function main() {
   const testCases = [
     'config-example',
     'frontmatter-example',
-    'markdown-extensions-example'
+    'markdown-extensions-example',
   ]
 
   console.log('🚀 Generating expected HTML for test cases...')

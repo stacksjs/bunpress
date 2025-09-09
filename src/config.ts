@@ -1,17 +1,11 @@
 import type {
-  BunPressOptions,
   BunPressConfig,
-  MarkdownPluginConfig,
-  NavItem,
-  SidebarItem,
-  SearchConfig,
-  ThemeConfig,
   ConfigPlugin,
-  ConfigValidationResult
+  ConfigValidationResult,
 } from './types'
-import { join, dirname, basename } from 'node:path'
 import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
 
 // Configuration file formats supported
 const CONFIG_FILES = [
@@ -24,7 +18,7 @@ const CONFIG_FILES = [
   '.vitepress/config.js',
   '.vitepress/config.json',
   '.vitepress/config.yml',
-  '.vitepress/config.yaml'
+  '.vitepress/config.yaml',
 ]
 
 // Default configuration
@@ -33,16 +27,16 @@ export const defaultConfig: BunPressConfig = {
   nav: [
     {
       text: 'Guide',
-      link: '/install'
+      link: '/install',
     },
     {
       text: 'API',
-      link: '/usage'
+      link: '/usage',
     },
     {
       text: 'Examples',
-      link: '/examples'
-    }
+      link: '/examples',
+    },
   ],
 
   // Plugin configuration
@@ -64,15 +58,15 @@ export const defaultConfig: BunPressConfig = {
             { text: 'Introduction', link: '/' },
             { text: 'Installation', link: '/install' },
             { text: 'Usage', link: '/usage' },
-            { text: 'Configuration', link: '/config' }
-          ]
+            { text: 'Configuration', link: '/config' },
+          ],
         },
         {
           text: 'Features',
           items: [
             { text: 'Markdown Extensions', link: '/markdown-extensions' },
-            { text: 'Table of Contents', link: '/table-of-contents' }
-          ]
+            { text: 'Table of Contents', link: '/table-of-contents' },
+          ],
         },
         {
           text: 'Advanced',
@@ -90,8 +84,8 @@ export const defaultConfig: BunPressConfig = {
             { text: 'Custom Error Handling', link: '/advanced#custom-error-handling' },
             { text: 'Security Considerations', link: '/advanced#security-considerations' },
             { text: 'Deployment Options', link: '/advanced#deployment-options' },
-            { text: 'API Reference', link: '/advanced#api-reference' }
-          ]
+            { text: 'API Reference', link: '/advanced#api-reference' },
+          ],
         },
         {
           text: 'Best Practices & Examples',
@@ -107,8 +101,8 @@ export const defaultConfig: BunPressConfig = {
             { text: 'Testing Documentation', link: '/best-practices#testing-documentation' },
             { text: 'Deployment Best Practices', link: '/best-practices#deployment-best-practices' },
             { text: 'Maintenance', link: '/best-practices#maintenance' },
-            { text: 'Community Engagement', link: '/best-practices#community-engagement' }
-          ]
+            { text: 'Community Engagement', link: '/best-practices#community-engagement' },
+          ],
         },
         {
           text: 'More',
@@ -116,10 +110,10 @@ export const defaultConfig: BunPressConfig = {
             { text: 'Showcase', link: '/showcase' },
             { text: 'Partners', link: '/partners' },
             { text: 'License', link: '/license' },
-            { text: 'Postcardware', link: '/postcardware' }
-          ]
-        }
-      ]
+            { text: 'Postcardware', link: '/postcardware' },
+          ],
+        },
+      ],
     },
     css: `
       body {
@@ -438,7 +432,8 @@ export class ConfigManager {
       if (plugin.extendConfig) {
         try {
           config = plugin.extendConfig(config)
-        } catch (error) {
+        }
+        catch (error) {
           console.error(`Plugin ${plugin.name} failed to extend config:`, error)
         }
       }
@@ -451,7 +446,8 @@ export class ConfigManager {
       if (plugin.onConfigLoad) {
         try {
           await plugin.onConfigLoad(this.config)
-        } catch (error) {
+        }
+        catch (error) {
           console.error(`Plugin ${plugin.name} onConfigLoad failed:`, error)
         }
       }
@@ -463,7 +459,7 @@ export class ConfigManager {
     const result: ConfigValidationResult = {
       valid: true,
       errors: [],
-      warnings: []
+      warnings: [],
     }
 
     // Apply plugin validators
@@ -474,7 +470,8 @@ export class ConfigManager {
           result.valid = result.valid && pluginResult.valid
           result.errors.push(...pluginResult.errors)
           result.warnings.push(...pluginResult.warnings)
-        } catch (error) {
+        }
+        catch (error) {
           result.valid = false
           result.errors.push(`Plugin ${plugin.name} validation failed: ${error}`)
         }
@@ -520,7 +517,8 @@ export class ConfigManager {
     for (const watcher of this.watchers) {
       try {
         watcher(this.config)
-      } catch (error) {
+      }
+      catch (error) {
         console.error('Configuration watcher failed:', error)
       }
     }
@@ -530,7 +528,8 @@ export class ConfigManager {
       if (plugin.onConfigChange) {
         try {
           await plugin.onConfigChange(this.config, oldConfig)
-        } catch (error) {
+        }
+        catch (error) {
           console.error(`Plugin ${plugin.name} onConfigChange failed:`, error)
         }
       }
@@ -547,14 +546,16 @@ export class ConfigManager {
     const output = { ...target }
 
     if (this.isObject(target) && this.isObject(source)) {
-      Object.keys(source).forEach(key => {
+      Object.keys(source).forEach((key) => {
         if (this.isObject(source[key])) {
           if (!(key in target)) {
             output[key] = source[key]
-          } else {
+          }
+          else {
             output[key] = this.deepMerge(target[key], source[key])
           }
-        } else {
+        }
+        else {
           output[key] = source[key]
         }
       })
@@ -607,7 +608,8 @@ export async function loadConfigFile(configPath?: string): Promise<BunPressConfi
       const module = await import(absolutePath)
       return module.default || module
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`Failed to load config from ${configFile}:`, error)
   }
 

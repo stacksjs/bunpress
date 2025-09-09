@@ -1,4 +1,4 @@
-import { mkdir, readdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import process from 'node:process'
 import { markdown } from '../src/plugin'
@@ -358,7 +358,7 @@ Final section content.
       join(testDir, 'toc-showcase.md'),
       join(testDir, 'sidebar-toc.md'),
       join(testDir, 'inline-toc.md'),
-      join(testDir, 'floating-toc.md')
+      join(testDir, 'floating-toc.md'),
     ]
 
     const result = await Bun.build({
@@ -368,9 +368,9 @@ Final section content.
         title: 'TOC Examples',
         meta: {
           description: 'Comprehensive Table of Contents examples',
-          author: 'bunpress'
-        }
-      })]
+          author: 'bunpress',
+        },
+      })],
     })
 
     if (!result.success) {
@@ -399,11 +399,12 @@ Final section content.
     console.log('  - sidebar-toc.html - Sidebar TOC example')
     console.log('  - inline-toc.html - Inline TOC example')
     console.log('  - floating-toc.html - Floating TOC example')
-
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ Error:', error)
     process.exit(1)
-  } finally {
+  }
+  finally {
     console.log('\n📁 Example files are in:', testDir)
     console.log('📁 Built files are in:', outDir)
   }

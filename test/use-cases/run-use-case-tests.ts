@@ -3,9 +3,9 @@
  * Run all use-case tests and generate a summary report
  */
 
+import { spawn } from 'node:child_process'
 import { readdir } from 'node:fs/promises'
 import { join } from 'node:path'
-import { spawn } from 'node:child_process'
 
 const testDir = import.meta.dir
 
@@ -16,7 +16,7 @@ async function runUseCaseTests() {
     // Get all test case directories
     const testCases = await readdir(testDir)
     const validTestCases = testCases.filter(tc =>
-      !tc.endsWith('.ts') && !tc.endsWith('.js')
+      !tc.endsWith('.ts') && !tc.endsWith('.js'),
     )
 
     console.log(`📁 Found ${validTestCases.length} test cases:`)
@@ -51,7 +51,7 @@ async function runUseCaseTests() {
 
           const testProcess = spawn('bun', ['test', testFile], {
             cwd: process.cwd(),
-            stdio: ['inherit', 'pipe', 'pipe']
+            stdio: ['inherit', 'pipe', 'pipe'],
           })
 
           testProcess.stdout?.on('data', (data) => {
@@ -67,7 +67,7 @@ async function runUseCaseTests() {
             resolve({
               success,
               output: output || errorOutput,
-              error: success ? undefined : errorOutput
+              error: success ? undefined : errorOutput,
             })
           })
 
@@ -75,14 +75,14 @@ async function runUseCaseTests() {
             resolve({
               success: false,
               output: '',
-              error: error.message
+              error: error.message,
             })
           })
         })
 
         results.push({
           testCase,
-          ...result
+          ...result,
         })
 
         if (result.success) {
@@ -92,28 +92,29 @@ async function runUseCaseTests() {
           // Extract test count from output
           const testCountMatch = result.output.match(/(\d+)\s+pass/)
           if (testCountMatch) {
-            totalTests += parseInt(testCountMatch[1])
+            totalTests += Number.parseInt(testCountMatch[1])
           }
-        } else {
+        }
+        else {
           console.log(`❌ ${testCase} - FAILED`)
           console.log('   Error:', result.error)
           failedTests++
         }
-
-      } catch (error) {
+      }
+      catch (error) {
         console.log(`❌ ${testCase} - ERROR: ${error}`)
         failedTests++
         results.push({
           testCase,
           success: false,
           output: '',
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
         })
       }
     }
 
     // Generate summary report
-    console.log('\n' + '='.repeat(50))
+    console.log(`\n${'='.repeat(50)}`)
     console.log('📊 TEST SUMMARY REPORT')
     console.log('='.repeat(50))
 
@@ -129,7 +130,7 @@ async function runUseCaseTests() {
 
     console.log('\n📋 Detailed Results:')
 
-    results.forEach(result => {
+    results.forEach((result) => {
       const status = result.success ? '✅ PASS' : '❌ FAIL'
       console.log(`  ${status} ${result.testCase}`)
 
@@ -150,11 +151,12 @@ async function runUseCaseTests() {
 
     if (failedTests === 0) {
       console.log('\n🎉 All tests passed! BunPress is working correctly.')
-    } else {
+    }
+    else {
       console.log(`\n⚠️  ${failedTests} test case(s) failed. Please review the errors above.`)
     }
-
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ Error running tests:', error)
     process.exit(1)
   }

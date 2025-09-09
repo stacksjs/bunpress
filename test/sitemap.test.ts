@@ -1,5 +1,5 @@
-import { describe, expect, test } from 'bun:test'
-import { createTestMarkdown, buildTestSite, readBuiltFile, assertHtmlContains } from './utils/test-helpers'
+import { afterAll, describe, expect, test } from 'bun:test'
+import { assertHtmlContains, buildTestSite, cleanupTestResources, createTestMarkdown, readBuiltFile } from './utils/test-helpers'
 
 describe('Sitemap Generation', () => {
   describe('Sitemap XML', () => {
@@ -19,8 +19,8 @@ Second page content.
       const result = await buildTestSite({
         files: [
           { path: 'page1.md', content: content1 },
-          { path: 'page2.md', content: content2 }
-        ]
+          { path: 'page2.md', content: content2 },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -49,7 +49,7 @@ Second page content.
         'blog/post1.md',
         'blog/post2.md',
         'docs/guide.md',
-        'docs/api.md'
+        'docs/api.md',
       ]
 
       const files = pages.map(page => ({
@@ -58,11 +58,11 @@ Second page content.
 # ${page.replace('.md', '').replace('/', ' ')}
 
 Content for ${page}
-        `)
+        `),
       }))
 
       const result = await buildTestSite({
-        files
+        files,
       })
 
       expect(result.success).toBe(true)
@@ -74,7 +74,7 @@ Content for ${page}
         const sitemapPath = result.outputs.find(out => out.includes('sitemap.xml'))
         const sitemapContent = await readBuiltFile(sitemapPath!)
 
-        pages.forEach(page => {
+        pages.forEach((page) => {
           const htmlPage = page.replace('.md', '.html')
           expect(assertHtmlContains(sitemapContent, htmlPage)).toBe(true)
         })
@@ -112,8 +112,8 @@ Contact page content.
         files: [
           { path: 'index.md', content: content1 },
           { path: 'about.md', content: content2 },
-          { path: 'contact.md', content: content3 }
-        ]
+          { path: 'contact.md', content: content3 },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -147,8 +147,8 @@ More content.
       const result = await buildTestSite({
         files: [
           { path: 'page1.md', content: content1 },
-          { path: 'page2.md', content: content2 }
-        ]
+          { path: 'page2.md', content: content2 },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -188,8 +188,8 @@ Never changes.
         files: [
           { path: 'daily.md', content: content1 },
           { path: 'monthly.md', content: content2 },
-          { path: 'static.md', content: content3 }
-        ]
+          { path: 'static.md', content: content3 },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -230,8 +230,8 @@ This page should also not be in sitemap.
         files: [
           { path: 'included.md', content: content1 },
           { path: 'excluded1.md', content: content2 },
-          { path: 'excluded2.md', content: content3 }
-        ]
+          { path: 'excluded2.md', content: content3 },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -259,7 +259,7 @@ Content for robots.txt test.
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -293,8 +293,8 @@ Content for page two.
       const result = await buildTestSite({
         files: [
           { path: 'page1.md', content: content1 },
-          { path: 'page2.md', content: content2 }
-        ]
+          { path: 'page2.md', content: content2 },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -321,17 +321,17 @@ Content for custom robots test.
         robots: [
           {
             userAgent: 'Googlebot',
-            disallow: ['/private/']
+            disallow: ['/private/'],
           },
           {
             userAgent: 'Bingbot',
-            disallow: ['/admin/']
-          }
-        ]
+            disallow: ['/admin/'],
+          },
+        ],
       })
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -361,12 +361,12 @@ Content for sitemap configuration test.
         sitemap: {
           changefreq: 'weekly',
           priority: 0.8,
-          lastmod: '2024-01-01'
-        }
+          lastmod: '2024-01-01',
+        },
       })
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -400,16 +400,16 @@ Content for blog sitemap.
       const result = await buildTestSite({
         files: [
           { path: 'page1.md', content: content1 },
-          { path: 'blog/page2.md', content: content2 }
+          { path: 'blog/page2.md', content: content2 },
         ],
         config: {
           sitemap: {
             enabled: true,
             baseUrl: 'https://example.com',
             useSitemapIndex: true,
-            maxUrlsPerFile: 1
-          }
-        }
+            maxUrlsPerFile: 1,
+          },
+        },
       })
 
       expect(result.success).toBe(true)
@@ -456,16 +456,16 @@ Content for section 2.
       const result = await buildTestSite({
         files: [
           { path: 'section1/page.md', content: content1 },
-          { path: 'section2/page.md', content: content2 }
+          { path: 'section2/page.md', content: content2 },
         ],
         config: {
           sitemap: {
             enabled: true,
             baseUrl: 'https://example.com',
             useSitemapIndex: true,
-            maxUrlsPerFile: 1
-          }
-        }
+            maxUrlsPerFile: 1,
+          },
+        },
       })
 
       expect(result.success).toBe(true)
@@ -496,7 +496,7 @@ Content without frontmatter.
       `
 
       const result = await buildTestSite({
-        files: [{ path: 'simple.md', content }]
+        files: [{ path: 'simple.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -521,7 +521,7 @@ Content with special characters in path.
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'spécial-chars-测试.md', content }]
+        files: [{ path: 'spécial-chars-测试.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -546,7 +546,7 @@ Content with very long path.
       `)
 
       const result = await buildTestSite({
-        files: [{ path: `${longPath}.md`, content }]
+        files: [{ path: `${longPath}.md`, content }],
       })
 
       expect(result.success).toBe(true)
@@ -570,7 +570,7 @@ Only one page in sitemap.
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'single.md', content }]
+        files: [{ path: 'single.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -597,11 +597,11 @@ Only one page in sitemap.
 # Page ${i}
 
 Content for page ${i}.
-        `)
+        `),
       }))
 
       const result = await buildTestSite({
-        files
+        files,
       })
 
       expect(result.success).toBe(true)
@@ -631,7 +631,7 @@ Initial content.
       `)
 
       const result1 = await buildTestSite({
-        files: [{ path: 'initial.md', content: content1 }]
+        files: [{ path: 'initial.md', content: content1 }],
       })
 
       expect(result1.success).toBe(true)
@@ -646,8 +646,8 @@ Additional content.
       const result2 = await buildTestSite({
         files: [
           { path: 'initial.md', content: content1 },
-          { path: 'additional.md', content: content2 }
-        ]
+          { path: 'additional.md', content: content2 },
+        ],
       })
 
       expect(result2.success).toBe(true)
@@ -663,5 +663,10 @@ Additional content.
         expect(assertHtmlContains(sitemapContent, 'additional.html')).toBe(true)
       }
     })
+  })
+
+  // Clean up resources after all tests
+  afterAll(() => {
+    cleanupTestResources()
   })
 })

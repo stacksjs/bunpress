@@ -299,7 +299,7 @@ export default {
 title: Custom Page
 themeConfig:
   colors:
-    primary: '#10b981'  # Override global primary color
+    primary: '#10b981' # Override global primary color
 ---
 ```
 
@@ -477,9 +477,9 @@ author: BunPress Team
 ### Minimize Bundle Size
 
 ```typescript
+import type { Config } from 'bunpress'
 // Only import what you need
 import { build } from 'bunpress'
-import type { Config } from 'bunpress'
 
 // Avoid large dependencies in client-side code
 ```

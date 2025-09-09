@@ -3,9 +3,8 @@
  * Script to generate expected HTML outputs for block tests
  */
 
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { readdir } from 'node:fs/promises'
 import { markdown } from '../../src/plugin'
 
 async function generateExpectedHtml(blockType: string) {
@@ -29,9 +28,9 @@ async function generateExpectedHtml(blockType: string) {
         title: `${blockType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())} Test`,
         meta: {
           description: `Test for ${blockType} functionality`,
-          author: 'BunPress'
-        }
-      })]
+          author: 'BunPress',
+        },
+      })],
     })
 
     if (!result.success) {
@@ -44,7 +43,7 @@ async function generateExpectedHtml(blockType: string) {
 
     // Find the generated HTML file
     const htmlFiles = result.outputs.filter(output =>
-      output.path.endsWith('.html')
+      output.path.endsWith('.html'),
     )
 
     if (htmlFiles.length === 0) {
@@ -59,8 +58,8 @@ async function generateExpectedHtml(blockType: string) {
     await writeFile(expectedHtmlFile, htmlContent, 'utf8')
 
     console.log(`✅ Generated expected HTML for ${blockType}`)
-
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`❌ Error processing ${blockType}:`, error)
   }
 }
@@ -87,8 +86,8 @@ async function main() {
     }
 
     console.log('\n🎉 All expected HTML files generated!')
-
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ Error:', error)
     process.exit(1)
   }

@@ -12,17 +12,17 @@ describe('Use Case: Layout Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
+        { path: 'test.md', content },
       ],
       config: {
         markdown: {
           title: 'Layout Examples',
           meta: {
             description: 'Different layout variants available in BunPress',
-            author: 'BunPress'
-          }
-        }
-      }
+            author: 'BunPress',
+          },
+        },
+      },
     })
 
     expect(result.success).toBe(true)
@@ -61,8 +61,8 @@ describe('Use Case: Layout Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -85,8 +85,8 @@ describe('Use Case: Layout Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -107,8 +107,8 @@ describe('Use Case: Layout Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)

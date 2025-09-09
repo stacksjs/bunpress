@@ -1,15 +1,15 @@
+import type { NavItem, SearchConfig, SidebarItem, ThemeConfig } from '../src/types'
 import { describe, expect, test } from 'bun:test'
 import {
   createNavHtml,
-  isNavItemActive,
-  createSidebarHtml,
-  isSidebarItemActive,
   createSearchHtml,
+  createSidebarHtml,
   generateSearchIndex,
+  generateThemeCSS,
+  isNavItemActive,
+  isSidebarItemActive,
   performSearch,
-  generateThemeCSS
 } from '../src/plugin'
-import type { NavItem, SidebarItem, SearchConfig, ThemeConfig } from '../src/types'
 
 describe('Default Theme', () => {
   describe('Navigation', () => {
@@ -17,7 +17,7 @@ describe('Default Theme', () => {
       const navItems: NavItem[] = [
         { text: 'Home', link: '/' },
         { text: 'Guide', link: '/guide/' },
-        { text: 'API', link: '/api/' }
+        { text: 'API', link: '/api/' },
       ]
 
       const html = createNavHtml(navItems, '/')
@@ -35,7 +35,7 @@ describe('Default Theme', () => {
       const navItems: NavItem[] = [
         { text: 'Home', link: '/' },
         { text: 'Guide', link: '/guide/' },
-        { text: 'API', link: '/api/' }
+        { text: 'API', link: '/api/' },
       ]
 
       const html = createNavHtml(navItems, '/guide/')
@@ -51,10 +51,10 @@ describe('Default Theme', () => {
           text: 'Guide',
           items: [
             { text: 'Getting Started', link: '/guide/getting-started' },
-            { text: 'Advanced', link: '/guide/advanced' }
-          ]
+            { text: 'Advanced', link: '/guide/advanced' },
+          ],
         },
-        { text: 'API', link: '/api/' }
+        { text: 'API', link: '/api/' },
       ]
 
       const html = createNavHtml(navItems, '/api/')
@@ -68,7 +68,7 @@ describe('Default Theme', () => {
     test('should handle navigation with icons', () => {
       const navItems: NavItem[] = [
         { text: 'Home', link: '/', icon: '🏠' },
-        { text: 'GitHub', link: 'https://github.com', icon: '🐙' }
+        { text: 'GitHub', link: 'https://github.com', icon: '🐙' },
       ]
 
       const html = createNavHtml(navItems, '/')
@@ -81,7 +81,7 @@ describe('Default Theme', () => {
     test('should support external links', () => {
       const navItems: NavItem[] = [
         { text: 'Home', link: '/' },
-        { text: 'GitHub', link: 'https://github.com' }
+        { text: 'GitHub', link: 'https://github.com' },
       ]
 
       const html = createNavHtml(navItems, '/')
@@ -94,7 +94,7 @@ describe('Default Theme', () => {
     test('should handle activeMatch patterns', () => {
       const navItems: NavItem[] = [
         { text: 'Guide', link: '/guide/', activeMatch: '/guide' },
-        { text: 'API', link: '/api/' }
+        { text: 'API', link: '/api/' },
       ]
 
       const html = createNavHtml(navItems, '/guide/getting-started')
@@ -105,7 +105,7 @@ describe('Default Theme', () => {
     test('should render mobile navigation toggle', () => {
       const navItems: NavItem[] = [
         { text: 'Home', link: '/' },
-        { text: 'Guide', link: '/guide/' }
+        { text: 'Guide', link: '/guide/' },
       ]
 
       const html = createNavHtml(navItems, '/')
@@ -140,8 +140,8 @@ describe('Default Theme', () => {
         text: 'Guide',
         items: [
           { text: 'Getting Started', link: '/guide/getting-started' },
-          { text: 'Advanced', link: '/guide/advanced' }
-        ]
+          { text: 'Advanced', link: '/guide/advanced' },
+        ],
       }
       expect(isNavItemActive(item, '/guide/getting-started')).toBe(true)
       expect(isNavItemActive(item, '/guide/advanced')).toBe(true)
@@ -154,7 +154,7 @@ describe('Default Theme', () => {
       const sidebarItems: SidebarItem[] = [
         { text: 'Home', link: '/' },
         { text: 'Guide', link: '/guide/' },
-        { text: 'API', link: '/api/' }
+        { text: 'API', link: '/api/' },
       ]
 
       const html = createSidebarHtml(sidebarItems, '/')
@@ -172,10 +172,10 @@ describe('Default Theme', () => {
           text: 'Guide',
           items: [
             { text: 'Getting Started', link: '/guide/getting-started' },
-            { text: 'Advanced', link: '/guide/advanced' }
-          ]
+            { text: 'Advanced', link: '/guide/advanced' },
+          ],
         },
-        { text: 'API', link: '/api/' }
+        { text: 'API', link: '/api/' },
       ]
 
       const html = createSidebarHtml(sidebarItems, '/api/')
@@ -193,7 +193,7 @@ describe('Default Theme', () => {
       const sidebarItems: SidebarItem[] = [
         { text: 'Home', link: '/' },
         { text: 'Guide', link: '/guide/' },
-        { text: 'API', link: '/api/' }
+        { text: 'API', link: '/api/' },
       ]
 
       const html = createSidebarHtml(sidebarItems, '/guide/')
@@ -209,9 +209,9 @@ describe('Default Theme', () => {
           text: 'Guide',
           items: [
             { text: 'Getting Started', link: '/guide/getting-started' },
-            { text: 'Advanced', link: '/guide/advanced' }
-          ]
-        }
+            { text: 'Advanced', link: '/guide/advanced' },
+          ],
+        },
       ]
 
       const html = createSidebarHtml(sidebarItems, '/guide/getting-started')
@@ -239,8 +239,8 @@ describe('Default Theme', () => {
         text: 'Guide',
         items: [
           { text: 'Getting Started', link: '/guide/getting-started' },
-          { text: 'Advanced', link: '/guide/advanced' }
-        ]
+          { text: 'Advanced', link: '/guide/advanced' },
+        ],
       }
       expect(isSidebarItemActive(item, '/guide/getting-started')).toBe(true)
       expect(isSidebarItemActive(item, '/guide/advanced')).toBe(true)
@@ -258,7 +258,7 @@ describe('Default Theme', () => {
       const searchConfig: SearchConfig = {
         enabled: true,
         placeholder: 'Search docs...',
-        keyboardShortcuts: true
+        keyboardShortcuts: true,
       }
 
       const html = createSearchHtml(searchConfig)
@@ -272,7 +272,7 @@ describe('Default Theme', () => {
 
     test('should not render search when disabled', () => {
       const searchConfig: SearchConfig = {
-        enabled: false
+        enabled: false,
       }
 
       const html = createSearchHtml(searchConfig)
@@ -282,7 +282,7 @@ describe('Default Theme', () => {
     test('should hide keyboard shortcut when disabled', () => {
       const searchConfig: SearchConfig = {
         enabled: true,
-        keyboardShortcuts: false
+        keyboardShortcuts: false,
       }
 
       const html = createSearchHtml(searchConfig)
@@ -291,7 +291,7 @@ describe('Default Theme', () => {
 
     test('should use default placeholder', () => {
       const searchConfig: SearchConfig = {
-        enabled: true
+        enabled: true,
       }
 
       const html = createSearchHtml(searchConfig)
@@ -328,14 +328,14 @@ Some additional content here.`
           title: 'Getting Started',
           url: '/guide/getting-started',
           content: 'This is an introduction to the framework with installation guide.',
-          headings: ['Installation', 'Quick Start']
+          headings: ['Installation', 'Quick Start'],
         },
         {
           title: 'API Reference',
           url: '/api',
           content: 'Complete API documentation for all functions.',
-          headings: ['Functions', 'Classes']
-        }
+          headings: ['Functions', 'Classes'],
+        },
       ]
 
       const results = performSearch('installation', searchIndex)
@@ -351,8 +351,8 @@ Some additional content here.`
           title: 'Test',
           url: '/test',
           content: 'Test content',
-          headings: []
-        }
+          headings: [],
+        },
       ]
 
       const results = performSearch('', searchIndex)
@@ -365,14 +365,14 @@ Some additional content here.`
           title: 'Installation Guide',
           url: '/install',
           content: 'How to install the framework',
-          headings: ['Quick Install']
+          headings: ['Quick Install'],
         },
         {
           title: 'Getting Started',
           url: '/start',
           content: 'Installation instructions here',
-          headings: ['Installation']
-        }
+          headings: ['Installation'],
+        },
       ]
 
       const results = performSearch('installation', searchIndex)
@@ -387,7 +387,7 @@ Some additional content here.`
         title: `Page ${i}`,
         url: `/page${i}`,
         content: 'This page contains searchable content about various topics.',
-        headings: ['Topic 1', 'Topic 2']
+        headings: ['Topic 1', 'Topic 2'],
       }))
 
       const results = performSearch('content', searchIndex)
@@ -424,8 +424,8 @@ Some additional content here.`
         colors: {
           primary: '#3b82f6',
           secondary: '#64748b',
-          accent: '#f59e0b'
-        }
+          accent: '#f59e0b',
+        },
       }
 
       const css = generateThemeCSS(themeConfig)
@@ -441,8 +441,8 @@ Some additional content here.`
         fonts: {
           heading: 'Inter, sans-serif',
           body: 'Roboto, sans-serif',
-          mono: 'JetBrains Mono, monospace'
-        }
+          mono: 'JetBrains Mono, monospace',
+        },
       }
 
       const css = generateThemeCSS(themeConfig)
@@ -457,7 +457,7 @@ Some additional content here.`
 
     test('should generate dark mode CSS', () => {
       const themeConfig: ThemeConfig = {
-        darkMode: true
+        darkMode: true,
       }
 
       const css = generateThemeCSS(themeConfig)
@@ -472,8 +472,8 @@ Some additional content here.`
       const themeConfig: ThemeConfig = {
         cssVars: {
           'border-radius': '8px',
-          'shadow': '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-        }
+          'shadow': '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+        },
       }
 
       const css = generateThemeCSS(themeConfig)
@@ -484,7 +484,7 @@ Some additional content here.`
 
     test('should include custom CSS', () => {
       const themeConfig: ThemeConfig = {
-        css: '.custom-class { color: red; }'
+        css: '.custom-class { color: red; }',
       }
 
       const css = generateThemeCSS(themeConfig)
@@ -502,16 +502,16 @@ Some additional content here.`
     test('should combine multiple theme features', () => {
       const themeConfig: ThemeConfig = {
         colors: {
-          primary: '#3b82f6'
+          primary: '#3b82f6',
         },
         fonts: {
-          heading: 'Inter, sans-serif'
+          heading: 'Inter, sans-serif',
         },
         darkMode: true,
         cssVars: {
-          'radius': '4px'
+          radius: '4px',
         },
-        css: '.test { margin: 0; }'
+        css: '.test { margin: 0; }',
       }
 
       const css = generateThemeCSS(themeConfig)

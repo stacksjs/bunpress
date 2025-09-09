@@ -14,24 +14,24 @@ This document tests all code block features including syntax highlighting, line 
 
 ```javascript
 function greet(name) {
-  return `Hello, ${name}!`;
+  return `Hello, ${name}!`
 }
 
-console.log(greet('World'));
+console.log(greet('World'))
 ```
 
 ## Code Block with Language
 
 ```typescript
 interface User {
-  id: number;
-  name: string;
-  email: string;
-  createdAt: Date;
+  id: number
+  name: string
+  email: string
+  createdAt: Date
 }
 
 class UserService {
-  private users: User[] = [];
+  private users: User[] = []
 
   async createUser(userData: Partial<User>): Promise<User> {
     const user: User = {
@@ -39,14 +39,14 @@ class UserService {
       name: userData.name || 'Anonymous',
       email: userData.email || '',
       createdAt: new Date()
-    };
+    }
 
-    this.users.push(user);
-    return user;
+    this.users.push(user)
+    return user
   }
 
   findUserById(id: number): User | undefined {
-    return this.users.find(user => user.id === id);
+    return this.users.find(user => user.id === id)
   }
 }
 ```
@@ -84,28 +84,28 @@ processFile(inputFile, outputFile);
 ## Code Block with Line Highlighting
 
 ```javascript {1,3-5,8}
-const express = require('express');
-const app = express();
-const port = 3000;
+const express = require('express')
+const app = express()
+const port = 3000
 
 // Middleware setup
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
 // Routes
 app.get('/', (req, res) => {
-  res.json({ message: 'Hello World!' });
-});
+  res.json({ message: 'Hello World!' })
+})
 
 app.post('/users', (req, res) => {
-  const user = req.body;
+  const user = req.body
   // Process user data here
-  res.status(201).json(user);
-});
+  res.status(201).json(user)
+})
 
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+  console.log(`Server running on port ${port}`)
+})
 ```
 
 ## Code Block with Range Highlighting
@@ -334,8 +334,7 @@ fn main() {
 ## Code Block with Only Whitespace
 
 ```javascript
-
-```
+``
 
 ## Very Long Code Block
 

@@ -47,13 +47,13 @@ BunPress supports comprehensive color theming:
 ```yaml
 themeConfig:
   colors:
-    primary: '#10b981'      # Main brand color
-    secondary: '#6b7280'    # Secondary elements
-    accent: '#f59e0b'       # Highlights and accents
-    background: '#ffffff'   # Page background
-    surface: '#f9fafb'       # Cards, sidebars, etc.
-    text: '#111827'         # Primary text color
-    muted: '#6b7280'        # Secondary text color
+    primary: '#10b981' # Main brand color
+    secondary: '#6b7280' # Secondary elements
+    accent: '#f59e0b' # Highlights and accents
+    background: '#ffffff' # Page background
+    surface: '#f9fafb' # Cards, sidebars, etc.
+    text: '#111827' # Primary text color
+    muted: '#6b7280' # Secondary text color
 ```
 
 ## Typography
@@ -63,9 +63,9 @@ Customize fonts for different text elements:
 ```yaml
 themeConfig:
   fonts:
-    heading: 'Inter, system-ui, sans-serif'    # Headings (H1-H6)
-    body: 'Inter, system-ui, sans-serif'       # Body text
-    mono: 'JetBrains Mono, ui-monospace, monospace'  # Code blocks
+    heading: 'Inter, system-ui, sans-serif' # Headings (H1-H6)
+    body: 'Inter, system-ui, sans-serif' # Body text
+    mono: 'JetBrains Mono, ui-monospace, monospace' # Code blocks
 ```
 
 ## Dark Mode Support
@@ -74,7 +74,7 @@ Enable dark mode for better readability in low-light conditions:
 
 ```yaml
 themeConfig:
-  darkMode: true  # 'auto', 'true', or 'false'
+  darkMode: true # 'auto', 'true', or 'false'
 ```
 
 ## Custom CSS Variables
@@ -84,9 +84,9 @@ Define custom CSS variables for consistent styling:
 ```yaml
 themeConfig:
   cssVars:
-    'border-radius': '8px'
-    'shadow': '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-    'shadow-lg': '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+    border-radius: 8px
+    shadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+    shadow-lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
 ```
 
 ## Custom CSS
@@ -126,10 +126,10 @@ themeConfig:
   nav:
     - text: Home
       link: /
-      icon: '🏠'
+      icon: 🏠
     - text: Docs
       link: /docs
-      icon: '📚'
+      icon: 📚
 ```
 
 ## Responsive Design

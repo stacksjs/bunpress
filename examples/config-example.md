@@ -70,18 +70,18 @@ export default {
   markdown: {
     // Custom Marked.js options
     markedOptions: {
-      breaks: true,           // Convert line breaks to <br>
-      gfm: true,             // Enable GitHub Flavored Markdown
-      headerIds: true,       // Auto-generate header IDs
-      mangle: false          // Don't mangle email addresses
+      breaks: true, // Convert line breaks to <br>
+      gfm: true, // Enable GitHub Flavored Markdown
+      headerIds: true, // Auto-generate header IDs
+      mangle: false // Don't mangle email addresses
     },
 
     // Table of contents configuration
     toc: {
       enabled: true,
-      position: 'sidebar',   // 'sidebar', 'floating', or false
+      position: 'sidebar', // 'sidebar', 'floating', or false
       title: 'Contents',
-      depth: 3,             // Maximum heading depth
+      depth: 3, // Maximum heading depth
       ignore: ['toc-ignore'] // CSS classes to ignore
     },
 
@@ -127,13 +127,13 @@ export default {
     themeConfig: {
       // Color palette
       colors: {
-        primary: '#3b82f6',     // Primary brand color
-        secondary: '#64748b',   // Secondary elements
-        accent: '#f59e0b',      // Accent/highlight color
-        background: '#ffffff',  // Page background
-        surface: '#f8fafc',     // Cards, sidebars
-        text: '#1e293b',        // Primary text
-        muted: '#64748b'        // Secondary text
+        primary: '#3b82f6', // Primary brand color
+        secondary: '#64748b', // Secondary elements
+        accent: '#f59e0b', // Accent/highlight color
+        background: '#ffffff', // Page background
+        surface: '#f8fafc', // Cards, sidebars
+        text: '#1e293b', // Primary text
+        muted: '#64748b' // Secondary text
       },
 
       // Typography
@@ -356,7 +356,11 @@ export default {
 Split configuration into multiple files for better organization:
 
 ```typescript
+import { navConfig } from './config/navigation'
 // config/theme.ts
+// bunpress.config.ts
+import { themeConfig } from './config/theme'
+
 export const themeConfig = {
   colors: { /* ... */ },
   fonts: { /* ... */ }
@@ -366,10 +370,6 @@ export const themeConfig = {
 export const navConfig = [
   // Navigation items...
 ]
-
-// bunpress.config.ts
-import { themeConfig } from './config/theme'
-import { navConfig } from './config/navigation'
 
 export default {
   nav: navConfig,

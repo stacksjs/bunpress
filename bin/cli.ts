@@ -1,5 +1,5 @@
 import { Glob } from 'bun'
-import { mkdir, readdir, copyFile } from 'node:fs/promises'
+import { copyFile, mkdir, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import process from 'node:process'
 import { CAC } from 'cac'
@@ -267,7 +267,8 @@ cli
           if (await file.exists()) {
             return new Response(file)
           }
-        } catch (e) {
+        }
+        catch (e) {
           // File doesn't exist, continue to HTML routing
         }
 
@@ -278,7 +279,8 @@ cli
           if (await docsFile.exists()) {
             return new Response(docsFile)
           }
-        } catch (e) {
+        }
+        catch (e) {
           // File doesn't exist, continue to HTML routing
         }
 
@@ -292,10 +294,11 @@ cli
           const docsHtmlFile = Bun.file(docsHtmlPath)
           if (await docsHtmlFile.exists()) {
             return new Response(docsHtmlFile, {
-              headers: { 'Content-Type': 'text/html' }
+              headers: { 'Content-Type': 'text/html' },
             })
           }
-        } catch (e) {
+        }
+        catch (e) {
           // HTML file doesn't exist
         }
 
@@ -309,10 +312,11 @@ cli
           const htmlFile = Bun.file(htmlPath)
           if (await htmlFile.exists()) {
             return new Response(htmlFile, {
-              headers: { 'Content-Type': 'text/html' }
+              headers: { 'Content-Type': 'text/html' },
             })
           }
-        } catch (e) {
+        }
+        catch (e) {
           // HTML file doesn't exist
         }
 
@@ -322,10 +326,11 @@ cli
           const docsIndexFile = Bun.file(docsIndexPath)
           if (await docsIndexFile.exists()) {
             return new Response(docsIndexFile, {
-              headers: { 'Content-Type': 'text/html' }
+              headers: { 'Content-Type': 'text/html' },
             })
           }
-        } catch (e) {
+        }
+        catch (e) {
           // Index file doesn't exist
         }
 
@@ -335,15 +340,16 @@ cli
           const indexFile = Bun.file(indexPath)
           if (await indexFile.exists()) {
             return new Response(indexFile, {
-              headers: { 'Content-Type': 'text/html' }
+              headers: { 'Content-Type': 'text/html' },
             })
           }
-        } catch (e) {
+        }
+        catch (e) {
           // Index file doesn't exist
         }
 
         return new Response('Not Found', { status: 404 })
-      }
+      },
     })
 
     console.log(`Server running at http://localhost:${server.port}`)

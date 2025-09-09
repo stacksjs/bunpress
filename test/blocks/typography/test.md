@@ -170,7 +170,7 @@ Content after the third rule.
 
 ## Hard Line Breaks
 
-This is the first line.  
+This is the first line.
 This is the second line with a hard break.
 
 This is the first paragraph.

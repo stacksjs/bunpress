@@ -1,4 +1,4 @@
-import type { TocConfig, TocHeading, TocData, TocPosition, TocPositionData } from './types'
+import type { TocConfig, TocData, TocHeading, TocPosition, TocPositionData } from './types'
 
 /**
  * Default TOC configuration
@@ -13,7 +13,7 @@ export const defaultTocConfig: Required<TocConfig> = {
   smoothScroll: true,
   activeHighlight: true,
   collapsible: true,
-  exclude: []
+  exclude: [],
 }
 
 /**
@@ -46,7 +46,7 @@ export function generateSlug(text: string): string {
  */
 export function generateUniqueSlug(text: string, existingSlugs: Set<string>): string {
   let slug = generateSlug(text)
-  let originalSlug = slug
+  const originalSlug = slug
   let counter = 1
 
   while (existingSlugs.has(slug)) {
@@ -74,10 +74,12 @@ export function extractHeadings(content: string): TocHeading[] {
     const text = match[2].trim()
 
     // Skip empty headings
-    if (!text) continue
+    if (!text)
+      continue
 
     // Skip headings with toc-ignore
-    if (text.includes('toc-ignore')) continue
+    if (text.includes('toc-ignore'))
+      continue
 
     // Parse inline code in headings
     let processedText = text.replace(/\s*<!-- toc-ignore -->\s*/g, '').trim()
@@ -93,7 +95,7 @@ export function extractHeadings(content: string): TocHeading[] {
       text: processedText,
       id: slug,
       children: [],
-      hasCode
+      hasCode,
     })
   }
 
@@ -116,7 +118,8 @@ export function buildTocHierarchy(headings: TocHeading[]): TocHeading[] {
     if (stack.length === 0) {
       // Top level heading
       root.push(heading)
-    } else {
+    }
+    else {
       // Child of last item in stack
       const parent = stack[stack.length - 1]
       parent.children.push(heading)
@@ -133,7 +136,7 @@ export function buildTocHierarchy(headings: TocHeading[]): TocHeading[] {
  */
 export function filterHeadings(
   headings: TocHeading[],
-  config: TocConfig
+  config: TocConfig,
 ): TocHeading[] {
   const { minDepth = 2, maxDepth = 6, exclude = [] } = config
 
@@ -142,12 +145,13 @@ export function filterHeadings(
 
     for (const heading of items) {
       // Filter by exclude patterns first
-      if (exclude.some(pattern => {
+      if (exclude.some((pattern) => {
         if (pattern.startsWith('/') && pattern.endsWith('/')) {
           // Regex pattern
           const regex = new RegExp(pattern.slice(1, -1))
           return regex.test(heading.text)
-        } else {
+        }
+        else {
           // Exact match
           return heading.text === pattern
         }
@@ -167,9 +171,10 @@ export function filterHeadings(
       if (heading.level >= minDepth && heading.level <= maxDepth) {
         filtered.push({
           ...heading,
-          children: filteredChildren
+          children: filteredChildren,
         })
-      } else {
+      }
+      else {
         // Don't include this heading, but promote its valid children to this level
         filtered.push(...filteredChildren)
       }
@@ -189,27 +194,28 @@ export function generateTocHtml(data: TocData): string {
   const { className, collapsible } = config
 
   const renderList = (headings: TocHeading[], level = 0): string => {
-    if (headings.length === 0) return ''
+    if (headings.length === 0)
+      return ''
 
     const listClass = level === 0 ? 'toc-list' : 'toc-sublist'
     const itemClass = level === 0 ? 'toc-item' : 'toc-subitem'
 
     return `<ul class="${listClass}">
-${headings.map(heading => {
+${headings.map((heading) => {
   const hasChildren = heading.children.length > 0
   const expandClass = hasChildren && collapsible ? 'toc-expand' : ''
   const childrenHtml = hasChildren ? renderList(heading.children, level + 1) : ''
 
-      // Truncate long heading text
-    const maxLength = 50
-    const displayText = heading.text.length > maxLength
-      ? heading.text.substring(0, maxLength) + '...'
-      : heading.text
-    const truncateClass = heading.text.length > maxLength ? 'toc-truncate' : ''
+  // Truncate long heading text
+  const maxLength = 50
+  const displayText = heading.text.length > maxLength
+    ? `${heading.text.substring(0, maxLength)}...`
+    : heading.text
+  const truncateClass = heading.text.length > maxLength ? 'toc-truncate' : ''
 
-    const codeClass = heading.hasCode ? 'toc-code' : ''
+  const codeClass = heading.hasCode ? 'toc-code' : ''
 
-    return `<li class="${itemClass} ${expandClass} ${truncateClass} ${codeClass}">
+  return `<li class="${itemClass} ${expandClass} ${truncateClass} ${codeClass}">
 <a href="#${heading.id}" class="toc-link" title="${heading.text.replace(/<[^>]*>/g, '')}">${displayText}</a>
 ${childrenHtml}
 </li>`
@@ -252,7 +258,7 @@ export function generateFloatingTocHtml(data: TocData): string {
  */
 export function generateTocData(
   content: string,
-  config: Partial<TocConfig> = {}
+  config: Partial<TocConfig> = {},
 ): TocData {
   // Ensure position is handled correctly
   const cleanConfig = { ...config }
@@ -275,7 +281,7 @@ export function generateTocData(
   return {
     title: mergedConfig.title!,
     items: filteredHeadings,
-    config: mergedConfig
+    config: mergedConfig,
   }
 }
 
@@ -284,14 +290,14 @@ export function generateTocData(
  */
 export function generateTocPositions(
   content: string,
-  config: Partial<TocConfig> = {}
+  config: Partial<TocConfig> = {},
 ): TocPositionData[] {
   const tocData = generateTocData(content, config)
   const positions = Array.isArray(config.position)
     ? config.position
     : [config.position || 'sidebar']
 
-  return positions.map(position => {
+  return positions.map((position) => {
     let html: string
 
     switch (position) {
@@ -311,7 +317,7 @@ export function generateTocPositions(
     return {
       position,
       data: tocData,
-      html
+      html,
     }
   })
 }
@@ -335,7 +341,7 @@ export function enhanceHeadingsWithAnchors(content: string): string {
     (match, level, content) => {
       const slug = generateUniqueSlug(content.replace(/<[^>]*>/g, ''), existingSlugs)
       return `<h${level} id="${slug}"><a href="#${slug}" class="heading-anchor">#</a>${content}</h${level}>`
-    }
+    },
   )
 }
 

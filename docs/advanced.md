@@ -209,7 +209,7 @@ const spoilerExtension = {
   level: 'inline',
   start: (src: string) => src.match(/\|\|/)?.index,
   tokenizer: (src: string) => {
-    const match = src.match(/^\|\|([^\|]+)\|\|/)
+    const match = src.match(/^\|\|([^|]+)\|\|/)
     if (match) {
       return {
         type: 'spoiler',
@@ -470,7 +470,7 @@ title: My Page
 priority: 0.8
 changefreq: weekly
 lastmod: 2024-01-01
-sitemap: true  # or false to exclude
+sitemap: true # or false to exclude
 ---
 
 Content here...
@@ -484,8 +484,8 @@ For large sites, BunPress automatically splits sitemaps:
 export default {
   sitemap: {
     baseUrl: 'https://example.com',
-    maxUrlsPerFile: 50000,  // Split after 50k URLs
-    useSitemapIndex: true   // Generate sitemap index
+    maxUrlsPerFile: 50000, // Split after 50k URLs
+    useSitemapIndex: true // Generate sitemap index
   }
 }
 ```
@@ -538,7 +538,7 @@ Add custom robots rules per page:
 title: Private Page
 robots:
   - userAgent: '*'
-    disallow: ['/private/']
+    disallow: [/private/]
 ---
 
 This page should not be crawled.
@@ -563,9 +563,9 @@ export default {
 export default {
   security: {
     csp: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      styleSrc: ["'self'", "'unsafe-inline'"]
+      defaultSrc: ['\'self\''],
+      scriptSrc: ['\'self\'', '\'unsafe-inline\''],
+      styleSrc: ['\'self\'', '\'unsafe-inline\'']
     }
   }
 }

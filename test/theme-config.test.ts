@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { createTestConfig, buildTestSite, readBuiltFile, assertHtmlContains } from './utils/test-helpers'
+import { assertHtmlContains, buildTestSite, readBuiltFile } from './utils/test-helpers'
 
 describe('Theme Configuration', () => {
   describe('Theme Config Structure', () => {
@@ -23,9 +23,9 @@ Content with merged configuration.
         files: [{ path: 'test.md', content }],
         config: {
           markdown: {
-            title: 'Test Site'
-          }
-        }
+            title: 'Test Site',
+          },
+        },
       })
 
       expect(result.success).toBe(true)
@@ -49,7 +49,7 @@ Content with invalid configuration.
       `
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(false)
@@ -69,7 +69,7 @@ Content with extended theme.
       `
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -101,7 +101,7 @@ Content with nested configuration.
       `
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -130,7 +130,7 @@ Content with environment-specific configuration.
       `
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -166,10 +166,10 @@ themeConfig:
 # Parent Config
 
 Parent configuration.
-            `
+            `,
           },
-          { path: 'child.md', content }
-        ]
+          { path: 'child.md', content },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -207,10 +207,10 @@ themeConfig:
 # Parent Config
 
 Parent configuration.
-            `
+            `,
           },
-          { path: 'child.md', content }
-        ]
+          { path: 'child.md', content },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -248,10 +248,10 @@ themeConfig:
 # Parent Config
 
 Parent configuration.
-            `
+            `,
           },
-          { path: 'child.md', content }
-        ]
+          { path: 'child.md', content },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -281,8 +281,8 @@ export default {
   }
 }
           ` },
-          { path: 'test.md', content }
-        ]
+          { path: 'test.md', content },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -310,10 +310,10 @@ export default {
     nav: [{ text: 'VP Nav', link: '/vp' }]
   }
 }
-          `
+          `,
           },
-          { path: 'test.md', content }
-        ]
+          { path: 'test.md', content },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -338,8 +338,8 @@ module.exports = {
   themeConfig: { nav: [{ text: 'JS Nav', link: '/js' }] }
 }
           ` },
-          { path: 'test.md', content }
-        ]
+          { path: 'test.md', content },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -363,8 +363,8 @@ export default {
   invalidConfig: undefined.property // This will cause an error
 }
           ` },
-          { path: 'test.md', content }
-        ]
+          { path: 'test.md', content },
+        ],
       })
 
       expect(result.success).toBe(false)
@@ -387,7 +387,7 @@ Content with runtime configuration.
       `
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -413,8 +413,8 @@ export default {
   themeConfig: { nav: [{ text: 'Hot Nav', link: '/hot' }] }
 }
           ` },
-          { path: 'test.md', content }
-        ]
+          { path: 'test.md', content },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -437,7 +437,7 @@ Content with runtime validation.
       `
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(false)
@@ -471,8 +471,8 @@ export default {
   }
 }
           ` },
-          { path: 'test.md', content }
-        ]
+          { path: 'test.md', content },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -513,8 +513,8 @@ export default {
   title: 'Base'
 }
           ` },
-          { path: 'test.md', content }
-        ]
+          { path: 'test.md', content },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -545,8 +545,8 @@ export default {
   ]
 }
           ` },
-          { path: 'test.md', content }
-        ]
+          { path: 'test.md', content },
+        ],
       })
 
       expect(result.success).toBe(false)
@@ -576,8 +576,8 @@ const config: BunPressConfig = {
 
 export default config
           ` },
-          { path: 'test.md', content }
-        ]
+          { path: 'test.md', content },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -609,8 +609,8 @@ Content with JSON configuration.
   }
 }
           ` },
-          { path: 'test.md', content }
-        ]
+          { path: 'test.md', content },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -636,8 +636,8 @@ themeConfig:
     - text: YAML Nav
       link: /yaml
           ` },
-          { path: 'test.md', content }
-        ]
+          { path: 'test.md', content },
+        ],
       })
 
       expect(result.success).toBe(true)

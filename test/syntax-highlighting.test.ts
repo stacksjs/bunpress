@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { createTestMarkdown, buildTestSite, readBuiltFile, assertHtmlContains } from './utils/test-helpers'
+import { assertHtmlContains, buildTestSite, createTestMarkdown, readBuiltFile } from './utils/test-helpers'
 
 describe('Syntax Highlighting', () => {
   describe('Shiki Integration', () => {
@@ -25,7 +25,7 @@ function greet(user: User): string {
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -57,7 +57,7 @@ async function readConfig() {
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -100,7 +100,7 @@ echo "Build completed!"
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -128,9 +128,9 @@ console.log(greeting)
         files: [{ path: 'test.md', content }],
         config: {
           markdown: {
-            theme: 'dark-plus'
-          }
-        }
+            theme: 'dark-plus',
+          },
+        },
       })
 
       expect(result.success).toBe(true)
@@ -151,7 +151,7 @@ more lines here
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -174,7 +174,7 @@ console.log(message)
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -197,7 +197,7 @@ function test() {
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -218,7 +218,7 @@ print("Hello, World!")
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -238,7 +238,7 @@ SELECT * FROM users WHERE active = 1
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -263,7 +263,7 @@ function hello() {
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -286,7 +286,7 @@ console.log('line 12')
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -311,7 +311,7 @@ def func1():
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -337,7 +337,7 @@ interface Config {
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -358,7 +358,7 @@ console.log('Hello from example.js')
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -380,7 +380,7 @@ console.log('Hello from example.js')
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -405,7 +405,7 @@ const theme = 'light'
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -428,9 +428,9 @@ const theme = 'dark'
         files: [{ path: 'test.md', content }],
         config: {
           markdown: {
-            codeTheme: 'dark'
-          }
-        }
+            codeTheme: 'dark',
+          },
+        },
       })
 
       expect(result.success).toBe(true)
@@ -450,7 +450,7 @@ console.log('theme switch test')
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -478,7 +478,7 @@ const cached = 'This should be cached'
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -490,8 +490,7 @@ const cached = 'This should be cached'
 
     test('should handle large code blocks efficiently', async () => {
       const largeCode = Array.from({ length: 100 }, (_, i) =>
-        `console.log('Line ${i + 1}')`
-      ).join('\n')
+        `console.log('Line ${i + 1}')`).join('\n')
 
       const content = createTestMarkdown(`
 # Test Page
@@ -502,7 +501,7 @@ ${largeCode}
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)

@@ -2,7 +2,7 @@ import { file } from 'bun'
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { markdown, disposeHighlighter } from '../src/plugin'
+import { disposeHighlighter, markdown } from '../src/plugin'
 
 describe('Markdown Plugin', () => {
   const testDir = join(import.meta.dir, 'fixtures')
@@ -38,11 +38,23 @@ console.log(hello)
   })
 
   test('should build markdown file to html', async () => {
-    const result = await Bun.build({
-      entrypoints: [join(testDir, 'test.md')],
-      outdir: outDir,
-      plugins: [markdown()],
-    })
+    let result
+    try {
+      result = await Promise.race([
+        Bun.build({
+          entrypoints: [join(testDir, 'test.md')],
+          outdir: outDir,
+          plugins: [markdown()],
+        }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Build timeout after 10 seconds')), 10000),
+        ),
+      ])
+    }
+    catch (error) {
+      console.error('Build failed:', error)
+      throw error
+    }
 
     // Verify build succeeded
     expect(result.success).toBe(true)
@@ -66,20 +78,32 @@ console.log(hello)
   })
 
   test('should apply custom options', async () => {
-    const result = await Bun.build({
-      entrypoints: [join(testDir, 'test.md')],
-      outdir: outDir,
-      plugins: [
-        markdown({
-          title: 'Custom Title',
-          meta: {
-            description: 'Test description',
-          },
-          css: 'body { background: #f0f0f0; }',
-          scripts: ['/test.js'],
+    let result
+    try {
+      result = await Promise.race([
+        Bun.build({
+          entrypoints: [join(testDir, 'test.md')],
+          outdir: outDir,
+          plugins: [
+            markdown({
+              title: 'Custom Title',
+              meta: {
+                description: 'Test description',
+              },
+              css: 'body { background: #f0f0f0; }',
+              scripts: ['/test.js'],
+            }),
+          ],
         }),
-      ],
-    })
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Build timeout after 10 seconds')), 10000),
+        ),
+      ])
+    }
+    catch (error) {
+      console.error('Build with custom options failed:', error)
+      throw error
+    }
 
     // Verify build succeeded
     expect(result.success).toBe(true)

@@ -11,17 +11,17 @@ describe('Code Blocks', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
+        { path: 'test.md', content },
       ],
       config: {
         markdown: {
           title: 'Code Blocks Test',
           meta: {
             description: 'Comprehensive test of code block syntax highlighting',
-            author: 'BunPress'
-          }
-        }
-      }
+            author: 'BunPress',
+          },
+        },
+      },
     })
 
     expect(result.success).toBe(true)
@@ -46,8 +46,8 @@ describe('Code Blocks', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -71,8 +71,8 @@ describe('Code Blocks', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -94,8 +94,8 @@ describe('Code Blocks', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -114,8 +114,8 @@ describe('Code Blocks', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -138,8 +138,8 @@ describe('Code Blocks', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -168,8 +168,8 @@ describe('Code Blocks', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -190,8 +190,8 @@ describe('Code Blocks', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -215,8 +215,8 @@ describe('Code Blocks', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -234,8 +234,8 @@ describe('Code Blocks', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -251,8 +251,8 @@ describe('Code Blocks', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -274,8 +274,8 @@ describe('Code Blocks', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -300,8 +300,8 @@ describe('Code Blocks', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -336,8 +336,8 @@ describe('Code Blocks', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)

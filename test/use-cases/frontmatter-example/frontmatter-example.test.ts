@@ -12,8 +12,8 @@ describe('Use Case: Frontmatter Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -46,8 +46,8 @@ describe('Use Case: Frontmatter Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -80,8 +80,8 @@ describe('Use Case: Frontmatter Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -100,8 +100,8 @@ describe('Use Case: Frontmatter Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -123,8 +123,8 @@ describe('Use Case: Frontmatter Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -142,8 +142,8 @@ describe('Use Case: Frontmatter Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -165,8 +165,8 @@ describe('Use Case: Frontmatter Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -182,8 +182,8 @@ describe('Use Case: Frontmatter Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -200,8 +200,8 @@ describe('Use Case: Frontmatter Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -231,8 +231,8 @@ describe('Use Case: Frontmatter Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -254,8 +254,8 @@ describe('Use Case: Frontmatter Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -264,9 +264,20 @@ describe('Use Case: Frontmatter Example', () => {
 
     // Ensure all frontmatter fields are properly processed
     const frontmatterFields = [
-      'title', 'description', 'author', 'date', 'tags', 'category',
-      'featured', 'layout', 'toc', 'tocTitle', 'search', 'themeConfig',
-      'nav', 'sidebar'
+      'title',
+      'description',
+      'author',
+      'date',
+      'tags',
+      'category',
+      'featured',
+      'layout',
+      'toc',
+      'tocTitle',
+      'search',
+      'themeConfig',
+      'nav',
+      'sidebar',
     ]
 
     // All fields should be reflected in the output somehow

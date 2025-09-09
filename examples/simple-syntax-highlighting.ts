@@ -87,9 +87,9 @@ function calculate(x, y) {
         title: 'Simple Syntax Highlighting',
         meta: {
           description: 'Basic syntax highlighting example',
-          author: 'bunpress'
-        }
-      }
+          author: 'bunpress',
+        },
+      },
     }
 
     console.log('Building simple syntax highlighting example...')
@@ -98,7 +98,7 @@ function calculate(x, y) {
     const result = await Bun.build({
       entrypoints: [join(testDir, 'example.md')],
       outdir: outDir,
-      plugins: [markdown(buildConfig)]
+      plugins: [markdown(buildConfig)],
     })
 
     if (!result.success) {
@@ -111,8 +111,8 @@ function calculate(x, y) {
 
     console.log('✅ Build successful!')
     console.log('🎉 Simple syntax highlighting example completed!')
-
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ Error:', error)
     process.exit(1)
   }

@@ -17,7 +17,7 @@ const user: User = {
 `
 
   const result = await buildTestSite({
-    files: [{ path: 'test.md', content }]
+    files: [{ path: 'test.md', content }],
   })
 
   if (result.success) {
@@ -25,7 +25,8 @@ const user: User = {
     console.log('Generated HTML:')
     console.log('================')
     console.log(html)
-  } else {
+  }
+  else {
     console.error('Build failed:', result.logs)
   }
 }

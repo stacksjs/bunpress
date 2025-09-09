@@ -168,13 +168,14 @@ console.log(greet(user))
 Hover over any code block to see the copy button in the top-right corner. Click to copy the code to your clipboard with visual feedback.
 
 ```javascript
-const { readFile } = require('fs').promises
+const { readFile } = require('node:fs').promises
 
 async function readConfig() {
   try {
     const config = await readFile('./config.json', 'utf8')
     return JSON.parse(config)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to read config:', error)
     return {}
   }
@@ -316,7 +317,7 @@ services:
   web:
     build: .
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - NODE_ENV=production
 ```

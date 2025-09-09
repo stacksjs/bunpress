@@ -50,7 +50,7 @@ function greetUser(name) {
 }
 
 // Arrow function with async/await
-const fetchUserData = async (userId) => {
+async function fetchUserData(userId) {
   try {
     const response = await fetch(`/api/users/${userId}`)
     const userData = await response.json()
@@ -61,7 +61,8 @@ const fetchUserData = async (userId) => {
         lastLogin: new Date(userData.lastLogin)
       }
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to fetch user data:', error)
     throw new Error('User data fetch failed')
   }
@@ -1303,13 +1304,15 @@ async function copyToClipboard(text: string): Promise<void> {
     // Modern Clipboard API
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(text)
-    } else {
+    }
+    else {
       // Fallback for older browsers
       fallbackCopy(text)
     }
 
     showSuccessFeedback()
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Copy failed:', error)
     showErrorFeedback()
   }

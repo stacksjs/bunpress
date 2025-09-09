@@ -13,17 +13,17 @@ describe('Use Case: Config Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
+        { path: 'test.md', content },
       ],
       config: {
         markdown: {
           title: 'Test Documentation',
           meta: {
             description: 'Test description',
-            author: 'BunPress'
-          }
-        }
-      }
+            author: 'BunPress',
+          },
+        },
+      },
     })
 
     expect(result.success).toBe(true)
@@ -67,8 +67,8 @@ describe('Use Case: Config Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -93,8 +93,8 @@ describe('Use Case: Config Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -117,8 +117,8 @@ describe('Use Case: Config Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -136,6 +136,5 @@ describe('Use Case: Config Example', () => {
     expect(html).toContain('<pre')
     expect(html).toContain('<code')
   })
-
 })
 // Note: HTML structure validation is covered in the other tests above

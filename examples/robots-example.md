@@ -179,9 +179,9 @@ title: Private API Documentation
 description: Internal API documentation
 robots:
   - userAgent: '*'
-    disallow: ['/api/internal/']
-  - userAgent: 'Googlebot'
-    disallow: ['/api/internal/', '/api/debug/']
+    disallow: [/api/internal/]
+  - userAgent: Googlebot
+    disallow: [/api/internal/, /api/debug/]
 ---
 
 # Private API Documentation
@@ -196,10 +196,10 @@ This documentation is for internal use only.
 title: Beta Feature Documentation
 description: Documentation for beta features
 robots:
-  - userAgent: 'Googlebot'
-    allow: ['/beta/']
+  - userAgent: Googlebot
+    allow: [/beta/]
   - userAgent: '*'
-    disallow: ['/beta/']
+    disallow: [/beta/]
 ---
 
 # Beta Features
@@ -217,11 +217,11 @@ export default {
     rules: [
       {
         userAgent: '*',
-        crawlDelay: 5  // Wait 5 seconds between requests
+        crawlDelay: 5 // Wait 5 seconds between requests
       },
       {
         userAgent: 'Googlebot',
-        crawlDelay: 1  // Faster crawling for Google
+        crawlDelay: 1 // Faster crawling for Google
       }
     ]
   }
@@ -288,7 +288,7 @@ export default {
 ```typescript
 export default {
   robots: {
-    host: 'www.example.com'  // Prefer www version
+    host: 'www.example.com' // Prefer www version
   }
 }
 ```
@@ -298,7 +298,7 @@ export default {
 ```typescript
 export default {
   robots: {
-    host: 'example.com'  // Prefer non-www version
+    host: 'example.com' // Prefer non-www version
   }
 }
 ```
@@ -404,10 +404,10 @@ Sitemap: https://example.com/sitemap.xml
    robots: {
      rules: [{
        userAgent: 'Googlebot',
-       crawlDelay: 1  // Fast for major search engines
+       crawlDelay: 1 // Fast for major search engines
      }, {
        userAgent: '*',
-       crawlDelay: 5  // Slower for others
+       crawlDelay: 5 // Slower for others
      }]
    }
    ```

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { createTestMarkdown, buildTestSite, readBuiltFile, assertHtmlContains } from './utils/test-helpers'
+import { assertHtmlContains, buildTestSite, createTestMarkdown, readBuiltFile } from './utils/test-helpers'
 
 describe.skip('End-to-End Integration', () => {
   describe('Full Site Build', () => {
@@ -34,14 +34,14 @@ Welcome to BunPress documentation.
           tagline: 'Powered by Bun',
           actions: [
             { text: 'Get Started', link: '/guide/getting-started' },
-            { text: 'GitHub', link: 'https://github.com/stacksjs/bunpress' }
-          ]
+            { text: 'GitHub', link: 'https://github.com/stacksjs/bunpress' },
+          ],
         },
         features: [
           { title: 'Fast', details: 'Built on Bun for lightning-fast builds' },
           { title: 'Simple', details: 'Easy to use and configure' },
-          { title: 'Modern', details: 'Latest web technologies' }
-        ]
+          { title: 'Modern', details: 'Latest web technologies' },
+        ],
       })
 
       const guideContent = createTestMarkdown(`
@@ -183,8 +183,8 @@ layout: doc
           { path: 'index.md', content: homeContent },
           { path: 'guide/getting-started.md', content: guideContent },
           { path: 'api/index.md', content: apiContent },
-          { path: 'config.md', content: configContent }
-        ]
+          { path: 'config.md', content: configContent },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -233,7 +233,7 @@ Content for serving test.
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'test.md', content }]
+        files: [{ path: 'test.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -254,7 +254,7 @@ This is the initial content.
       `)
 
       const result1 = await buildTestSite({
-        files: [{ path: 'test.md', content: initialContent }]
+        files: [{ path: 'test.md', content: initialContent }],
       })
 
       expect(result1.success).toBe(true)
@@ -266,7 +266,7 @@ This is the updated content.
       `)
 
       const result2 = await buildTestSite({
-        files: [{ path: 'test.md', content: updatedContent }]
+        files: [{ path: 'test.md', content: updatedContent }],
       })
 
       expect(result2.success).toBe(true)
@@ -284,7 +284,7 @@ This is the updated content.
         'contact.md',
         'blog/post1.md',
         'blog/post2.md',
-        'docs/guide.md'
+        'docs/guide.md',
       ]
 
       const files = pages.map(page => ({
@@ -293,11 +293,11 @@ This is the updated content.
 # ${page.replace('.md', '').replace('/', ' ')}
 
 Content for ${page}
-        `)
+        `),
       }))
 
       const result = await buildTestSite({
-        files
+        files,
       })
 
       expect(result.success).toBe(true)
@@ -318,7 +318,7 @@ Content for ${page}
         const robotsContent = await readBuiltFile(robotsPath!)
 
         // Verify sitemap contains all pages
-        pages.forEach(page => {
+        pages.forEach((page) => {
           const htmlPage = page.replace('.md', '.html')
           expect(assertHtmlContains(sitemapContent, htmlPage)).toBe(true)
         })
@@ -349,7 +349,7 @@ Welcome message in multiple languages.
       `, { title: 'Home' })
 
       const result = await buildTestSite({
-        files: [...translations, { path: 'index.md', content }]
+        files: [...translations, { path: 'index.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -407,16 +407,16 @@ This page uses a custom theme layout.
       const result = await buildTestSite({
         files: [
           { path: 'CustomTheme.stx', content: customTheme },
-          { path: 'test.md', content }
+          { path: 'test.md', content },
         ],
         config: {
           title: 'Custom Theme Site',
           nav: [
             { text: 'Home', link: '/' },
-            { text: 'About', link: '/about' }
+            { text: 'About', link: '/about' },
           ],
-          footer: '© 2024 Custom Theme'
-        }
+          footer: '© 2024 Custom Theme',
+        },
       })
 
       expect(result.success).toBe(true)
@@ -477,21 +477,21 @@ console.log('Multiple plugins:', plugins)
 \`\`\`
       `, {
         title: 'Multi Plugin Page',
-        description: 'Testing multiple plugins together'
+        description: 'Testing multiple plugins together',
       })
 
       const result = await buildTestSite({
         files: [
           ...translations,
           { path: 'MultiPlugin.stx', content: customTemplate },
-          { path: 'test.md', content }
+          { path: 'test.md', content },
         ],
         config: {
           nav: [
             { text: 'Home', link: '/' },
-            { text: 'Test', link: '/test' }
-          ]
-        }
+            { text: 'Test', link: '/test' },
+          ],
+        },
       })
 
       expect(result.success).toBe(true)
@@ -536,11 +536,11 @@ console.log('This is page:', pageNumber)
 ::: info
 This is an info box in page ${i}
 :::
-        `, { title: `Documentation Page ${i}`, category: 'docs' })
+        `, { title: `Documentation Page ${i}`, category: 'docs' }),
       }))
 
       const result = await buildTestSite({
-        files
+        files,
       })
 
       expect(result.success).toBe(true)
@@ -568,12 +568,12 @@ This is an info box in page ${i}
 # Base Page ${i}
 
 Initial content for page ${i}.
-        `)
+        `),
       }))
 
       // Initial build
       const initialResult = await buildTestSite({
-        files: baseFiles
+        files: baseFiles,
       })
 
       expect(initialResult.success).toBe(true)
@@ -591,13 +591,13 @@ Updated content for page 19.
 ## New Section
 
 This section was added in the modification.
-          `)
-        }
+          `),
+        },
       ]
 
       // Rebuild
       const modifiedResult = await buildTestSite({
-        files: modifiedFiles
+        files: modifiedFiles,
       })
 
       expect(modifiedResult.success).toBe(true)
@@ -629,7 +629,7 @@ Content with different line ending styles.
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'cross-platform.md', content }]
+        files: [{ path: 'cross-platform.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -654,7 +654,7 @@ Content with special characters: ñáéíóú, 中文, 日本語, русский
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'encoding.md', content }]
+        files: [{ path: 'encoding.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -687,7 +687,7 @@ This has invalid frontmatter.
       `
 
       const result = await buildTestSite({
-        files: [{ path: 'invalid.md', content: invalidContent }]
+        files: [{ path: 'invalid.md', content: invalidContent }],
       })
 
       // Build might succeed or fail depending on error handling
@@ -716,8 +716,8 @@ This page has invalid frontmatter.
       const result = await buildTestSite({
         files: [
           { path: 'valid.md', content: validContent },
-          { path: 'invalid.md', content: invalidContent }
-        ]
+          { path: 'invalid.md', content: invalidContent },
+        ],
       })
 
       // Should still build the valid page even if invalid page fails
@@ -741,7 +741,7 @@ This page references missing dependencies.
       `)
 
       const result = await buildTestSite({
-        files: [{ path: 'missing-deps.md', content }]
+        files: [{ path: 'missing-deps.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -811,8 +811,8 @@ This is the beginning of something great.
             author: 'John Doe',
             date: '2024-01-01',
             category: 'announcements',
-            tags: ['hello', 'world', 'first-post']
-          })
+            tags: ['hello', 'world', 'first-post'],
+          }),
         },
         {
           path: 'blog/2024-01-02-getting-started.md',
@@ -856,16 +856,16 @@ npm install my-package
             author: 'Jane Smith',
             date: '2024-01-02',
             category: 'tutorials',
-            tags: ['tutorial', 'guide', 'beginners']
-          })
-        }
+            tags: ['tutorial', 'guide', 'beginners'],
+          }),
+        },
       ]
 
       const result = await buildTestSite({
         files: [
           { path: 'BlogPost.stx', content: postTemplate },
-          ...posts
-        ]
+          ...posts,
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -915,7 +915,7 @@ Welcome to our comprehensive documentation.
 - [Getting Started](/docs/getting-started)
 - [API Reference](/docs/api)
 - [Configuration](/docs/config)
-          `, { title: 'Documentation', layout: 'home' })
+          `, { title: 'Documentation', layout: 'home' }),
         },
         {
           path: 'docs/getting-started.md',
@@ -947,7 +947,7 @@ result = our_package.do_something()
 
 - Read the [API documentation](/docs/api)
 - Check out [configuration options](/docs/config)
-          `, { title: 'Getting Started' })
+          `, { title: 'Getting Started' }),
         },
         {
           path: 'docs/api.md',
@@ -983,7 +983,7 @@ from our_package import HelperClass
 helper = HelperClass()
 formatted = helper.format_data(raw_data)
 \`\`\`
-          `, { title: 'API Reference' })
+          `, { title: 'API Reference' }),
         },
         {
           path: 'docs/config.md',
@@ -1021,12 +1021,12 @@ export APP_NAME="My App"
 export DB_HOST="localhost"
 export DB_PORT="5432"
 \`\`\`
-          `, { title: 'Configuration' })
-        }
+          `, { title: 'Configuration' }),
+        },
       ]
 
       const result = await buildTestSite({
-        files: docsStructure
+        files: docsStructure,
       })
 
       expect(result.success).toBe(true)

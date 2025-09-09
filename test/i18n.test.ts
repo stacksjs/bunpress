@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { createTestMarkdown, buildTestSite, readBuiltFile, assertHtmlContains, createTestTranslations } from './utils/test-helpers'
+import { assertHtmlContains, buildTestSite, createTestTranslations, readBuiltFile } from './utils/test-helpers'
 
 describe('Internationalization', () => {
   describe('Locale Detection', () => {
@@ -16,8 +16,8 @@ Guide content in English.
       const result = await buildTestSite({
         files: [
           { path: 'en/guide.md', content },
-          { path: 'es/guia.md', content: content.replace('English', 'Spanish') }
-        ]
+          { path: 'es/guia.md', content: content.replace('English', 'Spanish') },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -47,8 +47,8 @@ Content without translation.
           { path: 'locales/en.yml', content: `
 guide:
   title: Default Guide
-          ` }
-        ]
+          ` },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -71,8 +71,8 @@ Content in deeply nested locale path.
       const result = await buildTestSite({
         files: [
           { path: 'docs/en/api/reference.md', content },
-          { path: 'docs/es/api/referencia.md', content: content.replace('Deep Nested Page', 'Página Profundamente Anidada') }
-        ]
+          { path: 'docs/es/api/referencia.md', content: content.replace('Deep Nested Page', 'Página Profundamente Anidada') },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -97,8 +97,8 @@ Content with locale prefix.
       const result = await buildTestSite({
         files: [
           { path: 'en-prefixed-page.md', content },
-          { path: 'es-prefixed-page.md', content: content.replace('Prefixed Page', 'Página Prefijada') }
-        ]
+          { path: 'es-prefixed-page.md', content: content.replace('Prefixed Page', 'Página Prefijada') },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -124,7 +124,7 @@ Welcome message.
       `
 
       const result = await buildTestSite({
-        files: [...translations, { path: 'index.md', content }]
+        files: [...translations, { path: 'index.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -146,7 +146,7 @@ user:
       account: Account Settings
       privacy: Privacy Settings
       notifications: Notification Settings
-          `
+          `,
         },
         {
           path: 'locales/es.yml',
@@ -157,8 +157,8 @@ user:
       account: Configuración de Cuenta
       privacy: Configuración de Privacidad
       notifications: Configuración de Notificaciones
-          `
-        }
+          `,
+        },
       ]
 
       const content = `
@@ -168,7 +168,7 @@ Access your account settings here.
       `
 
       const result = await buildTestSite({
-        files: [...translations, { path: 'settings.md', content }]
+        files: [...translations, { path: 'settings.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -191,8 +191,8 @@ features:
 colors:
   primary: Blue
   secondary: Green
-          `
-        }
+          `,
+        },
       ]
 
       const content = `
@@ -202,7 +202,7 @@ Our product features.
       `
 
       const result = await buildTestSite({
-        files: [...translations, { path: 'features.md', content }]
+        files: [...translations, { path: 'features.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -233,8 +233,8 @@ export default {
     contact: 'Contact'
   }
 } satisfies Dictionary
-          `
-        }
+          `,
+        },
       ]
 
       const content = `
@@ -244,7 +244,7 @@ Navigation and header content.
       `
 
       const result = await buildTestSite({
-        files: [...translations, { path: 'header.md', content }]
+        files: [...translations, { path: 'header.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -270,8 +270,8 @@ export default {
     greeting: ({ time, name }: { time: string, name: string }) => \`Good \${time}, \${name}!\`
   }
 } satisfies Dictionary
-          `
-        }
+          `,
+        },
       ]
 
       const content = `
@@ -281,7 +281,7 @@ Welcome messages with parameters.
       `
 
       const result = await buildTestSite({
-        files: [...translations, { path: 'messages.md', content }]
+        files: [...translations, { path: 'messages.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -318,8 +318,8 @@ export default {
     generic: 'An error occurred'
   }
 } satisfies Dictionary
-          `
-        }
+          `,
+        },
       ]
 
       const content = `
@@ -329,7 +329,7 @@ Dashboard and error messages.
       `
 
       const result = await buildTestSite({
-        files: [...translations, { path: 'complex.md', content }]
+        files: [...translations, { path: 'complex.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -356,8 +356,8 @@ Installation guide.
       const result = await buildTestSite({
         files: [
           { path: 'en/getting-started.md', content },
-          { path: 'es/empezando.md', content: content.replace('Getting Started', 'Empezando') }
-        ]
+          { path: 'es/empezando.md', content: content.replace('Getting Started', 'Empezando') },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -384,8 +384,8 @@ Content for sitemap.
           { path: 'en/page1.md', content },
           { path: 'en/page2.md', content },
           { path: 'es/pagina1.md', content },
-          { path: 'es/pagina2.md', content }
-        ]
+          { path: 'es/pagina2.md', content },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -416,9 +416,9 @@ Content with localized frontmatter.
             path: 'es/custom.md',
             content: content
               .replace('Custom Title', 'Título Personalizado')
-              .replace('Custom description', 'Descripción personalizada')
-          }
-        ]
+              .replace('Custom description', 'Descripción personalizada'),
+          },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -444,8 +444,8 @@ Content with language switching.
       const result = await buildTestSite({
         files: [
           { path: 'en/page.md', content },
-          { path: 'es/pagina.md', content: content.replace('Language Switcher Test', 'Prueba de Cambio de Idioma') }
-        ]
+          { path: 'es/pagina.md', content: content.replace('Language Switcher Test', 'Prueba de Cambio de Idioma') },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -467,8 +467,8 @@ Content for navigation testing.
       const result = await buildTestSite({
         files: [
           { path: 'en/nav.md', content },
-          { path: 'fr/nav.md', content: content.replace('Navigation Test', 'Test de Navigation') }
-        ]
+          { path: 'fr/nav.md', content: content.replace('Navigation Test', 'Test de Navigation') },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -489,8 +489,8 @@ Content that should maintain context.
       const result = await buildTestSite({
         files: [
           { path: 'en/section/page.md', content },
-          { path: 'es/seccion/pagina.md', content: content.replace('Context Preservation', 'Preservación de Contexto') }
-        ]
+          { path: 'es/seccion/pagina.md', content: content.replace('Context Preservation', 'Preservación de Contexto') },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -511,7 +511,7 @@ buttons:
   save: Save
   cancel: Cancel
   submit: Submit
-          `
+          `,
         },
         {
           path: 'locales/en/app.ts',
@@ -525,8 +525,8 @@ export default {
     minLength: ({ field, min }: { field: string, min: number }) => \`\${field} must be at least \${min} characters\`
   }
 } satisfies Dictionary
-          `
-        }
+          `,
+        },
       ]
 
       const content = `
@@ -536,7 +536,7 @@ Form with validation messages.
       `
 
       const result = await buildTestSite({
-        files: [...translations, { path: 'form.md', content }]
+        files: [...translations, { path: 'form.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -556,7 +556,7 @@ Form with validation messages.
 common:
   loading: Loading...
   error: An error occurred
-          `
+          `,
         },
         {
           path: 'locales/es.yml',
@@ -564,8 +564,8 @@ common:
 common:
   loading: Cargando...
   # Missing error translation - should fallback
-          `
-        }
+          `,
+        },
       ]
 
       const content = `
@@ -575,7 +575,7 @@ Content with fallback translations.
       `
 
       const result = await buildTestSite({
-        files: [...translations, { path: 'fallback.md', content }]
+        files: [...translations, { path: 'fallback.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -605,8 +605,8 @@ export default {
     save: 'Save'
   }
 } satisfies Dictionary
-          `
-        }
+          `,
+        },
       ]
 
       const content = `
@@ -616,7 +616,7 @@ Content with type-safe translations.
       `
 
       const result = await buildTestSite({
-        files: [...translations, { path: 'types.md', content }]
+        files: [...translations, { path: 'types.md', content }],
       })
 
       expect(result.success).toBe(true)
@@ -634,7 +634,7 @@ Content with type-safe translations.
       const translations = createTestTranslations()
 
       const result = await buildTestSite({
-        files: translations
+        files: translations,
       })
 
       expect(result.success).toBe(true)
@@ -657,8 +657,8 @@ Content built for specific locale.
       const result = await buildTestSite({
         files: [
           { path: 'en/specific.md', content },
-          { path: 'fr/specifique.md', content: content.replace('Locale-Specific Build', 'Construction Spécifique à la Locale') }
-        ]
+          { path: 'fr/specifique.md', content: content.replace('Locale-Specific Build', 'Construction Spécifique à la Locale') },
+        ],
       })
 
       expect(result.success).toBe(true)
@@ -677,8 +677,8 @@ Content built for specific locale.
           content: `
 existing:
   key: Existing translation
-          `
-        }
+          `,
+        },
       ]
 
       const content = `
@@ -688,7 +688,7 @@ Content with missing translation handling.
       `
 
       const result = await buildTestSite({
-        files: [...translations, { path: 'missing.md', content }]
+        files: [...translations, { path: 'missing.md', content }],
       })
 
       expect(result.success).toBe(true)

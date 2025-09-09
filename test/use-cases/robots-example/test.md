@@ -225,10 +225,10 @@ Sitemap: https://example.com/sitemap.xml
    robots: {
      rules: [{
        userAgent: 'Googlebot',
-       crawlDelay: 1  // Fast for major search engines
+       crawlDelay: 1 // Fast for major search engines
      }, {
        userAgent: '*',
-       crawlDelay: 5  // Slower for others
+       crawlDelay: 5 // Slower for others
      }]
    }
    ```

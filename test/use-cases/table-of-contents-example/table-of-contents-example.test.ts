@@ -12,17 +12,17 @@ describe('Use Case: Table of Contents Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
+        { path: 'test.md', content },
       ],
       config: {
         markdown: {
           title: 'Test Documentation',
           meta: {
             description: 'Test description',
-            author: 'BunPress'
-          }
-        }
-      }
+            author: 'BunPress',
+          },
+        },
+      },
     })
 
     expect(result.success).toBe(true)
@@ -70,8 +70,8 @@ describe('Use Case: Table of Contents Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -98,8 +98,8 @@ describe('Use Case: Table of Contents Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -126,8 +126,8 @@ describe('Use Case: Table of Contents Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -156,8 +156,8 @@ describe('Use Case: Table of Contents Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -181,8 +181,8 @@ describe('Use Case: Table of Contents Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
@@ -209,17 +209,17 @@ describe('Use Case: Table of Contents Example', () => {
     // Test with custom configuration
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
+        { path: 'test.md', content },
       ],
       config: {
         markdown: {
           title: 'Custom Title',
           meta: {
             description: 'Custom description',
-            author: 'Custom Author'
-          }
-        }
-      }
+            author: 'Custom Author',
+          },
+        },
+      },
     })
 
     expect(result.success).toBe(true)
@@ -236,8 +236,8 @@ describe('Use Case: Table of Contents Example', () => {
 
     const result = await buildTestSite({
       files: [
-        { path: 'test.md', content }
-      ]
+        { path: 'test.md', content },
+      ],
     })
 
     expect(result.success).toBe(true)
