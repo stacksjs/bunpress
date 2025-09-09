@@ -1046,6 +1046,73 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
         // Generate theme CSS
         const themeConfig = options.themeConfig || config.markdown.themeConfig || {}
         const themeCss = generateThemeCSS(themeConfig)
+        
+        // Add custom layout CSS
+        const layoutCss = `
+/* Container Layout Styles */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  padding: 0 1rem;
+  margin-top: 60px;
+}
+
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.flex {
+  display: flex;
+}
+
+/* Adjust markdown body for new layout */
+body[data-layout="doc"] .markdown-body {
+  margin-left: 0;
+  margin-top: 0;
+  flex: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .container.flex {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+  }
+  
+  .table-of-contents.toc-sidebar {
+    width: 100%;
+    position: static;
+    margin-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    padding-top: 1rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .sidebar {
+    min-width: 250px;
+    width: 250px;
+    margin-right: 1rem;
+  }
+  
+  .table-of-contents.toc-sidebar {
+    min-width: 200px;
+    width: 200px;
+    margin-left: 1rem;
+  }
+}
+`
+        // Append layout CSS to theme CSS
+        const finalThemeCss = themeCss + layoutCss
 
         // Add UnoCSS
         const unoCssScript = `<script src="https://cdn.jsdelivr.net/npm/@unocss/runtime"></script>`
@@ -1334,19 +1401,20 @@ ${copyStyles}
 ${getNavStyles()}
 ${getSidebarStyles()}
 ${getSearchStyles()}
-${themeCss}
+${finalThemeCss}
     </style>
     ${frontmatterScript}
   </head>
   <body data-layout="${layout}" class="text-gray-800 bg-white">
     ${navHtml}
     ${searchHtml}
-    ${sidebarHtml}
-    ${sidebarTocHtml}
-    <article class="markdown-body">
-      ${pageContent}
-    </article>
-    ${floatingTocHtml}
+    <div class="container mx-auto flex">
+      ${sidebarHtml}
+      <article class="markdown-body">
+        ${pageContent}
+      </article>
+      ${sidebarTocHtml || floatingTocHtml}
+    </div>
     ${scriptTags}
     <script>${tocScripts}</script>
     <script>${copyScripts}</script>
@@ -2855,11 +2923,8 @@ function getSidebarStyles(): string {
   return `
 /* Sidebar styles */
 .sidebar {
-  position: fixed;
-  left: 0;
-  top: 60px;
+  position: relative;
   width: 280px;
-  height: calc(100vh - 60px);
   background: white;
   border-right: 1px solid rgba(0, 0, 0, 0.1);
   padding: 1rem;
