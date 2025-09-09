@@ -17,6 +17,7 @@ describe('Custom Template Engine', () => {
 
       const content1 = createTestMarkdown(`
 ---
+layout: home
 published: true
 date: 2024-01-01
 featured: true
@@ -25,7 +26,7 @@ featured: true
 # Published Featured Post
 
 Content here.
-      `, { published: true, date: '2024-01-01', featured: true })
+      `, { layout: 'home', published: true, date: '2024-01-01', featured: true })
 
       const content2 = createTestMarkdown(`
 ---
@@ -48,11 +49,11 @@ Content here.
 
       expect(result.success).toBe(true)
 
-      const html1 = await readBuiltFile(result.outputs[0], 'post1.html')
+      const html1 = await readBuiltFile(result.outputs.find(out => out.endsWith('post1.html'))!)
       expect(assertHtmlContains(html1, 'Published: 2024-01-01')).toBe(true)
       expect(assertHtmlContains(html1, 'Featured Content')).toBe(true)
 
-      const html2 = await readBuiltFile(result.outputs[1], 'post2.html')
+      const html2 = await readBuiltFile(result.outputs.find(out => out.endsWith('post2.html'))!)
       expect(assertHtmlContains(html2, 'Published:')).toBe(false)
       expect(assertHtmlContains(html2, 'Featured Content')).toBe(false)
     })
@@ -108,7 +109,7 @@ Content here.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs.find(out => out.endsWith('test.html'))!)
       expect(assertHtmlContains(html, 'javascript')).toBe(true)
       expect(assertHtmlContains(html, 'typescript')).toBe(true)
       expect(assertHtmlContains(html, 'vue')).toBe(true)
@@ -200,7 +201,7 @@ Content here.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs.find(out => out.endsWith('test.html'))!)
       expect(assertHtmlContains(html, 'John Doe')).toBe(true)
       expect(assertHtmlContains(html, 'Software Developer')).toBe(true)
       expect(assertHtmlContains(html, 'https://twitter.com/johndoe')).toBe(true)
@@ -304,7 +305,7 @@ Content here.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs.find(out => out.endsWith('test.html'))!)
       expect(assertHtmlContains(html, 'Complex Template')).toBe(true)
       expect(assertHtmlContains(html, 'Testing nested conditions')).toBe(true)
       expect(assertHtmlContains(html, 'Fast rendering')).toBe(true)
@@ -365,7 +366,7 @@ More content here.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs.find(out => out.endsWith('test.html'))!)
       expect(assertHtmlContains(html, 'My Blog Post')).toBe(true)
       expect(assertHtmlContains(html, '2024-01-01')).toBe(true)
       expect(assertHtmlContains(html, 'John Doe')).toBe(true)
@@ -431,7 +432,7 @@ This is the about page content.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'about.html')
+      const html = await readBuiltFile(result.outputs.find(out => out.endsWith('about.html'))!)
       expect(assertHtmlContains(html, 'My Site')).toBe(true)
       expect(assertHtmlContains(html, 'My awesome site')).toBe(true)
       expect(assertHtmlContains(html, 'About Page')).toBe(true)
@@ -444,7 +445,7 @@ This is the about page content.
       const template = `
 <div class="product">
   <h1>{{ $frontmatter.product.name }}</h1>
-  <p class="price">${{ $frontmatter.product.price }}</p>
+  <p class="price">{{ $frontmatter.product.price }}</p>
   <p class="category">{{ $frontmatter.product.category }}</p>
 
   @if($frontmatter.product.inStock)
@@ -502,7 +503,7 @@ Product description here.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs.find(out => out.endsWith('test.html'))!)
       expect(assertHtmlContains(html, 'Super Widget')).toBe(true)
       expect(assertHtmlContains(html, '$99.99')).toBe(true)
       expect(assertHtmlContains(html, 'Electronics')).toBe(true)
@@ -575,7 +576,7 @@ This is content in the child template.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs.find(out => out.endsWith('test.html'))!)
       expect(assertHtmlContains(html, 'Base Layout')).toBe(true)
       expect(assertHtmlContains(html, 'Child Page')).toBe(true)
       expect(assertHtmlContains(html, 'Page-specific footer')).toBe(true)
@@ -654,7 +655,7 @@ This page includes partial templates.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs.find(out => out.endsWith('test.html'))!)
       expect(assertHtmlContains(html, 'Site with Partials')).toBe(true)
       expect(assertHtmlContains(html, 'Include Test')).toBe(true)
       expect(assertHtmlContains(html, '© 2024 Site')).toBe(true)
@@ -738,7 +739,7 @@ This is the main content area.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs.find(out => out.endsWith('test.html'))!)
       expect(assertHtmlContains(html, 'Complex Site')).toBe(true)
       expect(assertHtmlContains(html, 'Complex Inheritance')).toBe(true)
       expect(assertHtmlContains(html, 'Testing complex template inheritance')).toBe(true)
@@ -777,7 +778,7 @@ Content here.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs.find(out => out.endsWith('test.html'))!)
       expect(assertHtmlContains(html, 'Untitled')).toBe(true)
       expect(assertHtmlContains(html, 'Page without Frontmatter')).toBe(true)
       expect(assertHtmlContains(html, 'empty-frontmatter')).toBe(true)
@@ -812,7 +813,7 @@ Testing malformed template handling.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs.find(out => out.endsWith('test.html'))!)
       expect(assertHtmlContains(html, 'Malformed Template Test')).toBe(true)
       expect(assertHtmlContains(html, 'Test Content')).toBe(true)
       expect(assertHtmlContains(html, 'malformed-template')).toBe(true)
@@ -874,7 +875,7 @@ Testing deep nesting performance.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs.find(out => out.endsWith('test.html'))!)
       expect(assertHtmlContains(html, 'Deep Nested Value')).toBe(true)
       expect(assertHtmlContains(html, 'deep-nesting')).toBe(true)
       expect(assertHtmlContains(html, 'performance-ok')).toBe(true)
@@ -910,7 +911,7 @@ Testing error handling in templates.
 
       expect(result.success).toBe(true)
 
-      const html = await readBuiltFile(result.outputs[0], 'test.html')
+      const html = await readBuiltFile(result.outputs.find(out => out.endsWith('test.html'))!)
       expect(assertHtmlContains(html, 'Error Handling Test')).toBe(true)
       expect(assertHtmlContains(html, 'Test Content')).toBe(true)
       expect(assertHtmlContains(html, 'template-errors-handled')).toBe(true)

@@ -60,11 +60,12 @@ describe('Typography Elements', () => {
 
     // Check for bold text
     expect(html).toContain('<strong>bold text</strong>')
-    expect(html).toContain('<strong>bold and italic</strong>')
 
     // Check for italic text
     expect(html).toContain('<em>italic text</em>')
-    expect(html).toContain('<em>bold and italic</em>')
+
+    // Check for bold and italic combined (triple asterisks)
+    expect(html).toContain('<em><strong>bold and italic</strong></em>')
 
     // Check for strikethrough
     expect(html).toContain('<del>strikethrough text</del>')

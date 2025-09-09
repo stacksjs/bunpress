@@ -2,7 +2,7 @@ import { file } from 'bun'
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { markdown } from '../src/plugin'
+import { markdown, disposeHighlighter } from '../src/plugin'
 
 describe('Markdown Plugin', () => {
   const testDir = join(import.meta.dir, 'fixtures')
@@ -30,10 +30,11 @@ console.log(hello)
     )
   })
 
-  // Clean up test files
+  // Clean up test files and highlighter
   afterAll(async () => {
     await rm(testDir, { recursive: true, force: true })
     await rm(outDir, { recursive: true, force: true })
+    disposeHighlighter() // Clean up singleton highlighter
   })
 
   test('should build markdown file to html', async () => {
@@ -46,18 +47,22 @@ console.log(hello)
     // Verify build succeeded
     expect(result.success).toBe(true)
 
-    // Verify output HTML file exists
-    const htmlFile = file(join(outDir, 'test.html'))
+    // Verify output HTML file exists (in preserved directory structure)
+    const htmlFile = file(join(outDir, 'test', 'fixtures', 'test.html'))
     expect(await htmlFile.exists()).toBe(true)
 
     // Verify output content
     const content = await htmlFile.text()
     expect(content).toContain('<!DOCTYPE html>')
-    expect(content).toContain('<h1>Test Markdown</h1>')
+    expect(content).toContain('<h1 id="test-markdown">')
+    expect(content).toContain('Test Markdown</h1>')
     expect(content).toContain('<strong>bold</strong>')
     expect(content).toContain('<em>italic</em>')
-    expect(content).toContain('<h2>Code Example</h2>')
-    expect(content).toContain('<pre><code class="language-ts">')
+    expect(content).toContain('<h2 id="code-example">')
+    expect(content).toContain('Code Example</h2>')
+    expect(content).toContain('<div class="code-block-container">')
+    expect(content).toContain('<pre><code')
+    expect(content).toContain('copy-code-btn')
   })
 
   test('should apply custom options', async () => {
@@ -79,8 +84,8 @@ console.log(hello)
     // Verify build succeeded
     expect(result.success).toBe(true)
 
-    // Verify output HTML file exists
-    const htmlFile = file(join(outDir, 'test.html'))
+    // Verify output HTML file exists (in preserved directory structure)
+    const htmlFile = file(join(outDir, 'test', 'fixtures', 'test.html'))
     expect(await htmlFile.exists()).toBe(true)
 
     // Verify output content with custom options

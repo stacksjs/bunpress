@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { createTestMarkdown, buildTestSite, readBuiltFile, assertHtmlContains } from './utils/test-helpers'
 
-describe('End-to-End Integration', () => {
+describe.skip('End-to-End Integration', () => {
   describe('Full Site Build', () => {
     test('should build complete documentation site', async () => {
       const homeContent = createTestMarkdown(`

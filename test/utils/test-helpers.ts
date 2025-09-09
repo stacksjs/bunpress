@@ -9,7 +9,8 @@ import { markedEmoji } from 'marked-emoji'
 import { markedHighlight } from 'marked-highlight'
 import { createHighlighter, type Highlighter } from 'shiki'
 import type { BunPressOptions, MarkdownPluginOptions } from '../../src/types'
-import { markdown, generateSitemapAndRobots } from '../../src/plugin'
+import { markdown, generateSitemapAndRobots, disposeHighlighter } from '../../src/plugin'
+import { processStxTemplate } from '../../src/plugin'
 import { ConfigManager } from '../../src/config'
 import {
   generateTocData,
@@ -183,6 +184,7 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
     }
 
     const markdownFiles = options.files.filter(f => f.path.endsWith('.md'))
+    const stxFiles = options.files.filter(f => f.path.endsWith('.stx'))
     const outputs: string[] = []
 
     // Apply plugins
@@ -192,6 +194,22 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
     const fullConfig = configManager.getConfig()
     let mergedConfig = { ...fullConfig }
 
+    // Process STX files first (templates)
+    for (const file of stxFiles) {
+      const filePath = join(testDir, file.path)
+      const relativePath = relative(testDir, filePath)
+      const baseName = basename(file.path, '.stx')
+
+      // STX files are templates, so we don't generate HTML files for them
+      // Instead, we store their processed content for later use
+      const content = await readFile(filePath, 'utf8')
+      const processedContent = processStxTemplate(content, {})
+
+      // Store the processed template in a way that can be used by markdown files
+      // For now, just log that we processed it
+      console.log(`Processed STX template: ${baseName}.stx`)
+    }
+
     // Process each markdown file using the plugin's logic directly
     for (const file of markdownFiles) {
       const filePath = join(testDir, file.path)
@@ -200,7 +218,7 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
       const baseName = basename(file.path, '.md')
 
       // Create path for the HTML file
-      let htmlFilePath = join(outDir, `${baseName}.html`)
+      let htmlFilePath: string
 
       // Handle dynamic routes (files with brackets)
       if (baseName.includes('[') && baseName.includes(']')) {
@@ -214,6 +232,10 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
         // Ensure the target directory exists
         await mkdir(targetDir, { recursive: true })
         htmlFilePath = join(targetDir, `${baseName}.html`)
+      }
+      else {
+        // Default case: file in root directory
+        htmlFilePath = join(outDir, `${baseName}.html`)
       }
 
       // Read and process the markdown file directly using plugin logic
@@ -457,6 +479,17 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
       // Custom renderer for line highlighting
       const originalCodeRenderer = renderer.code
       renderer.code = function(code: string, language?: string | undefined, escaped?: boolean | undefined): string {
+        // Ensure code is always a string
+        let codeString: string
+        if (typeof code === 'string') {
+          codeString = code
+        } else if (typeof code === 'object' && code !== null) {
+          // For objects, convert to formatted JSON
+          codeString = JSON.stringify(code, null, 2)
+        } else {
+          codeString = String(code)
+        }
+        
         let finalLanguage = language || ''
         let lineNumbers: number[] = []
 
@@ -477,11 +510,23 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
           }
         }
 
-        // Apply syntax highlighting
-        let highlightedCode = code
-        if (finalLanguage) {
-          const lang = hljs.getLanguage(finalLanguage) ? finalLanguage : 'plaintext'
-          highlightedCode = hljs.highlight(code, { language: lang }).value
+        // Apply syntax highlighting using Shiki
+        let highlightedCode = codeString
+        if (finalLanguage && highlighter) {
+          try {
+            const language = highlighter.getLoadedLanguages().includes(finalLanguage as any) ? finalLanguage : 'plaintext'
+            const html = highlighter.codeToHtml(codeString, {
+              lang: language,
+              theme: 'light-plus'
+            })
+            
+            // Extract just the inner content (remove <pre><code> wrapper)
+            const match = html.match(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/s)
+            highlightedCode = match ? match[1] : codeString
+          } catch (error) {
+            console.warn(`Shiki highlighting failed for language "${finalLanguage}":`, error)
+            highlightedCode = codeString
+          }
         }
 
         // If we have line highlighting, wrap lines with classes
@@ -618,6 +663,19 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
       // Determine layout class
       const layout = frontmatter.layout || 'doc'
       const layoutClass = `layout-${layout}`
+
+      // Handle home layout with STX template
+      if (layout === 'home') {
+        // Look for STX template in the same directory
+        const stxPath = join(testDir, 'Home.stx')
+        if (stxFiles.some(f => f.path === 'Home.stx')) {
+          const stxFile = stxFiles.find(f => f.path === 'Home.stx')!
+          const stxContent = await readFile(join(testDir, stxFile.path), 'utf8')
+          const processedStx = processStxTemplate(stxContent, frontmatter)
+          // Replace the content with processed STX template
+          htmlContent = processedStx
+        }
+      }
 
       // Add theme-related content markers for tests
       const themeMarkers = (frontmatter.themeConfig || mergedConfig.markdown?.themeConfig) ? '<div class="theme-markers"><!-- theme-extended custom-theme --></div>' : ''
@@ -844,6 +902,7 @@ function generateThemeCss(themeConfig: any): string {
     const colors = themeConfig.colors
     if (colors.primary) css += `--color-primary: ${colors.primary};`
     if (colors.secondary) css += `--color-secondary: ${colors.secondary};`
+    if (colors.accent) css += `--color-accent: ${colors.accent};`
     if (colors.background) css += `--color-background: ${colors.background};`
     if (colors.text) css += `--color-text: ${colors.text};`
   }
@@ -853,6 +912,14 @@ function generateThemeCss(themeConfig: any): string {
     const fonts = themeConfig.fonts
     if (fonts.heading) css += `--font-heading: ${fonts.heading};`
     if (fonts.body) css += `--font-body: ${fonts.body};`
+    if (fonts.mono) css += `--font-mono: ${fonts.mono};`
+  }
+
+  // CSS Variables
+  if (themeConfig.cssVars) {
+    Object.entries(themeConfig.cssVars).forEach(([key, value]) => {
+      css += `--${key}: ${value};`
+    })
   }
 
   if (css) {
@@ -899,4 +966,9 @@ export default {
 } satisfies Dictionary`
     }
   ]
+}
+
+// Cleanup function for test resources
+export function cleanupTestResources(): void {
+  disposeHighlighter()
 }

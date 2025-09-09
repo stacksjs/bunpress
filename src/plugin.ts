@@ -9,6 +9,92 @@ import markedAlert from 'marked-alert'
 import { markedEmoji } from 'marked-emoji'
 import { markedHighlight } from 'marked-highlight'
 import { createHighlighter, type Highlighter } from 'shiki'
+
+// Singleton highlighter to prevent creating multiple instances
+let globalHighlighter: Highlighter | null = null
+let highlighterPromise: Promise<Highlighter> | null = null
+let instanceCount = 0
+
+async function getHighlighter(): Promise<Highlighter> {
+  instanceCount++
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`Shiki highlighter requested (total requests: ${instanceCount})`)
+  }
+  if (globalHighlighter) {
+    return globalHighlighter
+  }
+  
+  if (highlighterPromise) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Waiting for existing highlighter promise')
+    }
+    return highlighterPromise
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('Creating new highlighter instance')
+  }
+  highlighterPromise = createHighlighter({
+    themes: ['light-plus', 'dark-plus'],
+    langs: [
+      'javascript',
+      'typescript',
+      'python',
+      'css',
+      'html',
+      'json',
+      'bash',
+      'shell',
+      'sql',
+      'markdown',
+      'yaml',
+      'xml',
+      'php',
+      'java',
+      'cpp',
+      'c',
+      'go',
+      'rust',
+      'ruby',
+      'swift',
+      'kotlin',
+      'scala',
+      'dart',
+      'lua',
+      'perl',
+      'r',
+      'matlab',
+      'powershell',
+      'dockerfile',
+      'nginx',
+      'apache',
+      'toml',
+      'ini',
+      'diff',
+      'log',
+      'plaintext',
+      // STX language support (treat as HTML)
+      'html'
+    ]
+  })
+  
+  globalHighlighter = await highlighterPromise
+  return globalHighlighter
+}
+
+// Cleanup function for tests and cleanup
+export function disposeHighlighter(): void {
+  instanceCount = 0
+  if (globalHighlighter) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Disposing highlighter instance')
+    }
+    globalHighlighter.dispose()
+    globalHighlighter = null
+  }
+  highlighterPromise = null
+}
+
 import {
   generateTocData,
   generateTocPositions,
@@ -85,25 +171,46 @@ ${blocks}
  * Process VitePress-style containers (tip, warning, danger, etc.)
  * Replace entire container blocks with proper HTML
  */
-function processContainers(content: string, renderer: marked.Renderer, markedOptions: any, highlighter: Highlighter | null = null): string {
+async function processContainers(content: string, renderer: any, markedOptions: any, highlighter: Highlighter | null = null): Promise<string> {
   // Match complete container blocks, but exclude code-group
   // More flexible regex to handle various whitespace patterns
   const containerRegex = /:::\s+(?!code-group)(\w+)(?:\s+(.*?))?\s*\n([\s\S]*?)\n:::/g
 
-  return content.replace(containerRegex, (match, type, title, containerContent) => {
+  const promises: Promise<{ match: string; replacement: string }>[] = []
+  const matches: RegExpMatchArray[] = []
+  
+  let match
+  while ((match = containerRegex.exec(content)) !== null) {
+    matches.push(match)
+  }
+  
+  for (const match of matches) {
+    const [fullMatch, type, title, containerContent] = match
     const containerTitle = title || type.toUpperCase()
 
     // Process the content inside the container as markdown
-    const processedContainerContent = marked.parse(containerContent.trim(), {
+    const processedPromise = marked.parse(containerContent.trim(), {
       ...markedOptions,
       renderer,
-    }) as string
-
-    return `<div class="${type} custom-block">
+    }) as Promise<string>
+    
+    promises.push(processedPromise.then(processedContainerContent => ({
+      match: fullMatch,
+      replacement: `<div class="${type} custom-block">
 <p class="custom-block-title">${containerTitle}</p>
 ${processedContainerContent}
 </div>`
-  })
+    })))
+  }
+  
+  const results = await Promise.all(promises)
+  let result = content
+  
+  for (const { match, replacement } of results) {
+    result = result.replace(match, replacement)
+  }
+  
+  return result
 }
 
 /**
@@ -181,24 +288,45 @@ ${blocks}
 /**
  * Process containers from HTML (post markdown conversion)
  */
-function processContainersFromHtml(html: string, renderer: marked.Renderer, markedOptions: any, highlighter: Highlighter | null = null): string {
+async function processContainersFromHtml(html: string, renderer: any, markedOptions: any, highlighter: Highlighter | null = null): Promise<string> {
   // Match the pattern that markdown creates from ::: tip ... :::
   const htmlContainerRegex = /<p>::: (\w+)(?:\s+(.+?))?<\/p>([\s\S]*?)<p>:::<\/p>/g
 
-  return html.replace(htmlContainerRegex, (match, type, title, content) => {
+  const promises: Promise<{ match: string; replacement: string }>[] = []
+  const matches: RegExpMatchArray[] = []
+  
+  let match
+  while ((match = htmlContainerRegex.exec(html)) !== null) {
+    matches.push(match)
+  }
+  
+  for (const match of matches) {
+    const [fullMatch, type, title, content] = match
     const containerTitle = title || type.toUpperCase()
 
     // Process the content inside the container as markdown
-    const processedContainerContent = marked.parse(content.trim(), {
+    const processedPromise = marked.parse(content.trim(), {
       ...markedOptions,
       renderer,
-    }) as string
-
-    return `<div class="${type} custom-block">
+    }) as Promise<string>
+    
+    promises.push(processedPromise.then(processedContainerContent => ({
+      match: fullMatch,
+      replacement: `<div class="${type} custom-block">
 <p class="custom-block-title">${containerTitle}</p>
 ${processedContainerContent}
 </div>`
-  })
+    })))
+  }
+  
+  const results = await Promise.all(promises)
+  let result = html
+  
+  for (const { match, replacement } of results) {
+    result = result.replace(match, replacement)
+  }
+  
+  return result
 }
 
 
@@ -207,7 +335,7 @@ ${processedContainerContent}
  *
  * Converts STX template syntax to regular HTML
  */
-function processStxTemplate(content: string, frontmatter: any): string {
+export function processStxTemplate(content: string, frontmatter: any): string {
   // Process @if conditions
   let result = content.replace(/@if\(\$frontmatter\.([^)]+)\)([\s\S]*?)@endif/g, (_, path, ifContent) => {
     // Parse the dot path to get the actual value
@@ -250,13 +378,14 @@ function processStxTemplate(content: string, frontmatter: any): string {
   })
 
   // Process {{ expressions }} for frontmatter variables
-  result = result.replace(/\{\{\$frontmatter\.([^}]+)\}\}/g, (_, path) => {
+  result = result.replace(/\{\{\s*\$frontmatter\.([^}]+)\s*\}\}/g, (_, path) => {
+    const trimmedPath = path.trim()
     // Parse the dot path to get the actual value
-    const parts = path.split('.')
+    const parts = trimmedPath.split('.')
     let value = frontmatter
 
     for (const part of parts) {
-      if (value === undefined)
+      if (value === undefined || value === null)
         return ''
       value = value[part]
     }
@@ -403,9 +532,18 @@ function isNavItemActive(item: NavItem, currentPath: string): boolean {
 /**
  * Create HTML for a home page layout
  */
-function createHomePageHtml(frontmatter: Frontmatter, htmlContent: string): string {
+function createHomePageHtml(frontmatter: Frontmatter, htmlContent: string, mdPath?: string): string {
   // Check if we have a custom STX template for the Home component
-  const stxTemplatePath = path.join(process.cwd(), 'dist/docs/Home.stx')
+  let stxTemplatePath = path.join(process.cwd(), 'dist/docs/Home.stx')
+
+  // If we have a markdown path, also check for STX template in the same directory
+  if (mdPath) {
+    const mdDir = path.dirname(mdPath)
+    const localStxPath = path.join(mdDir, 'Home.stx')
+    if (fs.existsSync(localStxPath)) {
+      stxTemplatePath = localStxPath
+    }
+  }
 
   if (fs.existsSync(stxTemplatePath)) {
     try {
@@ -482,97 +620,60 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
     setup(build) {
       let highlighter: Highlighter | null = null
 
-      build.onStart(async () => {
-        // Initialize Shiki highlighter
-        highlighter = await createHighlighter({
-          themes: ['light-plus', 'dark-plus'],
-          langs: [
-            'javascript',
-            'typescript',
-            'python',
-            'css',
-            'html',
-            'json',
-            'bash',
-            'shell',
-            'sql',
-            'markdown',
-            'yaml',
-            'xml',
-            'php',
-            'java',
-            'cpp',
-            'c',
-            'go',
-            'rust',
-            'ruby',
-            'swift',
-            'kotlin',
-            'scala',
-            'dart',
-            'lua',
-            'perl',
-            'r',
-            'matlab',
-            'powershell',
-            'dockerfile',
-            'nginx',
-            'apache',
-            'toml',
-            'ini',
-            'diff',
-            'log',
-            'plaintext',
-            // STX language support (treat as HTML)
-            'html'
-          ]
-        })
-      })
-
       // Set up marked options for parsing
       const renderer = new marked.Renderer()
 
-      // Configure marked extensions
-      marked.use(markedAlert())
-      marked.use(markedEmoji({
-        emojis: {
-          heart: '❤️',
-          thumbsup: '👍',
-          smile: '😊',
-          rocket: '🚀',
-          sparkles: '✨',
-          wave: '👋',
-          bulb: '💡'
-        }
-      }))
+      build.onStart(async () => {
+        // Initialize Shiki highlighter using singleton
+        highlighter = await getHighlighter()
 
-      // Add Shiki highlighting
-      marked.use(markedHighlight({
-        highlight(code, lang) {
-          if (!highlighter) return code
-
-          try {
-            const language = highlighter.getLoadedLanguages().includes(lang as any) ? lang : 'plaintext'
-            const html = highlighter.codeToHtml(code, {
-              lang: language,
-              theme: 'light-plus'
-            })
-
-
-            // Shiki returns HTML string
-            if (typeof html === 'string') {
-              // Extract just the inner content (remove <pre><code> wrapper)
-              const match = html.match(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/s)
-              return match ? match[1] : code
-            }
-
-            return code
-          } catch (error) {
-            console.warn(`Shiki highlighting failed for language "${lang}":`, error)
-            return code
+        // Configure marked extensions after highlighter is initialized
+        marked.use(markedAlert())
+        marked.use(markedEmoji({
+          emojis: {
+            heart: '❤️',
+            thumbsup: '👍',
+            smile: '😊',
+            rocket: '🚀',
+            sparkles: '✨',
+            wave: '👋',
+            bulb: '💡'
           }
-        }
-      }))
+        }))
+
+        // Add Shiki highlighting
+        marked.use(markedHighlight({
+          highlight(code, lang) {
+            if (!highlighter) return code
+
+            try {
+              const language = highlighter.getLoadedLanguages().includes(lang as any) ? lang : 'plaintext'
+              const html = highlighter.codeToHtml(code, {
+                lang: language,
+                theme: 'light-plus'
+              })
+
+              // Ensure we return a string
+              let htmlString: string
+              if (typeof html === 'string') {
+                htmlString = html
+              } else if (html && typeof html === 'object' && 'toString' in html) {
+                htmlString = (html as any).toString()
+              } else {
+                console.warn(`Unexpected type from Shiki codeToHtml:`, typeof html, html)
+                return code
+              }
+
+              // Extract just the inner content (remove <pre><code> wrapper)
+              const match = htmlString.match(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/s)
+              return match ? match[1] : code
+            } catch (error) {
+              console.warn(`Shiki highlighting failed for language "${lang}":`, error)
+              return code
+            }
+          }
+        }))
+      })
 
       // Custom math extension for inline and block math
       marked.use({
@@ -749,16 +850,16 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
         processedContent = processCodeGroups(processedContent)
 
         // Process containers before markdown conversion
-        processedContent = processContainers(processedContent, renderer, markedOptions, highlighter)
+        processedContent = await processContainers(processedContent, renderer, markedOptions, highlighter)
 
         // Convert markdown to HTML
-        let htmlContent = marked.parse(processedContent, {
+        let htmlContent = await marked.parse(processedContent, {
           ...markedOptions,
           renderer,
         }) as string
 
         // Process containers that weren't handled by pre-processing
-        htmlContent = processContainersFromHtml(htmlContent, renderer, markedOptions, highlighter)
+        htmlContent = await processContainersFromHtml(htmlContent, renderer, markedOptions, highlighter)
         // Process code groups that weren't handled by pre-processing
         htmlContent = processCodeGroupsFromHtml(htmlContent)
 
@@ -888,7 +989,7 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
 
         // If layout is 'home', use the custom home page layout
         if (layout === 'home') {
-          pageContent = createHomePageHtml(frontmatter as Frontmatter, cleanedHtmlContent)
+          pageContent = createHomePageHtml(frontmatter as Frontmatter, cleanedHtmlContent, args.path)
         }
 
         // Add copy-to-clipboard styles and scripts
@@ -1156,10 +1257,11 @@ export function stx(): BunPlugin {
         // Read the STX template file
         const stxContent = await fs.promises.readFile(args.path, 'utf8')
 
-        // For now, just return the content as a string that can be processed later
-        // The actual processing with frontmatter happens when generating HTML
+        // Process STX template directives (without frontmatter for now)
+        const processedContent = processStxTemplate(stxContent, {})
+
         return {
-          contents: `export default ${JSON.stringify(stxContent)};`,
+          contents: `export default ${JSON.stringify(processedContent)};`,
           loader: 'js'
         }
       })
