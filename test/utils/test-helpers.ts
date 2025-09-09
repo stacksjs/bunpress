@@ -7,7 +7,7 @@ import matter from 'gray-matter'
 import markedAlert from 'marked-alert'
 import { markedEmoji } from 'marked-emoji'
 import { markedHighlight } from 'marked-highlight'
-import hljs from 'highlight.js'
+import { createHighlighter, type Highlighter } from 'shiki'
 import type { BunPressOptions, MarkdownPluginOptions } from '../../src/types'
 import { markdown, generateSitemapAndRobots } from '../../src/plugin'
 import { ConfigManager } from '../../src/config'
@@ -275,10 +275,73 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
         },
         unicode: true
       }))
+      // Initialize Shiki highlighter
+      const highlighter = await createHighlighter({
+        themes: ['light-plus'],
+        langs: [
+          'javascript',
+          'typescript',
+          'python',
+          'css',
+          'html',
+          'json',
+          'bash',
+          'shell',
+          'sql',
+          'markdown',
+          'yaml',
+          'xml',
+          'php',
+          'java',
+          'cpp',
+          'c',
+          'go',
+          'rust',
+          'ruby',
+          'swift',
+          'kotlin',
+          'scala',
+          'dart',
+          'lua',
+          'perl',
+          'r',
+          'matlab',
+          'powershell',
+          'dockerfile',
+          'nginx',
+          'apache',
+          'toml',
+          'ini',
+          'diff',
+          'log',
+          'plaintext'
+        ]
+      })
+
       marked.use(markedHighlight({
         highlight(code, lang) {
-          const language = hljs.getLanguage(lang) ? lang : 'plaintext'
-          return hljs.highlight(code, { language }).value
+          if (!highlighter) return code
+
+          try {
+            const language = highlighter.getLoadedLanguages().includes(lang as any) ? lang : 'plaintext'
+            const html = highlighter.codeToHtml(code, {
+              lang: language,
+              theme: 'light-plus'
+            })
+
+            // Extract just the inner content (remove <pre><code> wrapper)
+            const match = html.match(/<pre[^>]*class="([^"]*)"[^>]*><code[^>]*>(.*?)<\/code><\/pre>/s)
+            if (match) {
+              return match[2]
+            } else {
+              // Fallback regex if the first one doesn't match
+              const fallbackMatch = html.match(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/s)
+              return fallbackMatch ? fallbackMatch[1] : code
+            }
+          } catch (error) {
+            console.warn(`Shiki highlighting failed for language "${lang}":`, error)
+            return code
+          }
         }
       }))
 

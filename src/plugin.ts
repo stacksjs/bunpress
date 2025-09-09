@@ -509,7 +509,9 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
             'ini',
             'diff',
             'log',
-            'plaintext'
+            'plaintext',
+            // STX language support (treat as HTML)
+            'html'
           ]
         })
       })
@@ -648,17 +650,31 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
         if (finalLanguage) {
           if (highlighter) {
             try {
-              const language = highlighter.getLoadedLanguages().includes(finalLanguage as any) ? finalLanguage : 'plaintext'
+              let language = finalLanguage
+              // Handle STX files as HTML
+              if (finalLanguage === 'stx') {
+                language = 'html'
+              }
+              language = highlighter.getLoadedLanguages().includes(language as any) ? language : 'plaintext'
               const html = highlighter.codeToHtml(codeString, {
                 lang: language,
                 theme: 'light-plus'
               })
 
-              // Extract just the inner content (remove <pre><code> wrapper)
-              const match = html.match(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/s)
+              // Extract the inner content and preserve classes
+              const match = html.match(/<pre[^>]*class="([^"]*)"[^>]*><code[^>]*>(.*?)<\/code><\/pre>/s)
               if (match) {
-                highlightedCode = match[1]
-                langClass = `language-${finalLanguage}`
+                highlightedCode = match[2]
+                // Use Shiki's classes and add our language class
+                const shikiClasses = match[1]
+                langClass = `${shikiClasses} language-${finalLanguage}`
+              } else {
+                // Fallback regex if the first one doesn't match
+                const fallbackMatch = html.match(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/s)
+                if (fallbackMatch) {
+                  highlightedCode = fallbackMatch[1]
+                  langClass = `language-${finalLanguage}`
+                }
               }
             } catch (error) {
               console.warn(`Shiki highlighting failed for language "${finalLanguage}":`, error)
@@ -725,6 +741,10 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
           ...markedOptions,
           renderer,
         }) as string
+
+        // Process containers and code groups that weren't handled by pre-processing
+        htmlContent = processContainersFromHtml(htmlContent)
+        htmlContent = processCodeGroupsFromHtml(htmlContent)
 
         // No need for placeholder replacement anymore - HTML is directly inserted
 
@@ -1042,7 +1062,7 @@ document.addEventListener('DOMContentLoaded', function() {
           }
 
           // Add copy styles and scripts
-          if (!finalHtml.includes('copy-code-btn')) {
+          if (finalHtml.includes('copy-code-btn')) {
             finalHtml = finalHtml.replace('</head>', `<style>${copyStyles}</style></head>`)
             finalHtml = finalHtml.replace('</body>', `<script>${copyScripts}</script></body>`)
           }
@@ -1117,12 +1137,14 @@ export function stx(): BunPlugin {
     name: 'stx-plugin',
     setup(build) {
       build.onLoad({ filter: /\.stx$/ }, async (args) => {
-        // Just register the file for now
-        // The actual processing happens when we generate the HTML
+        // Read the STX template file
+        const stxContent = await fs.promises.readFile(args.path, 'utf8')
 
+        // For now, just return the content as a string that can be processed later
+        // The actual processing with frontmatter happens when generating HTML
         return {
-          contents: `// STX template file: ${args.path}`,
-          loader: 'js',
+          contents: `export default ${JSON.stringify(stxContent)};`,
+          loader: 'js'
         }
       })
     },
