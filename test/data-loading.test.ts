@@ -221,8 +221,8 @@ This is the second blog post.
 
       expect(result.success).toBe(true)
 
-      // Should generate 3 HTML files
-      expect(result.outputs).toHaveLength(3)
+      // Should generate 3 HTML files (plus robots.txt and sitemap.xml)
+      expect(result.outputs.filter(out => out.endsWith('.html'))).toHaveLength(3)
 
       // Check that files are generated in correct structure
       const indexHtml = await readBuiltFile(result.outputs[0])
@@ -273,8 +273,8 @@ Get in touch with us.
 
       expect(result.success).toBe(true)
 
-      // Should generate 3 HTML files
-      expect(result.outputs).toHaveLength(3)
+      // Should generate 3 HTML files (plus robots.txt and sitemap.xml)
+      expect(result.outputs.filter(out => out.endsWith('.html'))).toHaveLength(3)
 
       const homeHtml = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(homeHtml, 'Home')).toBe(true)
@@ -319,8 +319,8 @@ How to install our software.
 
       expect(result.success).toBe(true)
 
-      // Should generate 2 HTML files
-      expect(result.outputs).toHaveLength(2)
+      // Should generate 2 HTML files (plus robots.txt and sitemap.xml)
+      expect(result.outputs.filter(out => out.endsWith('.html'))).toHaveLength(2)
 
       const guideIndexHtml = await readBuiltFile(result.outputs[0])
       expect(assertHtmlContains(guideIndexHtml, 'Guide')).toBe(true)
