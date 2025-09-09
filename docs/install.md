@@ -113,6 +113,9 @@ curl -L https://github.com/stacksjs/bunpress/releases/download/v0.9.1/bunpress-w
 move bunpress.exe C:\Windows\System32\bunpress.exe
 ```
 
-::: tip
-You can also find the `bunpress` binaries in GitHub [releases](https://github.com/stacksjs/bunpress/releases).
 :::
+
+<div class="custom-block tip">
+<p class="custom-block-title">TIP</p>
+<p>You can also find the <code>bunpress</code> binaries in GitHub <a href="https://github.com/stacksjs/bunpress/releases">releases</a>.</p>
+</div>

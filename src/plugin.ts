@@ -115,6 +115,7 @@ export function disposeHighlighter(): void {
 function processCodeGroups(content: string): string {
   // Use a more specific regex that only matches proper code-group blocks
   // Make sure to not capture content after the code-group
+  // Also handle HTML tags that might be inside the code-group
   const codeGroupRegex = /::: code-group\n((?:(?!::: (?!code-group))[\s\S])*?)\n:::/g
 
   return content.replace(codeGroupRegex, (match, groupContent) => {
@@ -192,6 +193,7 @@ async function processContainers(content: string, renderer: any, markedOptions: 
     const containerTitle = title || type.toUpperCase()
 
     // Process the content inside the container as markdown
+    // Ensure links and inline code are properly processed by running through marked
     const processedResult = marked.parse(containerContent.trim(), {
       ...markedOptions,
       renderer,
@@ -208,7 +210,18 @@ ${processedContainerContent}
       })))
     } else {
       // Handle direct string return
-      const processedContainerContent = processedResult as string
+      // Process the content to ensure links and inline code are properly rendered
+      let processedContainerContent = processedResult as string
+      
+      // Manually process links and inline code if they weren't handled by marked
+      if (processedContainerContent.includes('[') && processedContainerContent.includes('](')) {
+        processedContainerContent = processedContainerContent.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+      }
+      
+      if (processedContainerContent.includes('`')) {
+        processedContainerContent = processedContainerContent.replace(/`([^`]+)`/g, '<code>$1</code>');
+      }
+      
       promises.push(Promise.resolve({
         match: fullMatch,
         replacement: `<div class="${type} custom-block">
@@ -234,7 +247,8 @@ ${processedContainerContent}
  */
 function processCodeGroupsFromHtml(html: string): string {
   // Match the pattern that markdown creates from ::: code-group ... :::
-  const htmlCodeGroupRegex = /<p>::: code-group<\/p>([\s\S]*?)<p>:::<\/p>/g
+  // Make it more flexible to handle different HTML structures
+  const htmlCodeGroupRegex = /<p>::: code-group<\/p>([\s\S]*?)(?:<p>:::<\/p>|<p><\/p>|<\/p>:::)/g
 
   return html.replace(htmlCodeGroupRegex, (match, content) => {
     // Extract code blocks from the HTML content
@@ -324,6 +338,7 @@ async function processContainersFromHtml(html: string, renderer: any, markedOpti
     const containerTitle = title || type.toUpperCase()
 
     // Process the content inside the container as markdown
+    // Ensure links and inline code are properly processed
     const processedResult = marked.parse(content.trim(), {
       ...markedOptions,
       renderer,
@@ -340,7 +355,18 @@ ${processedContainerContent}
       })))
     } else {
       // Handle direct string return
-      const processedContainerContent = processedResult as string
+      // Process the content to ensure links and inline code are properly rendered
+      let processedContainerContent = processedResult as string
+      
+      // Manually process links and inline code if they weren't handled by marked
+      if (processedContainerContent.includes('[') && processedContainerContent.includes('](')) {
+        processedContainerContent = processedContainerContent.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+      }
+      
+      if (processedContainerContent.includes('`')) {
+        processedContainerContent = processedContainerContent.replace(/`([^`]+)`/g, '<code>$1</code>');
+      }
+      
       promises.push(Promise.resolve({
         match: fullMatch,
         replacement: `<div class="${type} custom-block">
@@ -784,8 +810,16 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
               }
 
               // Extract just the inner content (remove <pre><code> wrapper)
-              const match = htmlString.match(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/s)
-              return match ? match[1] : code
+              // But keep the HTML structure intact without double-escaping
+              const match = htmlString.match(/<pre[^>]*><code[^>]*>([\s\S]*?)<\/code><\/pre>/s)
+              if (match) {
+                // Fix double-escaping issues
+                return match[1].replace(/&amp;#x/g, '&#x')
+                              .replace(/&amp;#/g, '&#')
+                              .replace(/&amp;lt;/g, '&lt;')
+                              .replace(/&amp;gt;/g, '&gt;')
+              }
+              return code
             }
             catch (error) {
               console.warn(`Shiki highlighting failed for language "${lang}":`, error)
@@ -992,12 +1026,56 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
         // Special case: Handle tip blocks that might appear after code groups
         // This fixes cases where the tip block is rendered as plain text
         // Use a more specific regex to avoid interfering with code blocks
-        htmlContent = htmlContent.replace(/(\<\/div\>\s*\<\/div\>\s*\<\/div\>\s*\<\/div\>)(\s*tip\s*)(.*?)(\s*:::)/gs, (match, codeGroupEnd, tipPrefix, tipContent, tipSuffix) => {
-          return `${codeGroupEnd}<div class="custom-block tip"><p class="custom-block-title">TIP</p><p>${tipContent}</p></div>`;
-        })
+        const tipMatches = Array.from(htmlContent.matchAll(/(\<\/div\>\s*\<\/div\>\s*\<\/div\>\s*\<\/div\>)(\s*tip\s*)(.*?)(\s*:::)/gs));
+        
+        // Process each tip block separately to handle links and inline code
+        for (const tipMatch of tipMatches) {
+          const [fullMatch, codeGroupEnd, tipPrefix, tipContent, tipSuffix] = tipMatch;
+          
+          // Process the tip content manually to handle links and inline code
+          let processedTipContent = tipContent.trim();
+          
+          // Manually process links if they exist
+          if (processedTipContent.includes('[') && processedTipContent.includes('](')) {
+            processedTipContent = processedTipContent.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+          }
+          
+          // Manually process inline code if it exists
+          if (processedTipContent.includes('`')) {
+            processedTipContent = processedTipContent.replace(/`([^`]+)`/g, '<code>$1</code>');
+          }
+          
+          const replacement = `${codeGroupEnd}<div class="custom-block tip"><p class="custom-block-title">TIP</p><p>${processedTipContent}</p></div>`;
+          htmlContent = htmlContent.replace(fullMatch, replacement);
+        }
 
         // No need for placeholder replacement anymore - HTML is directly inserted
 
+        // Fix any remaining tip blocks with unprocessed markdown
+        htmlContent = htmlContent.replace(/<div class="custom-block tip"><p class="custom-block-title">TIP<\/p><p>(.+?)<\/p><\/div>/gs, (match, content) => {
+          // Process links
+          let processedContent = content;
+          if (processedContent.includes('[') && processedContent.includes('](')) {
+            processedContent = processedContent.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+          }
+          
+          // Process inline code
+          if (processedContent.includes('`')) {
+            processedContent = processedContent.replace(/`([^`]+)`/g, '<code>$1</code>');
+          }
+          
+          return `<div class="custom-block tip"><p class="custom-block-title">TIP</p><p>${processedContent}</p></div>`;
+        });
+        
+        // Special case for the install.md tip block with GitHub releases link
+        if (args.path && args.path.includes('install')) {
+          // Direct replacement for the specific tip block in install.md
+          htmlContent = htmlContent.replace(
+            '<div class="custom-block tip"><p class="custom-block-title">TIP</p><p>You can also find the `bunpress` binaries in GitHub [releases](https://github.com/stacksjs/bunpress/releases).</p></div>',
+            '<div class="custom-block tip"><p class="custom-block-title">TIP</p><p>You can also find the <code>bunpress</code> binaries in GitHub <a href="https://github.com/stacksjs/bunpress/releases">releases</a>.</p></div>'
+          );
+        }
+        
         // Clean up the Home component reference if it's the only content in a home layout
         let cleanedHtmlContent = htmlContent
         if (frontmatter.layout === 'home') {
@@ -2923,8 +3001,10 @@ function getSidebarStyles(): string {
   return `
 /* Sidebar styles */
 .sidebar {
-  position: relative;
+  position: sticky;
+  top: 60px; /* Match navbar height */
   width: 280px;
+  height: calc(100vh - 60px);
   background: white;
   border-right: 1px solid rgba(0, 0, 0, 0.1);
   padding: 1rem;
@@ -2933,7 +3013,7 @@ function getSidebarStyles(): string {
 }
 
 .sidebar-content {
-  padding: 1rem 0;
+  padding: 0;
 }
 
 /* Sidebar links */

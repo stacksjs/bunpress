@@ -224,8 +224,10 @@ ${childrenHtml}
   }
 
   return `<nav class="${className}" role="navigation" aria-label="${title}">
-<h2 class="toc-title">${title}</h2>
-${renderList(items)}
+<div class="toc-container">
+  <h2 class="toc-title">${title}</h2>
+  ${renderList(items)}
+</div>
 </nav>`
 }
 
@@ -352,7 +354,15 @@ export function generateTocStyles(): string {
   return `
 .table-of-contents {
   position: sticky;
-  top: 2rem;
+  top: 60px; /* Match navbar height */
+  height: calc(100vh - 60px);
+  width: 200px;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.toc-container {
+  padding: 0;
 }
 
 .toc-title {
