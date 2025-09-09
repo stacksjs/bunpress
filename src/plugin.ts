@@ -85,16 +85,23 @@ ${blocks}
  * Process VitePress-style containers (tip, warning, danger, etc.)
  * Replace entire container blocks with proper HTML
  */
-function processContainers(content: string): string {
-  // Match complete container blocks, but exclude code-group and avoid matching across HTML blocks
-  const containerRegex = /::: (?!code-group)(\w+)(?:\s+(.+))?\n((?:(?!<div class="vp-code-group|::: code-group)[\s\S])*?)\n:::/g
-  
+function processContainers(content: string, renderer: marked.Renderer, markedOptions: any, highlighter: Highlighter | null = null): string {
+  // Match complete container blocks, but exclude code-group
+  // More flexible regex to handle various whitespace patterns
+  const containerRegex = /:::\s+(?!code-group)(\w+)(?:\s+(.*?))?\s*\n([\s\S]*?)\n:::/g
+
   return content.replace(containerRegex, (match, type, title, containerContent) => {
     const containerTitle = title || type.toUpperCase()
-    
+
+    // Process the content inside the container as markdown
+    const processedContainerContent = marked.parse(containerContent.trim(), {
+      ...markedOptions,
+      renderer,
+    }) as string
+
     return `<div class="${type} custom-block">
 <p class="custom-block-title">${containerTitle}</p>
-${containerContent.trim()}
+${processedContainerContent}
 </div>`
   })
 }
@@ -174,16 +181,22 @@ ${blocks}
 /**
  * Process containers from HTML (post markdown conversion)
  */
-function processContainersFromHtml(html: string): string {
+function processContainersFromHtml(html: string, renderer: marked.Renderer, markedOptions: any, highlighter: Highlighter | null = null): string {
   // Match the pattern that markdown creates from ::: tip ... :::
   const htmlContainerRegex = /<p>::: (\w+)(?:\s+(.+?))?<\/p>([\s\S]*?)<p>:::<\/p>/g
-  
+
   return html.replace(htmlContainerRegex, (match, type, title, content) => {
     const containerTitle = title || type.toUpperCase()
-    
+
+    // Process the content inside the container as markdown
+    const processedContainerContent = marked.parse(content.trim(), {
+      ...markedOptions,
+      renderer,
+    }) as string
+
     return `<div class="${type} custom-block">
 <p class="custom-block-title">${containerTitle}</p>
-${content.trim()}
+${processedContainerContent}
 </div>`
   })
 }
@@ -731,10 +744,12 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
 
         // Process VitePress-style extensions before markdown conversion
         let processedContent = mdContentWithoutFrontmatter
-        
-        
+
+
         processedContent = processCodeGroups(processedContent)
-        processedContent = processContainers(processedContent)
+
+        // Process containers before markdown conversion
+        processedContent = processContainers(processedContent, renderer, markedOptions, highlighter)
 
         // Convert markdown to HTML
         let htmlContent = marked.parse(processedContent, {
@@ -742,8 +757,9 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
           renderer,
         }) as string
 
-        // Process containers and code groups that weren't handled by pre-processing
-        htmlContent = processContainersFromHtml(htmlContent)
+        // Process containers that weren't handled by pre-processing
+        htmlContent = processContainersFromHtml(htmlContent, renderer, markedOptions, highlighter)
+        // Process code groups that weren't handled by pre-processing
         htmlContent = processCodeGroupsFromHtml(htmlContent)
 
         // No need for placeholder replacement anymore - HTML is directly inserted
