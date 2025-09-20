@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { assertHtmlContains, buildTestSite, createTestMarkdown, readBuiltFile } from './utils/test-helpers'
+import { assertHtmlContains, buildTestSite, createTestMarkdown, createTestTranslations, readBuiltFile } from './utils/test-helpers'
 
 describe.skip('End-to-End Integration', () => {
   describe('Full Site Build', () => {
@@ -410,6 +410,8 @@ This page uses a custom theme layout.
           { path: 'test.md', content },
         ],
         config: {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore - title property for testing
           title: 'Custom Theme Site',
           nav: [
             { text: 'Home', link: '/' },

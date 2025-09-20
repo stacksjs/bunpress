@@ -57,7 +57,7 @@ console.log(hello)
     }
 
     // Verify build succeeded
-    expect(result.success).toBe(true)
+    expect((result as { success: boolean }).success).toBe(true)
 
     // Verify output HTML file exists (in preserved directory structure)
     const htmlFile = file(join(outDir, 'test', 'fixtures', 'test.html'))
@@ -106,7 +106,7 @@ console.log(hello)
     }
 
     // Verify build succeeded
-    expect(result.success).toBe(true)
+    expect((result as { success: boolean }).success).toBe(true)
 
     // Verify output HTML file exists (in preserved directory structure)
     const htmlFile = file(join(outDir, 'test', 'fixtures', 'test.html'))

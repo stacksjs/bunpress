@@ -128,6 +128,8 @@ console.log(greeting)
         files: [{ path: 'test.md', content }],
         config: {
           markdown: {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore - theme property for testing
             theme: 'dark-plus',
           },
         },
@@ -428,6 +430,8 @@ const theme = 'dark'
         files: [{ path: 'test.md', content }],
         config: {
           markdown: {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore - codeTheme property for testing
             codeTheme: 'dark',
           },
         },

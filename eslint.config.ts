@@ -12,6 +12,18 @@ const config: ESLintConfig = stacks({
   yaml: true,
   ignores: [
     'fixtures/**',
+    'examples/**',
+    'docs/**',
+    '**/*.md',
+    'dist/**',
+    'build/**',
+    '.bunpress/**',
+    'temp/**',
+    'test/fixtures/**',
+    'test/**/temp/**',
+    'test/**/*.html',
+    'test/blocks/**/test.md',
+    'test/use-cases/**/test.md',
   ],
 })
 

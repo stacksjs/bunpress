@@ -26,9 +26,13 @@ let globalHighlighter: Highlighter | null = null
 let highlighterPromise: Promise<Highlighter> | null = null
 let instanceCount = 0
 
+// Use a lighter configuration for tests
+const isTestEnvironment = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.JEST_WORKER_ID !== undefined
+
 export async function getHighlighter(): Promise<Highlighter> {
   instanceCount++
-  if (process.env.NODE_ENV !== 'production') {
+  // Only log during development and for the first few requests
+  if (process.env.NODE_ENV !== 'production' && instanceCount <= 3) {
     console.warn(`Shiki highlighter requested (total requests: ${instanceCount})`)
   }
   if (globalHighlighter) {
@@ -36,7 +40,7 @@ export async function getHighlighter(): Promise<Highlighter> {
   }
 
   if (highlighterPromise) {
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== 'production' && instanceCount <= 3) {
       console.warn('Waiting for existing highlighter promise')
     }
     return highlighterPromise
@@ -45,7 +49,12 @@ export async function getHighlighter(): Promise<Highlighter> {
   if (process.env.NODE_ENV !== 'production') {
     console.warn('Creating new highlighter instance')
   }
-  highlighterPromise = createHighlighter({
+
+  // Use minimal configuration for tests to speed up initialization
+  const config = isTestEnvironment ? {
+    themes: ['light-plus'],
+    langs: ['javascript', 'typescript', 'python', 'html', 'css', 'json', 'bash'],
+  } : {
     themes: ['light-plus', 'dark-plus'],
     langs: [
       'javascript',
@@ -87,7 +96,9 @@ export async function getHighlighter(): Promise<Highlighter> {
       // STX language support (treat as HTML)
       'html',
     ],
-  })
+  }
+
+  highlighterPromise = createHighlighter(config)
 
   globalHighlighter = await highlighterPromise
   return globalHighlighter

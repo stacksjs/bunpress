@@ -9,6 +9,7 @@ import { markedEmoji } from 'marked-emoji'
 import { markedHighlight } from 'marked-highlight'
 import { ConfigManager } from '../../src/config'
 import { disposeHighlighter, generateSitemapAndRobots, getHighlighter, processStxTemplate } from '../../src/plugin'
+import type { BunPressConfig } from '../../src/types'
 import {
   enhanceHeadingsWithAnchors,
   generateTocData,
@@ -81,10 +82,51 @@ export function createTestMarkdown(
 }
 
 /**
+ * Process container extensions in markdown content
+ */
+async function processContainerExtensions(content: string): Promise<string> {
+  // Match complete container blocks, but exclude code-group and code blocks
+  const containerRegex = /^:::\s*(?!code-group)(\w+)(?:\s+(.*?))?\s*\n([\s\S]*?)\n:::$/gm
+
+  const matches: RegExpMatchArray[] = []
+  let match
+  while ((match = containerRegex.exec(content)) !== null) {
+    matches.push(match)
+  }
+
+  let processedContent = content
+  for (const match of matches) {
+    const [fullMatch, type, title, containerContent] = match
+    const containerTitle = title || type.toUpperCase()
+
+    // Special handling for details containers
+    if (type === 'details') {
+      const replacement = `<details><summary>${containerTitle}</summary>
+
+${containerContent.trim()}
+
+</details>`
+      processedContent = processedContent.replace(fullMatch, replacement)
+    } else {
+      const replacement = `<div class="custom-block ${type}">
+<p class="custom-block-title">${containerTitle}</p>
+
+${containerContent.trim()}
+
+</div>`
+      processedContent = processedContent.replace(fullMatch, replacement)
+    }
+  }
+
+  return processedContent
+}
+
+/**
  * Creates a test configuration
  */
-export function createTestConfig(overrides?: Partial<BunPressOptions>): BunPressOptions {
-  const baseConfig = {
+export function createTestConfig(overrides?: Partial<BunPressConfig>): BunPressConfig {
+  const baseConfig: BunPressConfig = {
+    verbose: true,
     markdown: {
       title: 'Test Documentation',
       meta: {
@@ -94,11 +136,10 @@ export function createTestConfig(overrides?: Partial<BunPressOptions>): BunPress
       css: 'body { background: #f0f0f0; }',
       scripts: ['/test.js'],
     },
-    verbose: true,
   }
 
   // Deep merge overrides
-  return deepMerge(baseConfig, overrides || {})
+  return deepMerge(baseConfig, overrides || {}) as BunPressConfig
 }
 
 function deepMerge(target: any, source: any): any {
@@ -204,7 +245,9 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
 
           // STX files are templates, so we don't generate HTML files for them
           // They will be processed when needed during markdown processing
-          console.log(`Found STX template: ${baseName}.stx`)
+          if (globalThis.process.env.NODE_ENV !== 'test') {
+            console.log(`Found STX template: ${baseName}.stx`)
+          }
         }
 
         // Process each markdown file using the plugin's logic directly
@@ -255,7 +298,7 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
               // Handle cases like "toc: sidebar"
               pluginConfig.toc = {
                 ...pluginConfig.toc,
-                position: frontmatter.toc,
+                position: frontmatter.toc as 'sidebar' | 'inline' | 'floating',
               }
             }
             else {
@@ -293,7 +336,6 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
               wave: '👋',
               bulb: '💡',
             },
-            unicode: true,
           }))
           // Initialize Shiki highlighter using singleton
           const highlighter = await getHighlighter()
@@ -347,7 +389,7 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
                     }
                   }
                 },
-                renderer(token: { text: string }): string {
+                renderer(token: any): string {
                   return `<span class="math inline">${token.text}</span>`
                 },
               },
@@ -365,61 +407,24 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
                     }
                   }
                 },
-                renderer(token: { text: string }): string {
+                renderer(token: any): string {
                   return `<div class="math block">${token.text}</div>`
                 },
               },
             ],
           })
 
-          // Custom container extension
-          marked.use({
-            extensions: [
-              {
-                name: 'container',
-                level: 'block' as const,
-                start: (src: string): number => src.indexOf(':::'),
-                tokenizer(src: string) {
-                  const match = src.match(/^::: (\w+)(?:\s+(.*))?\n([\s\S]*?)\n:::/)
-                  if (match) {
-                    return {
-                      type: 'container' as const,
-                      raw: match[0],
-                      containerType: match[1],
-                      title: match[2] || '',
-                      content: match[3],
-                    }
-                  }
-                },
-                renderer(token: { containerType: string, title: string, content: string }): string {
-                  const { containerType, title, content } = token
-
-                  // Process title and content through emoji extension
-                  const processedTitle = title ? marked.parseInline(title) : ''
-                  const processedContent = marked.parseInline(content)
-
-                  const titleHtml = processedTitle ? `<p class="custom-block-title">${processedTitle}</p>` : ''
-
-                  // Special handling for details containers
-                  if (containerType === 'details') {
-                    return `<details><summary>${processedTitle || 'Details'}</summary><p>${processedContent}</p></details>`
-                  }
-
-                  return `<div class="custom-block ${containerType}">${titleHtml}<p>${processedContent}</p></div>`
-                },
-              },
-            ],
-          })
+          // Container extensions are handled by the main plugin after markdown processing
+          // No need for marked extension here
 
           // Global state for tracking slug uniqueness across all headings
           const globalExistingSlugs = new Set<string>()
 
           // Custom renderer for headings with TOC depth control
-          const originalHeadingRenderer = renderer.heading
-          renderer.heading = function (token: any, level?: number, raw?: string, slugger?: any): string {
+          renderer.heading = function (token: any): string {
             // Extract heading information from token
-            const rawText = token.raw || raw
-            const headingLevel = token.depth || level || 1
+            const rawText = token.raw || ''
+            const headingLevel = token.depth || 1
             let headingText = token.text || ''
 
             // Check for toc-ignore comment in the raw text - this removes the heading entirely
@@ -440,8 +445,8 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
           }
 
           // Custom renderer for line highlighting
-          const originalCodeRenderer = renderer.code
-          renderer.code = function (code: string, language?: string | undefined, escaped?: boolean | undefined): string {
+          renderer.code = function (token: any): string {
+            const { text: code, lang: language } = token
             // Ensure code is always a string
             let codeString: string
             if (typeof code === 'string') {
@@ -465,9 +470,9 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
               finalLanguage = lang
 
               if (lines) {
-                lineNumbers = lines.split(',').flatMap((range) => {
+                lineNumbers = lines.split(',').flatMap((range: string) => {
                   if (range.includes('-')) {
-                    const [start, end] = range.split('-').map(n => Number.parseInt(n))
+                    const [start, end] = range.split('-').map((n: string) => Number.parseInt(n))
                     return Array.from({ length: end - start + 1 }, (_, i) => start + i)
                   }
                   return [Number.parseInt(range)]
@@ -517,7 +522,6 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
           }
 
           // Process TOC if enabled
-          const tocHtml = ''
           let tocStyles = ''
           let tocScripts = ''
           let sidebarTocHtml = ''
@@ -551,11 +555,14 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
             tocScripts = generateTocScripts()
           }
 
+          // Process container extensions before converting to HTML
+          let processedMd = await processContainerExtensions(mdContentWithoutFrontmatter)
+
           // Convert markdown to HTML
-          let htmlContent = marked.parse(mdContentWithoutFrontmatter, {
+          let htmlContent = marked.parse(processedMd, {
             ...markedOptions,
             renderer,
-          })
+          }) as string
 
           // Process inline TOC syntax
           if (pluginConfig.toc?.enabled !== false) {
@@ -635,7 +642,6 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
           // Handle home layout with STX template
           if (layout === 'home') {
             // Look for STX template in the same directory
-            const stxPath = join(testDir, 'Home.stx')
             if (stxFiles.some(f => f.path === 'Home.stx')) {
               const stxFile = stxFiles.find(f => f.path === 'Home.stx')!
               const stxContent = await readFile(join(testDir, stxFile.path), 'utf8')
@@ -772,7 +778,7 @@ ${themeCss}
     return {
       success: false,
       outputs: [],
-      logs: [error.message],
+      logs: [error instanceof Error ? error.message : String(error)],
     }
   }
 }
@@ -962,16 +968,19 @@ export function cleanupTestResources(): void {
 
 // Global test setup function
 export async function setupTestEnvironment(): Promise<void> {
-  // Ensure clean state for each test run
-  disposeHighlighter()
+  // Set NODE_ENV to test for Shiki optimizations
+  globalThis.process.env.NODE_ENV = 'test'
+
+  // Don't dispose the highlighter between tests for performance
+  // disposeHighlighter()
 
   // Set up global error handlers to prevent hanging
-  process.on('unhandledRejection', (reason, promise) => {
+  globalThis.process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason)
     // Don't exit the process, just log the error
   })
 
-  process.on('uncaughtException', (error) => {
+  globalThis.process.on('uncaughtException', (error) => {
     console.error('Uncaught Exception:', error)
     // Don't exit the process, just log the error
   })
