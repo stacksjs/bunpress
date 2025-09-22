@@ -270,6 +270,68 @@ export const defaultConfig: BunPressConfig = {
         color: #ef4444;
       }
 
+      /* GitHub-style Markdown Alerts */
+      .markdown-alert {
+        margin: 16px 0;
+        padding: 12px 16px;
+        border-left: 4px solid;
+        border-radius: 6px;
+        background-color: var(--alert-bg);
+        border-color: var(--alert-border);
+      }
+
+      .markdown-alert-title {
+        font-weight: 600;
+        margin: 0 0 8px 0;
+        display: flex;
+        align-items: center;
+        color: var(--alert-title-color);
+      }
+
+      .markdown-alert-title svg {
+        margin-right: 8px;
+        fill: currentColor;
+      }
+
+      .markdown-alert p:last-child {
+        margin-bottom: 0;
+      }
+
+      /* Note/Info Alert */
+      .markdown-alert-note {
+        --alert-bg: #dbeafe;
+        --alert-border: #3b82f6;
+        --alert-title-color: #1e40af;
+      }
+
+      /* Tip Alert */
+      .markdown-alert-tip {
+        --alert-bg: #d1fae5;
+        --alert-border: #10b981;
+        --alert-title-color: #059669;
+      }
+
+      /* Important Alert */
+      .markdown-alert-important {
+        --alert-bg: #fef3c7;
+        --alert-border: #f59e0b;
+        --alert-title-color: #d97706;
+      }
+
+      /* Warning Alert */
+      .markdown-alert-warning {
+        --alert-bg: #fed7aa;
+        --alert-border: #ea580c;
+        --alert-title-color: #c2410c;
+      }
+
+      /* Caution Alert */
+      .markdown-alert-caution {
+        --alert-bg: #fecaca;
+        --alert-border: #ef4444;
+        --alert-title-color: #dc2626;
+      }
+
       /* Responsive adjustments for features grid */
       @media (max-width: 1024px) {
         .grid-cols-4 {
