@@ -7,7 +7,7 @@ import { marked, Renderer } from 'marked'
 import markedAlert from 'marked-alert'
 import { markedEmoji } from 'marked-emoji'
 import { markedHighlight } from 'marked-highlight'
-import { ConfigManager } from '../../src/config'
+import { defaultConfig } from '../../src/config'
 import { disposeHighlighter, generateSitemapAndRobots, getHighlighter, processStxTemplate } from '../../src/plugin'
 import type { BunPressConfig } from '../../src/types'
 import {
@@ -182,11 +182,12 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
         await mkdir(outDir, { recursive: true })
 
         // Initialize configuration system
-        const configManager = new ConfigManager(createTestConfig())
+        const testConfig = createTestConfig()
+        let mergedConfig = { ...defaultConfig, ...testConfig }
 
         // Apply user config if provided
         if (options.config) {
-          configManager.mergeConfig(options.config)
+          mergedConfig = { ...mergedConfig, ...options.config }
         }
 
         // Parse frontmatter for validation
@@ -199,13 +200,12 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
           Object.assign(frontmatterData, frontmatter)
         }
 
-        // Validate configuration including frontmatter
-        const validation = configManager.validateConfig()
-        if (!validation.valid) {
+        // Basic configuration validation
+        if (mergedConfig.nav && !Array.isArray(mergedConfig.nav)) {
           return {
             success: false,
             outputs: [],
-            logs: validation.errors,
+            logs: ['Configuration validation failed: nav must be an array'],
           }
         }
 
@@ -230,12 +230,8 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
         const stxFiles = options.files.filter(f => f.path.endsWith('.stx'))
         const outputs: string[] = []
 
-        // Apply plugins
-        await configManager.applyPlugins()
-
-        // Get the full configuration from the manager (for sitemap generation)
-        const fullConfig = configManager.getConfig()
-        const mergedConfig = { ...fullConfig }
+        // Get the full configuration (for sitemap generation)
+        const fullConfig = mergedConfig
 
         // Process STX files first (templates)
         for (const file of stxFiles) {

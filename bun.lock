@@ -28,7 +28,7 @@
         "buddy-bot": "^0.9.5",
         "bun-git-hooks": "^0.2.19",
         "bun-plugin-dtsx": "^0.21.9",
-        "bunfig": "^0.8.3",
+        "bunfig": "^0.15.0",
         "typescript": "^5.8.3",
       },
     },
@@ -447,7 +447,7 @@
 
     "bun-types": ["bun-types@1.2.10", "", { "dependencies": { "@types/node": "*" } }, "sha512-b5ITZMnVdf3m1gMvJHG+gIfeJHiQPJak0f7925Hxu6ZN5VKA8AGy4GZ4lM+Xkn6jtWxg5S3ldWvfmXdvnkp3GQ=="],
 
-    "bunfig": ["bunfig@0.8.3", "", { "bin": { "bunfig": "bin/cli.js" } }, "sha512-v5dk6KdK1QpDAzgXlwcRVMz5MXBpGXPP4oODcMAP+WegYCQaO+TXF2Totan41gnGh9+JImzqe22axOBN4YJC5A=="],
+    "bunfig": ["bunfig@0.15.0", "", { "bin": { "bunfig": "bin/cli.js" } }, "sha512-CsAOYBDUI/OJPDG3GXQXIcPgCl4p025ybw15D5icJ3shRxDxFZAxlRzib0f69yER9fMj2bDrrObkkvs1qZ1qVg=="],
 
     "cac": ["cac@6.7.14", "", {}, "sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ=="],
 
