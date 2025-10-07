@@ -65,7 +65,7 @@
     "@markedjs/html-differ": "^5.0.2",
     "gray-matter": "^4.0.3",
     "highlight.js": "^11.11.1",
-    "marked": "^15.0.12",
+    "marked": "^16.4.0",
     "marked-alert": "^2.1.2",
     "marked-emoji": "^2.0.1",
     "marked-highlight": "^2.2.2",
