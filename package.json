@@ -81,7 +81,7 @@
     "@types/marked": "^6.0.0",
     "buddy-bot": "^0.9.8",
     "bun-git-hooks": "^0.2.19",
-    "bun-plugin-dtsx": "^0.21.12",
+    "bun-plugin-dtsx": "0.9.5",
     "bunfig": "^0.15.0",
     "typescript": "^5.9.3"
   },
