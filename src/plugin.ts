@@ -51,52 +51,54 @@ export async function getHighlighter(): Promise<Highlighter> {
   }
 
   // Use minimal configuration for tests to speed up initialization
-  const config = isTestEnvironment ? {
-    themes: ['light-plus'],
-    langs: ['javascript', 'typescript', 'python', 'html', 'css', 'json', 'bash'],
-  } : {
-    themes: ['light-plus', 'dark-plus'],
-    langs: [
-      'javascript',
-      'typescript',
-      'python',
-      'css',
-      'html',
-      'json',
-      'bash',
-      'shell',
-      'sql',
-      'markdown',
-      'yaml',
-      'xml',
-      'php',
-      'java',
-      'cpp',
-      'c',
-      'go',
-      'rust',
-      'ruby',
-      'swift',
-      'kotlin',
-      'scala',
-      'dart',
-      'lua',
-      'perl',
-      'r',
-      'matlab',
-      'powershell',
-      'dockerfile',
-      'nginx',
-      'apache',
-      'toml',
-      'ini',
-      'diff',
-      'log',
-      'plaintext',
-      // STX language support (treat as HTML)
-      'html',
-    ],
-  }
+  const config = isTestEnvironment
+    ? {
+        themes: ['light-plus'],
+        langs: ['javascript', 'typescript', 'python', 'html', 'css', 'json', 'bash'],
+      }
+    : {
+        themes: ['light-plus', 'dark-plus'],
+        langs: [
+          'javascript',
+          'typescript',
+          'python',
+          'css',
+          'html',
+          'json',
+          'bash',
+          'shell',
+          'sql',
+          'markdown',
+          'yaml',
+          'xml',
+          'php',
+          'java',
+          'cpp',
+          'c',
+          'go',
+          'rust',
+          'ruby',
+          'swift',
+          'kotlin',
+          'scala',
+          'dart',
+          'lua',
+          'perl',
+          'r',
+          'matlab',
+          'powershell',
+          'dockerfile',
+          'nginx',
+          'apache',
+          'toml',
+          'ini',
+          'diff',
+          'log',
+          'plaintext',
+          // STX language support (treat as HTML)
+          'html',
+        ],
+      }
 
   highlighterPromise = createHighlighter(config)
 
@@ -190,7 +192,7 @@ ${blocks}
 async function processContainers(content: string, renderer: any, markedOptions: any, _highlighter: Highlighter | null = null): Promise<string> {
   // Match complete container blocks, but exclude code-group and code blocks
   // More flexible regex to handle various whitespace patterns
-  const containerRegex = /^:::\s*(?!code-group)(\w+)(?:\s+(.*?))?\s*\n([\s\S]*?)\n:::$/gm
+  const containerRegex = /^:::[ \t]*(?!code-group)(\w+)(?:[ \t]+([^\n]*))?\n([\s\S]*?)\n:::$/gm
 
   const promises: Promise<{ match: string, replacement: string }>[] = []
   const matches: RegExpMatchArray[] = []
@@ -338,12 +340,13 @@ async function processContainersFromHtml(html: string, renderer: any, markedOpti
   // Match the pattern that markdown creates from ::: tip ... :::
   // Handle various cases of container markup in HTML
   // This includes cases where the container might be after other elements
-  const htmlContainerRegex = /(?:<p>)?:::\s*(\w+)(?:\s+(.+?))?(?:<\/p>)?([\s\S]*?)(?:<p>)?:::(?:<\/p>)?/g
+  const htmlContainerRegex = /(?:<p>)?:::[ \t]*(\w+)(?:[ \t]+([^<\n]+?))?(?:<\/p>)?([\s\S]*?)(?:<p>)?:::(?:<\/p>)?/g
 
   const promises: Promise<{ match: string, replacement: string }>[] = []
   const matches: RegExpMatchArray[] = []
 
   let match
+  // eslint-disable-next-line no-cond-assign
   while ((match = htmlContainerRegex.exec(html)) !== null) {
     matches.push(match)
   }
@@ -484,7 +487,7 @@ export function processStxTemplate(content: string, frontmatter: any, globalConf
   })
 
   // Process {{ expressions }} for frontmatter variables
-  result = result.replace(/\{\{\s*\$frontmatter\.([^}]+)\s*\}\}/g, (_, path) => {
+  result = result.replace(/\{\{[ \t]*\$frontmatter\.([^}]+?)[ \t]*\}\}/g, (_, path) => {
     const trimmedPath = path.trim()
 
     // Handle expressions with default values (e.g., $frontmatter.title || 'Default')
@@ -517,7 +520,7 @@ export function processStxTemplate(content: string, frontmatter: any, globalConf
   })
 
   // Process {{ expressions }} for global variables ($site, $config, etc.)
-  result = result.replace(/\{\{\s*\$(\w+)\.([^}]+)\s*\}\}/g, (_, varName, path) => {
+  result = result.replace(/\{\{[ \t]*\$(\w+)\.([^}]+?)[ \t]*\}\}/g, (_match, varName, path) => {
     const trimmedPath = path.trim()
 
     // Map variable names to their sources
@@ -980,7 +983,7 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
       renderer.blockquote = function (quote: any): string {
         // Check if the blockquote text matches the callout pattern
         const text = quote.text || ''
-        const calloutMatch = text.match(/^\*\*(Note|Tip|Important|Warning|Caution)\*\*\s*\n([\s\S]*)$/i)
+        const calloutMatch = text.match(/^\*\*(Note|Tip|Important|Warning|Caution)\*\*[ \t]*\n([\s\S]*)$/i)
 
         if (calloutMatch) {
           const [, type, content] = calloutMatch
@@ -1062,11 +1065,11 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
         // Special case: Handle tip blocks that might appear after code groups
         // This fixes cases where the tip block is rendered as plain text
         // Use a more specific regex to avoid interfering with code blocks
-        const tipMatches = Array.from(htmlContent.matchAll(/(<\/div>\s*<\/div>\s*<\/div>\s*<\/div>)(\s*tip\s*)(.*?)(\s*:::)/gs))
+        const tipMatches = Array.from(htmlContent.matchAll(/(<\/div>(?:[ \t\n]*<\/div>){3})([ \t\n]*tip[ \t\n]*)([^:]*?)([ \t\n]*:::)/g))
 
         // Process each tip block separately to handle links and inline code
         for (const tipMatch of tipMatches) {
-          const [fullMatch, codeGroupEnd, tipPrefix, tipContent, tipSuffix] = tipMatch
+          const [fullMatch, codeGroupEnd, _tipPrefix, tipContent, _tipSuffix] = tipMatch
 
           // Process the tip content manually to handle links and inline code
           let processedTipContent = tipContent.trim()

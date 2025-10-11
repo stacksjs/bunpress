@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { buildTestSite, readBuiltFile } from '../../utils/test-helpers'
 
 describe('Use Case: Robots Example', () => {
-  const testCase = 'robots-example'
+  const _testCase = 'robots-example'
   const testDir = join(import.meta.dir, '..', '..', 'test', 'use-cases', testCase)
 
   test('should generate HTML with robots.txt configuration examples', async () => {

@@ -411,7 +411,7 @@ This page uses a custom theme layout.
         ],
         config: {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore - title property for testing
+          // @ts-expect-error - title property for testing
           title: 'Custom Theme Site',
           nav: [
             { text: 'Home', link: '/' },

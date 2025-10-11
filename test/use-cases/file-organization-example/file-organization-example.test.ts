@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { buildTestSite, readBuiltFile } from '../../utils/test-helpers'
 
 describe('Use Case: File Organization Example', () => {
-  const testCase = 'file-organization-example'
+  const _testCase = 'file-organization-example'
   const testDir = join(import.meta.dir, '..', '..', 'test', 'use-cases', testCase)
 
   test('should generate HTML that matches expected output', async () => {

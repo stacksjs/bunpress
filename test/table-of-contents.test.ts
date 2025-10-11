@@ -70,7 +70,7 @@ Available endpoints.
         config: {
           markdown: {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore - tocMaxDepth property for testing
+            // @ts-expect-error - tocMaxDepth property for testing
             tocMaxDepth: 2,
           },
         },

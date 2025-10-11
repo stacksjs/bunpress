@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { buildTestSite, readBuiltFile } from '../../utils/test-helpers'
 
 describe('Use Case: Table of Contents Example', () => {
-  const testCase = 'table-of-contents-example'
+  const _testCase = 'table-of-contents-example'
   const testDir = '/Users/mac/repos/stacks-org/bunpress/test/use-cases/table-of-contents-example'
 
   test('should generate HTML that matches expected output', async () => {

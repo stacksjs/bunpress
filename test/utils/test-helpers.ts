@@ -86,7 +86,7 @@ export function createTestMarkdown(
  */
 async function processContainerExtensions(content: string): Promise<string> {
   // Match complete container blocks, but exclude code-group and code blocks
-  const containerRegex = /^:::\s*(?!code-group)(\w+)(?:\s+(.*?))?\s*\n([\s\S]*?)\n:::$/gm
+  const containerRegex = /^:::[ \t]*(?!code-group)(\w+)(?:[ \t]([^\n]*))?\n([\s\S]*?)\n:::$/gm
 
   const matches: RegExpMatchArray[] = []
   let match
@@ -238,7 +238,7 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
         // Process STX files first (templates)
         for (const file of stxFiles) {
           const filePath = join(testDir, file.path)
-          const relativePath = relative(testDir, filePath)
+          const _relativePath = relative(testDir, filePath)
           const baseName = basename(file.path, '.stx')
 
           // STX files are templates, so we don't generate HTML files for them
@@ -528,7 +528,7 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
 
           if (pluginConfig.toc?.enabled !== false) {
             // Generate TOC data from the original markdown content
-            const tocData = generateTocData(mdContentWithoutFrontmatter, {
+            const _tocData = generateTocData(mdContentWithoutFrontmatter, {
               ...pluginConfig.toc,
               // Merge frontmatter TOC config
               ...frontmatter.toc,

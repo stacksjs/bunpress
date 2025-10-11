@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { buildTestSite, readBuiltFile } from '../../utils/test-helpers'
 
 describe('Use Case: Sidebar Example', () => {
-  const testCase = 'sidebar-example'
+  const _testCase = 'sidebar-example'
   const testDir = '/Users/mac/repos/stacks-org/bunpress/test/use-cases/sidebar-example'
 
   test('should generate HTML that matches expected output', async () => {

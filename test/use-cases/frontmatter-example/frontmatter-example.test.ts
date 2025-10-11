@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { buildTestSite, readBuiltFile } from '../../utils/test-helpers'
 
 describe('Use Case: Frontmatter Example', () => {
-  const testCase = 'frontmatter-example'
+  const _testCase = 'frontmatter-example'
   const testDir = '/Users/mac/repos/stacks-org/bunpress/test/use-cases/frontmatter-example'
 
   test('should parse complex frontmatter correctly', async () => {
@@ -263,7 +263,7 @@ describe('Use Case: Frontmatter Example', () => {
     const html = await readBuiltFile(result.outputs[0])
 
     // Ensure all frontmatter fields are properly processed
-    const frontmatterFields = [
+    const _frontmatterFields = [
       'title',
       'description',
       'author',

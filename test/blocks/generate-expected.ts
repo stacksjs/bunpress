@@ -16,7 +16,7 @@ async function generateExpectedHtml(blockType: string) {
 
   try {
     // Read the markdown file
-    const mdContent = await Bun.file(mdFile).text()
+    const _mdContent = await Bun.file(mdFile).text()
 
     // Create a simple Bun build to process the markdown
     const tempOutDir = join(blockDir, 'temp-output')
