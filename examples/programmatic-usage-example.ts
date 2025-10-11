@@ -10,7 +10,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 // Example 1: Basic file generation
-async function basicExample() {
+async function basicExample(): Promise<void> {
   console.log('🧪 Running basic file generation example...')
 
   try {
@@ -94,7 +94,7 @@ export default {
 }
 
 // Example 2: Advanced frontmatter usage
-async function advancedExample() {
+async function advancedExample(): Promise<void> {
   console.log('🚀 Running advanced frontmatter example...')
 
   try {
@@ -202,7 +202,7 @@ const plugin = markdown({
 }
 
 // Example 3: File organization patterns
-async function organizationExample() {
+async function organizationExample(): Promise<void> {
   console.log('📁 Running file organization example...')
 
   try {
