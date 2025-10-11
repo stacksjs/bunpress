@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+/* eslint-disable no-console */
 /**
  * Run all use-case tests and generate a summary report
  */
@@ -6,6 +7,7 @@
 import { spawn } from 'node:child_process'
 import { readdir } from 'node:fs/promises'
 import { join } from 'node:path'
+import process from 'node:process'
 
 const testDir = import.meta.dir
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+/* eslint-disable no-console */
 /**
  * Script to generate expected HTML outputs for use-case tests
  */

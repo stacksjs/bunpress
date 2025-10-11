@@ -1,7 +1,8 @@
-import type { BunPressOptions } from '../../src/types'
+import type { BunPressConfig, BunPressOptions } from '../../src/types'
 import { file } from 'bun'
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { basename, dirname, join, relative } from 'node:path'
+import process from 'node:process'
 import matter from 'gray-matter'
 import { marked, Renderer } from 'marked'
 import markedAlert from 'marked-alert'
@@ -9,7 +10,6 @@ import { markedEmoji } from 'marked-emoji'
 import { markedHighlight } from 'marked-highlight'
 import { defaultConfig } from '../../src/config'
 import { disposeHighlighter, generateSitemapAndRobots, getHighlighter, processStxTemplate } from '../../src/plugin'
-import type { BunPressConfig } from '../../src/types'
 import {
   enhanceHeadingsWithAnchors,
   generateTocData,
@@ -90,6 +90,7 @@ async function processContainerExtensions(content: string): Promise<string> {
 
   const matches: RegExpMatchArray[] = []
   let match
+  // eslint-disable-next-line no-cond-assign
   while ((match = containerRegex.exec(content)) !== null) {
     matches.push(match)
   }
@@ -107,7 +108,8 @@ ${containerContent.trim()}
 
 </details>`
       processedContent = processedContent.replace(fullMatch, replacement)
-    } else {
+    }
+    else {
       const replacement = `<div class="custom-block ${type}">
 <p class="custom-block-title">${containerTitle}</p>
 
@@ -241,7 +243,8 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
 
           // STX files are templates, so we don't generate HTML files for them
           // They will be processed when needed during markdown processing
-          if (globalThis.process.env.NODE_ENV !== 'test') {
+          if (process.env.NODE_ENV !== 'test') {
+            // eslint-disable-next-line no-console
             console.log(`Found STX template: ${baseName}.stx`)
           }
         }
@@ -552,7 +555,7 @@ export async function buildTestSite(options: TestSiteOptions): Promise<BuildResu
           }
 
           // Process container extensions before converting to HTML
-          let processedMd = await processContainerExtensions(mdContentWithoutFrontmatter)
+          const processedMd = await processContainerExtensions(mdContentWithoutFrontmatter)
 
           // Convert markdown to HTML
           let htmlContent = marked.parse(processedMd, {
@@ -965,18 +968,18 @@ export function cleanupTestResources(): void {
 // Global test setup function
 export async function setupTestEnvironment(): Promise<void> {
   // Set NODE_ENV to test for Shiki optimizations
-  globalThis.process.env.NODE_ENV = 'test'
+  process.env.NODE_ENV = 'test'
 
   // Don't dispose the highlighter between tests for performance
   // disposeHighlighter()
 
   // Set up global error handlers to prevent hanging
-  globalThis.process.on('unhandledRejection', (reason, promise) => {
+  process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason)
     // Don't exit the process, just log the error
   })
 
-  globalThis.process.on('uncaughtException', (error) => {
+  process.on('uncaughtException', (error) => {
     console.error('Uncaught Exception:', error)
     // Don't exit the process, just log the error
   })
@@ -988,7 +991,7 @@ export async function cleanupTestEnvironment(): Promise<void> {
   disposeHighlighter()
 
   // Force garbage collection if available (in development)
-  if (global.gc && process.env.NODE_ENV === 'development') {
-    global.gc()
+  if (globalThis.gc && process.env.NODE_ENV === 'development') {
+    globalThis.gc()
   }
 }

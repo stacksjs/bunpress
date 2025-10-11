@@ -136,6 +136,7 @@ function processCodeGroups(content: string): string {
     const codeBlockRegex = /```(\w+)(?:\s*\[([^\]]+)\])?\n([\s\S]*?)\n```/g
     let blockMatch
 
+    // eslint-disable-next-line no-cond-assign
     while ((blockMatch = codeBlockRegex.exec(groupContent)) !== null) {
       const [, language, title, code] = blockMatch
       codeBlocks.push({
@@ -195,6 +196,7 @@ async function processContainers(content: string, renderer: any, markedOptions: 
   const matches: RegExpMatchArray[] = []
 
   let match
+  // eslint-disable-next-line no-cond-assign
   while ((match = containerRegex.exec(content)) !== null) {
     matches.push(match)
   }
@@ -219,20 +221,21 @@ async function processContainers(content: string, renderer: any, markedOptions: 
 ${processedContainerContent}
 </div>`,
       })))
-    } else {
+    }
+    else {
       // Handle direct string return
       // Process the content to ensure links and inline code are properly rendered
       let processedContainerContent = processedResult as string
-      
+
       // Manually process links and inline code if they weren't handled by marked
       if (processedContainerContent.includes('[') && processedContainerContent.includes('](')) {
-        processedContainerContent = processedContainerContent.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+        processedContainerContent = processedContainerContent.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
       }
-      
+
       if (processedContainerContent.includes('`')) {
-        processedContainerContent = processedContainerContent.replace(/`([^`]+)`/g, '<code>$1</code>');
+        processedContainerContent = processedContainerContent.replace(/`([^`]+)`/g, '<code>$1</code>')
       }
-      
+
       promises.push(Promise.resolve({
         match: fullMatch,
         replacement: `<div class="${type} custom-block">
@@ -274,6 +277,7 @@ function processCodeGroupsFromHtml(html: string): string {
     const langMatches = content.match(/```(\w+)(?:\s*\[([^\]]+)\])?/g)
     let langIndex = 0
 
+    // eslint-disable-next-line no-cond-assign
     while ((blockMatch = codeBlockRegex.exec(content)) !== null) {
       const [fullMatch, codeHtml] = blockMatch
 
@@ -364,20 +368,21 @@ async function processContainersFromHtml(html: string, renderer: any, markedOpti
 ${processedContainerContent}
 </div>`,
       })))
-    } else {
+    }
+    else {
       // Handle direct string return
       // Process the content to ensure links and inline code are properly rendered
       let processedContainerContent = processedResult as string
-      
+
       // Manually process links and inline code if they weren't handled by marked
       if (processedContainerContent.includes('[') && processedContainerContent.includes('](')) {
-        processedContainerContent = processedContainerContent.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+        processedContainerContent = processedContainerContent.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
       }
-      
+
       if (processedContainerContent.includes('`')) {
-        processedContainerContent = processedContainerContent.replace(/`([^`]+)`/g, '<code>$1</code>');
+        processedContainerContent = processedContainerContent.replace(/`([^`]+)`/g, '<code>$1</code>')
       }
-      
+
       promises.push(Promise.resolve({
         match: fullMatch,
         replacement: `<div class="${type} custom-block">
@@ -720,33 +725,6 @@ function createHomePageHtml(frontmatter: Frontmatter, htmlContent: string, mdPat
   `
 }
 
-/**
- * Create a Bun plugin that transforms markdown files into HTML
- *
- * @example
- * ```ts
- * // build.ts
- * import { markdown } from './plugin'
- *
- * await Bun.build({
- *   entrypoints: ['docs/index.md', 'docs/getting-started.md'],
- *   outdir: './dist',
- *   plugins: [markdown()],
- * })
- * ```
- */
-// Export navigation, sidebar, search, and theme helper functions for testing
-export {
-  createNavHtml,
-  createSearchHtml,
-  createSidebarHtml,
-  generateSearchIndex,
-  generateThemeCSS,
-  isNavItemActive,
-  isSidebarItemActive,
-  performSearch,
-}
-
 export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
   // Merge user options with defaults from config
   const defaultOptions = config.markdown || {}
@@ -822,13 +800,13 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
 
               // Extract just the inner content (remove <pre><code> wrapper)
               // But keep the HTML structure intact without double-escaping
-              const match = htmlString.match(/<pre[^>]*><code[^>]*>([\s\S]*?)<\/code><\/pre>/s)
+              const match = htmlString.match(/<pre[^>]*><code[^>]*>([\s\S]*?)<\/code><\/pre>/)
               if (match) {
                 // Fix double-escaping issues
                 return match[1].replace(/&amp;#x/g, '&#x')
-                              .replace(/&amp;#/g, '&#')
-                              .replace(/&amp;lt;/g, '&lt;')
-                              .replace(/&amp;gt;/g, '&gt;')
+                  .replace(/&amp;#/g, '&#')
+                  .replace(/&amp;lt;/g, '&lt;')
+                  .replace(/&amp;gt;/g, '&gt;')
               }
               return code
             }
@@ -1002,10 +980,9 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
       renderer.blockquote = function (quote: any): string {
         // Check if the blockquote text matches the callout pattern
         const text = quote.text || ''
-        const calloutMatch = text.match(/^\*\*(Note|Tip|Important|Warning|Caution)\*\*\s*\n([\s\S]*?)$/i)
+        const calloutMatch = text.match(/^\*\*(Note|Tip|Important|Warning|Caution)\*\*\s*\n([\s\S]*)$/i)
 
         if (calloutMatch) {
-
           const [, type, content] = calloutMatch
           const calloutType = type.toLowerCase()
 
@@ -1015,7 +992,7 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
             tip: 'tip',
             important: 'important',
             warning: 'warning',
-            caution: 'caution'
+            caution: 'caution',
           }
 
           const alertType = typeMapping[calloutType] || calloutType
@@ -1027,7 +1004,7 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
               tip: '<svg class="octicon octicon-light-bulb mr-2" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 1.5c-2.363 0-4 1.69-4 3.75 0 .984.424 1.625.984 2.304l.214.253c.223.264.47.556.673.848.284.411.537.896.621 1.49a.75.75 0 0 1-1.484.211c-.04-.282-.163-.547-.37-.847a8.456 8.456 0 0 0-.542-.68c-.084-.1-.173-.205-.268-.32C3.201 7.75 2.5 6.766 2.5 5.25 2.5 2.31 4.863 0 8 0s5.5 2.31 5.5 5.25c0 1.516-.701 2.5-1.328 3.259-.095.115-.184.22-.268.319-.207.245-.383.453-.541.681-.208.3-.33.565-.37.847a.751.751 0 0 1-1.485-.212c.084-.593.337-1.078.621-1.489.203-.292.45-.584.673-.848.075-.088.147-.173.213-.253.561-.679.985-1.32.985-2.304 0-2.06-1.637-3.75-4-3.75ZM5.75 12h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5ZM6 15.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 1-.75-.75Z"></path></svg>',
               important: '<svg class="octicon octicon-report mr-2" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v9.5A1.75 1.75 0 0 1 14.25 13H8.06l-2.573 2.573A1.458 1.458 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25Zm1.75-.25a.25.25 0 0 0-.25.25v9.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25Zm7 2.25v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>',
               warning: '<svg class="octicon octicon-alert mr-2" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>',
-              caution: '<svg class="octicon octicon-stop mr-2" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>'
+              caution: '<svg class="octicon octicon-stop mr-2" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>',
             }
             return icons[alertType] || icons.note
           }
@@ -1067,7 +1044,7 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
 
         // Process code groups first
         processedContent = processCodeGroups(processedContent)
-        
+
         // Process containers after code groups
         processedContent = await processContainers(processedContent, renderer, markedOptions, highlighter)
 
@@ -1081,31 +1058,31 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
         htmlContent = await processContainersFromHtml(htmlContent, renderer, markedOptions, highlighter)
         // Process code groups that weren't handled by pre-processing
         htmlContent = processCodeGroupsFromHtml(htmlContent)
-        
+
         // Special case: Handle tip blocks that might appear after code groups
         // This fixes cases where the tip block is rendered as plain text
         // Use a more specific regex to avoid interfering with code blocks
-        const tipMatches = Array.from(htmlContent.matchAll(/(\<\/div\>\s*\<\/div\>\s*\<\/div\>\s*\<\/div\>)(\s*tip\s*)(.*?)(\s*:::)/gs));
-        
+        const tipMatches = Array.from(htmlContent.matchAll(/(<\/div>\s*<\/div>\s*<\/div>\s*<\/div>)(\s*tip\s*)(.*?)(\s*:::)/gs))
+
         // Process each tip block separately to handle links and inline code
         for (const tipMatch of tipMatches) {
-          const [fullMatch, codeGroupEnd, tipPrefix, tipContent, tipSuffix] = tipMatch;
-          
+          const [fullMatch, codeGroupEnd, tipPrefix, tipContent, tipSuffix] = tipMatch
+
           // Process the tip content manually to handle links and inline code
-          let processedTipContent = tipContent.trim();
-          
+          let processedTipContent = tipContent.trim()
+
           // Manually process links if they exist
           if (processedTipContent.includes('[') && processedTipContent.includes('](')) {
-            processedTipContent = processedTipContent.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+            processedTipContent = processedTipContent.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
           }
-          
+
           // Manually process inline code if it exists
           if (processedTipContent.includes('`')) {
-            processedTipContent = processedTipContent.replace(/`([^`]+)`/g, '<code>$1</code>');
+            processedTipContent = processedTipContent.replace(/`([^`]+)`/g, '<code>$1</code>')
           }
-          
-          const replacement = `${codeGroupEnd}<div class="custom-block tip"><p class="custom-block-title">TIP</p><p>${processedTipContent}</p></div>`;
-          htmlContent = htmlContent.replace(fullMatch, replacement);
+
+          const replacement = `${codeGroupEnd}<div class="custom-block tip"><p class="custom-block-title">TIP</p><p>${processedTipContent}</p></div>`
+          htmlContent = htmlContent.replace(fullMatch, replacement)
         }
 
         // No need for placeholder replacement anymore - HTML is directly inserted
@@ -1113,28 +1090,28 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
         // Fix any remaining tip blocks with unprocessed markdown
         htmlContent = htmlContent.replace(/<div class="custom-block tip"><p class="custom-block-title">TIP<\/p><p>(.+?)<\/p><\/div>/gs, (match, content) => {
           // Process links
-          let processedContent = content;
+          let processedContent = content
           if (processedContent.includes('[') && processedContent.includes('](')) {
-            processedContent = processedContent.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+            processedContent = processedContent.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
           }
-          
+
           // Process inline code
           if (processedContent.includes('`')) {
-            processedContent = processedContent.replace(/`([^`]+)`/g, '<code>$1</code>');
+            processedContent = processedContent.replace(/`([^`]+)`/g, '<code>$1</code>')
           }
-          
-          return `<div class="custom-block tip"><p class="custom-block-title">TIP</p><p>${processedContent}</p></div>`;
-        });
-        
+
+          return `<div class="custom-block tip"><p class="custom-block-title">TIP</p><p>${processedContent}</p></div>`
+        })
+
         // Special case for the install.md tip block with GitHub releases link
         if (args.path && args.path.includes('install')) {
           // Direct replacement for the specific tip block in install.md
           htmlContent = htmlContent.replace(
             '<div class="custom-block tip"><p class="custom-block-title">TIP</p><p>You can also find the `bunpress` binaries in GitHub [releases](https://github.com/stacksjs/bunpress/releases).</p></div>',
-            '<div class="custom-block tip"><p class="custom-block-title">TIP</p><p>You can also find the <code>bunpress</code> binaries in GitHub <a href="https://github.com/stacksjs/bunpress/releases">releases</a>.</p></div>'
-          );
+            '<div class="custom-block tip"><p class="custom-block-title">TIP</p><p>You can also find the <code>bunpress</code> binaries in GitHub <a href="https://github.com/stacksjs/bunpress/releases">releases</a>.</p></div>',
+          )
         }
-        
+
         // Clean up the Home component reference if it's the only content in a home layout
         let cleanedHtmlContent = htmlContent
         if (frontmatter.layout === 'home') {
@@ -1183,7 +1160,7 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
         // Generate theme CSS
         const themeConfig = options.themeConfig || config.markdown.themeConfig || {}
         const themeCss = generateThemeCSS(themeConfig)
-        
+
         // Add custom layout CSS
         const layoutCss = `
 /* Container Layout Styles */
@@ -1215,7 +1192,7 @@ body[data-layout="doc"] .markdown-body {
   .container.flex {
     flex-direction: column;
   }
-  
+
   .sidebar {
     width: 100%;
     position: static;
@@ -1224,7 +1201,7 @@ body[data-layout="doc"] .markdown-body {
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     margin-bottom: 1rem;
   }
-  
+
   .table-of-contents.toc-sidebar {
     width: 100%;
     position: static;
@@ -1240,7 +1217,7 @@ body[data-layout="doc"] .markdown-body {
     width: 250px;
     margin-right: 1rem;
   }
-  
+
   .table-of-contents.toc-sidebar {
     min-width: 200px;
     width: 200px;
@@ -1472,11 +1449,11 @@ function showCopyError(button) {
 // Handle code group tab switching
 document.addEventListener('DOMContentLoaded', function() {
   const codeGroups = document.querySelectorAll('.vp-code-group')
-  
+
   codeGroups.forEach(group => {
     const radios = group.querySelectorAll('input[type="radio"]')
     const blocks = group.querySelectorAll('.blocks > div')
-    
+
     radios.forEach((radio, index) => {
       radio.addEventListener('change', function() {
         if (this.checked) {
@@ -3205,4 +3182,31 @@ function getSidebarStyles(): string {
   }
 }
 `
+}
+
+/**
+ * Create a Bun plugin that transforms markdown files into HTML
+ *
+ * @example
+ * ```ts
+ * // build.ts
+ * import { markdown } from './plugin'
+ *
+ * await Bun.build({
+ *   entrypoints: ['docs/index.md', 'docs/getting-started.md'],
+ *   outdir: './dist',
+ *   plugins: [markdown()],
+ * })
+ * ```
+ */
+// Export navigation, sidebar, search, and theme helper functions for testing
+export {
+  createNavHtml,
+  createSearchHtml,
+  createSidebarHtml,
+  generateSearchIndex,
+  generateThemeCSS,
+  isNavItemActive,
+  isSidebarItemActive,
+  performSearch,
 }

@@ -1,7 +1,5 @@
-import type { Config } from 'bunfig'
-import { loadConfig } from 'bunfig'
 import type { BunPressConfig, BunPressOptions } from './types'
-
+import { loadConfig } from 'bunfig'
 
 // Default configuration
 export const defaultConfig: BunPressConfig = {
@@ -324,13 +322,13 @@ export const defaultConfig: BunPressConfig = {
         .grid-cols-4 {
           grid-template-columns: 1fr;
         }
-        
+
         .flex.items-center.gap-12 {
           flex-direction: column;
           text-align: center;
           gap: 2rem;
         }
-        
+
         .text-5xl {
           font-size: 2rem;
         }
@@ -433,6 +431,7 @@ export const defaultConfig: BunPressConfig = {
 }
 
 // Load and export the resolved configuration
+// eslint-disable-next-line antfu/no-top-level-await
 export const config: BunPressOptions = await loadConfig({
   name: 'bunpress',
   defaultConfig,
