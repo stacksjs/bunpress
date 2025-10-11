@@ -56,6 +56,7 @@ describe('Code Blocks', () => {
 
     // Check for JavaScript/TypeScript content
     expect(html).toContain('function greet(name)')
+    // eslint-disable-next-line no-template-curly-in-string
     expect(html).toContain('return `Hello, ${name}!`')
     expect(html).toContain('interface User')
     expect(html).toContain('class UserService')

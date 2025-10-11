@@ -89,7 +89,7 @@ export default {
     console.log(`📁 Generated ${files.length} files with frontmatter`)
   }
   catch (error) {
-    console.error('❌ Basic example failed:', error.message)
+    console.error('❌ Basic example failed:', error instanceof Error ? error.message : String(error))
   }
 }
 
@@ -197,7 +197,7 @@ const plugin = markdown({
     console.log(`📁 Generated ${files.length} files with advanced frontmatter`)
   }
   catch (error) {
-    console.error('❌ Advanced example failed:', error.message)
+    console.error('❌ Advanced example failed:', error instanceof Error ? error.message : String(error))
   }
 }
 
@@ -278,7 +278,7 @@ Examples organized in the \`docs/examples/\` directory.
     console.log(`📁 Generated ${files.length} organized files`)
   }
   catch (error) {
-    console.error('❌ File organization example failed:', error.message)
+    console.error('❌ File organization example failed:', error instanceof Error ? error.message : String(error))
   }
 }
 

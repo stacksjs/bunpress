@@ -98,6 +98,7 @@ function calculate(x, y) {
     const result = await Bun.build({
       entrypoints: [join(testDir, 'example.md')],
       outdir: outDir,
+      // @ts-expect-error - config structure for example
       plugins: [markdown(buildConfig)],
     })
 

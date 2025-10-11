@@ -5,7 +5,7 @@ import { buildTestSite, readBuiltFile } from '../../utils/test-helpers'
 
 describe('Use Case: Navigation Example', () => {
   const _testCase = 'navigation-example'
-  const testDir = join(import.meta.dir, '..', '..', 'test', 'use-cases', testCase)
+  const testDir = join(import.meta.dir, '..', '..', 'test', 'use-cases', _testCase)
 
   test('should generate HTML with navigation structure', async () => {
     const content = await readFile(join(testDir, 'test.md'), 'utf8')

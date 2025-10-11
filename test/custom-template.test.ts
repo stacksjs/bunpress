@@ -420,6 +420,7 @@ This is the about page content.
           { path: 'Home.stx', content: template },
           { path: 'about.md', content },
         ],
+        // @ts-ignore - test config structure
         config: {
           title: 'My Site',
           description: 'My awesome site',
@@ -642,6 +643,7 @@ This page includes partial templates.
           { path: 'Main.stx', content: mainTemplate },
           { path: 'test.md', content },
         ],
+        // @ts-ignore - test config structure
         config: {
           title: 'Site with Partials',
           nav: [
@@ -734,6 +736,7 @@ This is the main content area.
           { path: 'Layout.stx', content: layoutTemplate },
           { path: 'test.md', content },
         ],
+        // @ts-ignore - test config structure
         config: {
           title: 'Complex Site',
           footer: '© 2024 Complex Site',

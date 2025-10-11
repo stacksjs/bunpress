@@ -5,7 +5,7 @@ import { buildTestSite, readBuiltFile } from '../../utils/test-helpers'
 
 describe('Use Case: Layout Example', () => {
   const _testCase = 'layout-example'
-  const testDir = join(import.meta.dir, '..', '..', 'test', 'use-cases', testCase)
+  const testDir = join(import.meta.dir, '..', '..', 'test', 'use-cases', _testCase)
 
   test('should generate HTML with proper layout structure', async () => {
     const content = await readFile(join(testDir, 'test.md'), 'utf8')

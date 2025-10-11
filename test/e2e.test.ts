@@ -410,7 +410,6 @@ This page uses a custom theme layout.
           { path: 'test.md', content },
         ],
         config: {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-expect-error - title property for testing
           title: 'Custom Theme Site',
           nav: [

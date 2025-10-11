@@ -192,6 +192,7 @@ ${blocks}
 async function processContainers(content: string, renderer: any, markedOptions: any, _highlighter: Highlighter | null = null): Promise<string> {
   // Match complete container blocks, but exclude code-group and code blocks
   // More flexible regex to handle various whitespace patterns
+  // eslint-disable-next-line regexp/no-super-linear-backtracking
   const containerRegex = /^:::[ \t]*(?!code-group)(\w+)(?:[ \t]+([^\n]*))?\n([\s\S]*?)\n:::$/gm
 
   const promises: Promise<{ match: string, replacement: string }>[] = []
@@ -340,6 +341,7 @@ async function processContainersFromHtml(html: string, renderer: any, markedOpti
   // Match the pattern that markdown creates from ::: tip ... :::
   // Handle various cases of container markup in HTML
   // This includes cases where the container might be after other elements
+  // eslint-disable-next-line regexp/no-super-linear-backtracking
   const htmlContainerRegex = /(?:<p>)?:::[ \t]*(\w+)(?:[ \t]+([^<\n]+?))?(?:<\/p>)?([\s\S]*?)(?:<p>)?:::(?:<\/p>)?/g
 
   const promises: Promise<{ match: string, replacement: string }>[] = []
@@ -487,6 +489,7 @@ export function processStxTemplate(content: string, frontmatter: any, globalConf
   })
 
   // Process {{ expressions }} for frontmatter variables
+  // eslint-disable-next-line regexp/no-super-linear-backtracking
   result = result.replace(/\{\{[ \t]*\$frontmatter\.([^}]+?)[ \t]*\}\}/g, (_, path) => {
     const trimmedPath = path.trim()
 
@@ -520,6 +523,7 @@ export function processStxTemplate(content: string, frontmatter: any, globalConf
   })
 
   // Process {{ expressions }} for global variables ($site, $config, etc.)
+  // eslint-disable-next-line regexp/no-super-linear-backtracking
   result = result.replace(/\{\{[ \t]*\$(\w+)\.([^}]+?)[ \t]*\}\}/g, (_match, varName, path) => {
     const trimmedPath = path.trim()
 
@@ -1065,6 +1069,7 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
         // Special case: Handle tip blocks that might appear after code groups
         // This fixes cases where the tip block is rendered as plain text
         // Use a more specific regex to avoid interfering with code blocks
+        // eslint-disable-next-line regexp/no-super-linear-backtracking
         const tipMatches = Array.from(htmlContent.matchAll(/(<\/div>(?:[ \t\n]*<\/div>){3})([ \t\n]*tip[ \t\n]*)([^:]*?)([ \t\n]*:::)/g))
 
         // Process each tip block separately to handle links and inline code
@@ -1153,15 +1158,15 @@ export function markdown(options: MarkdownPluginOptions = {}): BunPlugin {
         const navHtml = createNavHtml(navItems, currentPath)
 
         // Generate sidebar HTML (only for non-home layouts)
-        const sidebarItems = options.sidebar?.['/'] || config.markdown.sidebar?.['/'] || []
+        const sidebarItems = options.sidebar?.['/'] || config.markdown?.sidebar?.['/'] || []
         const sidebarHtml = layout === 'home' ? '' : createSidebarHtml(sidebarItems, currentPath)
 
         // Generate search HTML (only for non-home layouts)
-        const searchConfig = options.search || config.markdown.search || { enabled: false }
+        const searchConfig = options.search || config.markdown?.search || { enabled: false }
         const searchHtml = layout === 'home' ? '' : createSearchHtml(searchConfig)
 
         // Generate theme CSS
-        const themeConfig = options.themeConfig || config.markdown.themeConfig || {}
+        const themeConfig = options.themeConfig || config.markdown?.themeConfig || {}
         const themeCss = generateThemeCSS(themeConfig)
 
         // Add custom layout CSS

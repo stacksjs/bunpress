@@ -69,7 +69,6 @@ Available endpoints.
         files: [{ path: 'test.md', content }],
         config: {
           markdown: {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-expect-error - tocMaxDepth property for testing
             tocMaxDepth: 2,
           },
