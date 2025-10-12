@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/bunpress",
   "type": "module",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Modern documentation engine. Powered by Bun.",
   "author": "Chris Breuer <chris@stacksjs.org>",
   "license": "MIT",
@@ -34,7 +34,10 @@
   "bin": {
     "bunpress": "./dist/bin/cli.js"
   },
-  "files": ["README.md", "dist"],
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "scripts": {
     "dev": "bun run dev:docs",
     "build": "bun --bun build.ts && bun run compile",
