@@ -1,3 +1,24 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.0.4...v0.0.5)
+
+### 🧹 Chores
+
+- release v0.0.5 ([53b1a32](https://github.com/stacksjs/bunpress/commit/53b1a32))
+- wip ([47221e5](https://github.com/stacksjs/bunpress/commit/47221e5))
+
+### Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.0.4...HEAD)
+
+### 🧹 Chores
+
+- wip ([47221e5](https://github.com/stacksjs/bunpress/commit/47221e5))
+
+### Contributors
+
+- Chris <chrisbreuer93@gmail.com>
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.0.3...v0.0.4)
 
 ### 🧹 Chores
