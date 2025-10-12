@@ -2,12 +2,12 @@ import { Glob } from 'bun'
 import { copyFile, mkdir, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import process from 'node:process'
-import { CAC } from 'cac'
+import { CLI } from '@stacksjs/clapp'
 import { version } from '../package.json'
 import { config } from '../src/config'
 import { markdown, stx } from '../src/plugin'
 
-const cli: CAC = new CAC('bunpress')
+const cli: CLI = new CLI('bunpress')
 
 interface CliOption {
   outdir?: string
@@ -401,10 +401,6 @@ cli
     // Keep the server running
     await new Promise(() => {})
   })
-
-cli.command('version', 'Show the version of the CLI').action(() => {
-  console.log(version)
-})
 
 cli.help()
 cli.version(version)
