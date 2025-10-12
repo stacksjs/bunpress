@@ -7,11 +7,13 @@ console.log('Building library...')
 const result = await Bun.build({
   entrypoints: [
     './src/index.ts',
+    './bin/cli.ts',
     './src/bun-plugin.ts',
   ],
   outdir: './dist',
   plugins: [dts()],
   minify: true,
+  splitting: true,
   target: 'bun',
 })
 
