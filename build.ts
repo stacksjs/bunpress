@@ -7,7 +7,6 @@ const result = await Bun.build({
   entrypoints: [
     './src/index.ts',
     './bin/cli.ts',
-    './src/bun-plugin.ts',
   ],
   outdir: './dist',
   plugins: [dts()],
