@@ -5,7 +5,7 @@ import process from 'node:process'
 import { CLI } from '@stacksjs/clapp'
 import { version } from '../package.json'
 import { config } from '../src/config'
-import { markdown, stx } from '../src/plugin'
+// import { markdown, stx } from '../src/plugin'
 
 const cli: CLI = new CLI('bunpress')
 
@@ -100,7 +100,7 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
     const result = await Bun.build({
       entrypoints: markdownFiles,
       outdir,
-      plugins: [markdown(), stx()],
+      // plugins: [markdown(), stx()],
     })
 
     if (!result.success) {
