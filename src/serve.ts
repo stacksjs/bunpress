@@ -39,6 +39,61 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
 }
 
 /**
+ * Extract headings from HTML content and generate page TOC
+ */
+async function generatePageTOC(html: string): Promise<string> {
+  // Extract h2, h3, h4 headings from HTML
+  const headingRegex = /<h([234])([^>]*)>(.*?)<\/h\1>/g
+  const headings: Array<{ level: number, text: string, id: string }> = []
+
+  let match
+  while ((match = headingRegex.exec(html)) !== null) {
+    const level = Number.parseInt(match[1])
+    const attributes = match[2]
+    let text = match[3]
+
+    // Remove HTML tags from text
+    text = text.replace(/<[^>]*>/g, '')
+
+    // Extract or generate ID
+    const idMatch = attributes.match(/id="([^"]*)"/)
+    let id = idMatch ? idMatch[1] : text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')
+
+    headings.push({ level, text, id })
+  }
+
+  if (headings.length === 0) {
+    return ''
+  }
+
+  // Generate TOC items HTML
+  const items = headings.map(heading => {
+    const levelClass = heading.level > 2 ? `level-${heading.level}` : ''
+    return `<a href="#${heading.id}" class="${levelClass}">${heading.text}</a>`
+  }).join('\n      ')
+
+  return await render('page-toc', { items })
+}
+
+/**
+ * Add IDs to headings in HTML content
+ */
+function addHeadingIds(html: string): string {
+  return html.replace(/<h([234])([^>]*)>(.*?)<\/h\1>/g, (match, level, attributes, text) => {
+    // Check if ID already exists
+    if (attributes.includes('id=')) {
+      return match
+    }
+
+    // Generate ID from text
+    const plainText = text.replace(/<[^>]*>/g, '')
+    const id = plainText.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')
+
+    return `<h${level}${attributes} id="${id}">${text}</h${level}>`
+  })
+}
+
+/**
  * Generate navigation HTML from BunPress config
  */
 function generateNav(config: BunPressConfig): string {
@@ -98,6 +153,10 @@ async function wrapInLayout(content: string, config: BunPressConfig, currentPath
   }
 
   // Documentation layout - with sidebar
+  // Add IDs to headings and generate page TOC
+  const contentWithIds = addHeadingIds(content)
+  const pageTOC = await generatePageTOC(contentWithIds)
+
   return await render('layout-doc', {
     title,
     description,
@@ -105,7 +164,8 @@ async function wrapInLayout(content: string, config: BunPressConfig, currentPath
     customCSS,
     nav: generateNav(config),
     sidebar: await generateSidebar(config, currentPath),
-    content,
+    content: contentWithIds,
+    pageTOC,
     scripts,
   })
 }

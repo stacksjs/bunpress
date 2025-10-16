@@ -1,23 +1,40 @@
-<div class="mb-4">
+<div class="mb-4 sidebar-section">
   <button
     class="w-full flex items-center justify-between px-6 py-2 text-sm font-semibold text-[#213547] hover:text-[#5672cd] transition-colors cursor-pointer"
-    onclick="this.parentElement.classList.toggle('collapsed'); this.querySelector('.chevron').classList.toggle('rotate-[-90deg]')"
+    onclick="toggleSection(this.parentElement)"
   >
     <span>{{ title }}</span>
-    <svg class="chevron w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg class="chevron w-4 h-4 transition-transform duration-200 ease-in-out" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
     </svg>
   </button>
-  <ul class="list-none mt-1 sidebar-items">
-    {{ items }}
-  </ul>
+  <div class="sidebar-items-wrapper">
+    <ul class="list-none mt-1 sidebar-items">
+      {{ items }}
+    </ul>
+  </div>
 </div>
 
 <style>
-.collapsed .sidebar-items {
-  display: none;
+.sidebar-items-wrapper {
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out, opacity 0.2s ease-in-out;
+  max-height: 500px;
+  opacity: 1;
 }
-.collapsed .chevron {
+
+.sidebar-section.collapsed .sidebar-items-wrapper {
+  max-height: 0;
+  opacity: 0;
+}
+
+.sidebar-section.collapsed .chevron {
   transform: rotate(-90deg);
 }
 </style>
+
+<script>
+function toggleSection(section) {
+  section.classList.toggle('collapsed');
+}
+</script>

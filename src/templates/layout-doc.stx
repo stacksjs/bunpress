@@ -20,11 +20,12 @@
 
   {{ sidebar }}
 
-  <main class="ml-[260px] mt-[60px] p-8 max-w-[900px]">
-    <article class="prose prose-slate max-w-none
+  <main class="ml-[260px] xl:mr-[256px] mt-[60px] p-8">
+    <article class="prose prose-slate max-w-[784px]
       prose-h1:text-3xl prose-h1:mt-8 prose-h1:mb-4 prose-h1:pb-2 prose-h1:border-b prose-h1:border-[#e2e2e3]
-      prose-h2:text-2xl prose-h2:mt-7 prose-h2:mb-3
-      prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3
+      prose-h2:text-2xl prose-h2:mt-7 prose-h2:mb-3 prose-h2:scroll-mt-24
+      prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3 prose-h3:scroll-mt-24
+      prose-h4:text-lg prose-h4:mt-5 prose-h4:mb-2 prose-h4:scroll-mt-24
       prose-p:my-4
       prose-a:text-[#3451b2] prose-a:no-underline hover:prose-a:underline
       prose-ul:my-4 prose-ul:pl-8
@@ -40,6 +41,8 @@
       {{ content }}
     </article>
   </main>
+
+  {{ pageTOC }}
 
   {{ scripts }}
 </body>

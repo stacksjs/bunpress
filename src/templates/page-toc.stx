@@ -1,0 +1,106 @@
+<aside class="fixed top-[60px] right-0 bottom-0 w-[256px] overflow-y-auto py-8 px-4 hidden xl:block">
+  <div class="text-sm">
+    <p class="font-semibold text-[#213547] mb-4">On this page</p>
+    <nav class="page-toc">
+      {{ items }}
+    </nav>
+  </div>
+</aside>
+
+<style>
+.page-toc a {
+  display: block;
+  padding: 4px 0 4px 16px;
+  color: #476582;
+  text-decoration: none;
+  border-left: 1px solid #e2e2e3;
+  transition: all 0.2s ease-in-out;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.page-toc a:hover {
+  color: #5672cd;
+}
+
+.page-toc a.active {
+  color: #5672cd;
+  border-left-color: #5672cd;
+  font-weight: 500;
+}
+
+.page-toc a.level-3 {
+  padding-left: 28px;
+}
+
+.page-toc a.level-4 {
+  padding-left: 40px;
+}
+</style>
+
+<script>
+// Track active heading based on scroll position
+function initPageTOC() {
+  const tocLinks = document.querySelectorAll('.page-toc a');
+  const headings = Array.from(document.querySelectorAll('h2[id], h3[id], h4[id]'));
+
+  if (!tocLinks.length || !headings.length) return;
+
+  function updateActiveTOC() {
+    const scrollY = window.scrollY + 100; // Offset for better UX
+
+    // Find the current heading
+    let currentHeading = null;
+    for (let i = headings.length - 1; i >= 0; i--) {
+      if (headings[i].offsetTop <= scrollY) {
+        currentHeading = headings[i];
+        break;
+      }
+    }
+
+    // Update active states
+    tocLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (currentHeading && href === `#${currentHeading.id}`) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  }
+
+  // Smooth scroll to anchor
+  tocLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = link.getAttribute('href').substring(1);
+      const targetElement = document.getElementById(targetId);
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // Listen to scroll events
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        updateActiveTOC();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+
+  // Initial update
+  updateActiveTOC();
+}
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPageTOC);
+} else {
+  initPageTOC();
+}
+</script>
