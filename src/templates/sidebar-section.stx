@@ -1,0 +1,23 @@
+<div class="mb-4">
+  <button
+    class="w-full flex items-center justify-between px-6 py-2 text-sm font-semibold text-[#213547] hover:text-[#5672cd] transition-colors cursor-pointer"
+    onclick="this.parentElement.classList.toggle('collapsed'); this.querySelector('.chevron').classList.toggle('rotate-[-90deg]')"
+  >
+    <span>{{ title }}</span>
+    <svg class="chevron w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+    </svg>
+  </button>
+  <ul class="list-none mt-1 sidebar-items">
+    {{ items }}
+  </ul>
+</div>
+
+<style>
+.collapsed .sidebar-items {
+  display: none;
+}
+.collapsed .chevron {
+  transform: rotate(-90deg);
+}
+</style>

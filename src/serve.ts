@@ -4,17 +4,15 @@ import { YAML } from 'bun'
 import { readdir } from 'node:fs/promises'
 import process from 'node:process'
 import { config } from './config'
-import { render, renderTemplate } from './template-loader'
+import { render } from './template-loader'
 
 /**
  * Generate sidebar HTML from BunPress config
  */
-function generateSidebar(config: BunPressConfig, currentPath: string): string {
+async function generateSidebar(config: BunPressConfig, currentPath: string): Promise<string> {
   if (!config.markdown?.sidebar) {
     return ''
   }
-
-  let html = '<nav class="fixed top-[60px] left-0 bottom-0 w-[260px] bg-white border-r border-[#e2e2e3] overflow-y-auto py-6">'
 
   // Get sidebar for current path or default '/' sidebar
   const pathKey = Object.keys(config.markdown.sidebar).find(key =>
@@ -23,23 +21,21 @@ function generateSidebar(config: BunPressConfig, currentPath: string): string {
 
   const sidebarSections = config.markdown.sidebar[pathKey] || []
 
-  for (const section of sidebarSections) {
-    html += `<div class="mb-6">
-      <h3 class="px-6 text-sm font-semibold mb-2">${section.text}</h3>
-      <ul class="list-none">`
+  const sectionsHtml = await Promise.all(sidebarSections.map(async section => {
+    const itemsHtml = section.items ? section.items.map(item => {
+      const isActive = item.link === currentPath
+      return `<li><a href="${item.link}" class="block py-1.5 px-6 text-[#476582] no-underline text-sm hover:text-[#3451b2] ${isActive ? 'text-[#3451b2] font-medium border-r-2 border-[#3451b2]' : ''}">${item.text}</a></li>`
+    }).join('') : ''
 
-    if (section.items) {
-      for (const item of section.items) {
-        const isActive = item.link === currentPath
-        html += `<li><a href="${item.link}" class="block py-1.5 px-6 text-[#476582] no-underline text-sm hover:text-[#3451b2] ${isActive ? 'text-[#3451b2] font-medium border-r-2 border-[#3451b2]' : ''}">${item.text}</a></li>`
-      }
-    }
+    return await render('sidebar-section', {
+      title: section.text,
+      items: itemsHtml,
+    })
+  }))
 
-    html += '</ul></div>'
-  }
-
-  html += '</nav>'
-  return html
+  return await render('sidebar', {
+    sections: sectionsHtml.join(''),
+  })
 }
 
 /**
@@ -108,7 +104,7 @@ async function wrapInLayout(content: string, config: BunPressConfig, currentPath
     meta,
     customCSS,
     nav: generateNav(config),
-    sidebar: generateSidebar(config, currentPath),
+    sidebar: await generateSidebar(config, currentPath),
     content,
     scripts,
   })
@@ -143,7 +139,8 @@ function parseFrontmatter(markdown: string): { frontmatter: any, content: string
  * Generate hero section HTML from frontmatter
  */
 async function generateHero(hero: any): Promise<string> {
-  if (!hero) return ''
+  if (!hero)
+    return ''
 
   const name = hero.name ? `<h1 class="text-[32px] leading-[40px] md:text-[48px] md:leading-[56px] font-bold tracking-tight text-[#5672cd] mb-3">${hero.name}</h1>` : ''
   const text = hero.text ? `<p class="text-[32px] leading-[40px] md:text-[56px] md:leading-[64px] font-bold tracking-tight text-[#213547]">${hero.text}</p>` : ''
@@ -172,7 +169,8 @@ async function generateHero(hero: any): Promise<string> {
  * Generate features grid HTML from frontmatter
  */
 async function generateFeatures(features: any[]): Promise<string> {
-  if (!features || features.length === 0) return ''
+  if (!features || features.length === 0)
+    return ''
 
   const items = features.map(feature => `
     <div class="relative bg-[#f6f6f7] p-6 rounded-xl border border-[#e2e2e3] hover:border-[#5672cd] transition-colors">
@@ -200,7 +198,7 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
     const featuresHtml = await generateFeatures(frontmatter.features)
     return {
       html: heroHtml + featuresHtml,
-      frontmatter
+      frontmatter,
     }
   }
 
@@ -298,7 +296,7 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
 
   return {
     html: html.join('\n'),
-    frontmatter
+    frontmatter,
   }
 }
 
