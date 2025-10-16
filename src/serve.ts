@@ -4,7 +4,7 @@ import { YAML } from 'bun'
 import { readdir } from 'node:fs/promises'
 import process from 'node:process'
 import { config } from './config'
-import { render } from './template-loader'
+import { clearTemplateCache, render } from './template-loader'
 
 /**
  * Generate sidebar HTML from BunPress config
@@ -475,6 +475,8 @@ export async function serveCLI(options: {
           clearTimeout(timeout)
         timeout = setTimeout(async () => {
           console.log('File changed detected, reloading...')
+          // Clear template cache to pick up template changes
+          clearTemplateCache()
           // The server will automatically serve the updated files on next request
           console.log('Ready for requests')
         }, 100) // Debounce 100ms
