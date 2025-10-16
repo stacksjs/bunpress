@@ -46,25 +46,26 @@
 
     <main class="ml-[260px] xl:mr-[256px] mt-[60px] px-6 md:px-8 py-8">
       <div class="mx-auto max-w-[960px]">
-        <article class="prose prose-slate max-w-none
-        prose-h1:text-[32px] prose-h1:leading-[40px] prose-h1:font-bold prose-h1:mt-0 prose-h1:mb-8 prose-h1:pb-2
-        prose-h2:text-[28px] prose-h2:leading-[36px] prose-h2:font-semibold prose-h2:mt-12 prose-h2:mb-4 prose-h2:scroll-mt-24 prose-h2:border-t prose-h2:border-[#e2e2e3] prose-h2:pt-6
-        prose-h3:text-[24px] prose-h3:leading-[32px] prose-h3:font-semibold prose-h3:mt-8 prose-h3:mb-4 prose-h3:scroll-mt-24
-        prose-h4:text-[20px] prose-h4:leading-[28px] prose-h4:font-semibold prose-h4:mt-6 prose-h4:mb-3 prose-h4:scroll-mt-24
-        prose-p:text-[16px] prose-p:leading-[28px] prose-p:my-4
-        prose-a:text-[#5672cd] prose-a:font-medium prose-a:no-underline hover:prose-a:underline
-        prose-ul:my-4 prose-ul:pl-6
-        prose-ol:my-4 prose-ol:pl-6
-        prose-li:my-2 prose-li:leading-[28px]
-        prose-code:text-[#476582] prose-code:bg-[#f6f6f7] prose-code:px-[6px] prose-code:py-[3px] prose-code:rounded prose-code:font-mono prose-code:text-[14px] prose-code:font-normal prose-code:before:content-[''] prose-code:after:content-['']
-        prose-pre:bg-[#f6f6f7] prose-pre:border prose-pre:border-[#e2e2e3] prose-pre:p-4 prose-pre:rounded-lg prose-pre:overflow-x-auto prose-pre:my-6 prose-pre:text-[14px] prose-pre:leading-[24px]
-        prose-pre:code:bg-transparent prose-pre:code:p-0 prose-pre:code:text-[#213547]
-        prose-blockquote:border-l-4 prose-blockquote:border-[#5672cd] prose-blockquote:pl-4 prose-blockquote:my-6 prose-blockquote:text-[#476582] prose-blockquote:italic
-        prose-table:border-collapse prose-table:w-full prose-table:my-6
-        prose-th:border prose-th:border-[#e2e2e3] prose-th:px-4 prose-th:py-3 prose-th:text-left prose-th:bg-[#f6f6f7] prose-th:font-semibold prose-th:text-[14px]
-        prose-td:border prose-td:border-[#e2e2e3] prose-td:px-4 prose-td:py-3 prose-td:text-[14px]
-        prose-strong:font-semibold prose-strong:text-[#213547]
-        prose-hr:my-8 prose-hr:border-t prose-hr:border-[#e2e2e3]">
+        <article class="max-w-none text-[#213547]
+        [&>h1]:text-[40px] [&>h1]:leading-[48px] [&>h1]:font-bold [&>h1]:tracking-tight [&>h1]:text-[#213547] [&>h1]:mt-0 [&>h1]:mb-8
+        [&>h2]:text-[28px] [&>h2]:leading-[36px] [&>h2]:font-semibold [&>h2]:tracking-tight [&>h2]:text-[#213547] [&>h2]:mt-12 [&>h2]:mb-4 [&>h2]:pt-6 [&>h2]:border-t [&>h2]:border-[#e2e8f0] [&>h2]:scroll-mt-24
+        [&>h3]:text-[20px] [&>h3]:leading-[28px] [&>h3]:font-semibold [&>h3]:text-[#213547] [&>h3]:mt-8 [&>h3]:mb-3 [&>h3]:scroll-mt-24
+        [&>h4]:text-[18px] [&>h4]:leading-[24px] [&>h4]:font-semibold [&>h4]:text-[#213547] [&>h4]:mt-6 [&>h4]:mb-2 [&>h4]:scroll-mt-24
+        [&>p]:text-[16px] [&>p]:leading-[28px] [&>p]:text-[#3c4858] [&>p]:my-4 [&>p]:tracking-normal
+        [&>p>a]:text-[#5672cd] [&>p>a]:font-medium [&>p>a]:no-underline [&>p>a]:transition-colors hover:[&>p>a]:text-[#4558b8]
+        [&>ul]:my-4 [&>ul]:pl-6 [&>ul]:text-[#3c4858]
+        [&>ol]:my-4 [&>ol]:pl-6 [&>ol]:text-[#3c4858]
+        [&>ul>li]:my-2 [&>ul>li]:leading-[28px] [&>ul>li]:text-[16px]
+        [&>ol>li]:my-2 [&>ol>li]:leading-[28px] [&>ol>li]:text-[16px]
+        [&_code]:text-[#476582] [&_code]:bg-[#f6f6f7] [&_code]:px-[6px] [&_code]:py-[3px] [&_code]:rounded [&_code]:font-mono [&_code]:text-[0.875em] [&_code]:font-normal [&_code]:before:content-[''] [&_code]:after:content-['']
+        [&>pre]:bg-[#f6f6f7] [&>pre]:border [&>pre]:border-[#e2e2e3] [&>pre]:p-4 [&>pre]:rounded-lg [&>pre]:overflow-x-auto [&>pre]:my-6 [&>pre]:text-[14px] [&>pre]:leading-[24px]
+        [&>pre>code]:bg-transparent [&>pre>code]:p-0 [&>pre>code]:text-[#213547]
+        [&>blockquote]:border-l-4 [&>blockquote]:border-[#5672cd] [&>blockquote]:pl-4 [&>blockquote]:my-6 [&>blockquote]:text-[#3c4858] [&>blockquote]:italic
+        [&>table]:border-collapse [&>table]:w-full [&>table]:my-6 [&>table]:text-[14px]
+        [&_th]:border [&_th]:border-[#e2e8f0] [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:bg-[#f6f6f7] [&_th]:font-semibold [&_th]:text-[#213547]
+        [&_td]:border [&_td]:border-[#e2e8f0] [&_td]:px-4 [&_td]:py-3 [&_td]:text-[#3c4858]
+        [&>p>strong]:font-semibold [&>p>strong]:text-[#213547]
+        [&>hr]:my-8 [&>hr]:border-t [&>hr]:border-[#e2e8f0]">
         {{ content }}
         </article>
       </div>
