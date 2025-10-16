@@ -21,11 +21,13 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
 
   const sidebarSections = config.markdown.sidebar[pathKey] || []
 
-  const sectionsHtml = await Promise.all(sidebarSections.map(async section => {
-    const itemsHtml = section.items ? section.items.map(item => {
-      const isActive = item.link === currentPath
-      return `<li><a href="${item.link}" class="block py-1.5 px-6 text-[#476582] no-underline text-sm hover:text-[#3451b2] ${isActive ? 'text-[#3451b2] font-medium border-r-2 border-[#3451b2]' : ''}">${item.text}</a></li>`
-    }).join('') : ''
+  const sectionsHtml = await Promise.all(sidebarSections.map(async (section) => {
+    const itemsHtml = section.items
+      ? section.items.map((item) => {
+          const isActive = item.link === currentPath
+          return `<li><a href="${item.link}" class="block py-1.5 px-6 text-[#476582] no-underline text-sm hover:text-[#3451b2] ${isActive ? 'text-[#3451b2] font-medium border-r-2 border-[#3451b2]' : ''}">${item.text}</a></li>`
+        }).join('')
+      : ''
 
     return await render('sidebar-section', {
       title: section.text,
@@ -57,7 +59,7 @@ async function generatePageTOC(html: string): Promise<string> {
 
     // Extract or generate ID
     const idMatch = attributes.match(/id="([^"]*)"/)
-    let id = idMatch ? idMatch[1] : text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')
+    const id = idMatch ? idMatch[1] : text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')
 
     headings.push({ level, text, id })
   }
@@ -67,7 +69,7 @@ async function generatePageTOC(html: string): Promise<string> {
   }
 
   // Generate TOC items HTML
-  const items = headings.map(heading => {
+  const items = headings.map((heading) => {
     const levelClass = heading.level > 2 ? `level-${heading.level}` : ''
     return `<a href="#${heading.id}" class="${levelClass}">${heading.text}</a>`
   }).join('\n      ')
@@ -101,28 +103,29 @@ function generateNav(config: BunPressConfig): string {
     return ''
   }
 
-  let html = '<nav class="flex gap-6 items-center">'
-
-  for (const item of config.nav) {
+  const links = config.nav.map((item) => {
     // Handle items with sub-items (dropdown)
     if (item.items && item.items.length > 0) {
-      html += `<div class="relative group">
-        <span class="text-[#476582] no-underline text-sm cursor-pointer hover:text-[#3451b2]">${item.text} ▼</span>
-        <div class="hidden group-hover:block absolute top-full left-0 bg-white border border-[#e2e2e3] rounded shadow-lg min-w-[150px] py-2 mt-2">`
-
-      for (const subItem of item.items) {
-        html += `<a href="${subItem.link}" class="block px-4 py-2 text-[#476582] no-underline text-sm hover:bg-[#f6f6f7] hover:text-[#3451b2]">${subItem.text}</a>`
-      }
-
-      html += '</div></div>'
+      return `<div class="relative group">
+        <button class="text-[14px] font-medium text-[#213547] hover:text-[#5672cd] transition-colors cursor-pointer flex items-center gap-1">
+          ${item.text}
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+        <div class="hidden group-hover:block absolute top-full right-0 bg-white border border-[#e2e2e3] rounded-lg shadow-lg min-w-[160px] py-2 mt-2">
+          ${item.items.map(subItem =>
+            `<a href="${subItem.link}" class="block px-4 py-2 text-[13px] text-[#213547] hover:bg-[#f6f6f7] hover:text-[#5672cd] transition-colors">${subItem.text}</a>`,
+          ).join('')}
+        </div>
+      </div>`
     }
     else {
-      html += `<a href="${item.link}" class="text-[#476582] no-underline text-sm hover:text-[#3451b2]">${item.text}</a>`
+      return `<a href="${item.link}" class="text-[14px] font-medium text-[#213547] hover:text-[#5672cd] transition-colors">${item.text}</a>`
     }
-  }
+  }).join('')
 
-  html += '</nav>'
-  return html
+  return links
 }
 
 /**
