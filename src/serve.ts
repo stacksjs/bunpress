@@ -12,7 +12,7 @@ function generateSidebar(config: BunPressConfig, currentPath: string): string {
     return ''
   }
 
-  let html = '<nav class="sidebar">'
+  let html = '<nav class="fixed top-[60px] left-0 bottom-0 w-[260px] bg-white border-r border-[#e2e2e3] overflow-y-auto py-6">'
 
   // Get sidebar for current path or default '/' sidebar
   const pathKey = Object.keys(config.markdown.sidebar).find(key =>
@@ -22,14 +22,14 @@ function generateSidebar(config: BunPressConfig, currentPath: string): string {
   const sidebarSections = config.markdown.sidebar[pathKey] || []
 
   for (const section of sidebarSections) {
-    html += `<div class="sidebar-section">
-      <h3 class="sidebar-title">${section.text}</h3>
-      <ul class="sidebar-items">`
+    html += `<div class="mb-6">
+      <h3 class="px-6 text-sm font-semibold mb-2">${section.text}</h3>
+      <ul class="list-none">`
 
     if (section.items) {
       for (const item of section.items) {
         const isActive = item.link === currentPath
-        html += `<li><a href="${item.link}" class="${isActive ? 'active' : ''}">${item.text}</a></li>`
+        html += `<li><a href="${item.link}" class="block py-1.5 px-6 text-[#476582] no-underline text-sm hover:text-[#3451b2] ${isActive ? 'text-[#3451b2] font-medium border-r-2 border-[#3451b2]' : ''}">${item.text}</a></li>`
       }
     }
 
@@ -48,23 +48,23 @@ function generateNav(config: BunPressConfig): string {
     return ''
   }
 
-  let html = '<nav class="header-nav">'
+  let html = '<nav class="flex gap-6 items-center">'
 
   for (const item of config.nav) {
     // Handle items with sub-items (dropdown)
     if (item.items && item.items.length > 0) {
-      html += `<div class="nav-dropdown">
-        <span class="nav-link">${item.text} ▼</span>
-        <div class="dropdown-content">`
+      html += `<div class="relative group">
+        <span class="text-[#476582] no-underline text-sm cursor-pointer hover:text-[#3451b2]">${item.text} ▼</span>
+        <div class="hidden group-hover:block absolute top-full left-0 bg-white border border-[#e2e2e3] rounded shadow-lg min-w-[150px] py-2 mt-2">`
 
       for (const subItem of item.items) {
-        html += `<a href="${subItem.link}" class="dropdown-link">${subItem.text}</a>`
+        html += `<a href="${subItem.link}" class="block px-4 py-2 text-[#476582] no-underline text-sm hover:bg-[#f6f6f7] hover:text-[#3451b2]">${subItem.text}</a>`
       }
 
       html += '</div></div>'
     }
     else {
-      html += `<a href="${item.link}" class="nav-link">${item.text}</a>`
+      html += `<a href="${item.link}" class="text-[#476582] no-underline text-sm hover:text-[#3451b2]">${item.text}</a>`
     }
   }
 
@@ -92,200 +92,37 @@ function wrapInLayout(content: string, config: BunPressConfig, currentPath: stri
     .filter(([key]) => key !== 'description')
     .map(([key, value]) => `<meta name="${key}" content="${value}">`)
     .join('\n  ')}
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      line-height: 1.7;
-    }
-    .header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 60px;
-      background: #fff;
-      border-bottom: 1px solid #e2e2e3;
-      display: flex;
-      align-items: center;
-      padding: 0 1.5rem;
-      z-index: 100;
-    }
-    .header-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-      margin-right: 2rem;
-    }
-    .header-nav {
-      display: flex;
-      gap: 1.5rem;
-      align-items: center;
-    }
-    .nav-link {
-      color: #476582;
-      text-decoration: none;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-    .nav-link:hover {
-      color: #3451b2;
-    }
-    .nav-dropdown {
-      position: relative;
-    }
-    .dropdown-content {
-      display: none;
-      position: absolute;
-      top: 100%;
-      left: 0;
-      background: #fff;
-      border: 1px solid #e2e2e3;
-      border-radius: 4px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      min-width: 150px;
-      padding: 0.5rem 0;
-      margin-top: 0.5rem;
-    }
-    .nav-dropdown:hover .dropdown-content {
-      display: block;
-    }
-    .dropdown-link {
-      display: block;
-      padding: 0.5rem 1rem;
-      color: #476582;
-      text-decoration: none;
-      font-size: 0.9rem;
-    }
-    .dropdown-link:hover {
-      background: #f6f6f7;
-      color: #3451b2;
-    }
-    .sidebar {
-      position: fixed;
-      top: 60px;
-      left: 0;
-      bottom: 0;
-      width: 260px;
-      background: #fff;
-      border-right: 1px solid #e2e2e3;
-      overflow-y: auto;
-      padding: 1.5rem 0;
-    }
-    .sidebar-section {
-      margin-bottom: 1.5rem;
-    }
-    .sidebar-title {
-      padding: 0 1.5rem;
-      font-size: 0.9rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
-    .sidebar-items {
-      list-style: none;
-    }
-    .sidebar-items a {
-      display: block;
-      padding: 0.4rem 1.5rem;
-      color: #476582;
-      text-decoration: none;
-      font-size: 0.9rem;
-    }
-    .sidebar-items a:hover {
-      color: #3451b2;
-    }
-    .sidebar-items a.active {
-      color: #3451b2;
-      font-weight: 500;
-      border-right: 2px solid #3451b2;
-    }
-    .main {
-      margin-left: 260px;
-      margin-top: 60px;
-      padding: 2rem 3rem;
-      max-width: 900px;
-    }
-    .content h1 {
-      font-size: 2rem;
-      margin: 2rem 0 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid #e2e2e3;
-    }
-    .content h2 {
-      font-size: 1.5rem;
-      margin: 1.8rem 0 0.8rem;
-    }
-    .content h3 {
-      font-size: 1.25rem;
-      margin: 1.5rem 0 0.7rem;
-    }
-    .content p {
-      margin: 1rem 0;
-    }
-    .content a {
-      color: #3451b2;
-      text-decoration: none;
-    }
-    .content a:hover {
-      text-decoration: underline;
-    }
-    .content ul, .content ol {
-      margin: 1rem 0;
-      padding-left: 2rem;
-    }
-    .content li {
-      margin: 0.5rem 0;
-    }
-    .content code {
-      background: #f6f6f7;
-      padding: 0.2rem 0.4rem;
-      border-radius: 3px;
-      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-      font-size: 0.9em;
-    }
-    .content pre {
-      background: #f6f6f7;
-      padding: 1.2rem;
-      border-radius: 6px;
-      overflow-x: auto;
-      margin: 1.5rem 0;
-    }
-    .content pre code {
-      background: none;
-      padding: 0;
-    }
-    .content blockquote {
-      border-left: 4px solid #3451b2;
-      padding-left: 1rem;
-      margin: 1.5rem 0;
-      color: #476582;
-    }
-    .content table {
-      border-collapse: collapse;
-      width: 100%;
-      margin: 1.5rem 0;
-    }
-    .content th, .content td {
-      border: 1px solid #e2e2e3;
-      padding: 0.75rem;
-      text-align: left;
-    }
-    .content th {
-      background: #f6f6f7;
-      font-weight: 600;
-    }
+    /* Custom CSS from config */
     ${customCSS}
   </style>
 </head>
-<body>
-  <header class="header">
-    <div class="header-title">${title}</div>
+<body class="m-0 p-0 box-border font-sans leading-relaxed">
+  <header class="fixed top-0 left-0 right-0 h-[60px] bg-white border-b border-[#e2e2e3] flex items-center px-6 z-[100]">
+    <div class="text-xl font-semibold mr-8">${title}</div>
     ${generateNav(config)}
   </header>
 
   ${generateSidebar(config, currentPath)}
 
-  <main class="main">
-    <article class="content">
+  <main class="ml-[260px] mt-[60px] p-8 max-w-[900px]">
+    <article class="prose prose-slate max-w-none
+      prose-h1:text-3xl prose-h1:mt-8 prose-h1:mb-4 prose-h1:pb-2 prose-h1:border-b prose-h1:border-[#e2e2e3]
+      prose-h2:text-2xl prose-h2:mt-7 prose-h2:mb-3
+      prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3
+      prose-p:my-4
+      prose-a:text-[#3451b2] prose-a:no-underline hover:prose-a:underline
+      prose-ul:my-4 prose-ul:pl-8
+      prose-ol:my-4 prose-ol:pl-8
+      prose-li:my-2
+      prose-code:bg-[#f6f6f7] prose-code:px-1.5 prose-code:py-1 prose-code:rounded prose-code:font-mono prose-code:text-sm
+      prose-pre:bg-[#f6f6f7] prose-pre:p-5 prose-pre:rounded-lg prose-pre:overflow-x-auto prose-pre:my-6
+      prose-pre:code:bg-transparent prose-pre:code:p-0
+      prose-blockquote:border-l-4 prose-blockquote:border-[#3451b2] prose-blockquote:pl-4 prose-blockquote:my-6 prose-blockquote:text-[#476582]
+      prose-table:border-collapse prose-table:w-full prose-table:my-6
+      prose-th:border prose-th:border-[#e2e2e3] prose-th:px-3 prose-th:py-3 prose-th:text-left prose-th:bg-[#f6f6f7] prose-th:font-semibold
+      prose-td:border prose-td:border-[#e2e2e3] prose-td:px-3 prose-td:py-3">
       ${content}
     </article>
   </main>
