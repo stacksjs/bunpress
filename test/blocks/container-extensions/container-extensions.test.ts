@@ -187,6 +187,7 @@ describe('Container Extensions (Blocks)', () => {
 
     // Check for code blocks inside containers
     expect(html).toContain('function greet(name)')
+    // eslint-disable-next-line no-template-curly-in-string
     expect(html).toContain('return `Hello, ${name}!`')
 
     // Check for lists inside containers

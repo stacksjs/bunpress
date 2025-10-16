@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { buildTestSite, readBuiltFile } from '../../utils/test-helpers'
 
 describe('Use Case: Markdown Extensions Example', () => {
-  const testCase = 'markdown-extensions-example'
+  const _testCase = 'markdown-extensions-example'
   const testDir = '/Users/mac/repos/stacks-org/bunpress/test/use-cases/markdown-extensions-example'
 
   test('should process custom containers correctly', async () => {

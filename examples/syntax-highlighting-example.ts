@@ -333,6 +333,7 @@ Theme switching can be implemented with CSS custom properties and JavaScript.
     const result = await Bun.build({
       entrypoints: [join(testDir, 'showcase.md')],
       outdir: outDir,
+      // @ts-expect-error - config structure for example
       plugins: [markdown(buildConfig)],
     })
 

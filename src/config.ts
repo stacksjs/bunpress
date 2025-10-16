@@ -1,26 +1,5 @@
-import type {
-  BunPressConfig,
-  ConfigPlugin,
-  ConfigValidationResult,
-} from './types'
-import { existsSync } from 'node:fs'
-import { readFile } from 'node:fs/promises'
-import { join } from 'node:path'
-import process from 'node:process'
-
-// Configuration file formats supported
-const CONFIG_FILES = [
-  'bunpress.config.ts',
-  'bunpress.config.js',
-  'bunpress.config.json',
-  'bunpress.config.yml',
-  'bunpress.config.yaml',
-  '.vitepress/config.ts',
-  '.vitepress/config.js',
-  '.vitepress/config.json',
-  '.vitepress/config.yml',
-  '.vitepress/config.yaml',
-]
+import type { BunPressConfig, BunPressOptions } from './types'
+import { loadConfig } from 'bunfig'
 
 // Default configuration
 export const defaultConfig: BunPressConfig = {
@@ -270,6 +249,68 @@ export const defaultConfig: BunPressConfig = {
         color: #ef4444;
       }
 
+      /* GitHub-style Markdown Alerts */
+      .markdown-alert {
+        margin: 16px 0;
+        padding: 12px 16px;
+        border-left: 4px solid;
+        border-radius: 6px;
+        background-color: var(--alert-bg);
+        border-color: var(--alert-border);
+      }
+
+      .markdown-alert-title {
+        font-weight: 600;
+        margin: 0 0 8px 0;
+        display: flex;
+        align-items: center;
+        color: var(--alert-title-color);
+      }
+
+      .markdown-alert-title svg {
+        margin-right: 8px;
+        fill: currentColor;
+      }
+
+      .markdown-alert p:last-child {
+        margin-bottom: 0;
+      }
+
+      /* Note/Info Alert */
+      .markdown-alert-note {
+        --alert-bg: #dbeafe;
+        --alert-border: #3b82f6;
+        --alert-title-color: #1e40af;
+      }
+
+      /* Tip Alert */
+      .markdown-alert-tip {
+        --alert-bg: #d1fae5;
+        --alert-border: #10b981;
+        --alert-title-color: #059669;
+      }
+
+      /* Important Alert */
+      .markdown-alert-important {
+        --alert-bg: #fef3c7;
+        --alert-border: #f59e0b;
+        --alert-title-color: #d97706;
+      }
+
+      /* Warning Alert */
+      .markdown-alert-warning {
+        --alert-bg: #fed7aa;
+        --alert-border: #ea580c;
+        --alert-title-color: #c2410c;
+      }
+
+      /* Caution Alert */
+      .markdown-alert-caution {
+        --alert-bg: #fecaca;
+        --alert-border: #ef4444;
+        --alert-title-color: #dc2626;
+      }
+
       /* Responsive adjustments for features grid */
       @media (max-width: 1024px) {
         .grid-cols-4 {
@@ -281,13 +322,13 @@ export const defaultConfig: BunPressConfig = {
         .grid-cols-4 {
           grid-template-columns: 1fr;
         }
-        
+
         .flex.items-center.gap-12 {
           flex-direction: column;
           text-align: center;
           gap: 2rem;
         }
-        
+
         .text-5xl {
           font-size: 2rem;
         }
@@ -389,281 +430,16 @@ export const defaultConfig: BunPressConfig = {
   },
 }
 
-// Plugin system interfaces are defined in types.ts
-
-// Configuration manager class
-export class ConfigManager {
-  private config: BunPressConfig
-  private plugins: ConfigPlugin[] = []
-  private watchers: ((config: BunPressConfig) => void)[] = []
-
-  constructor(initialConfig: BunPressConfig = defaultConfig) {
-    this.config = { ...initialConfig }
-  }
-
-  // Add a plugin
-  addPlugin(plugin: ConfigPlugin): void {
-    this.plugins.push(plugin)
-  }
-
-  // Merge configuration with defaults
-  mergeConfig(userConfig: Partial<BunPressConfig>): void {
-    this.config = this.deepMerge(this.config, userConfig)
-  }
-
-  // Apply plugins to configuration
-  async applyPlugins(): Promise<void> {
-    let config = { ...this.config }
-
-    // Apply extendConfig plugins
-    for (const plugin of this.plugins) {
-      if (plugin.extendConfig) {
-        try {
-          config = plugin.extendConfig(config)
-        }
-        catch (error) {
-          console.error(`Plugin ${plugin.name} failed to extend config:`, error)
-        }
-      }
-    }
-
-    this.config = config
-
-    // Call onConfigLoad hooks
-    for (const plugin of this.plugins) {
-      if (plugin.onConfigLoad) {
-        try {
-          await plugin.onConfigLoad(this.config)
-        }
-        catch (error) {
-          console.error(`Plugin ${plugin.name} onConfigLoad failed:`, error)
-        }
-      }
-    }
-  }
-
-  // Validate configuration
-  validateConfig(): ConfigValidationResult {
-    const result: ConfigValidationResult = {
-      valid: true,
-      errors: [],
-      warnings: [],
-    }
-
-    // Apply plugin validators
-    for (const plugin of this.plugins) {
-      if (plugin.validateConfig) {
-        try {
-          const pluginResult = plugin.validateConfig(this.config)
-          result.valid = result.valid && pluginResult.valid
-          result.errors.push(...pluginResult.errors)
-          result.warnings.push(...pluginResult.warnings)
-        }
-        catch (error) {
-          result.valid = false
-          result.errors.push(`Plugin ${plugin.name} validation failed: ${error}`)
-        }
-      }
-    }
-
-    // Built-in validation
-    if (this.config.nav && !Array.isArray(this.config.nav)) {
-      result.valid = false
-      result.errors.push('nav must be an array')
-    }
-
-    if (this.config.markdown?.nav && !Array.isArray(this.config.markdown.nav)) {
-      result.valid = false
-      result.errors.push('markdown.nav must be an array')
-    }
-
-    if (this.config.markdown?.sidebar && typeof this.config.markdown.sidebar !== 'object') {
-      result.valid = false
-      result.errors.push('sidebar must be an object')
-    }
-
-    if (this.config.markdown?.themeConfig?.colors && typeof this.config.markdown.themeConfig.colors !== 'object') {
-      result.valid = false
-      result.errors.push('themeConfig.colors must be an object')
-    }
-
-    return result
-  }
-
-  // Watch for configuration changes
-  watch(callback: (config: BunPressConfig) => void): void {
-    this.watchers.push(callback)
-  }
-
-  // Update configuration at runtime
-  async updateConfig(updates: Partial<BunPressConfig>): Promise<void> {
-    const oldConfig = { ...this.config }
-    this.mergeConfig(updates)
-    await this.applyPlugins()
-
-    // Notify watchers
-    for (const watcher of this.watchers) {
-      try {
-        watcher(this.config)
-      }
-      catch (error) {
-        console.error('Configuration watcher failed:', error)
-      }
-    }
-
-    // Notify plugins of config change
-    for (const plugin of this.plugins) {
-      if (plugin.onConfigChange) {
-        try {
-          await plugin.onConfigChange(this.config, oldConfig)
-        }
-        catch (error) {
-          console.error(`Plugin ${plugin.name} onConfigChange failed:`, error)
-        }
-      }
-    }
-  }
-
-  // Get current configuration
-  getConfig(): BunPressConfig {
-    return { ...this.config }
-  }
-
-  // Deep merge utility
-  private deepMerge(target: any, source: any): any {
-    const output = { ...target }
-
-    if (this.isObject(target) && this.isObject(source)) {
-      Object.keys(source).forEach((key) => {
-        if (this.isObject(source[key])) {
-          if (!(key in target)) {
-            output[key] = source[key]
-          }
-          else {
-            output[key] = this.deepMerge(target[key], source[key])
-          }
-        }
-        else {
-          output[key] = source[key]
-        }
-      })
-    }
-
-    return output
-  }
-
-  private isObject(item: any): boolean {
-    return item && typeof item === 'object' && !Array.isArray(item)
-  }
-}
-
-// Load configuration from file
-export async function loadConfigFile(configPath?: string): Promise<BunPressConfig> {
-  let configFile = configPath
-
-  if (!configFile) {
-    // Find config file
-    for (const file of CONFIG_FILES) {
-      if (existsSync(file)) {
-        configFile = file
-        break
-      }
-    }
-  }
-
-  if (!configFile || !existsSync(configFile)) {
-    return { ...defaultConfig }
-  }
-
-  try {
-    const ext = configFile.split('.').pop()?.toLowerCase()
-
-    if (ext === 'json') {
-      const content = await readFile(configFile, 'utf-8')
-      return JSON.parse(content)
-    }
-
-    if (ext === 'yml' || ext === 'yaml') {
-      // For YAML support, we'd need to add a YAML parser
-      // For now, return default config
-      console.warn('YAML config files not yet supported')
-      return { ...defaultConfig }
-    }
-
-    if (ext === 'ts' || ext === 'js') {
-      // For TypeScript/JavaScript files, use absolute path
-      const absolutePath = join(process.cwd(), configFile)
-      const module = await import(absolutePath)
-      return module.default || module
-    }
-  }
-  catch (error) {
-    console.error(`Failed to load config from ${configFile}:`, error)
-  }
-
-  return { ...defaultConfig }
-}
-
-// Initialize configuration system
-export async function initializeConfig(userConfig?: Partial<BunPressConfig>): Promise<ConfigManager> {
-  const configManager = new ConfigManager(defaultConfig)
-
-  // Load config from file
-  const fileConfig = await loadConfigFile()
-  configManager.mergeConfig(fileConfig)
-
-  // Apply user config
-  if (userConfig) {
-    configManager.mergeConfig(userConfig)
-  }
-
-  // Apply plugins
-  await configManager.applyPlugins()
-
-  return configManager
-}
-
-// Global config instance
-let globalConfigManager: ConfigManager | null = null
-
-// Get or create global configuration
-export async function getConfigManager(userConfig?: Partial<BunPressConfig>): Promise<ConfigManager> {
-  if (!globalConfigManager) {
-    globalConfigManager = await initializeConfig(userConfig)
-  }
-  return globalConfigManager
-}
-
-// Get current configuration
-export async function getConfig(): Promise<BunPressConfig> {
-  const manager = await getConfigManager()
-  return manager.getConfig()
-}
-
-// Update configuration at runtime
-export async function updateConfig(updates: Partial<BunPressConfig>): Promise<void> {
-  const manager = await getConfigManager()
-  await manager.updateConfig(updates)
-}
-
-// Add plugin to configuration system
-export async function addConfigPlugin(plugin: ConfigPlugin): Promise<void> {
-  const manager = await getConfigManager()
-  manager.addPlugin(plugin)
-}
-
-// Validate current configuration
-export async function validateConfig(): Promise<ConfigValidationResult> {
-  const manager = await getConfigManager()
-  return manager.validateConfig()
-}
-
-// Watch for configuration changes
-export async function watchConfig(callback: (config: BunPressConfig) => void): Promise<void> {
-  const manager = await getConfigManager()
-  manager.watch(callback)
-}
-
-// Export for backward compatibility
+// Load and export the resolved configuration
 // eslint-disable-next-line antfu/no-top-level-await
-export const config: BunPressConfig = await getConfig()
+export const config: BunPressOptions = await loadConfig({
+  name: 'bunpress',
+  defaultConfig,
+})
+
+// Note: defaultConfig is already exported above on line 7
+
+// Backward compatibility - simple config getter
+export async function getConfig(): Promise<BunPressOptions> {
+  return config
+}

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { buildTestSite, readBuiltFile } from './utils/test-helpers'
 
 async function debugSyntaxHighlighting() {

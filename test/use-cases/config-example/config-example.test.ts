@@ -4,12 +4,12 @@ import { join } from 'node:path'
 import { buildTestSite, readBuiltFile } from '../../utils/test-helpers'
 
 describe('Use Case: Config Example', () => {
-  const testCase = 'config-example'
+  const _testCase = 'config-example'
   const testDir = '/Users/mac/repos/stacks-org/bunpress/test/use-cases/config-example'
 
   test('should generate HTML that matches expected output', async () => {
     const content = await readFile(join(testDir, 'test.md'), 'utf8')
-    const expectedHtml = await readFile(join(testDir, 'expected.html'), 'utf8')
+    const _expectedHtml = await readFile(join(testDir, 'expected.html'), 'utf8')
 
     const result = await buildTestSite({
       files: [

@@ -132,6 +132,7 @@ describe('Tip Blocks', () => {
     expect(html).toContain('<p class="custom-block-title">Code Example</p>')
     expect(html).toContain('Here\'s a code example inside a tip container:')
     expect(html).toContain('function greet(name)')
+    // eslint-disable-next-line no-template-curly-in-string
     expect(html).toContain('return `Hello, ${name}!`')
   })
 

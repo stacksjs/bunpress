@@ -428,7 +428,7 @@ This is the about page content.
             { text: 'About', link: '/about' },
           ],
           footer: '© 2024 My Site',
-        },
+        } as any,
       })
 
       expect(result.success).toBe(true)
@@ -653,7 +653,7 @@ This page includes partial templates.
             twitter: 'https://twitter.com/site',
             github: 'https://github.com/site',
           },
-        },
+        } as any,
       })
 
       expect(result.success).toBe(true)
@@ -737,7 +737,7 @@ This is the main content area.
         config: {
           title: 'Complex Site',
           footer: '© 2024 Complex Site',
-        },
+        } as any,
       })
 
       expect(result.success).toBe(true)

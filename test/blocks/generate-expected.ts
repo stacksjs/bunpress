@@ -1,10 +1,12 @@
 #!/usr/bin/env bun
+/* eslint-disable no-console */
 /**
  * Script to generate expected HTML outputs for block tests
  */
 
 import { mkdir, readdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import process from 'node:process'
 import { markdown } from '../../src/plugin'
 
 async function generateExpectedHtml(blockType: string) {
@@ -14,7 +16,7 @@ async function generateExpectedHtml(blockType: string) {
 
   try {
     // Read the markdown file
-    const mdContent = await Bun.file(mdFile).text()
+    const _mdContent = await Bun.file(mdFile).text()
 
     // Create a simple Bun build to process the markdown
     const tempOutDir = join(blockDir, 'temp-output')

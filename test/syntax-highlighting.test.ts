@@ -128,6 +128,7 @@ console.log(greeting)
         files: [{ path: 'test.md', content }],
         config: {
           markdown: {
+            // @ts-expect-error - theme property for testing
             theme: 'dark-plus',
           },
         },
@@ -428,6 +429,7 @@ const theme = 'dark'
         files: [{ path: 'test.md', content }],
         config: {
           markdown: {
+            // @ts-expect-error - codeTheme property for testing
             codeTheme: 'dark',
           },
         },

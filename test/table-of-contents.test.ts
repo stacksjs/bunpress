@@ -69,6 +69,7 @@ Available endpoints.
         files: [{ path: 'test.md', content }],
         config: {
           markdown: {
+            // @ts-expect-error - tocMaxDepth property for testing
             tocMaxDepth: 2,
           },
         },

@@ -446,6 +446,517 @@ def hello():
     })
   })
 
+  describe('GitHub-style Callouts', () => {
+    test('should render NOTE callouts with GitHub syntax', async () => {
+      const content = createTestMarkdown(`
+# Test Page
+
+> [!NOTE]
+> This is a note callout using GitHub syntax.
+      `)
+
+      const result = await buildTestSite({
+        files: [{ path: 'test.md', content }],
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(html, 'markdown-alert')).toBe(true)
+      expect(assertHtmlContains(html, 'markdown-alert-note')).toBe(true)
+      expect(assertHtmlContains(html, 'markdown-alert-title')).toBe(true)
+      expect(assertHtmlContains(html, 'octicon octicon-info')).toBe(true)
+      expect(assertHtmlContains(html, 'This is a note callout using GitHub syntax.')).toBe(true)
+
+      // Clean up test directory
+      const testDir = result.outputs[0].replace(/\/[^/]*$/, '').replace(/\/dist$/, '')
+      await cleanupTestDirectory(testDir)
+    })
+
+    test('should render TIP callouts with GitHub syntax', async () => {
+      const content = createTestMarkdown(`
+# Test Page
+
+> [!TIP]
+> This is a tip callout using GitHub syntax.
+      `)
+
+      const result = await buildTestSite({
+        files: [{ path: 'test.md', content }],
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(html, 'markdown-alert-tip')).toBe(true)
+      expect(assertHtmlContains(html, 'octicon octicon-light-bulb')).toBe(true)
+      expect(assertHtmlContains(html, 'This is a tip callout using GitHub syntax.')).toBe(true)
+
+      // Clean up test directory
+      const testDir = result.outputs[0].replace(/\/[^/]*$/, '').replace(/\/dist$/, '')
+      await cleanupTestDirectory(testDir)
+    })
+
+    test('should render IMPORTANT callouts with GitHub syntax', async () => {
+      const content = createTestMarkdown(`
+# Test Page
+
+> [!IMPORTANT]
+> This is an important callout using GitHub syntax.
+      `)
+
+      const result = await buildTestSite({
+        files: [{ path: 'test.md', content }],
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(html, 'markdown-alert-important')).toBe(true)
+      expect(assertHtmlContains(html, 'octicon octicon-report')).toBe(true)
+      expect(assertHtmlContains(html, 'This is an important callout using GitHub syntax.')).toBe(true)
+
+      // Clean up test directory
+      const testDir = result.outputs[0].replace(/\/[^/]*$/, '').replace(/\/dist$/, '')
+      await cleanupTestDirectory(testDir)
+    })
+
+    test('should render WARNING callouts with GitHub syntax', async () => {
+      const content = createTestMarkdown(`
+# Test Page
+
+> [!WARNING]
+> This is a warning callout using GitHub syntax.
+      `)
+
+      const result = await buildTestSite({
+        files: [{ path: 'test.md', content }],
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(html, 'markdown-alert-warning')).toBe(true)
+      expect(assertHtmlContains(html, 'octicon octicon-alert')).toBe(true)
+      expect(assertHtmlContains(html, 'This is a warning callout using GitHub syntax.')).toBe(true)
+
+      // Clean up test directory
+      const testDir = result.outputs[0].replace(/\/[^/]*$/, '').replace(/\/dist$/, '')
+      await cleanupTestDirectory(testDir)
+    })
+
+    test('should render CAUTION callouts with GitHub syntax', async () => {
+      const content = createTestMarkdown(`
+# Test Page
+
+> [!CAUTION]
+> This is a caution callout using GitHub syntax.
+      `)
+
+      const result = await buildTestSite({
+        files: [{ path: 'test.md', content }],
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(html, 'markdown-alert-caution')).toBe(true)
+      expect(assertHtmlContains(html, 'octicon octicon-stop')).toBe(true)
+      expect(assertHtmlContains(html, 'This is a caution callout using GitHub syntax.')).toBe(true)
+
+      // Clean up test directory
+      const testDir = result.outputs[0].replace(/\/[^/]*$/, '').replace(/\/dist$/, '')
+      await cleanupTestDirectory(testDir)
+    })
+
+    test('should handle multi-line content in GitHub callouts', async () => {
+      const content = createTestMarkdown(`
+# Test Page
+
+> [!NOTE]
+> This is a multi-line note callout.
+>
+> It contains **bold text** and *italic text*.
+>
+> - Item 1
+> - Item 2
+      `)
+
+      const result = await buildTestSite({
+        files: [{ path: 'test.md', content }],
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(html, 'markdown-alert-note')).toBe(true)
+      expect(assertHtmlContains(html, 'multi-line note callout')).toBe(true)
+      expect(assertHtmlContains(html, '<strong>bold text</strong>')).toBe(true)
+      expect(assertHtmlContains(html, '<em>italic text</em>')).toBe(true)
+      expect(assertHtmlContains(html, 'Item 1')).toBe(true)
+      expect(assertHtmlContains(html, 'Item 2')).toBe(true)
+
+      // Clean up test directory
+      const testDir = result.outputs[0].replace(/\/[^/]*$/, '').replace(/\/dist$/, '')
+      await cleanupTestDirectory(testDir)
+    })
+  })
+
+  describe('Alternative Syntax Callouts', () => {
+    test('should render Note callouts with alternative syntax', async () => {
+      const content = createTestMarkdown(`
+# Test Page
+
+> **Note**
+> This is a note callout using alternative syntax.
+      `)
+
+      const result = await buildTestSite({
+        files: [{ path: 'test.md', content }],
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(html, 'markdown-alert')).toBe(true)
+      expect(assertHtmlContains(html, 'markdown-alert-note')).toBe(true)
+      expect(assertHtmlContains(html, 'markdown-alert-title')).toBe(true)
+      expect(assertHtmlContains(html, 'octicon octicon-info')).toBe(true)
+      expect(assertHtmlContains(html, 'This is a note callout using alternative syntax.')).toBe(true)
+
+      // Clean up test directory
+      const testDir = result.outputs[0].replace(/\/[^/]*$/, '').replace(/\/dist$/, '')
+      await cleanupTestDirectory(testDir)
+    })
+
+    test('should render Tip callouts with alternative syntax', async () => {
+      const content = createTestMarkdown(`
+# Test Page
+
+> **Tip**
+> This is a tip callout using alternative syntax.
+      `)
+
+      const result = await buildTestSite({
+        files: [{ path: 'test.md', content }],
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(html, 'markdown-alert-tip')).toBe(true)
+      expect(assertHtmlContains(html, 'octicon octicon-light-bulb')).toBe(true)
+      expect(assertHtmlContains(html, 'This is a tip callout using alternative syntax.')).toBe(true)
+
+      // Clean up test directory
+      const testDir = result.outputs[0].replace(/\/[^/]*$/, '').replace(/\/dist$/, '')
+      await cleanupTestDirectory(testDir)
+    })
+
+    test('should render Important callouts with alternative syntax', async () => {
+      const content = createTestMarkdown(`
+# Test Page
+
+> **Important**
+> This is an important callout using alternative syntax.
+      `)
+
+      const result = await buildTestSite({
+        files: [{ path: 'test.md', content }],
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(html, 'markdown-alert-important')).toBe(true)
+      expect(assertHtmlContains(html, 'octicon octicon-report')).toBe(true)
+      expect(assertHtmlContains(html, 'This is an important callout using alternative syntax.')).toBe(true)
+
+      // Clean up test directory
+      const testDir = result.outputs[0].replace(/\/[^/]*$/, '').replace(/\/dist$/, '')
+      await cleanupTestDirectory(testDir)
+    })
+
+    test('should render Warning callouts with alternative syntax', async () => {
+      const content = createTestMarkdown(`
+# Test Page
+
+> **Warning**
+> This is a warning callout using alternative syntax.
+      `)
+
+      const result = await buildTestSite({
+        files: [{ path: 'test.md', content }],
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(html, 'markdown-alert-warning')).toBe(true)
+      expect(assertHtmlContains(html, 'octicon octicon-alert')).toBe(true)
+      expect(assertHtmlContains(html, 'This is a warning callout using alternative syntax.')).toBe(true)
+
+      // Clean up test directory
+      const testDir = result.outputs[0].replace(/\/[^/]*$/, '').replace(/\/dist$/, '')
+      await cleanupTestDirectory(testDir)
+    })
+
+    test('should render Caution callouts with alternative syntax', async () => {
+      const content = createTestMarkdown(`
+# Test Page
+
+> **Caution**
+> This is a caution callout using alternative syntax.
+      `)
+
+      const result = await buildTestSite({
+        files: [{ path: 'test.md', content }],
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(html, 'markdown-alert-caution')).toBe(true)
+      expect(assertHtmlContains(html, 'octicon octicon-stop')).toBe(true)
+      expect(assertHtmlContains(html, 'This is a caution callout using alternative syntax.')).toBe(true)
+
+      // Clean up test directory
+      const testDir = result.outputs[0].replace(/\/[^/]*$/, '').replace(/\/dist$/, '')
+      await cleanupTestDirectory(testDir)
+    })
+
+    test('should handle case variations in alternative syntax', async () => {
+      const content = createTestMarkdown(`
+# Test Page
+
+> **note**
+> Lowercase note.
+
+> **TIP**
+> Uppercase tip.
+
+> **Warning**
+> Mixed case warning.
+      `)
+
+      const result = await buildTestSite({
+        files: [{ path: 'test.md', content }],
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(html, 'markdown-alert-note')).toBe(true)
+      expect(assertHtmlContains(html, 'markdown-alert-tip')).toBe(true)
+      expect(assertHtmlContains(html, 'markdown-alert-warning')).toBe(true)
+      expect(assertHtmlContains(html, 'Lowercase note.')).toBe(true)
+      expect(assertHtmlContains(html, 'Uppercase tip.')).toBe(true)
+      expect(assertHtmlContains(html, 'Mixed case warning.')).toBe(true)
+
+      // Clean up test directory
+      const testDir = result.outputs[0].replace(/\/[^/]*$/, '').replace(/\/dist$/, '')
+      await cleanupTestDirectory(testDir)
+    })
+
+    test('should handle multi-line content in alternative syntax', async () => {
+      const content = createTestMarkdown(`
+# Test Page
+
+> **Important**
+> This is a multi-line important callout.
+>
+> It contains \`inline code\` and other formatting.
+>
+> 1. Numbered item 1
+> 2. Numbered item 2
+      `)
+
+      const result = await buildTestSite({
+        files: [{ path: 'test.md', content }],
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+      expect(assertHtmlContains(html, 'markdown-alert-important')).toBe(true)
+      expect(assertHtmlContains(html, 'multi-line important callout')).toBe(true)
+      expect(assertHtmlContains(html, '<code>inline code</code>')).toBe(true)
+      expect(assertHtmlContains(html, 'Numbered item 1')).toBe(true)
+      expect(assertHtmlContains(html, 'Numbered item 2')).toBe(true)
+
+      // Clean up test directory
+      const testDir = result.outputs[0].replace(/\/[^/]*$/, '').replace(/\/dist$/, '')
+      await cleanupTestDirectory(testDir)
+    })
+  })
+
+  describe('Mixed Callout Syntaxes', () => {
+    test('should handle both GitHub and alternative syntax in same document', async () => {
+      const content = createTestMarkdown(`
+# Test Page
+
+> [!NOTE]
+> GitHub-style note callout.
+
+> **Warning**
+> Alternative syntax warning callout.
+
+> [!TIP]
+> GitHub-style tip callout.
+
+> **Important**
+> Alternative syntax important callout.
+      `)
+
+      const result = await buildTestSite({
+        files: [{ path: 'test.md', content }],
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+
+      // Check GitHub-style callouts
+      expect(assertHtmlContains(html, 'GitHub-style note callout.')).toBe(true)
+      expect(assertHtmlContains(html, 'GitHub-style tip callout.')).toBe(true)
+
+      // Check alternative syntax callouts
+      expect(assertHtmlContains(html, 'Alternative syntax warning callout.')).toBe(true)
+      expect(assertHtmlContains(html, 'Alternative syntax important callout.')).toBe(true)
+
+      // Verify they all use the same class structure
+      expect((html.match(/markdown-alert-note/g) || []).length).toBe(1)
+      expect((html.match(/markdown-alert-warning/g) || []).length).toBe(1)
+      expect((html.match(/markdown-alert-tip/g) || []).length).toBe(1)
+      expect((html.match(/markdown-alert-important/g) || []).length).toBe(1)
+
+      // Clean up test directory
+      const testDir = result.outputs[0].replace(/\/[^/]*$/, '').replace(/\/dist$/, '')
+      await cleanupTestDirectory(testDir)
+    })
+
+    test('should preserve regular blockquotes alongside callouts', async () => {
+      const content = createTestMarkdown(`
+# Test Page
+
+> This is a regular blockquote that should not be converted.
+
+> [!NOTE]
+> This is a GitHub-style callout.
+
+> This is another regular blockquote.
+
+> **Warning**
+> This is an alternative syntax callout.
+
+> Yet another regular blockquote.
+      `)
+
+      const result = await buildTestSite({
+        files: [{ path: 'test.md', content }],
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+
+      // Check that regular blockquotes are preserved
+      expect(assertHtmlContains(html, '<blockquote>')).toBe(true)
+      expect(assertHtmlContains(html, 'This is a regular blockquote that should not be converted.')).toBe(true)
+      expect(assertHtmlContains(html, 'This is another regular blockquote.')).toBe(true)
+      expect(assertHtmlContains(html, 'Yet another regular blockquote.')).toBe(true)
+
+      // Check that callouts are converted
+      expect(assertHtmlContains(html, 'markdown-alert-note')).toBe(true)
+      expect(assertHtmlContains(html, 'markdown-alert-warning')).toBe(true)
+      expect(assertHtmlContains(html, 'This is a GitHub-style callout.')).toBe(true)
+      expect(assertHtmlContains(html, 'This is an alternative syntax callout.')).toBe(true)
+
+      // Clean up test directory
+      const testDir = result.outputs[0].replace(/\/[^/]*$/, '').replace(/\/dist$/, '')
+      await cleanupTestDirectory(testDir)
+    })
+
+    test('should handle callouts with code blocks', async () => {
+      const content = createTestMarkdown(`
+# Test Page
+
+> [!TIP]
+> You can include code blocks in callouts:
+>
+> \`\`\`javascript
+> function greet(name) {
+>   return \`Hello, \${name}!\`
+> }
+> \`\`\`
+
+> **Note**
+> Alternative syntax also supports code:
+>
+> \`\`\`bash
+> npm install bunpress
+> \`\`\`
+      `)
+
+      const result = await buildTestSite({
+        files: [{ path: 'test.md', content }],
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+
+      // Check callout structure
+      expect(assertHtmlContains(html, 'markdown-alert-tip')).toBe(true)
+      expect(assertHtmlContains(html, 'markdown-alert-note')).toBe(true)
+
+      // Check code blocks
+      expect(assertHtmlContains(html, 'function greet(name)')).toBe(true)
+      expect(assertHtmlContains(html, 'npm install bunpress')).toBe(true)
+      expect(assertHtmlContains(html, 'language-javascript')).toBe(true)
+      expect(assertHtmlContains(html, 'language-bash')).toBe(true)
+
+      // Clean up test directory
+      const testDir = result.outputs[0].replace(/\/[^/]*$/, '').replace(/\/dist$/, '')
+      await cleanupTestDirectory(testDir)
+    })
+
+    test('should apply consistent CSS styling to both syntaxes', async () => {
+      const content = createTestMarkdown(`
+# Test Page
+
+> [!NOTE]
+> GitHub syntax note.
+
+> **Note**
+> Alternative syntax note.
+      `)
+
+      const result = await buildTestSite({
+        files: [{ path: 'test.md', content }],
+      })
+
+      expect(result.success).toBe(true)
+
+      const html = await readBuiltFile(result.outputs[0])
+
+      // Both should have the same CSS classes and structure
+      expect((html.match(/markdown-alert-note/g) || []).length).toBe(2)
+      expect((html.match(/markdown-alert-title/g) || []).length).toBe(2)
+      expect((html.match(/octicon octicon-info/g) || []).length).toBe(2)
+
+      // Check CSS styles are included
+      expect(assertHtmlContains(html, '.markdown-alert {')).toBe(true)
+      expect(assertHtmlContains(html, '.markdown-alert-note {')).toBe(true)
+      expect(assertHtmlContains(html, '--alert-bg:')).toBe(true)
+      expect(assertHtmlContains(html, '--alert-border:')).toBe(true)
+
+      // Clean up test directory
+      const testDir = result.outputs[0].replace(/\/[^/]*$/, '').replace(/\/dist$/, '')
+      await cleanupTestDirectory(testDir)
+    })
+  })
+
   describe('Combined Extensions', () => {
     test('should handle emoji in containers', async () => {
       const content = createTestMarkdown(`

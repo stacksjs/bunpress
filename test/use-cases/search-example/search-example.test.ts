@@ -4,8 +4,8 @@ import { join } from 'node:path'
 import { buildTestSite, readBuiltFile } from '../../utils/test-helpers'
 
 describe('Use Case: Search Example', () => {
-  const testCase = 'search-example'
-  const testDir = join(import.meta.dir, '..', '..', 'test', 'use-cases', testCase)
+  const _testCase = 'search-example'
+  const testDir = join(import.meta.dir, '..', '..', 'test', 'use-cases', _testCase)
 
   test('should generate HTML with search configuration examples', async () => {
     const content = await readFile(join(testDir, 'test.md'), 'utf8')

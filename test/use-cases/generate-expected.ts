@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+/* eslint-disable no-console */
 /**
  * Script to generate expected HTML outputs for use-case tests
  */
@@ -14,7 +15,7 @@ async function generateExpectedHtml(testCase: string) {
 
   try {
     // Read the markdown file
-    const mdContent = await Bun.file(mdFile).text()
+    const _mdContent = await Bun.file(mdFile).text()
 
     // Create a simple Bun build to process the markdown
     const tempOutDir = join(testDir, 'temp-output')

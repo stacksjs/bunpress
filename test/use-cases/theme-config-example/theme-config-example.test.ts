@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { buildTestSite, readBuiltFile } from '../../utils/test-helpers'
 
 describe('Use Case: Theme Config Example', () => {
-  const testCase = 'theme-config-example'
+  const _testCase = 'theme-config-example'
   const testDir = '/Users/mac/repos/stacks-org/bunpress/test/use-cases/theme-config-example'
 
   test('should generate HTML that matches expected output', async () => {
