@@ -336,6 +336,62 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
       inList = false
     }
 
+    // Tables - detect start of table
+    if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
+      const tableRows: string[] = []
+      let tableIndex = i
+
+      // Collect all table rows
+      while (tableIndex < lines.length && lines[tableIndex].trim().startsWith('|')) {
+        tableRows.push(lines[tableIndex].trim())
+        tableIndex++
+      }
+
+      if (tableRows.length >= 2) {
+        // Process table
+        const processCell = (cell: string) => {
+          // Apply inline formatting
+          return cell.trim()
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            .replace(/`(.+?)`/g, '<code>$1</code>')
+            .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
+        }
+
+        html.push('<table>')
+
+        // Header row
+        const headerCells = tableRows[0].split('|').filter(cell => cell.trim())
+        html.push('  <thead>')
+        html.push('    <tr>')
+        headerCells.forEach((cell) => {
+          html.push(`      <th>${processCell(cell)}</th>`)
+        })
+        html.push('    </tr>')
+        html.push('  </thead>')
+
+        // Body rows (skip separator row at index 1)
+        if (tableRows.length > 2) {
+          html.push('  <tbody>')
+          for (let j = 2; j < tableRows.length; j++) {
+            const cells = tableRows[j].split('|').filter(cell => cell.trim())
+            html.push('    <tr>')
+            cells.forEach((cell) => {
+              html.push(`      <td>${processCell(cell)}</td>`)
+            })
+            html.push('    </tr>')
+          }
+          html.push('  </tbody>')
+        }
+
+        html.push('</table>')
+
+        // Skip the lines we just processed
+        i = tableIndex - 1
+        continue
+      }
+    }
+
     // Empty lines
     if (line.trim() === '') {
       continue
