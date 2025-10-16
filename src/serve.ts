@@ -1,8 +1,7 @@
 /* eslint-disable no-console */
-import type { ServeOptions } from '@stacksjs/stx'
 import type { BunPressConfig } from './types'
+import { readdir } from 'node:fs/promises'
 import process from 'node:process'
-import { createMiddleware, serve } from '@stacksjs/stx'
 import { config } from './config'
 
 /**
@@ -298,26 +297,105 @@ function wrapInLayout(content: string, config: BunPressConfig, currentPath: stri
 }
 
 /**
- * Middleware to wrap markdown/stx output in BunPress layout
+ * Simple markdown to HTML converter (placeholder until full markdown plugin is enabled)
  */
-function createLayoutMiddleware(config: BunPressConfig) {
-  return createMiddleware(async (request, next) => {
-    const response = await next()
+function markdownToHtml(markdown: string): string {
+  // Remove frontmatter (YAML between ---)
+  const content = markdown.replace(/^---\n[\s\S]*?\n---\n?/, '')
 
-    // Only wrap HTML responses
-    const contentType = response.headers.get('Content-Type')
-    if (!contentType?.includes('text/html')) {
-      return response
+  // Very basic markdown conversion - will be replaced with full plugin
+  // Split into lines for better processing
+  const lines = content.split('\n')
+  const html: string[] = []
+  let inCodeBlock = false
+  let inList = false
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i]
+
+    // Code blocks
+    if (line.startsWith('```')) {
+      if (!inCodeBlock) {
+        const lang = line.substring(3).trim()
+        html.push(`<pre><code class="language-${lang}">`)
+        inCodeBlock = true
+      }
+      else {
+        html.push('</code></pre>')
+        inCodeBlock = false
+      }
+      continue
     }
 
-    const content = await response.text()
-    const url = new URL(request.url)
-    const wrappedContent = wrapInLayout(content, config, url.pathname)
+    if (inCodeBlock) {
+      html.push(line)
+      continue
+    }
 
-    return new Response(wrappedContent, {
-      headers: { 'Content-Type': 'text/html; charset=utf-8' },
-    })
-  })
+    // Headings
+    if (line.startsWith('### ')) {
+      if (inList) {
+        html.push('</ul>')
+        inList = false
+      }
+      html.push(`<h3>${line.substring(4)}</h3>`)
+      continue
+    }
+    if (line.startsWith('## ')) {
+      if (inList) {
+        html.push('</ul>')
+        inList = false
+      }
+      html.push(`<h2>${line.substring(3)}</h2>`)
+      continue
+    }
+    if (line.startsWith('# ')) {
+      if (inList) {
+        html.push('</ul>')
+        inList = false
+      }
+      html.push(`<h1>${line.substring(2)}</h1>`)
+      continue
+    }
+
+    // Lists
+    if (line.match(/^\s*[-*]\s+/)) {
+      if (!inList) {
+        html.push('<ul>')
+        inList = true
+      }
+      html.push(`<li>${line.replace(/^\s*[-*]\s+/, '')}</li>`)
+      continue
+    }
+
+    // Close list if we're in one and hit a non-list line
+    if (inList && line.trim() !== '') {
+      html.push('</ul>')
+      inList = false
+    }
+
+    // Empty lines
+    if (line.trim() === '') {
+      continue
+    }
+
+    // Regular paragraphs
+    // Apply inline formatting: bold, italic, code, links
+    line = line
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/`(.+?)`/g, '<code>$1</code>')
+      .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
+
+    html.push(`<p>${line}</p>`)
+  }
+
+  // Close list if still open
+  if (inList) {
+    html.push('</ul>')
+  }
+
+  return html.join('\n')
 }
 
 /**
@@ -332,42 +410,64 @@ export async function startServer(options: {
   const bunPressConfig = options.config || config as BunPressConfig
   const port = options.port || 3000
   const root = options.root || './docs'
-  const watch = options.watch !== undefined ? options.watch : true
 
-  const serverConfig: ServeOptions = {
+  const server = Bun.serve({
     port,
-    root,
-    watch,
-    middleware: [createLayoutMiddleware(bunPressConfig)],
-    stxOptions: {
-      markdown: {
-        syntaxHighlighting: {
-          enabled: true,
-          serverSide: true,
-          defaultTheme: 'github-dark',
-        },
-      },
-    },
-    onError: (error, request) => {
-      console.error('Error:', error)
-      return new Response(
-        wrapInLayout(
-          `<h1>Error</h1><pre>${error.message}\n${error.stack || ''}</pre>`,
-          bunPressConfig,
-          new URL(request.url).pathname,
-        ),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'text/html; charset=utf-8' },
-        },
-      )
-    },
-    on404: (request) => {
+    async fetch(req) {
+      const url = new URL(req.url)
+      let path = url.pathname
+
+      // Serve root as index
+      if (path === '/') {
+        path = '/index'
+      }
+
+      // Try to serve static files first (images, css, js, etc.)
+      const staticExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.css', '.js', '.ico', '.woff', '.woff2', '.ttf']
+      if (staticExtensions.some(ext => path.endsWith(ext))) {
+        try {
+          // Try root/public first
+          const publicPath = `${root}/public${path}`
+          const publicFile = Bun.file(publicPath)
+          if (await publicFile.exists()) {
+            return new Response(publicFile)
+          }
+
+          // Try root directly
+          const rootPath = `${root}${path}`
+          const rootFile = Bun.file(rootPath)
+          if (await rootFile.exists()) {
+            return new Response(rootFile)
+          }
+        }
+        catch {
+          // Continue to 404
+        }
+      }
+
+      // Try to serve markdown file
+      const mdPath = `${root}${path}.md`
+      try {
+        const mdFile = Bun.file(mdPath)
+        if (await mdFile.exists()) {
+          const markdown = await mdFile.text()
+          const html = markdownToHtml(markdown)
+          const wrappedHtml = wrapInLayout(html, bunPressConfig, path)
+          return new Response(wrappedHtml, {
+            headers: { 'Content-Type': 'text/html; charset=utf-8' },
+          })
+        }
+      }
+      catch {
+        // Continue to 404
+      }
+
+      // 404 response
       return new Response(
         wrapInLayout(
           '<h1>404 - Page Not Found</h1><p>The page you are looking for does not exist.</p>',
           bunPressConfig,
-          new URL(request.url).pathname,
+          path,
         ),
         {
           status: 404,
@@ -375,9 +475,10 @@ export async function startServer(options: {
         },
       )
     },
-  }
+  })
 
-  const { server, url, stop } = await serve(serverConfig)
+  const url = `http://localhost:${server.port}`
+  const stop = () => server.stop()
 
   console.log(`\n📚 BunPress documentation server running at ${url}`)
   console.log('Press Ctrl+C to stop\n')
@@ -395,6 +496,46 @@ export async function serveCLI(options: {
   config?: BunPressConfig
 } = {}): Promise<void> {
   const { stop } = await startServer(options)
+  const watch = options.watch !== undefined ? options.watch : true
+  const root = options.root || './docs'
+
+  // Watch for changes
+  if (watch) {
+    console.log(`Watching for changes in ${root} directory...\n`)
+
+    try {
+      const files = await readdir(root, { recursive: true })
+
+      let timeout: Timer | null = null
+      const rebuildDebounced = () => {
+        if (timeout)
+          clearTimeout(timeout)
+        timeout = setTimeout(async () => {
+          console.log('File changed detected, reloading...')
+          // The server will automatically serve the updated files on next request
+          console.log('Ready for requests')
+        }, 100) // Debounce 100ms
+      }
+
+      // Use file polling for simplicity
+      setInterval(async () => {
+        try {
+          const newFiles = await readdir(root, { recursive: true })
+          if (JSON.stringify(files) !== JSON.stringify(newFiles)) {
+            files.length = 0
+            files.push(...newFiles)
+            rebuildDebounced()
+          }
+        }
+        catch {
+          // Ignore errors during polling
+        }
+      }, 1000) // Check every second
+    }
+    catch (err) {
+      console.error('Error setting up file watcher:', err)
+    }
+  }
 
   // Handle graceful shutdown
   process.on('SIGINT', () => {
