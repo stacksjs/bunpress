@@ -4,6 +4,7 @@ import { YAML } from 'bun'
 import { readdir } from 'node:fs/promises'
 import process from 'node:process'
 import { config } from './config'
+import { render, renderTemplate } from './template-loader'
 
 /**
  * Generate sidebar HTML from BunPress config
@@ -76,99 +77,41 @@ function generateNav(config: BunPressConfig): string {
 /**
  * Wrap content in BunPress documentation layout
  */
-function wrapInLayout(content: string, config: BunPressConfig, currentPath: string, isHome: boolean = false): string {
+async function wrapInLayout(content: string, config: BunPressConfig, currentPath: string, isHome: boolean = false): Promise<string> {
   const title = config.markdown?.title || 'BunPress Documentation'
   const description = config.markdown?.meta?.description || 'Documentation built with BunPress'
   const customCSS = config.markdown?.css || ''
 
-  // Home layout - no sidebar, minimal header
-  if (isHome) {
-    return `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title}</title>
-  <meta name="description" content="${description}">
-  ${Object.entries(config.markdown?.meta || {})
+  const meta = Object.entries(config.markdown?.meta || {})
     .filter(([key]) => key !== 'description')
     .map(([key, value]) => `<meta name="${key}" content="${value}">`)
-    .join('\n  ')}
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    /* Custom CSS from config */
-    ${customCSS}
-  </style>
-</head>
-<body class="m-0 p-0 box-border font-sans leading-relaxed">
-  <header class="fixed top-0 left-0 right-0 h-[60px] bg-white/80 backdrop-blur-sm border-b border-gray-200 flex items-center px-6 z-[100]">
-    <div class="text-xl font-semibold mr-8">${title}</div>
-    ${generateNav(config)}
-  </header>
+    .join('\n  ')
 
-  <main class="mt-[60px]">
-    ${content}
-  </main>
+  const scripts = config.markdown?.scripts?.map(script => `<script src="${script}"></script>`).join('\n') || ''
 
-  ${config.markdown?.scripts?.map(script => `<script src="${script}"></script>`).join('\n') || ''}
-</body>
-</html>
-    `
+  // Home layout - no sidebar, no navigation, clean hero layout
+  if (isHome) {
+    return await render('layout-home', {
+      title,
+      description,
+      meta,
+      customCSS,
+      content,
+      scripts,
+    })
   }
 
   // Documentation layout - with sidebar
-  return `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title}</title>
-  <meta name="description" content="${description}">
-  ${Object.entries(config.markdown?.meta || {})
-    .filter(([key]) => key !== 'description')
-    .map(([key, value]) => `<meta name="${key}" content="${value}">`)
-    .join('\n  ')}
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    /* Custom CSS from config */
-    ${customCSS}
-  </style>
-</head>
-<body class="m-0 p-0 box-border font-sans leading-relaxed">
-  <header class="fixed top-0 left-0 right-0 h-[60px] bg-white border-b border-[#e2e2e3] flex items-center px-6 z-[100]">
-    <div class="text-xl font-semibold mr-8">${title}</div>
-    ${generateNav(config)}
-  </header>
-
-  ${generateSidebar(config, currentPath)}
-
-  <main class="ml-[260px] mt-[60px] p-8 max-w-[900px]">
-    <article class="prose prose-slate max-w-none
-      prose-h1:text-3xl prose-h1:mt-8 prose-h1:mb-4 prose-h1:pb-2 prose-h1:border-b prose-h1:border-[#e2e2e3]
-      prose-h2:text-2xl prose-h2:mt-7 prose-h2:mb-3
-      prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3
-      prose-p:my-4
-      prose-a:text-[#3451b2] prose-a:no-underline hover:prose-a:underline
-      prose-ul:my-4 prose-ul:pl-8
-      prose-ol:my-4 prose-ol:pl-8
-      prose-li:my-2
-      prose-code:bg-[#f6f6f7] prose-code:px-1.5 prose-code:py-1 prose-code:rounded prose-code:font-mono prose-code:text-sm
-      prose-pre:bg-[#f6f6f7] prose-pre:p-5 prose-pre:rounded-lg prose-pre:overflow-x-auto prose-pre:my-6
-      prose-pre:code:bg-transparent prose-pre:code:p-0
-      prose-blockquote:border-l-4 prose-blockquote:border-[#3451b2] prose-blockquote:pl-4 prose-blockquote:my-6 prose-blockquote:text-[#476582]
-      prose-table:border-collapse prose-table:w-full prose-table:my-6
-      prose-th:border prose-th:border-[#e2e2e3] prose-th:px-3 prose-th:py-3 prose-th:text-left prose-th:bg-[#f6f6f7] prose-th:font-semibold
-      prose-td:border prose-td:border-[#e2e2e3] prose-td:px-3 prose-td:py-3">
-      ${content}
-    </article>
-  </main>
-
-  ${config.markdown?.scripts?.map(script => `<script src="${script}"></script>`).join('\n') || ''}
-</body>
-</html>
-  `
+  return await render('layout-doc', {
+    title,
+    description,
+    meta,
+    customCSS,
+    nav: generateNav(config),
+    sidebar: generateSidebar(config, currentPath),
+    content,
+    scripts,
+  })
 }
 
 /**
@@ -199,66 +142,62 @@ function parseFrontmatter(markdown: string): { frontmatter: any, content: string
 /**
  * Generate hero section HTML from frontmatter
  */
-function generateHero(hero: any): string {
+async function generateHero(hero: any): Promise<string> {
   if (!hero) return ''
 
-  return `
-    <div class="relative px-6 lg:px-8">
-      <div class="mx-auto max-w-5xl pt-20 pb-32 sm:pt-48 sm:pb-40">
-        <div class="text-center">
-          ${hero.name ? `<h1 class="text-4xl font-bold tracking-tight text-[#5672cd] sm:text-6xl mb-4">${hero.name}</h1>` : ''}
-          ${hero.text ? `<p class="text-4xl sm:text-6xl font-bold tracking-tight text-gray-900 mb-6">${hero.text}</p>` : ''}
-          ${hero.tagline ? `<p class="mt-6 text-lg leading-8 text-gray-600 max-w-2xl mx-auto">${hero.tagline}</p>` : ''}
-          ${hero.actions ? `
-            <div class="mt-10 flex items-center justify-center gap-x-6">
-              ${hero.actions.map((action: any) => {
-                const isPrimary = action.theme === 'brand'
-                return `<a href="${action.link}" class="${isPrimary
-                  ? 'rounded-md bg-[#5672cd] px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-[#4461bc] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5672cd] transition-colors'
-                  : 'rounded-md px-6 py-3 text-base font-semibold text-gray-700 border border-gray-300 hover:bg-gray-50 transition-colors'}">${action.text}</a>`
-              }).join('')}
-            </div>
-          ` : ''}
-        </div>
-      </div>
-    </div>
-  `
+  const name = hero.name ? `<h1 class="text-[32px] leading-[40px] md:text-[48px] md:leading-[56px] font-bold tracking-tight text-[#5672cd] mb-3">${hero.name}</h1>` : ''
+  const text = hero.text ? `<p class="text-[32px] leading-[40px] md:text-[56px] md:leading-[64px] font-bold tracking-tight text-[#213547]">${hero.text}</p>` : ''
+  const tagline = hero.tagline ? `<p class="mt-4 text-[16px] md:text-[18px] leading-[28px] text-[#476582] font-medium">${hero.tagline}</p>` : ''
+
+  let actions = ''
+  if (hero.actions) {
+    const actionButtons = hero.actions.map((action: any) => {
+      const isPrimary = action.theme === 'brand'
+      return `<a href="${action.link}" class="inline-block ${isPrimary
+        ? 'bg-[#5672cd] text-white px-4 py-2 rounded-[20px] font-medium text-[14px] transition-colors hover:bg-[#4558b8]'
+        : 'bg-[#f6f6f7] text-[#213547] px-4 py-2 rounded-[20px] font-medium text-[14px] border border-[#e2e2e3] transition-colors hover:bg-[#e7e7e8] hover:border-[#d0d0d1]'}">${action.text}</a>`
+    }).join('')
+    actions = `<div class="mt-8 flex flex-wrap items-center gap-3">${actionButtons}</div>`
+  }
+
+  return await render('hero', {
+    name,
+    text,
+    tagline,
+    actions,
+  })
 }
 
 /**
  * Generate features grid HTML from frontmatter
  */
-function generateFeatures(features: any[]): string {
+async function generateFeatures(features: any[]): Promise<string> {
   if (!features || features.length === 0) return ''
 
-  return `
-    <div class="py-24 sm:py-32 bg-gray-50">
-      <div class="mx-auto max-w-7xl px-6 lg:px-8">
-        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          ${features.map(feature => `
-            <div class="relative bg-white p-8 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-              ${feature.icon ? `<div class="text-4xl mb-4">${feature.icon}</div>` : ''}
-              <h3 class="text-lg font-semibold text-gray-900 mb-2">${feature.title || ''}</h3>
-              <p class="text-sm text-gray-600 leading-relaxed">${feature.details || ''}</p>
-            </div>
-          `).join('')}
-        </div>
-      </div>
+  const items = features.map(feature => `
+    <div class="relative bg-[#f6f6f7] p-6 rounded-xl border border-[#e2e2e3] hover:border-[#5672cd] transition-colors">
+      ${feature.icon ? `<div class="text-[40px] mb-3">${feature.icon}</div>` : ''}
+      <h3 class="text-[18px] font-semibold text-[#213547] mb-2 leading-[24px]">${feature.title || ''}</h3>
+      <p class="text-[14px] text-[#476582] leading-[22px]">${feature.details || ''}</p>
     </div>
-  `
+  `).join('')
+
+  return await render('features', {
+    items,
+  })
 }
 
 /**
  * Simple markdown to HTML converter (placeholder until full markdown plugin is enabled)
  */
-function markdownToHtml(markdown: string): { html: string, frontmatter: any } {
+async function markdownToHtml(markdown: string): Promise<{ html: string, frontmatter: any }> {
   // Parse frontmatter
   const { frontmatter, content } = parseFrontmatter(markdown)
 
   // If it's a home layout, generate hero and features
   if (frontmatter.layout === 'home') {
-    const heroHtml = generateHero(frontmatter.hero)
-    const featuresHtml = generateFeatures(frontmatter.features)
+    const heroHtml = await generateHero(frontmatter.hero)
+    const featuresHtml = await generateFeatures(frontmatter.features)
     return {
       html: heroHtml + featuresHtml,
       frontmatter
@@ -416,9 +355,9 @@ export async function startServer(options: {
         const mdFile = Bun.file(mdPath)
         if (await mdFile.exists()) {
           const markdown = await mdFile.text()
-          const { html, frontmatter } = markdownToHtml(markdown)
+          const { html, frontmatter } = await markdownToHtml(markdown)
           const isHome = frontmatter.layout === 'home'
-          const wrappedHtml = wrapInLayout(html, bunPressConfig, path, isHome)
+          const wrappedHtml = await wrapInLayout(html, bunPressConfig, path, isHome)
           return new Response(wrappedHtml, {
             headers: { 'Content-Type': 'text/html; charset=utf-8' },
           })
@@ -430,7 +369,7 @@ export async function startServer(options: {
 
       // 404 response
       return new Response(
-        wrapInLayout(
+        await wrapInLayout(
           '<h1>404 - Page Not Found</h1><p>The page you are looking for does not exist.</p>',
           bunPressConfig,
           path,

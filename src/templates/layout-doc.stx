@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }}</title>
+  <meta name="description" content="{{ description }}">
+  {{ meta }}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom CSS from config */
+    {{ customCSS }}
+  </style>
+</head>
+<body class="m-0 p-0 box-border font-sans leading-relaxed">
+  <header class="fixed top-0 left-0 right-0 h-[60px] bg-white border-b border-[#e2e2e3] flex items-center px-6 z-[100]">
+    <div class="text-xl font-semibold mr-8">{{ title }}</div>
+    {{ nav }}
+  </header>
+
+  {{ sidebar }}
+
+  <main class="ml-[260px] mt-[60px] p-8 max-w-[900px]">
+    <article class="prose prose-slate max-w-none
+      prose-h1:text-3xl prose-h1:mt-8 prose-h1:mb-4 prose-h1:pb-2 prose-h1:border-b prose-h1:border-[#e2e2e3]
+      prose-h2:text-2xl prose-h2:mt-7 prose-h2:mb-3
+      prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3
+      prose-p:my-4
+      prose-a:text-[#3451b2] prose-a:no-underline hover:prose-a:underline
+      prose-ul:my-4 prose-ul:pl-8
+      prose-ol:my-4 prose-ol:pl-8
+      prose-li:my-2
+      prose-code:bg-[#f6f6f7] prose-code:px-1.5 prose-code:py-1 prose-code:rounded prose-code:font-mono prose-code:text-sm
+      prose-pre:bg-[#f6f6f7] prose-pre:p-5 prose-pre:rounded-lg prose-pre:overflow-x-auto prose-pre:my-6
+      prose-pre:code:bg-transparent prose-pre:code:p-0
+      prose-blockquote:border-l-4 prose-blockquote:border-[#3451b2] prose-blockquote:pl-4 prose-blockquote:my-6 prose-blockquote:text-[#476582]
+      prose-table:border-collapse prose-table:w-full prose-table:my-6
+      prose-th:border prose-th:border-[#e2e2e3] prose-th:px-3 prose-th:py-3 prose-th:text-left prose-th:bg-[#f6f6f7] prose-th:font-semibold
+      prose-td:border prose-td:border-[#e2e2e3] prose-td:px-3 prose-td:py-3">
+      {{ content }}
+    </article>
+  </main>
+
+  {{ scripts }}
+</body>
+</html>
