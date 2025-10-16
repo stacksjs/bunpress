@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import type { BunPressConfig } from './types'
+import { YAML } from 'bun'
 import { readdir } from 'node:fs/promises'
 import process from 'node:process'
 import { config } from './config'
@@ -75,11 +76,48 @@ function generateNav(config: BunPressConfig): string {
 /**
  * Wrap content in BunPress documentation layout
  */
-function wrapInLayout(content: string, config: BunPressConfig, currentPath: string): string {
+function wrapInLayout(content: string, config: BunPressConfig, currentPath: string, isHome: boolean = false): string {
   const title = config.markdown?.title || 'BunPress Documentation'
   const description = config.markdown?.meta?.description || 'Documentation built with BunPress'
   const customCSS = config.markdown?.css || ''
 
+  // Home layout - no sidebar, minimal header
+  if (isHome) {
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
+  <meta name="description" content="${description}">
+  ${Object.entries(config.markdown?.meta || {})
+    .filter(([key]) => key !== 'description')
+    .map(([key, value]) => `<meta name="${key}" content="${value}">`)
+    .join('\n  ')}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom CSS from config */
+    ${customCSS}
+  </style>
+</head>
+<body class="m-0 p-0 box-border font-sans leading-relaxed">
+  <header class="fixed top-0 left-0 right-0 h-[60px] bg-white/80 backdrop-blur-sm border-b border-gray-200 flex items-center px-6 z-[100]">
+    <div class="text-xl font-semibold mr-8">${title}</div>
+    ${generateNav(config)}
+  </header>
+
+  <main class="mt-[60px]">
+    ${content}
+  </main>
+
+  ${config.markdown?.scripts?.map(script => `<script src="${script}"></script>`).join('\n') || ''}
+</body>
+</html>
+    `
+  }
+
+  // Documentation layout - with sidebar
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -134,11 +172,98 @@ function wrapInLayout(content: string, config: BunPressConfig, currentPath: stri
 }
 
 /**
+ * Parse YAML frontmatter from markdown using Bun's native YAML parser
+ */
+function parseFrontmatter(markdown: string): { frontmatter: any, content: string } {
+  const frontmatterRegex = /^---\n([\s\S]*?)\n---\n?/
+  const match = markdown.match(frontmatterRegex)
+
+  if (!match) {
+    return { frontmatter: {}, content: markdown }
+  }
+
+  const frontmatterText = match[1]
+  const content = markdown.slice(match[0].length)
+
+  try {
+    // Use Bun's native YAML parser
+    const frontmatter = YAML.parse(frontmatterText)
+    return { frontmatter, content }
+  }
+  catch (error) {
+    console.error('Failed to parse frontmatter YAML:', error)
+    return { frontmatter: {}, content: markdown }
+  }
+}
+
+/**
+ * Generate hero section HTML from frontmatter
+ */
+function generateHero(hero: any): string {
+  if (!hero) return ''
+
+  return `
+    <div class="relative px-6 lg:px-8">
+      <div class="mx-auto max-w-5xl pt-20 pb-32 sm:pt-48 sm:pb-40">
+        <div class="text-center">
+          ${hero.name ? `<h1 class="text-4xl font-bold tracking-tight text-[#5672cd] sm:text-6xl mb-4">${hero.name}</h1>` : ''}
+          ${hero.text ? `<p class="text-4xl sm:text-6xl font-bold tracking-tight text-gray-900 mb-6">${hero.text}</p>` : ''}
+          ${hero.tagline ? `<p class="mt-6 text-lg leading-8 text-gray-600 max-w-2xl mx-auto">${hero.tagline}</p>` : ''}
+          ${hero.actions ? `
+            <div class="mt-10 flex items-center justify-center gap-x-6">
+              ${hero.actions.map((action: any) => {
+                const isPrimary = action.theme === 'brand'
+                return `<a href="${action.link}" class="${isPrimary
+                  ? 'rounded-md bg-[#5672cd] px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-[#4461bc] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5672cd] transition-colors'
+                  : 'rounded-md px-6 py-3 text-base font-semibold text-gray-700 border border-gray-300 hover:bg-gray-50 transition-colors'}">${action.text}</a>`
+              }).join('')}
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    </div>
+  `
+}
+
+/**
+ * Generate features grid HTML from frontmatter
+ */
+function generateFeatures(features: any[]): string {
+  if (!features || features.length === 0) return ''
+
+  return `
+    <div class="py-24 sm:py-32 bg-gray-50">
+      <div class="mx-auto max-w-7xl px-6 lg:px-8">
+        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          ${features.map(feature => `
+            <div class="relative bg-white p-8 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+              ${feature.icon ? `<div class="text-4xl mb-4">${feature.icon}</div>` : ''}
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">${feature.title || ''}</h3>
+              <p class="text-sm text-gray-600 leading-relaxed">${feature.details || ''}</p>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `
+}
+
+/**
  * Simple markdown to HTML converter (placeholder until full markdown plugin is enabled)
  */
-function markdownToHtml(markdown: string): string {
-  // Remove frontmatter (YAML between ---)
-  const content = markdown.replace(/^---\n[\s\S]*?\n---\n?/, '')
+function markdownToHtml(markdown: string): { html: string, frontmatter: any } {
+  // Parse frontmatter
+  const { frontmatter, content } = parseFrontmatter(markdown)
+
+  // If it's a home layout, generate hero and features
+  if (frontmatter.layout === 'home') {
+    const heroHtml = generateHero(frontmatter.hero)
+    const featuresHtml = generateFeatures(frontmatter.features)
+    return {
+      html: heroHtml + featuresHtml,
+      frontmatter
+    }
+  }
 
   // Very basic markdown conversion - will be replaced with full plugin
   // Split into lines for better processing
@@ -232,7 +357,10 @@ function markdownToHtml(markdown: string): string {
     html.push('</ul>')
   }
 
-  return html.join('\n')
+  return {
+    html: html.join('\n'),
+    frontmatter
+  }
 }
 
 /**
@@ -288,8 +416,9 @@ export async function startServer(options: {
         const mdFile = Bun.file(mdPath)
         if (await mdFile.exists()) {
           const markdown = await mdFile.text()
-          const html = markdownToHtml(markdown)
-          const wrappedHtml = wrapInLayout(html, bunPressConfig, path)
+          const { html, frontmatter } = markdownToHtml(markdown)
+          const isHome = frontmatter.layout === 'home'
+          const wrappedHtml = wrapInLayout(html, bunPressConfig, path, isHome)
           return new Response(wrappedHtml, {
             headers: { 'Content-Type': 'text/html; charset=utf-8' },
           })
