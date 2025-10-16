@@ -1,4 +1,4 @@
-name: CI
+name: Releaser
 
 on:
   push:
@@ -6,12 +6,12 @@ on:
       - 'v*'
 
 jobs:
-  release:
-    name: release
+  npm:
+    name: npm
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5.0.0
         with:
           fetch-depth: 0
 
