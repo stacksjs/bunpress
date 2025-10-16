@@ -1,8 +1,0 @@
-{{!-- Single Code Block Template with Copy Button --}}
-<div class="code-block-container">
-  <button class="copy-code-btn" id="copy-btn-{{$copyId}}" onclick="copyToClipboard('copy-btn-{{$copyId}}', '{{$escapedCode}}')">Copy</button>
-  @if($language)
-    <span class="lang">{{$language}}</span>
-  @endif
-  <pre><code class="language-{{$language || 'plaintext'}}">{{$code}}</code></pre>
-</div>

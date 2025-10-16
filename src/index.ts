@@ -1,4 +1,5 @@
 export * from './config'
 // export * from './plugin'
+export * from './serve'
 export * from './toc'
 export * from './types'

@@ -12,6 +12,7 @@
         "@stacksjs/ts-i18n": "^0.0.0",
         "bun-git-hooks": "^0.3.1",
         "bun-plugin-dtsx": "0.9.5",
+        "bun-plugin-stx": "^0.1.12",
         "bunfig": "^0.15.0",
         "typescript": "^5.9.3",
       },
@@ -234,6 +235,8 @@
 
     "@stacksjs/path": ["@stacksjs/path@0.70.23", "", {}, "sha512-HqgtHcnhIVGahTR2OdzZxe0iSZwR+yKm/kwCeyjQHkW5hBhPrwcpuuVvIrJDoZ2CusC/vS7hSr5U6L8BEU+0vw=="],
 
+    "@stacksjs/stx": ["@stacksjs/stx@0.0.10", "", { "dependencies": { "marked": "^15.0.11", "yaml": "^2.7.1" }, "bin": { "stx": "dist/bin/cli.js" } }, "sha512-fDGk56yt8ljZhAdE22+HCyG1JxF9A1BRiwmjY4FYrRtzFSZsBFdTKOXt/8ADepGVAUdIsicQFLULiWL1d7INAA=="],
+
     "@stacksjs/ts-i18n": ["@stacksjs/ts-i18n@0.0.0", "", { "dependencies": { "@stacksjs/clapp": "^0.1.16", "bunfig": "^0.14.1", "tinyglobby": "^0.2.9", "yaml": "^2.6.0" }, "bin": { "i18n": "dist/bin/cli.js" } }, "sha512-5MBLMIZLeWX5Gc2xRe26UyFXN0q5Am51w7fRVhOf58MKa/4XL1YpQ4MwkR/M45VqVhEnvl396zY319S8WycBrQ=="],
 
     "@stylistic/eslint-plugin": ["@stylistic/eslint-plugin@4.4.1", "", { "dependencies": { "@typescript-eslint/utils": "^8.32.1", "eslint-visitor-keys": "^4.2.0", "espree": "^10.3.0", "estraverse": "^5.3.0", "picomatch": "^4.0.2" }, "peerDependencies": { "eslint": ">=9.0.0" } }, "sha512-CEigAk7eOLyHvdgmpZsKFwtiqS2wFwI1fn4j09IU9GmD4euFM4jEBAViWeCqaNLlbX2k2+A/Fq9cje4HQBXuJQ=="],
@@ -413,6 +416,8 @@
     "bun-git-hooks": ["bun-git-hooks@0.3.1", "", { "bin": { "git-hooks": "dist/bin/cli.js", "bun-git-hooks": "dist/bin/cli.js" } }, "sha512-Xs/QUqIYgBmLHSVr5VBLVbM5lZbUoAXKX2WZyoQDb2LlzcxC3BpBvMkMTQH75UuOJZwaRBq8yEe4IR6NckqdgQ=="],
 
     "bun-plugin-dtsx": ["bun-plugin-dtsx@0.9.5", "", { "dependencies": { "@stacksjs/dtsx": "0.9.4" } }, "sha512-PMGr8kna2C7rbN5NFKW+nqj8TyXjs05Yh2QM7Xjp9PN1/cJMyZML3JJAJT0Ne/6eOYCcubmLM91r+Rix/cqn8Q=="],
+
+    "bun-plugin-stx": ["bun-plugin-stx@0.1.12", "", { "dependencies": { "@stacksjs/stx": "0.0.10" } }, "sha512-E7osoEpq0A+494nh5SIvRc1F2b4ReS9nb37VuwvrEz1dvfab5J5z4e6Aa46UvDVlJ0zAoh8JY+DMY8CHlGUzBg=="],
 
     "bunfig": ["bunfig@0.15.0", "", { "bin": { "bunfig": "bin/cli.js" } }, "sha512-CsAOYBDUI/OJPDG3GXQXIcPgCl4p025ybw15D5icJ3shRxDxFZAxlRzib0f69yER9fMj2bDrrObkkvs1qZ1qVg=="],
 
@@ -687,6 +692,8 @@
     "markdown-table": ["markdown-table@3.0.4", "", {}, "sha512-wiYz4+JrLyb/DqW2hkFJxP7Vd7JuTDm77fvbM8VfEQdmSMqcImWeeRbHwZjBjIFki/VaMK2BhFi7oUUZeM5bqw=="],
 
     "markdownlint": ["markdownlint@0.38.0", "", { "dependencies": { "micromark": "4.0.2", "micromark-core-commonmark": "2.0.3", "micromark-extension-directive": "4.0.0", "micromark-extension-gfm-autolink-literal": "2.1.0", "micromark-extension-gfm-footnote": "2.1.0", "micromark-extension-gfm-table": "2.1.1", "micromark-extension-math": "3.1.0", "micromark-util-types": "2.0.2" } }, "sha512-xaSxkaU7wY/0852zGApM8LdlIfGCW8ETZ0Rr62IQtAnUMlMuifsg09vWJcNYeL4f0anvr8Vo4ZQar8jGpV0btQ=="],
+
+    "marked": ["marked@15.0.12", "", { "bin": { "marked": "bin/marked.js" } }, "sha512-8dD6FusOQSrpv9Z1rdNMdlSgQOIP880DHqnohobOmYLElGEqAL/JvxvuxZO16r4HtjTlfPRDC1hbvxC9dPN2nA=="],
 
     "mdast-util-find-and-replace": ["mdast-util-find-and-replace@3.0.2", "", { "dependencies": { "@types/mdast": "^4.0.0", "escape-string-regexp": "^5.0.0", "unist-util-is": "^6.0.0", "unist-util-visit-parents": "^6.0.0" } }, "sha512-Tmd1Vg/m3Xz43afeNxDIhWRtFZgM2VLyaf4vSTYwudTyeuTneoL3qtWMA5jeLyz/O1vDJmmV4QuScFCA2tBPwg=="],
 
