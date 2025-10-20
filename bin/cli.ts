@@ -18,6 +18,8 @@ interface CliOption {
   watch?: boolean
   verbose?: boolean
   dir?: string
+  full?: boolean
+  output?: string
 }
 
 const defaultOptions = {
@@ -257,6 +259,120 @@ cli
       watch,
       config: config as any,
     })
+  })
+
+/**
+ * Generate LLM-friendly markdown file from all documentation
+ */
+async function generateLlmMarkdown(options: CliOption = {}): Promise<boolean> {
+  const docsDir = options.dir || './docs'
+  const outputFile = options.output || './docs.md'
+  const full = options.full ?? false
+  const verbose = options.verbose ?? defaultOptions.verbose
+
+  if (verbose) {
+    console.log(`Generating LLM markdown from ${docsDir}`)
+    console.log(`Output file: ${outputFile}`)
+    console.log(`Full content: ${full}`)
+  }
+
+  // Find all markdown files
+  const markdownFiles = await findMarkdownFiles(docsDir)
+
+  if (markdownFiles.length === 0) {
+    console.log('No markdown files found in docs directory')
+    return false
+  }
+
+  if (verbose) {
+    console.log(`Found ${markdownFiles.length} markdown files`)
+  }
+
+  // Sort files for consistent output
+  markdownFiles.sort()
+
+  let output = '# Documentation\n\n'
+  output += `Generated: ${new Date().toISOString()}\n\n`
+  output += `Total files: ${markdownFiles.length}\n\n`
+  output += '---\n\n'
+
+  // Process each markdown file
+  for (const filePath of markdownFiles) {
+    const relativePath = filePath.replace(`${docsDir}/`, '')
+    const fileContent = await Bun.file(filePath).text()
+
+    if (verbose) {
+      console.log(`Processing: ${relativePath}`)
+    }
+
+    output += `## File: ${relativePath}\n\n`
+
+    if (full) {
+      // Include full content
+      output += fileContent
+      output += '\n\n'
+    }
+    else {
+      // Extract metadata and structure (titles and headings only)
+      const lines = fileContent.split('\n')
+      let inFrontmatter = false
+      let frontmatterContent = ''
+
+      for (const line of lines) {
+        // Handle frontmatter
+        if (line.trim() === '---') {
+          if (!inFrontmatter) {
+            inFrontmatter = true
+            continue
+          }
+          else {
+            inFrontmatter = false
+            if (frontmatterContent) {
+              output += '**Frontmatter:**\n```yaml\n'
+              output += frontmatterContent
+              output += '```\n\n'
+              frontmatterContent = ''
+            }
+            continue
+          }
+        }
+
+        if (inFrontmatter) {
+          frontmatterContent += `${line}\n`
+          continue
+        }
+
+        // Include headings for structure
+        if (line.match(/^#{1,6}\s+/)) {
+          output += `${line}\n`
+        }
+      }
+
+      output += '\n'
+    }
+
+    output += '---\n\n'
+  }
+
+  // Write output file
+  await Bun.write(outputFile, output)
+
+  console.log(`\nLLM markdown generated successfully: ${outputFile}`)
+  console.log(`Total size: ${(output.length / 1024).toFixed(2)} KB`)
+
+  return true
+}
+
+cli
+  .command('llm', 'Generate LLM-friendly markdown file from documentation')
+  .option('--dir <dir>', 'Documentation directory', { default: './docs' })
+  .option('--output <output>', 'Output file path', { default: './docs.md' })
+  .option('--full', 'Include full content (not just titles and headings)', { default: false })
+  .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
+  .action(async (options: CliOption) => {
+    const success = await generateLlmMarkdown(options)
+    if (!success)
+      process.exit(1)
   })
 
 cli.help()
