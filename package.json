@@ -71,7 +71,7 @@
     "@stacksjs/logsmith": "^0.2.0",
     "@stacksjs/ts-i18n": "^0.0.0",
     "bun-git-hooks": "^0.3.1",
-    "bun-plugin-dtsx": "0.9.5",
+    "bun-plugin-dtsx": "0.21.12",
     "bun-plugin-stx": "^0.1.15",
     "bunfig": "^0.15.0",
     "typescript": "^5.9.3"
