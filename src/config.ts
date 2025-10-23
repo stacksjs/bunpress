@@ -237,6 +237,156 @@ export const defaultConfig: BunPressConfig = {
     .custom-block a:hover {
       opacity: 0.8;
     }
+
+    /* GitHub-Flavored Alerts */
+    .github-alert {
+      padding: 16px;
+      margin: 16px 0;
+      border-left: 4px solid;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .github-alert-title {
+      margin: 0;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .github-alert-icon {
+      flex-shrink: 0;
+    }
+
+    .github-alert-content {
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .github-alert-content p {
+      margin: 8px 0;
+    }
+
+    .github-alert-content p:first-child {
+      margin-top: 0;
+    }
+
+    .github-alert-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Note Alert - Blue (same as info) */
+    .github-alert-note {
+      background-color: #dff6ff;
+      border-left-color: #0969da;
+    }
+
+    .github-alert-note .github-alert-title {
+      color: #0969da;
+    }
+
+    .github-alert-note .github-alert-icon {
+      fill: #0969da;
+    }
+
+    .github-alert-note .github-alert-content {
+      color: #0a3069;
+    }
+
+    /* Tip Alert - Green */
+    .github-alert-tip {
+      background-color: #dff6dd;
+      border-left-color: #1a7f37;
+    }
+
+    .github-alert-tip .github-alert-title {
+      color: #1a7f37;
+    }
+
+    .github-alert-tip .github-alert-icon {
+      fill: #1a7f37;
+    }
+
+    .github-alert-tip .github-alert-content {
+      color: #0f4d24;
+    }
+
+    /* Important Alert - Purple */
+    .github-alert-important {
+      background-color: #f6e8ff;
+      border-left-color: #8250df;
+    }
+
+    .github-alert-important .github-alert-title {
+      color: #8250df;
+    }
+
+    .github-alert-important .github-alert-icon {
+      fill: #8250df;
+    }
+
+    .github-alert-important .github-alert-content {
+      color: #442e66;
+    }
+
+    /* Warning Alert - Orange/Amber */
+    .github-alert-warning {
+      background-color: #fff8e5;
+      border-left-color: #9a6700;
+    }
+
+    .github-alert-warning .github-alert-title {
+      color: #9a6700;
+    }
+
+    .github-alert-warning .github-alert-icon {
+      fill: #9a6700;
+    }
+
+    .github-alert-warning .github-alert-content {
+      color: #633c01;
+    }
+
+    /* Caution Alert - Red */
+    .github-alert-caution {
+      background-color: #ffebe9;
+      border-left-color: #d1242f;
+    }
+
+    .github-alert-caution .github-alert-title {
+      color: #d1242f;
+    }
+
+    .github-alert-caution .github-alert-icon {
+      fill: #d1242f;
+    }
+
+    .github-alert-caution .github-alert-content {
+      color: #6e011a;
+    }
+
+    /* Inline elements inside GitHub alerts */
+    .github-alert code {
+      background-color: rgba(0, 0, 0, 0.05);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    }
+
+    .github-alert a {
+      color: inherit;
+      text-decoration: underline;
+      font-weight: 500;
+    }
+
+    .github-alert a:hover {
+      opacity: 0.8;
+    }
     `,
     scripts: [],
     preserveDirectoryStructure: true,

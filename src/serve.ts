@@ -274,6 +274,37 @@ function processInlineFormatting(text: string): string {
 }
 
 /**
+ * Process GitHub-flavored alerts like > [!NOTE], > [!TIP], etc.
+ */
+async function processGitHubAlerts(content: string): Promise<string> {
+  const alertRegex = /^>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*\n((?:>\s*.*\n?)*)/gm
+
+  const matches = Array.from(content.matchAll(alertRegex))
+
+  let result = content
+  for (const match of matches.reverse()) {
+    const [fullMatch, type, alertContent] = match
+
+    // Remove the > prefix from each line of content
+    const processedContent = alertContent
+      .split('\n')
+      .map(line => line.replace(/^>\s*/, ''))
+      .filter(line => line.trim())
+      .map(line => `<p>${processInlineFormatting(line)}</p>`)
+      .join('\n')
+
+    const alertType = type.toLowerCase()
+    const alertHtml = await render(`blocks/alerts/${alertType}`, {
+      content: processedContent,
+    })
+
+    result = result.slice(0, match.index) + alertHtml + result.slice(match.index! + fullMatch.length)
+  }
+
+  return result
+}
+
+/**
  * Process custom containers like ::: info, ::: tip, etc.
  */
 async function processContainers(content: string): Promise<string> {
@@ -331,8 +362,9 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
     }
   }
 
-  // Process custom containers first
-  let processedContent = await processContainers(content)
+  // Process GitHub alerts first, then custom containers
+  let processedContent = await processGitHubAlerts(content)
+  processedContent = await processContainers(processedContent)
 
   // Very basic markdown conversion - will be replaced with full plugin
   // Split into lines for better processing
@@ -350,8 +382,8 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
       continue
     }
 
-    // Skip lines inside containers (already processed)
-    if (line.includes('<div class="custom-block') || line.includes('<details class="custom-block')) {
+    // Skip lines inside containers and alerts (already processed)
+    if (line.includes('<div class="custom-block') || line.includes('<details class="custom-block') || line.includes('<div class="github-alert')) {
       inContainer = true
     }
     if (inContainer) {
