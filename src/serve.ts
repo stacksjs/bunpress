@@ -140,7 +140,7 @@ async function wrapInLayout(content: string, config: BunPressConfig, currentPath
     .map(([key, value]) => `<meta name="${key}" content="${value}">`)
     .join('\n  ')
 
-  const scripts = config.markdown?.scripts?.map(script => `<script src="${script}"></script>`).join('\n') || ''
+  const scripts = config.markdown?.scripts?.map(script => `<script>${script}</script>`).join('\n') || ''
 
   // Home layout - no sidebar, no navigation, clean hero layout
   if (isHome) {
@@ -305,6 +305,78 @@ async function processGitHubAlerts(content: string): Promise<string> {
 }
 
 /**
+ * Process code groups (tabbed code blocks)
+ */
+async function processCodeGroups(content: string): Promise<string> {
+  const codeGroupRegex = /^:::\s+code-group\s*?\n([\s\S]*?)^:::$/gm
+  const matches = Array.from(content.matchAll(codeGroupRegex))
+
+  let result = content
+  for (const match of matches.reverse()) {
+    const [fullMatch, innerContent] = match
+
+    // Extract individual code blocks with labels
+    const codeBlockRegex = /^```(\w+)\s+\[(.+?)\]\s*?\n([\s\S]*?)^```$/gm
+    const codeBlocks = Array.from(innerContent.matchAll(codeBlockRegex))
+
+    if (codeBlocks.length === 0)
+      continue
+
+    // Generate unique ID for this code group
+    const groupId = `code-group-${Math.random().toString(36).substr(2, 9)}`
+
+    // Generate tab buttons HTML
+    const tabsHtml = codeBlocks
+      .map((block, index) => {
+        const label = block[2]
+        const isActive = index === 0
+        return `<button class="code-group-tab ${isActive ? 'active' : ''}" onclick="switchCodeTab('${groupId}', ${index})">${label}</button>`
+      })
+      .join('')
+
+    // Generate code panels HTML
+    const panelsHtml = await Promise.all(
+      codeBlocks.map(async (block, index) => {
+        const lang = block[1]
+        const code = block[3]
+        const isActive = index === 0
+
+        // Escape HTML in code
+        const escapedCode = code
+          .split('\n')
+          .map(line =>
+            line
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#39;'),
+          )
+          .map(line => `<span>${line}</span>`)
+          .join('\n')
+
+        return `<div class="code-group-panel ${isActive ? 'active' : ''}" data-panel="${index}">
+  <pre><code class="language-${lang}">${escapedCode}</code></pre>
+</div>`
+      }),
+    )
+
+    const codeGroupHtml = `<div class="code-group" id="${groupId}">
+  <div class="code-group-tabs">
+    ${tabsHtml}
+  </div>
+  <div class="code-group-panels">
+    ${panelsHtml.join('\n')}
+  </div>
+</div>`
+
+    result = result.slice(0, match.index) + codeGroupHtml + result.slice(match.index! + fullMatch.length)
+  }
+
+  return result
+}
+
+/**
  * Process custom containers like ::: info, ::: tip, etc.
  */
 async function processContainers(content: string): Promise<string> {
@@ -346,6 +418,169 @@ async function processContainers(content: string): Promise<string> {
 }
 
 /**
+ * Parse code fence info string to extract language, line highlights, and flags
+ * Examples:
+ * - js{4} -> { lang: 'js', highlights: [4], showLineNumbers: false }
+ * - ts{1,4,6-8}:line-numbers -> { lang: 'ts', highlights: [1,4,6,7,8], showLineNumbers: true }
+ */
+function parseCodeFenceInfo(infoString: string): {
+  lang: string
+  highlights: number[]
+  showLineNumbers: boolean
+} {
+  // Extract language (everything before { or :)
+  const langMatch = infoString.match(/^(\w+)/)
+  const lang = langMatch ? langMatch[1] : ''
+
+  // Extract line highlights
+  const highlightMatch = infoString.match(/\{([^}]+)\}/)
+  const highlights: number[] = []
+
+  if (highlightMatch) {
+    const ranges = highlightMatch[1].split(',')
+    for (const range of ranges) {
+      const trimmed = range.trim()
+      if (trimmed.includes('-')) {
+        const [start, end] = trimmed.split('-').map(Number)
+        for (let i = start; i <= end; i++) {
+          highlights.push(i)
+        }
+      }
+      else {
+        highlights.push(Number(trimmed))
+      }
+    }
+  }
+
+  // Check for :line-numbers flag
+  const showLineNumbers = infoString.includes(':line-numbers')
+
+  return { lang, highlights, showLineNumbers }
+}
+
+/**
+ * Process code blocks with advanced features (line highlighting, line numbers, focus, etc.)
+ */
+function processCodeBlock(lines: string[], startIndex: number): { html: string, endIndex: number } {
+  const firstLine = lines[startIndex]
+  const infoString = firstLine.substring(3).trim() // Remove ```
+
+  // Parse info string
+  const { lang, highlights, showLineNumbers } = parseCodeFenceInfo(infoString)
+
+  // Collect code content
+  const codeLines: string[] = []
+  let endIndex = startIndex + 1
+
+  while (endIndex < lines.length && !lines[endIndex].startsWith('```')) {
+    codeLines.push(lines[endIndex])
+    endIndex++
+  }
+
+  // Detect focus, diff, error, warning, and other markers
+  const focusLines = new Set<number>()
+  const diffAddLines = new Set<number>()
+  const diffRemoveLines = new Set<number>()
+  const errorLines = new Set<number>()
+  const warningLines = new Set<number>()
+
+  const processedLines = codeLines.map((line, index) => {
+    let processedLine = line
+
+    // Check for focus marker
+    if (processedLine.includes('// [!code focus]')) {
+      focusLines.add(index)
+      processedLine = processedLine.replace(/\/\/ \[!code focus\]/, '').trimEnd()
+    }
+
+    // Check for diff add marker
+    if (processedLine.includes('// [!code ++]')) {
+      diffAddLines.add(index)
+      processedLine = processedLine.replace(/\/\/ \[!code \+\+\]/, '').trimEnd()
+    }
+
+    // Check for diff remove marker
+    if (processedLine.includes('// [!code --]')) {
+      diffRemoveLines.add(index)
+      processedLine = processedLine.replace(/\/\/ \[!code --\]/, '').trimEnd()
+    }
+
+    // Check for error marker
+    if (processedLine.includes('// [!code error]')) {
+      errorLines.add(index)
+      processedLine = processedLine.replace(/\/\/ \[!code error\]/, '').trimEnd()
+    }
+
+    // Check for warning marker
+    if (processedLine.includes('// [!code warning]')) {
+      warningLines.add(index)
+      processedLine = processedLine.replace(/\/\/ \[!code warning\]/, '').trimEnd()
+    }
+
+    return processedLine
+  })
+
+  const hasFocusedLines = focusLines.size > 0
+
+  // Generate HTML with all features (highlighting, focus, diff, error, warning, line numbers)
+  const codeHtml = processedLines
+    .map((line, index) => {
+      const lineNumber = index + 1
+      const isHighlighted = highlights.includes(lineNumber)
+      const isFocused = focusLines.has(index)
+      const isDiffAdd = diffAddLines.has(index)
+      const isDiffRemove = diffRemoveLines.has(index)
+      const isError = errorLines.has(index)
+      const isWarning = warningLines.has(index)
+
+      const classes: string[] = []
+      if (isHighlighted)
+        classes.push('highlighted')
+      if (isFocused)
+        classes.push('focused')
+      if (hasFocusedLines && !isFocused)
+        classes.push('dimmed')
+      if (isDiffAdd)
+        classes.push('diff-add')
+      if (isDiffRemove)
+        classes.push('diff-remove')
+      if (isError)
+        classes.push('has-error')
+      if (isWarning)
+        classes.push('has-warning')
+
+      const lineClass = classes.length > 0 ? ` class="${classes.join(' ')}"` : ''
+
+      // Escape HTML entities in code
+      const escapedLine = line
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+
+      // Add line number if enabled
+      if (showLineNumbers) {
+        return `<span${lineClass}><span class="line-number">${lineNumber}</span>${escapedLine}</span>`
+      }
+
+      return `<span${lineClass}>${escapedLine}</span>`
+    })
+    .join('\n')
+
+  const preClasses: string[] = []
+  if (showLineNumbers)
+    preClasses.push('line-numbers-mode')
+  if (hasFocusedLines)
+    preClasses.push('has-focused-lines')
+
+  const preClass = preClasses.length > 0 ? ` class="${preClasses.join(' ')}"` : ''
+  const html = `<pre${preClass}><code class="language-${lang}">${codeHtml}</code></pre>`
+
+  return { html, endIndex }
+}
+
+/**
  * Simple markdown to HTML converter (placeholder until full markdown plugin is enabled)
  */
 async function markdownToHtml(markdown: string): Promise<{ html: string, frontmatter: any }> {
@@ -362,8 +597,9 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
     }
   }
 
-  // Process GitHub alerts first, then custom containers
-  let processedContent = await processGitHubAlerts(content)
+  // Process in order: code groups, GitHub alerts, then custom containers
+  let processedContent = await processCodeGroups(content)
+  processedContent = await processGitHubAlerts(processedContent)
   processedContent = await processContainers(processedContent)
 
   // Very basic markdown conversion - will be replaced with full plugin
@@ -397,19 +633,12 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
     // Code blocks
     if (line.startsWith('```')) {
       if (!inCodeBlock) {
-        const lang = line.substring(3).trim()
-        html.push(`<pre><code class="language-${lang}">`)
-        inCodeBlock = true
-      }
-      else {
-        html.push('</code></pre>')
+        // Process the entire code block
+        const { html: codeHtml, endIndex } = processCodeBlock(lines, i)
+        html.push(codeHtml)
+        i = endIndex // Skip to end of code block
         inCodeBlock = false
       }
-      continue
-    }
-
-    if (inCodeBlock) {
-      html.push(line)
       continue
     }
 

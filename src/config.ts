@@ -387,8 +387,266 @@ export const defaultConfig: BunPressConfig = {
     .github-alert a:hover {
       opacity: 0.8;
     }
+
+    /* Code Blocks with Advanced Features */
+    pre {
+      background-color: #f6f8fa;
+      border-radius: 6px;
+      padding: 16px;
+      overflow-x: auto;
+      margin: 16px 0;
+      border: 1px solid #e1e4e8;
+    }
+
+    code {
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* Inline code */
+    p code, li code, td code, th code {
+      background-color: rgba(175, 184, 193, 0.2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    /* Code block lines */
+    pre code {
+      background: none;
+      padding: 0;
+      border-radius: 0;
+      display: block;
+    }
+
+    pre code span {
+      display: block;
+      padding: 0 4px;
+      margin: 0 -16px;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    /* Highlighted lines in code blocks */
+    pre code span.highlighted {
+      background-color: rgba(254, 243, 199, 0.5);
+      border-left: 3px solid #fbbf24;
+      padding-left: 13px; /* 16px - 3px border */
+    }
+
+    /* Line numbers in code blocks */
+    pre.line-numbers-mode {
+      padding-left: 48px;
+      position: relative;
+    }
+
+    pre.line-numbers-mode code span {
+      position: relative;
+    }
+
+    pre.line-numbers-mode .line-number {
+      position: absolute;
+      left: -48px;
+      width: 32px;
+      text-align: right;
+      color: #9ca3af;
+      user-select: none;
+      font-size: 13px;
+      padding-right: 12px;
+    }
+
+    pre.line-numbers-mode code span.highlighted .line-number {
+      color: #b45309;
+      font-weight: 500;
+    }
+
+    /* Code focus markers */
+    pre code span.focused {
+      background-color: rgba(147, 197, 253, 0.15);
+      border-left: 3px solid #3b82f6;
+      padding-left: 13px; /* 16px - 3px border */
+    }
+
+    pre code span.dimmed {
+      opacity: 0.4;
+      filter: blur(0.5px);
+      transition: opacity 0.2s ease, filter 0.2s ease;
+    }
+
+    pre code span.dimmed:hover {
+      opacity: 1;
+      filter: blur(0);
+    }
+
+    /* Combine focused and highlighted */
+    pre code span.focused.highlighted {
+      background-color: rgba(254, 243, 199, 0.7);
+      border-left: 3px solid #fbbf24;
+    }
+
+    /* Code diff markers */
+    pre code span.diff-add {
+      background-color: rgba(134, 239, 172, 0.2);
+      border-left: 3px solid #22c55e;
+      padding-left: 13px; /* 16px - 3px border */
+    }
+
+    pre code span.diff-add::before {
+      content: '+';
+      position: absolute;
+      left: -16px;
+      color: #22c55e;
+      font-weight: bold;
+      width: 16px;
+      text-align: center;
+    }
+
+    pre code span.diff-remove {
+      background-color: rgba(252, 165, 165, 0.2);
+      border-left: 3px solid #ef4444;
+      padding-left: 13px; /* 16px - 3px border */
+      opacity: 0.7;
+    }
+
+    pre code span.diff-remove::before {
+      content: '-';
+      position: absolute;
+      left: -16px;
+      color: #ef4444;
+      font-weight: bold;
+      width: 16px;
+      text-align: center;
+    }
+
+    /* Ensure proper positioning for diff indicators */
+    pre code span.diff-add,
+    pre code span.diff-remove {
+      position: relative;
+    }
+
+    /* Code error markers */
+    pre code span.has-error {
+      background-color: rgba(252, 165, 165, 0.15);
+      border-left: 3px solid #dc2626;
+      padding-left: 13px; /* 16px - 3px border */
+      position: relative;
+    }
+
+    pre code span.has-error::before {
+      content: '✕';
+      position: absolute;
+      left: -16px;
+      color: #dc2626;
+      font-weight: bold;
+      width: 16px;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    /* Code warning markers */
+    pre code span.has-warning {
+      background-color: rgba(251, 191, 36, 0.15);
+      border-left: 3px solid #f59e0b;
+      padding-left: 13px; /* 16px - 3px border */
+      position: relative;
+    }
+
+    pre code span.has-warning::before {
+      content: '⚠';
+      position: absolute;
+      left: -16px;
+      color: #f59e0b;
+      font-weight: bold;
+      width: 16px;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    /* Code Groups (Tabs) */
+    .code-group {
+      margin: 16px 0;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .code-group-tabs {
+      display: flex;
+      background-color: #f6f8fa;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 0;
+      margin: 0;
+    }
+
+    .code-group-tab {
+      background: transparent;
+      border: none;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: #6b7280;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .code-group-tab:hover {
+      color: #3b82f6;
+      background-color: #eff6ff;
+    }
+
+    .code-group-tab.active {
+      color: #3b82f6;
+      border-bottom-color: #3b82f6;
+      background-color: #eff6ff;
+    }
+
+    .code-group-panels {
+      position: relative;
+    }
+
+    .code-group-panel {
+      display: none;
+    }
+
+    .code-group-panel.active {
+      display: block;
+    }
+
+    .code-group-panel pre {
+      margin: 0;
+      border-radius: 0;
+      border: none;
+    }
     `,
-    scripts: [],
+    scripts: [`
+function switchCodeTab(groupId, panelIndex) {
+  const group = document.getElementById(groupId);
+  if (!group) return;
+
+  // Update tabs
+  const tabs = group.querySelectorAll('.code-group-tab');
+  tabs.forEach((tab, index) => {
+    if (index === panelIndex) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+
+  // Update panels
+  const panels = group.querySelectorAll('.code-group-panel');
+  panels.forEach((panel, index) => {
+    if (index === panelIndex) {
+      panel.classList.add('active');
+    } else {
+      panel.classList.remove('active');
+    }
+  });
+}
+`],
     preserveDirectoryStructure: true,
   },
 
