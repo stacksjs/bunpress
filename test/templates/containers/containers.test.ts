@@ -1,14 +1,16 @@
 import { describe, expect, it } from 'bun:test'
 import { startServer } from '../../../src/serve'
 
+const TEST_MARKDOWN_DIR = './test/markdown/containers'
+
 describe('Custom Containers', () => {
   describe('Info Container', () => {
     it('should render ::: info container with default title', async () => {
-      const { server, stop } = await startServer({ port: 4001 })
+      const { server, stop } = await startServer({ port: 4001, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
-          './docs/test-container-info.md',
+          `${TEST_MARKDOWN_DIR}/test-container-info.md`,
           '::: info\nThis is an info message.\n:::',
         )
 
@@ -21,16 +23,16 @@ describe('Custom Containers', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-container-info.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-container-info.md`, '')
       }
     })
 
     it('should render ::: info container with custom title', async () => {
-      const { server, stop } = await startServer({ port: 4002 })
+      const { server, stop } = await startServer({ port: 4002, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
-          './docs/test-container-info-custom.md',
+          `${TEST_MARKDOWN_DIR}/test-container-info-custom.md`,
           '::: info Custom Title\nThis is an info message.\n:::',
         )
 
@@ -42,18 +44,18 @@ describe('Custom Containers', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-container-info-custom.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-container-info-custom.md`, '')
       }
     })
   })
 
   describe('Tip Container', () => {
     it('should render ::: tip container', async () => {
-      const { server, stop } = await startServer({ port: 4003 })
+      const { server, stop } = await startServer({ port: 4003, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
-          './docs/test-container-tip.md',
+          `${TEST_MARKDOWN_DIR}/test-container-tip.md`,
           '::: tip\nThis is a helpful tip.\n:::',
         )
 
@@ -66,18 +68,18 @@ describe('Custom Containers', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-container-tip.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-container-tip.md`, '')
       }
     })
   })
 
   describe('Warning Container', () => {
     it('should render ::: warning container', async () => {
-      const { server, stop } = await startServer({ port: 4004 })
+      const { server, stop } = await startServer({ port: 4004, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
-          './docs/test-container-warning.md',
+          `${TEST_MARKDOWN_DIR}/test-container-warning.md`,
           '::: warning\nThis is a warning message.\n:::',
         )
 
@@ -90,18 +92,18 @@ describe('Custom Containers', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-container-warning.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-container-warning.md`, '')
       }
     })
   })
 
   describe('Danger Container', () => {
     it('should render ::: danger container', async () => {
-      const { server, stop } = await startServer({ port: 4005 })
+      const { server, stop } = await startServer({ port: 4005, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
-          './docs/test-container-danger.md',
+          `${TEST_MARKDOWN_DIR}/test-container-danger.md`,
           '::: danger\nThis is a danger message.\n:::',
         )
 
@@ -114,18 +116,18 @@ describe('Custom Containers', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-container-danger.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-container-danger.md`, '')
       }
     })
   })
 
   describe('Details Container', () => {
     it('should render ::: details container as collapsible', async () => {
-      const { server, stop } = await startServer({ port: 4006 })
+      const { server, stop } = await startServer({ port: 4006, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
-          './docs/test-container-details.md',
+          `${TEST_MARKDOWN_DIR}/test-container-details.md`,
           '::: details\nThis is details content.\n:::',
         )
 
@@ -138,16 +140,16 @@ describe('Custom Containers', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-container-details.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-container-details.md`, '')
       }
     })
 
     it('should render ::: details with custom summary', async () => {
-      const { server, stop } = await startServer({ port: 4007 })
+      const { server, stop } = await startServer({ port: 4007, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
-          './docs/test-container-details-custom.md',
+          `${TEST_MARKDOWN_DIR}/test-container-details-custom.md`,
           '::: details Click to expand\nThis is details content.\n:::',
         )
 
@@ -158,18 +160,18 @@ describe('Custom Containers', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-container-details-custom.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-container-details-custom.md`, '')
       }
     })
   })
 
   describe('Raw Container', () => {
     it('should render ::: raw container without processing', async () => {
-      const { server, stop } = await startServer({ port: 4008 })
+      const { server, stop } = await startServer({ port: 4008, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
-          './docs/test-container-raw.md',
+          `${TEST_MARKDOWN_DIR}/test-container-raw.md`,
           '::: raw\nThis is **raw** content.\n:::',
         )
 
@@ -182,18 +184,18 @@ describe('Custom Containers', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-container-raw.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-container-raw.md`, '')
       }
     })
   })
 
   describe('Container with Inline Formatting', () => {
     it('should process inline formatting inside containers', async () => {
-      const { server, stop } = await startServer({ port: 4009 })
+      const { server, stop } = await startServer({ port: 4009, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
-          './docs/test-container-formatting.md',
+          `${TEST_MARKDOWN_DIR}/test-container-formatting.md`,
           '::: info\nThis has **bold**, *italic*, and `code`.\n:::',
         )
 
@@ -206,18 +208,18 @@ describe('Custom Containers', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-container-formatting.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-container-formatting.md`, '')
       }
     })
   })
 
   describe('Multiple Containers', () => {
     it('should render multiple containers in same document', async () => {
-      const { server, stop } = await startServer({ port: 4010 })
+      const { server, stop } = await startServer({ port: 4010, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
-          './docs/test-container-multiple.md',
+          `${TEST_MARKDOWN_DIR}/test-container-multiple.md`,
           '::: info\nInfo message.\n:::\n\n::: warning\nWarning message.\n:::',
         )
 
@@ -231,18 +233,18 @@ describe('Custom Containers', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-container-multiple.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-container-multiple.md`, '')
       }
     })
   })
 
   describe('Container with Multiple Lines', () => {
     it('should render multi-line container content', async () => {
-      const { server, stop } = await startServer({ port: 4011 })
+      const { server, stop } = await startServer({ port: 4011, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
-          './docs/test-container-multiline.md',
+          `${TEST_MARKDOWN_DIR}/test-container-multiline.md`,
           '::: tip\nLine 1\nLine 2\nLine 3\n:::',
         )
 
@@ -255,18 +257,18 @@ describe('Custom Containers', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-container-multiline.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-container-multiline.md`, '')
       }
     })
   })
 
   describe('Container Mixed with Regular Content', () => {
     it('should render containers alongside regular markdown', async () => {
-      const { server, stop } = await startServer({ port: 4012 })
+      const { server, stop } = await startServer({ port: 4012, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
-          './docs/test-container-mixed.md',
+          `${TEST_MARKDOWN_DIR}/test-container-mixed.md`,
           '# Heading\n\nRegular paragraph.\n\n::: info\nInfo in container.\n:::\n\nAnother paragraph.',
         )
 
@@ -281,7 +283,7 @@ describe('Custom Containers', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-container-mixed.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-container-mixed.md`, '')
       }
     })
   })

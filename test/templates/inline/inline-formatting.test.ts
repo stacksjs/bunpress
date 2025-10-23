@@ -44,7 +44,7 @@ describe('Inline Formatting', () => {
       const { server, stop } = await startServer({ port: 3003, root: TEST_MARKDOWN_DIR })
 
       try {
-        await Bun.write('./docs/test-italic-multiple.md', 'This is *italic* and this is _also italic_.')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-italic-multiple.md`, 'This is *italic* and this is _also italic_.')
 
         const response = await fetch('http://localhost:3003/test-italic-multiple')
         const html = await response.text()
@@ -54,17 +54,17 @@ describe('Inline Formatting', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-italic-multiple.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-italic-multiple.md`, '')
       }
     })
   })
 
   describe('Bold (strong)', () => {
     it('should convert **text** to <strong>text</strong>', async () => {
-      const { server, stop } = await startServer({ port: 3004 })
+      const { server, stop } = await startServer({ port: 3004, root: TEST_MARKDOWN_DIR })
 
       try {
-        await Bun.write('./docs/test-bold-asterisk.md', 'This is **bold** text.')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-bold-asterisk.md`, 'This is **bold** text.')
 
         const response = await fetch('http://localhost:3004/test-bold-asterisk')
         const html = await response.text()
@@ -73,15 +73,15 @@ describe('Inline Formatting', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-bold-asterisk.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-bold-asterisk.md`, '')
       }
     })
 
     it('should convert __text__ to <strong>text</strong>', async () => {
-      const { server, stop } = await startServer({ port: 3005 })
+      const { server, stop } = await startServer({ port: 3005, root: TEST_MARKDOWN_DIR })
 
       try {
-        await Bun.write('./docs/test-bold-underscore.md', 'This is __bold__ text.')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-bold-underscore.md`, 'This is __bold__ text.')
 
         const response = await fetch('http://localhost:3005/test-bold-underscore')
         const html = await response.text()
@@ -90,15 +90,15 @@ describe('Inline Formatting', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-bold-underscore.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-bold-underscore.md`, '')
       }
     })
 
     it('should handle bold and italic together', async () => {
-      const { server, stop } = await startServer({ port: 3006 })
+      const { server, stop } = await startServer({ port: 3006, root: TEST_MARKDOWN_DIR })
 
       try {
-        await Bun.write('./docs/test-bold-italic.md', 'This is **bold** and *italic*.')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-bold-italic.md`, 'This is **bold** and *italic*.')
 
         const response = await fetch('http://localhost:3006/test-bold-italic')
         const html = await response.text()
@@ -108,17 +108,17 @@ describe('Inline Formatting', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-bold-italic.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-bold-italic.md`, '')
       }
     })
   })
 
   describe('Strikethrough (del)', () => {
     it('should convert ~~text~~ to <del>text</del>', async () => {
-      const { server, stop } = await startServer({ port: 3007 })
+      const { server, stop } = await startServer({ port: 3007, root: TEST_MARKDOWN_DIR })
 
       try {
-        await Bun.write('./docs/test-strikethrough.md', 'This is ~~strikethrough~~ text.')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-strikethrough.md`, 'This is ~~strikethrough~~ text.')
 
         const response = await fetch('http://localhost:3007/test-strikethrough')
         const html = await response.text()
@@ -127,17 +127,17 @@ describe('Inline Formatting', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-strikethrough.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-strikethrough.md`, '')
       }
     })
   })
 
   describe('Code (code)', () => {
     it('should convert `text` to <code>text</code>', async () => {
-      const { server, stop } = await startServer({ port: 3008 })
+      const { server, stop } = await startServer({ port: 3008, root: TEST_MARKDOWN_DIR })
 
       try {
-        await Bun.write('./docs/test-code.md', 'This is `inline code` text.')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-code.md`, 'This is `inline code` text.')
 
         const response = await fetch('http://localhost:3008/test-code')
         const html = await response.text()
@@ -146,17 +146,17 @@ describe('Inline Formatting', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-code.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-code.md`, '')
       }
     })
   })
 
   describe('Subscript (sub)', () => {
     it('should convert ~text~ to <sub>text</sub>', async () => {
-      const { server, stop } = await startServer({ port: 3009 })
+      const { server, stop } = await startServer({ port: 3009, root: TEST_MARKDOWN_DIR })
 
       try {
-        await Bun.write('./docs/test-subscript.md', 'H~2~O is water.')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-subscript.md`, 'H~2~O is water.')
 
         const response = await fetch('http://localhost:3009/test-subscript')
         const html = await response.text()
@@ -165,17 +165,17 @@ describe('Inline Formatting', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-subscript.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-subscript.md`, '')
       }
     })
   })
 
   describe('Superscript (sup)', () => {
     it('should convert ^text^ to <sup>text</sup>', async () => {
-      const { server, stop } = await startServer({ port: 3010 })
+      const { server, stop } = await startServer({ port: 3010, root: TEST_MARKDOWN_DIR })
 
       try {
-        await Bun.write('./docs/test-superscript.md', 'E = mc^2^ is famous.')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-superscript.md`, 'E = mc^2^ is famous.')
 
         const response = await fetch('http://localhost:3010/test-superscript')
         const html = await response.text()
@@ -184,17 +184,17 @@ describe('Inline Formatting', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-superscript.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-superscript.md`, '')
       }
     })
   })
 
   describe('Mark/Highlight (mark)', () => {
     it('should convert ==text== to <mark>text</mark>', async () => {
-      const { server, stop } = await startServer({ port: 3011 })
+      const { server, stop } = await startServer({ port: 3011, root: TEST_MARKDOWN_DIR })
 
       try {
-        await Bun.write('./docs/test-mark.md', 'This is ==highlighted== text.')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-mark.md`, 'This is ==highlighted== text.')
 
         const response = await fetch('http://localhost:3011/test-mark')
         const html = await response.text()
@@ -203,18 +203,18 @@ describe('Inline Formatting', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-mark.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-mark.md`, '')
       }
     })
   })
 
   describe('Combined Formatting', () => {
     it('should handle multiple formats in one line', async () => {
-      const { server, stop } = await startServer({ port: 3012 })
+      const { server, stop } = await startServer({ port: 3012, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
-          './docs/test-combined.md',
+          `${TEST_MARKDOWN_DIR}/test-combined.md`,
           'This has **bold**, *italic*, `code`, ~~strikethrough~~, ==highlight==, H~2~O, and E=mc^2^.',
         )
 
@@ -231,15 +231,15 @@ describe('Inline Formatting', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-combined.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-combined.md`, '')
       }
     })
 
     it('should work in headings', async () => {
-      const { server, stop } = await startServer({ port: 3013 })
+      const { server, stop } = await startServer({ port: 3013, root: TEST_MARKDOWN_DIR })
 
       try {
-        await Bun.write('./docs/test-heading-formatting.md', '## This is **bold** and *italic*')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-heading-formatting.md`, '## This is **bold** and *italic*')
 
         const response = await fetch('http://localhost:3013/test-heading-formatting')
         const html = await response.text()
@@ -248,15 +248,15 @@ describe('Inline Formatting', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-heading-formatting.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-heading-formatting.md`, '')
       }
     })
 
     it('should work in lists', async () => {
-      const { server, stop } = await startServer({ port: 3014 })
+      const { server, stop } = await startServer({ port: 3014, root: TEST_MARKDOWN_DIR })
 
       try {
-        await Bun.write('./docs/test-list-formatting.md', '- This is **bold** item\n- This is *italic* item')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-list-formatting.md`, '- This is **bold** item\n- This is *italic* item')
 
         const response = await fetch('http://localhost:3014/test-list-formatting')
         const html = await response.text()
@@ -266,16 +266,16 @@ describe('Inline Formatting', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-list-formatting.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-list-formatting.md`, '')
       }
     })
 
     it('should work in tables', async () => {
-      const { server, stop } = await startServer({ port: 3015 })
+      const { server, stop } = await startServer({ port: 3015, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
-          './docs/test-table-formatting.md',
+          `${TEST_MARKDOWN_DIR}/test-table-formatting.md`,
           '| Header |\n| --- |\n| **bold** |\n| *italic* |',
         )
 
@@ -287,17 +287,17 @@ describe('Inline Formatting', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-table-formatting.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-table-formatting.md`, '')
       }
     })
   })
 
   describe('Edge Cases', () => {
     it('should not confuse ** with *', async () => {
-      const { server, stop } = await startServer({ port: 3016 })
+      const { server, stop } = await startServer({ port: 3016, root: TEST_MARKDOWN_DIR })
 
       try {
-        await Bun.write('./docs/test-edge-bold-italic.md', 'This is **bold not *italic**.')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-edge-bold-italic.md`, 'This is **bold not *italic**.')
 
         const response = await fetch('http://localhost:3016/test-edge-bold-italic')
         const html = await response.text()
@@ -307,15 +307,15 @@ describe('Inline Formatting', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-edge-bold-italic.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-edge-bold-italic.md`, '')
       }
     })
 
     it('should not confuse ~~ with ~', async () => {
-      const { server, stop } = await startServer({ port: 3017 })
+      const { server, stop } = await startServer({ port: 3017, root: TEST_MARKDOWN_DIR })
 
       try {
-        await Bun.write('./docs/test-edge-strike-sub.md', 'H~2~O and ~~deleted~~.')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-edge-strike-sub.md`, 'H~2~O and ~~deleted~~.')
 
         const response = await fetch('http://localhost:3017/test-edge-strike-sub')
         const html = await response.text()
@@ -325,7 +325,7 @@ describe('Inline Formatting', () => {
       }
       finally {
         stop()
-        await Bun.write('./docs/test-edge-strike-sub.md', '')
+        await Bun.write(`${TEST_MARKDOWN_DIR}/test-edge-strike-sub.md`, '')
       }
     })
   })
