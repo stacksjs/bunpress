@@ -248,6 +248,73 @@ async function generateFeatures(features: any[]): Promise<string> {
 }
 
 /**
+ * Process inline markdown formatting
+ * Supports: bold, italic, strikethrough, code, links, subscript, superscript, mark
+ */
+function processInlineFormatting(text: string): string {
+  return text
+    // Bold - both ** and __
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/__(.+?)__/g, '<strong>$1</strong>')
+    // Strikethrough ~~
+    .replace(/~~(.+?)~~/g, '<del>$1</del>')
+    // Mark/highlight ==
+    .replace(/==(.+?)==/g, '<mark>$1</mark>')
+    // Superscript ^
+    .replace(/\^(.+?)\^/g, '<sup>$1</sup>')
+    // Code ` (before italic to avoid conflicts)
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    // Italic - both * and _ (single, not double)
+    .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>')
+    .replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, '<em>$1</em>')
+    // Subscript ~ (single, not double like strikethrough)
+    .replace(/(?<!~)~(?!~)(.+?)(?<!~)~(?!~)/g, '<sub>$1</sub>')
+    // Links
+    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
+}
+
+/**
+ * Process custom containers like ::: info, ::: tip, etc.
+ */
+async function processContainers(content: string): Promise<string> {
+  const containerRegex = /^:::\s+(info|tip|warning|danger|details|raw)(?: (.+?))?\s*?\n([\s\S]*?)^:::$/gm
+
+  const matches = Array.from(content.matchAll(containerRegex))
+
+  let result = content
+  for (const match of matches.reverse()) { // Process in reverse to maintain correct indices
+    const [fullMatch, type, customTitle, innerContent] = match
+    const defaultTitles: Record<string, string> = {
+      info: 'INFO',
+      tip: 'TIP',
+      warning: 'WARNING',
+      danger: 'DANGER',
+      details: 'Details',
+      raw: '',
+    }
+
+    const title = (customTitle && customTitle.trim()) || defaultTitles[type]
+
+    // Process inner content (convert markdown to HTML)
+    const processedContent = innerContent
+      .trim()
+      .split('\n')
+      .filter(line => line.trim())
+      .map(line => `<p>${processInlineFormatting(line)}</p>`)
+      .join('\n')
+
+    const containerHtml = await render(`blocks/containers/${type}`, {
+      title,
+      content: processedContent,
+    })
+
+    result = result.slice(0, match.index) + containerHtml + result.slice(match.index! + fullMatch.length)
+  }
+
+  return result
+}
+
+/**
  * Simple markdown to HTML converter (placeholder until full markdown plugin is enabled)
  */
 async function markdownToHtml(markdown: string): Promise<{ html: string, frontmatter: any }> {
@@ -264,15 +331,36 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
     }
   }
 
+  // Process custom containers first
+  let processedContent = await processContainers(content)
+
   // Very basic markdown conversion - will be replaced with full plugin
   // Split into lines for better processing
-  const lines = content.split('\n')
+  const lines = processedContent.split('\n')
   const html: string[] = []
   let inCodeBlock = false
   let inList = false
+  let inContainer = false
 
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i]
+
+    // Skip container markers (already processed)
+    if (line.trim().startsWith(':::')) {
+      continue
+    }
+
+    // Skip lines inside containers (already processed)
+    if (line.includes('<div class="custom-block') || line.includes('<details class="custom-block')) {
+      inContainer = true
+    }
+    if (inContainer) {
+      html.push(line)
+      if (line.includes('</div>') || line.includes('</details>')) {
+        inContainer = false
+      }
+      continue
+    }
 
     // Code blocks
     if (line.startsWith('```')) {
@@ -299,7 +387,7 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
         html.push('</ul>')
         inList = false
       }
-      html.push(`<h3>${line.substring(4)}</h3>`)
+      html.push(`<h3>${processInlineFormatting(line.substring(4))}</h3>`)
       continue
     }
     if (line.startsWith('## ')) {
@@ -307,7 +395,7 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
         html.push('</ul>')
         inList = false
       }
-      html.push(`<h2>${line.substring(3)}</h2>`)
+      html.push(`<h2>${processInlineFormatting(line.substring(3))}</h2>`)
       continue
     }
     if (line.startsWith('# ')) {
@@ -315,7 +403,7 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
         html.push('</ul>')
         inList = false
       }
-      html.push(`<h1>${line.substring(2)}</h1>`)
+      html.push(`<h1>${processInlineFormatting(line.substring(2))}</h1>`)
       continue
     }
 
@@ -325,7 +413,7 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
         html.push('<ul>')
         inList = true
       }
-      html.push(`<li>${line.replace(/^\s*[-*]\s+/, '')}</li>`)
+      html.push(`<li>${processInlineFormatting(line.replace(/^\s*[-*]\s+/, ''))}</li>`)
       continue
     }
 
@@ -350,11 +438,7 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
         // Process table
         const processCell = (cell: string) => {
           // Apply inline formatting
-          return cell.trim()
-            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.+?)\*/g, '<em>$1</em>')
-            .replace(/`(.+?)`/g, '<code>$1</code>')
-            .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
+          return processInlineFormatting(cell.trim())
         }
 
         html.push('<table>')
@@ -397,12 +481,8 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
     }
 
     // Regular paragraphs
-    // Apply inline formatting: bold, italic, code, links
-    line = line
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/`(.+?)`/g, '<code>$1</code>')
-      .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
+    // Apply inline formatting: bold, italic, code, links, etc.
+    line = processInlineFormatting(line)
 
     html.push(`<p>${line}</p>`)
   }

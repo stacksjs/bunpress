@@ -1,1 +1,466 @@
 fathom id: NXCLHKXQ
+
+# BunPress VitePress-Compatible Blocks & Templates Implementation Plan
+
+## Overview
+Implement all VitePress markdown blocks and containers as reusable `.stx` templates in `src/templates/blocks/`, ensuring full VitePress compatibility with proper styling and functionality.
+
+---
+
+## Phase 1: Inline Formatting (Foundation) ✅ COMPLETED
+
+### 1.1 Fix Current Inline Formatting Issues ✅
+- [x] Fix underscore italic syntax: `_text_` → `<em>text</em>`
+- [x] Fix double underscore bold syntax: `__text__` → `<strong>text</strong>`
+- [x] Ensure asterisk syntax works: `*text*` → `<em>text</em>`, `**text**` → `<strong>text</strong>`
+- [x] Support strikethrough: `~~text~~` → `<del>text</del>`
+- [x] Support subscript: `~text~` → `<sub>text</sub>`
+- [x] Support superscript: `^text^` → `<sup>text</sup>`
+- [x] Support mark/highlight: `==text==` → `<mark>text</mark>`
+
+**Templates created:** ✅
+- `src/templates/blocks/inline/em.stx`
+- `src/templates/blocks/inline/strong.stx`
+- `src/templates/blocks/inline/del.stx`
+- `src/templates/blocks/inline/sub.stx`
+- `src/templates/blocks/inline/sup.stx`
+- `src/templates/blocks/inline/mark.stx`
+- `src/templates/blocks/inline/code.stx`
+
+**Tests created:** ✅ (17/17 passing)
+- `test/templates/inline/inline-formatting.test.ts` (comprehensive test suite)
+
+---
+
+## Phase 2: Custom Containers (Priority) ✅ COMPLETED
+
+### 2.1 Info Container ✅
+- [x] Create template: `src/templates/blocks/containers/info.stx`
+- [x] Syntax: `::: info` or `::: info Custom Title`
+- [x] Default icon/styling (blue theme)
+- [x] Support custom titles
+- [x] Support markdown content inside
+
+### 2.2 Tip Container ✅
+- [x] Create template: `src/templates/blocks/containers/tip.stx`
+- [x] Syntax: `::: tip` or `::: tip Custom Title`
+- [x] Default icon/styling (green theme)
+
+### 2.3 Warning Container ✅
+- [x] Create template: `src/templates/blocks/containers/warning.stx`
+- [x] Syntax: `::: warning` or `::: warning Custom Title`
+- [x] Default icon/styling (yellow/orange theme)
+
+### 2.4 Danger Container ✅
+- [x] Create template: `src/templates/blocks/containers/danger.stx`
+- [x] Syntax: `::: danger` or `::: danger Custom Title`
+- [x] Default icon/styling (red theme)
+
+### 2.5 Details Container ✅
+- [x] Create template: `src/templates/blocks/containers/details.stx`
+- [x] Syntax: `::: details` or `::: details Custom Summary`
+- [x] Collapsible/expandable functionality
+- [x] Uses `<details>` and `<summary>` HTML elements
+
+### 2.6 Raw Container ✅
+- [x] Create template: `src/templates/blocks/containers/raw.stx`
+- [x] Syntax: `::: raw`
+- [x] Style isolation (for embedding external content)
+
+**Templates created:** ✅ All 6 container types
+**Tests created:** ✅ (12/12 passing)
+- `test/templates/containers/containers.test.ts` (comprehensive test suite with 35 assertions)
+**CSS Styling:** ✅ Complete theme styling in `src/config.ts`
+
+---
+
+## Phase 3: GitHub-Flavored Alerts
+
+### 3.1 Note Alert
+- [ ] Create template: `src/templates/blocks/alerts/note.stx`
+- [ ] Syntax: `> [!NOTE]` (GitHub-style blockquote alert)
+- [ ] Equivalent to info container
+- [ ] Blue theme with note icon
+
+**Test:** `test/templates/alerts/note.test.ts`
+
+### 3.2 Tip Alert
+- [ ] Create template: `src/templates/blocks/alerts/tip.stx`
+- [ ] Syntax: `> [!TIP]`
+- [ ] Green theme
+
+**Test:** `test/templates/alerts/tip.test.ts`
+
+### 3.3 Important Alert
+- [ ] Create template: `src/templates/blocks/alerts/important.stx`
+- [ ] Syntax: `> [!IMPORTANT]`
+- [ ] Purple theme
+
+**Test:** `test/templates/alerts/important.test.ts`
+
+### 3.4 Warning Alert
+- [ ] Create template: `src/templates/blocks/alerts/warning.stx`
+- [ ] Syntax: `> [!WARNING]`
+- [ ] Orange theme
+
+**Test:** `test/templates/alerts/warning.test.ts`
+
+### 3.5 Caution Alert
+- [ ] Create template: `src/templates/blocks/alerts/caution.stx`
+- [ ] Syntax: `> [!CAUTION]`
+- [ ] Red theme (more severe than warning)
+
+**Test:** `test/templates/alerts/caution.test.ts`
+
+---
+
+## Phase 4: Advanced Code Blocks
+
+### 4.1 Line Highlighting
+- [ ] Create template: `src/templates/blocks/code/line-highlight.stx`
+- [ ] Syntax: ````js{4}` or ````js{1,4,6-8}`
+- [ ] Highlight specific lines in code blocks
+- [ ] Support ranges and individual lines
+
+**Test:** `test/templates/code/line-highlight.test.ts`
+
+### 4.2 Line Numbers
+- [ ] Create template: `src/templates/blocks/code/line-numbers.stx`
+- [ ] Syntax: ````js:line-numbers` or global config
+- [ ] Add line numbers to code blocks
+- [ ] Toggle via config or per-block
+
+**Test:** `test/templates/code/line-numbers.test.ts`
+
+### 4.3 Code Focus
+- [ ] Create template: `src/templates/blocks/code/focus.stx`
+- [ ] Syntax: `// [!code focus]` comments in code
+- [ ] Dim non-focused lines
+- [ ] Highlight focused sections
+
+**Test:** `test/templates/code/focus.test.ts`
+
+### 4.4 Code Diffs
+- [ ] Create template: `src/templates/blocks/code/diff.stx`
+- [ ] Syntax: `// [!code ++]` for additions, `// [!code --]` for deletions
+- [ ] Show added/removed lines with +/- indicators
+- [ ] Green for additions, red for deletions
+
+**Test:** `test/templates/code/diff.test.ts`
+
+### 4.5 Code Errors & Warnings
+- [ ] Create template: `src/templates/blocks/code/error.stx`
+- [ ] Create template: `src/templates/blocks/code/warning.stx`
+- [ ] Syntax: `// [!code error]` or `// [!code warning]`
+- [ ] Highlight problematic code lines
+- [ ] Red for errors, yellow for warnings
+
+**Test:** `test/templates/code/error-warning.test.ts`
+
+### 4.6 Code Groups (Tabs)
+- [ ] Create template: `src/templates/blocks/code/code-group.stx`
+- [ ] Syntax: `::: code-group` wrapper with multiple code blocks
+- [ ] Tabbed interface for switching between code snippets
+- [ ] Support multiple languages in same group
+- [ ] Add tab navigation JavaScript
+
+**Test:** `test/templates/code/code-group.test.ts`
+
+### 4.7 Code Imports
+- [ ] Create template: `src/templates/blocks/code/import.stx`
+- [ ] Syntax: `<<< @/filepath{lineRange}`
+- [ ] Import code snippets from files
+- [ ] Support line ranges: `{1-10}`
+- [ ] Support regions: `{#region-name}`
+
+**Test:** `test/templates/code/import.test.ts`
+
+---
+
+## Phase 5: Content Features
+
+### 5.1 Table of Contents
+- [ ] Create template: `src/templates/blocks/toc.stx`
+- [ ] Syntax: `[[toc]]` macro
+- [ ] Already partially implemented, needs template extraction
+- [ ] Configurable depth (minDepth, maxDepth)
+- [ ] Auto-generated from headings
+
+**Test:** `test/templates/toc.test.ts` (enhance existing)
+
+### 5.2 Custom Header Anchors
+- [ ] Create template: `src/templates/blocks/heading-anchor.stx`
+- [ ] Syntax: `## Heading {#custom-id}`
+- [ ] Allow custom IDs for headings
+- [ ] Override auto-generated slugs
+
+**Test:** `test/templates/heading-anchor.test.ts`
+
+### 5.3 Emoji Support
+- [ ] Create template: `src/templates/blocks/emoji.stx`
+- [ ] Syntax: `:tada:`, `:rocket:`, etc.
+- [ ] Use emoji shortcode library
+- [ ] Render as Unicode emoji or images
+
+**Test:** `test/templates/emoji.test.ts`
+
+### 5.4 Badges
+- [ ] Create template: `src/templates/blocks/badge.stx`
+- [ ] Syntax: `<Badge type="info|tip|warning|danger" text="v2.0" />`
+- [ ] Inline status badges
+- [ ] Custom colors and text
+
+**Test:** `test/templates/badge.test.ts`
+
+---
+
+## Phase 6: File Inclusion
+
+### 6.1 Markdown File Inclusion
+- [ ] Create template: `src/templates/blocks/include/markdown.stx`
+- [ ] Syntax: `<!--@include: ./file.md-->`
+- [ ] Support line ranges: `<!--@include: ./file.md{10-20}-->`
+- [ ] Support regions: `<!--@include: ./file.md{#region}-->`
+- [ ] Recursive inclusion support
+
+**Test:** `test/templates/include/markdown.test.ts`
+
+### 6.2 Code Snippet Inclusion
+- [ ] Create template: `src/templates/blocks/include/code.stx`
+- [ ] Syntax: `<<< @/snippets/example.js`
+- [ ] Import code with syntax highlighting
+- [ ] Support all code import features (regions, ranges)
+
+**Test:** `test/templates/include/code.test.ts`
+
+---
+
+## Phase 7: Math & Diagrams (Optional/Advanced)
+
+### 7.1 Math Equations
+- [ ] Create template: `src/templates/blocks/math/inline.stx`
+- [ ] Create template: `src/templates/blocks/math/block.stx`
+- [ ] Syntax: `$inline math$` or `$$\nblock math\n$$`
+- [ ] Support LaTeX/KaTeX rendering
+- [ ] Integrate markdown-it-mathjax3 or similar
+
+**Test:** `test/templates/math/math.test.ts`
+
+### 7.2 Mermaid Diagrams
+- [ ] Create template: `src/templates/blocks/diagram/mermaid.stx`
+- [ ] Syntax: ````mermaid` code blocks
+- [ ] Render flowcharts, sequence diagrams, etc.
+- [ ] Client-side rendering
+
+**Test:** `test/templates/diagram/mermaid.test.ts`
+
+---
+
+## Phase 8: Link & Image Enhancements
+
+### 8.1 Internal Links
+- [ ] Create template: `src/templates/blocks/link/internal.stx`
+- [ ] Auto-convert internal markdown links to SPA navigation
+- [ ] Add `.html` suffix handling
+- [ ] Preserve hash fragments
+
+**Test:** `test/templates/link/internal.test.ts`
+
+### 8.2 External Links
+- [ ] Create template: `src/templates/blocks/link/external.stx`
+- [ ] Auto-add `target="_blank" rel="noreferrer"` to external links
+- [ ] Optional external link icon
+
+**Test:** `test/templates/link/external.test.ts`
+
+### 8.3 Image Lazy Loading
+- [ ] Create template: `src/templates/blocks/image/lazy.stx`
+- [ ] Syntax: `![alt](src)` with lazy loading
+- [ ] Configurable via `markdown.image.lazyLoading`
+- [ ] Add loading="lazy" attribute
+
+**Test:** `test/templates/image/lazy.test.ts`
+
+### 8.4 Image Captions
+- [ ] Create template: `src/templates/blocks/image/caption.stx`
+- [ ] Syntax: `![alt](src "caption")`
+- [ ] Render image with figure/figcaption
+- [ ] Style captions
+
+**Test:** `test/templates/image/caption.test.ts`
+
+---
+
+## Phase 9: Table Enhancements
+
+### 9.1 Table Alignment
+- [ ] Update template: `src/templates/blocks/table/alignment.stx`
+- [ ] Syntax: `| :--- | :---: | ---: |` (left, center, right)
+- [ ] Apply CSS text-align to columns
+- [ ] Already partially implemented in serve.ts
+
+**Test:** `test/templates/table/alignment.test.ts`
+
+### 9.2 Table Styling
+- [ ] Create template: `src/templates/blocks/table/styled.stx`
+- [ ] Striped rows
+- [ ] Hover effects
+- [ ] Responsive tables (horizontal scroll on mobile)
+
+**Test:** `test/templates/table/styled.test.ts`
+
+---
+
+## Phase 10: Integration & Parser Updates
+
+### 10.1 Update Markdown Parser
+- [ ] Update `src/serve.ts` `markdownToHtml()` function
+- [ ] Add container parsing (`::: type`)
+- [ ] Add alert parsing (`> [!TYPE]`)
+- [ ] Add inline formatting fixes
+- [ ] Use template rendering for all blocks
+
+### 10.2 Plugin System Integration
+- [ ] Uncomment and update `src/plugin.ts`
+- [ ] Integrate all block templates
+- [ ] Use marked.js extensions where appropriate
+- [ ] Ensure Shiki integration for syntax highlighting
+
+### 10.3 Configuration
+- [ ] Add block configuration options to `src/types.ts`
+- [ ] Add enable/disable flags for each block type
+- [ ] Add customization options (colors, icons, etc.)
+- [ ] Update `src/config.ts` with defaults
+
+---
+
+## Test Plan Structure
+
+### Test Organization
+```
+test/
+├── templates/              # NEW: Template-specific tests
+│   ├── inline/
+│   │   ├── em.test.ts
+│   │   ├── strong.test.ts
+│   │   ├── del.test.ts
+│   │   ├── sub.test.ts
+│   │   ├── sup.test.ts
+│   │   └── mark.test.ts
+│   ├── containers/
+│   │   ├── info.test.ts
+│   │   ├── tip.test.ts
+│   │   ├── warning.test.ts
+│   │   ├── danger.test.ts
+│   │   ├── details.test.ts
+│   │   └── raw.test.ts
+│   ├── alerts/
+│   │   ├── note.test.ts
+│   │   ├── tip.test.ts
+│   │   ├── important.test.ts
+│   │   ├── warning.test.ts
+│   │   └── caution.test.ts
+│   ├── code/
+│   │   ├── line-highlight.test.ts
+│   │   ├── line-numbers.test.ts
+│   │   ├── focus.test.ts
+│   │   ├── diff.test.ts
+│   │   ├── error-warning.test.ts
+│   │   ├── code-group.test.ts
+│   │   └── import.test.ts
+│   ├── toc.test.ts
+│   ├── heading-anchor.test.ts
+│   ├── emoji.test.ts
+│   ├── badge.test.ts
+│   ├── include/
+│   │   ├── markdown.test.ts
+│   │   └── code.test.ts
+│   ├── math/
+│   │   └── math.test.ts
+│   ├── diagram/
+│   │   └── mermaid.test.ts
+│   ├── link/
+│   │   ├── internal.test.ts
+│   │   └── external.test.ts
+│   ├── image/
+│   │   ├── lazy.test.ts
+│   │   └── caption.test.ts
+│   └── table/
+│       ├── alignment.test.ts
+│       └── styled.test.ts
+└── blocks/                 # EXISTING: Keep integration tests
+    ├── container-extensions/
+    ├── tip/
+    ├── typography/
+    └── code-blocks/
+```
+
+### Test Coverage Requirements
+
+Each template test file should include:
+
+1. **Parsing Tests**
+   - [ ] Correct syntax recognition
+   - [ ] Edge cases (empty content, special characters)
+   - [ ] Nested structures (where applicable)
+
+2. **Rendering Tests**
+   - [ ] HTML output validation
+   - [ ] CSS class names
+   - [ ] Proper escaping
+
+3. **Integration Tests**
+   - [ ] Works with other blocks
+   - [ ] Doesn't break existing functionality
+   - [ ] Config options respected
+
+4. **Snapshot Tests**
+   - [ ] Visual regression testing
+   - [ ] Compare rendered output against expected
+
+5. **Accessibility Tests**
+   - [ ] Proper semantic HTML
+   - [ ] ARIA attributes where needed
+   - [ ] Keyboard navigation (for interactive blocks)
+
+---
+
+## Implementation Priority
+
+### Must-Have (Phase 1-3)
+1. Fix inline formatting (bold, italic with both * and _)
+2. Custom containers (info, tip, warning, danger, details)
+3. GitHub alerts (note, tip, important, warning, caution)
+
+### Should-Have (Phase 4-6)
+4. Advanced code blocks (line highlighting, diffs, focus)
+5. Code groups (tabs)
+6. File inclusion (markdown and code)
+
+### Nice-to-Have (Phase 7-9)
+7. Math equations
+8. Mermaid diagrams
+9. Enhanced images and links
+
+---
+
+## Success Criteria
+
+- [ ] All VitePress markdown extensions supported
+- [ ] 100% test coverage for all templates
+- [ ] Documentation for each block type
+- [ ] Performance benchmarks (parsing speed)
+- [ ] Visual parity with VitePress output
+- [ ] Configurable via `bunpress.config.ts`
+- [ ] Backward compatible with existing BunPress projects
+
+---
+
+## Notes
+
+- Use `.stx` template engine for all blocks (consistent with existing templates)
+- Leverage `@stacksjs/headwind` for styling (not UnoCSS)
+- Ensure templates are composable and reusable
+- Add proper TypeScript types for all block configurations
+- Consider adding a CLI command to list available blocks
+- Document migration path from VitePress to BunPress
