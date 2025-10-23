@@ -110,7 +110,7 @@ Implement all VitePress markdown blocks and containers as reusable `.stx` templa
 
 ---
 
-## Phase 4: Advanced Code Blocks ✅ MOSTLY COMPLETED (6/7 features)
+## Phase 4: Advanced Code Blocks ✅ COMPLETED (7/7 features)
 
 ### 4.1 Line Highlighting ✅
 - [x] Implement in `processCodeBlock()` function in `src/serve.ts`
@@ -175,24 +175,54 @@ Implement all VitePress markdown blocks and containers as reusable `.stx` templa
 **Tests:** ✅ (9/9 passing, 30 assertions)
 - `test/templates/code/code-groups.test.ts`
 
-### 4.7 Code Imports 📋 PENDING
-- [ ] Create `processCodeImports()` function
-- [ ] Syntax: `<<< @/filepath{lineRange}`
-- [ ] Import code snippets from files
-- [ ] Support line ranges: `{1-10}`
-- [ ] Support regions: `{#region-name}`
+### 4.7 Code Imports ✅
+- [x] Create `processCodeImports()` function in `src/serve.ts`
+- [x] Syntax: `<<< @/filepath` for full file import
+- [x] Support line ranges: `<<< @/filepath{1-10}`
+- [x] Support regions: `<<< @/filepath#region-name`
+- [x] Import code snippets from external files
+- [x] Automatic language detection from file extension
+- [x] Support for 20+ programming languages
+- [x] Region markers: `#region name / #endregion`, `// region name / // endregion`, `# region name / # endregion`
+- [x] Error handling for missing files and invalid regions
+- [x] Path resolution using node:path.join()
+- [x] Processes BEFORE code groups for proper integration
+- [x] Optional label syntax support: `<<< @/filepath [label]`
 
-**Note:** Deferred due to complexity (requires file I/O integration)
+**Implementation:** `src/serve.ts:307-398`
+- `processCodeImports()` function with comprehensive regex parsing
+- Reverse iteration for safe string replacement
+- Bun.file() API for efficient file reading
+- Language map with 20+ extensions (js, ts, py, rb, go, rs, java, etc.)
+- Line range conversion (1-indexed user input → 0-indexed array operations)
+- Multi-pattern region detection for different comment styles
+
+**Test Fixtures:** ✅
+- `test/markdown/code/snippets/example.js` (JavaScript with #region markers)
+- `test/markdown/code/snippets/example.ts` (TypeScript with #region markers)
+- `test/markdown/code/snippets/example.py` (Python with # region markers)
+
+**Tests:** ✅ (14/14 passing, 60 assertions)
+- `test/templates/code/code-imports.test.ts`
+- Full file imports (JS, TS, Python)
+- Line range imports (specific sections)
+- Region imports (named code regions)
+- Multiple imports per page
+- Error handling (missing files, invalid regions)
+- Integration with other code features
+- Mixed content scenarios
 
 ---
 
-**Phase 4 Summary:** ✅
-- **Features Implemented:** 6/7 (86% complete)
-- **Total Tests:** 69 passing (205 assertions)
-- **Test Files:** 6 comprehensive test suites
+**Phase 4 Summary:** ✅ **100% COMPLETE**
+- **Features Implemented:** 7/7 (100% complete)
+- **Total Tests:** 83 passing (265 assertions)
+- **Test Files:** 7 comprehensive test suites
+- **Test Fixtures:** 3 sample code files for import testing
 - **CSS:** ~200 lines of styling for all features
 - **JavaScript:** Tab switching functionality for code groups
 - **All features work independently AND can be combined together**
+- **VitePress feature parity achieved for all code block functionality**
 
 ---
 
@@ -596,6 +626,242 @@ Each theme should support:
 - Existing projects continue to work without changes
 - Users can opt-in to new themes via config
 - Gradual migration guide for custom CSS
+
+---
+
+## Phase 11: CLI Improvements & Missing Commands
+
+### 11.1 Install Script Generation
+- [ ] Implement `bunpress install` command
+- [ ] Generate installation script for BunPress
+- [ ] Support multiple package managers (npm, yarn, pnpm, bun)
+- [ ] Include setup wizard for new projects
+- [ ] Auto-detect project structure
+- [ ] Create default `bunpress.config.ts` if missing
+
+**Test:** `test/cli/install.test.ts`
+
+### 11.2 Build Command Enhancements
+- [ ] Add `--watch` flag to build command
+- [ ] Add `--minify` flag for production builds
+- [ ] Add `--sourcemap` flag for debugging
+- [ ] Improve build output formatting and colors
+- [ ] Add build time statistics
+- [ ] Show file size information
+- [ ] Add progress indicators for large builds
+
+**Test:** `test/cli/build.test.ts`
+
+### 11.3 Dev Server Improvements
+- [ ] Add hot module replacement (HMR)
+- [ ] Improve file watching performance
+- [ ] Add WebSocket for live reload
+- [ ] Better error reporting in browser
+- [ ] Add dev server API for plugins
+- [ ] Support custom middleware
+
+**Test:** `test/cli/dev.test.ts`
+
+### 11.4 New CLI Commands
+- [ ] `bunpress init` - Initialize new BunPress project
+- [ ] `bunpress preview` - Preview production build locally
+- [ ] `bunpress export` - Export static site
+- [ ] `bunpress serve` - Serve built site (production mode)
+- [ ] `bunpress clean` - Clean build artifacts
+- [ ] `bunpress doctor` - Diagnose common issues
+
+**Test:** `test/cli/commands.test.ts`
+
+### 11.5 Configuration Management
+- [ ] `bunpress config show` - Display current configuration
+- [ ] `bunpress config validate` - Validate config file
+- [ ] `bunpress config init` - Create default config
+- [ ] Support `.bunpressrc` JSON config
+- [ ] Support environment-specific configs
+
+**Test:** `test/cli/config.test.ts`
+
+### 11.6 Plugin Management
+- [ ] `bunpress plugin list` - List installed plugins
+- [ ] `bunpress plugin add <name>` - Add plugin to project
+- [ ] `bunpress plugin remove <name>` - Remove plugin
+- [ ] `bunpress plugin search <query>` - Search plugin registry
+- [ ] Plugin scaffolding: `bunpress plugin create <name>`
+
+**Test:** `test/cli/plugin-management.test.ts`
+
+### 11.7 Theme Management
+- [ ] `bunpress theme list` - List available themes
+- [ ] `bunpress theme use <name>` - Switch theme
+- [ ] `bunpress theme preview <name>` - Preview theme
+- [ ] `bunpress theme create <name>` - Create custom theme
+- [ ] Theme installation from npm or git
+
+**Test:** `test/cli/theme-management.test.ts`
+
+### 11.8 Content Management
+- [ ] `bunpress new <path>` - Create new markdown file with frontmatter template
+- [ ] `bunpress validate` - Validate all markdown files
+- [ ] `bunpress lint` - Lint markdown content
+- [ ] `bunpress search <query>` - Search documentation content
+- [ ] `bunpress stats` - Show content statistics
+
+**Test:** `test/cli/content.test.ts`
+
+### 11.9 Deployment Commands
+- [ ] `bunpress deploy` - Deploy to various platforms
+- [ ] Support Vercel deployment
+- [ ] Support Netlify deployment
+- [ ] Support GitHub Pages deployment
+- [ ] Support Cloudflare Pages deployment
+- [ ] Support custom deployment scripts
+
+**Test:** `test/cli/deploy.test.ts`
+
+### 11.10 Developer Tools
+- [ ] `bunpress debug` - Start debug mode with verbose logging
+- [ ] `bunpress analyze` - Analyze bundle size and dependencies
+- [ ] `bunpress benchmark` - Run performance benchmarks
+- [ ] `bunpress inspect <file>` - Inspect markdown parsing output
+- [ ] `bunpress generate-types` - Generate TypeScript types for config
+
+**Test:** `test/cli/dev-tools.test.ts`
+
+### 11.11 Interactive CLI
+- [ ] Add interactive mode with prompts
+- [ ] Use `@clack/prompts` for better UX
+- [ ] Support command shortcuts
+- [ ] Add command aliases
+- [ ] Add command history
+- [ ] Add auto-completion support
+
+**Test:** `test/cli/interactive.test.ts`
+
+### 11.12 CLI Help & Documentation
+- [ ] Improve `--help` output with examples
+- [ ] Add `bunpress help <command>` for detailed help
+- [ ] Add `bunpress version` with detailed version info
+- [ ] Add `bunpress upgrade` to check for updates
+- [ ] Add ASCII art banner (optional, configurable)
+- [ ] Add tips and suggestions in CLI output
+
+**Test:** `test/cli/help.test.ts`
+
+---
+
+**Phase 11 Summary:**
+- **Commands to Implement:** 40+ CLI commands and improvements
+- **Categories:** Installation, Build, Dev Server, Config, Plugins, Themes, Content, Deployment, Developer Tools, Interactive, Help
+- **Focus:** Developer experience, productivity, and ease of use
+- **Tools:** `@stacksjs/clapp` for CLI framework, `@clack/prompts` for interactive prompts
+- **Testing:** Comprehensive CLI testing with mock filesystem and stdio
+
+---
+
+## Phase 12: SEO & Sitemap Generation
+
+### 12.1 XML Sitemap Generation
+- [ ] Implement automatic sitemap.xml generation
+- [ ] Crawl all markdown files in docs directory
+- [ ] Extract URLs from file structure
+- [ ] Support custom URL mapping via frontmatter
+- [ ] Add `<lastmod>` from file modification time
+- [ ] Add `<changefreq>` configuration
+- [ ] Add `<priority>` configuration
+- [ ] Support multi-sitemap index for large sites (50,000+ URLs)
+- [ ] Configurable via `bunpress.config.ts`:
+  ```ts
+  sitemap: {
+    hostname: 'https://example.com',
+    exclude: ['/private/**'],
+    changefreq: 'weekly',
+    priority: 0.5,
+    lastmod: true
+  }
+  ```
+
+**Implementation:** `src/sitemap.ts`
+**Test:** `test/sitemap/generation.test.ts`
+
+### 12.2 Robots.txt Generation
+- [ ] Generate robots.txt automatically
+- [ ] Link to sitemap.xml
+- [ ] Support custom user-agent rules
+- [ ] Support allow/disallow patterns
+- [ ] Configurable via `bunpress.config.ts`:
+  ```ts
+  robots: {
+    userAgent: '*',
+    allow: '/',
+    disallow: ['/private/', '/admin/'],
+    sitemap: true
+  }
+  ```
+
+**Implementation:** `src/robots.ts`
+**Test:** `test/sitemap/robots.test.ts`
+
+### 12.3 Meta Tags & Open Graph
+- [ ] Auto-generate meta description from content
+- [ ] Support Open Graph tags for social sharing
+- [ ] Support Twitter Card tags
+- [ ] Extract from frontmatter or auto-generate
+- [ ] Configurable defaults via `bunpress.config.ts`:
+  ```ts
+  meta: {
+    siteName: 'My Docs',
+    siteDescription: 'Documentation site',
+    twitterCard: 'summary_large_image',
+    ogImage: '/og-image.png'
+  }
+  ```
+
+**Implementation:** Update `src/serve.ts` template rendering
+**Test:** `test/seo/meta-tags.test.ts`
+
+### 12.4 Canonical URLs
+- [ ] Add canonical link tags to prevent duplicate content
+- [ ] Auto-detect from hostname config
+- [ ] Support custom canonical URLs in frontmatter
+- [ ] Handle trailing slashes consistently
+
+**Test:** `test/seo/canonical.test.ts`
+
+### 12.5 Structured Data (JSON-LD)
+- [ ] Generate JSON-LD structured data
+- [ ] Support Article schema
+- [ ] Support Breadcrumb schema
+- [ ] Support WebSite schema
+- [ ] Configurable via frontmatter
+
+**Test:** `test/seo/structured-data.test.ts`
+
+### 12.6 RSS Feed Generation
+- [ ] Generate RSS/Atom feed for documentation updates
+- [ ] Support blog-style documentation
+- [ ] Extract from frontmatter (date, author, etc.)
+- [ ] Configurable feed settings
+
+**Test:** `test/sitemap/rss.test.ts`
+
+### 12.7 SEO Validation & Reporting
+- [ ] CLI command: `bunpress seo check`
+- [ ] Validate all pages for SEO best practices
+- [ ] Check for missing meta descriptions
+- [ ] Check for duplicate titles
+- [ ] Check for broken internal links
+- [ ] Generate SEO report
+
+**Test:** `test/cli/seo-check.test.ts`
+
+---
+
+**Phase 12 Summary:**
+- **Focus:** Search engine optimization and discoverability
+- **Features:** Sitemap, robots.txt, meta tags, Open Graph, structured data, RSS
+- **Automation:** Auto-generate from content and configuration
+- **Validation:** SEO checking and reporting tools
+- **VitePress Parity:** Matches and extends VitePress SEO capabilities
 
 ---
 

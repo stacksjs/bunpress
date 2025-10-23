@@ -305,6 +305,102 @@ async function processGitHubAlerts(content: string): Promise<string> {
 }
 
 /**
+ * Process code imports from files
+ * Syntax: <<< @/filepath or <<< @/filepath{1-10} or <<< @/filepath#region
+ * Optional label: <<< @/filepath [label]
+ */
+async function processCodeImports(content: string, rootDir: string): Promise<string> {
+  const importRegex = /^<<<\s+@\/(.+?)(?:\{(\d+)-(\d+)\}|#(\w+))?\s*(?:\[.+?\])?\s*$/gm
+  const matches = Array.from(content.matchAll(importRegex))
+
+  let result = content
+  for (const match of matches.reverse()) {
+    const [fullMatch, filepath, startLine, endLine, regionName] = match
+
+    try {
+      // Resolve file path relative to root directory
+      const { join } = await import('node:path')
+      const fullPath = join(rootDir, filepath)
+
+      // Read the file
+      const file = Bun.file(fullPath)
+      if (!(await file.exists())) {
+        console.warn(`Code import: File not found: ${fullPath}`)
+        continue
+      }
+
+      let fileContent = await file.text()
+      let lines = fileContent.split('\n')
+
+      // Extract language from file extension
+      const ext = filepath.split('.').pop() || ''
+      const langMap: Record<string, string> = {
+        js: 'javascript',
+        ts: 'typescript',
+        jsx: 'jsx',
+        tsx: 'tsx',
+        py: 'python',
+        rb: 'ruby',
+        go: 'go',
+        rs: 'rust',
+        java: 'java',
+        cpp: 'cpp',
+        c: 'c',
+        cs: 'csharp',
+        php: 'php',
+        sh: 'bash',
+        bash: 'bash',
+        yaml: 'yaml',
+        yml: 'yaml',
+        json: 'json',
+        md: 'markdown',
+        html: 'html',
+        css: 'css',
+        scss: 'scss',
+        vue: 'vue',
+      }
+      const lang = langMap[ext] || ext
+
+      // Process line range
+      if (startLine && endLine) {
+        const start = Number.parseInt(startLine) - 1 // Convert to 0-indexed
+        const end = Number.parseInt(endLine)
+        lines = lines.slice(start, end)
+      }
+      // Process region
+      else if (regionName) {
+        const regionStart = lines.findIndex(line =>
+          line.includes(`#region ${regionName}`)
+          || line.includes(`// region ${regionName}`)
+          || line.includes(`# region ${regionName}`),
+        )
+        const regionEnd = lines.findIndex((line, idx) =>
+          idx > regionStart && (line.includes('#endregion') || line.includes('// endregion') || line.includes('# endregion')),
+        )
+
+        if (regionStart !== -1 && regionEnd !== -1) {
+          lines = lines.slice(regionStart + 1, regionEnd)
+        }
+        else {
+          console.warn(`Code import: Region '${regionName}' not found in ${filepath}`)
+        }
+      }
+
+      // Generate code block
+      const code = lines.join('\n')
+      const codeBlock = `\`\`\`${lang}\n${code}\n\`\`\``
+
+      result = result.slice(0, match.index) + codeBlock + result.slice(match.index! + fullMatch.length)
+    }
+    catch (error) {
+      console.error(`Error importing code from ${filepath}:`, error)
+    }
+  }
+
+  return result
+}
+
+/**
  * Process code groups (tabbed code blocks)
  */
 async function processCodeGroups(content: string): Promise<string> {
@@ -583,7 +679,7 @@ function processCodeBlock(lines: string[], startIndex: number): { html: string, 
 /**
  * Simple markdown to HTML converter (placeholder until full markdown plugin is enabled)
  */
-async function markdownToHtml(markdown: string): Promise<{ html: string, frontmatter: any }> {
+async function markdownToHtml(markdown: string, rootDir: string = './docs'): Promise<{ html: string, frontmatter: any }> {
   // Parse frontmatter
   const { frontmatter, content } = parseFrontmatter(markdown)
 
@@ -597,8 +693,9 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
     }
   }
 
-  // Process in order: code groups, GitHub alerts, then custom containers
-  let processedContent = await processCodeGroups(content)
+  // Process in order: code imports, code groups, GitHub alerts, then custom containers
+  let processedContent = await processCodeImports(content, rootDir)
+  processedContent = await processCodeGroups(processedContent)
   processedContent = await processGitHubAlerts(processedContent)
   processedContent = await processContainers(processedContent)
 
@@ -812,7 +909,7 @@ export async function startServer(options: {
         const mdFile = Bun.file(mdPath)
         if (await mdFile.exists()) {
           const markdown = await mdFile.text()
-          const { html, frontmatter } = await markdownToHtml(markdown)
+          const { html, frontmatter } = await markdownToHtml(markdown, root)
           const isHome = frontmatter.layout === 'home'
           const wrappedHtml = await wrapInLayout(html, bunPressConfig, path, isHome)
           return new Response(wrappedHtml, {
