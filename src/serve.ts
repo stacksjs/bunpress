@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 import type { BunPressConfig } from './types'
 import { YAML } from 'bun'
-import { readdir } from 'node:fs/promises'
 import process from 'node:process'
 import { config } from './config'
 import { clearTemplateCache, render } from './template-loader'
@@ -526,7 +525,25 @@ export async function serveCLI(options: {
     console.log(`Watching for changes in ${root} directory...\n`)
 
     try {
-      const files = await readdir(root, { recursive: true })
+      const { Glob } = await import('bun')
+      const { stat } = await import('node:fs/promises')
+      const { join } = await import('node:path')
+
+      // Track file modification times
+      const fileStats = new Map<string, number>()
+
+      // Initialize file stats
+      const glob = new Glob('**/*.{md,stx,ts,js,css,html}')
+      for await (const file of glob.scan(root)) {
+        try {
+          const filePath = join(root, file)
+          const stats = await stat(filePath)
+          fileStats.set(file, stats.mtimeMs)
+        }
+        catch {
+          // Ignore files that can't be stat'd
+        }
+      }
 
       let timeout: Timer | null = null
       const rebuildDebounced = () => {
@@ -544,10 +561,37 @@ export async function serveCLI(options: {
       // Use file polling for simplicity
       setInterval(async () => {
         try {
-          const newFiles = await readdir(root, { recursive: true })
-          if (JSON.stringify(files) !== JSON.stringify(newFiles)) {
-            files.length = 0
-            files.push(...newFiles)
+          let hasChanges = false
+          const currentFiles = new Set<string>()
+
+          const glob = new Glob('**/*.{md,stx,ts,js,css,html}')
+          for await (const file of glob.scan(root)) {
+            currentFiles.add(file)
+            try {
+              const filePath = join(root, file)
+              const stats = await stat(filePath)
+              const lastMtime = fileStats.get(file)
+
+              // Check if file is new or modified
+              if (lastMtime === undefined || stats.mtimeMs > lastMtime) {
+                hasChanges = true
+                fileStats.set(file, stats.mtimeMs)
+              }
+            }
+            catch {
+              // Ignore files that can't be stat'd
+            }
+          }
+
+          // Check for deleted files
+          for (const trackedFile of fileStats.keys()) {
+            if (!currentFiles.has(trackedFile)) {
+              hasChanges = true
+              fileStats.delete(trackedFile)
+            }
+          }
+
+          if (hasChanges) {
             rebuildDebounced()
           }
         }
