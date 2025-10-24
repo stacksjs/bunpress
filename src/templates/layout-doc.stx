@@ -51,6 +51,8 @@
         [&>h2]:text-[28px] [&>h2]:leading-[36px] [&>h2]:font-semibold [&>h2]:tracking-tight [&>h2]:text-[#213547] [&>h2]:mt-12 [&>h2]:mb-4 [&>h2]:pt-6 [&>h2]:border-t [&>h2]:border-[#e2e8f0] [&>h2]:scroll-mt-24
         [&>h3]:text-[20px] [&>h3]:leading-[28px] [&>h3]:font-semibold [&>h3]:text-[#213547] [&>h3]:mt-8 [&>h3]:mb-3 [&>h3]:scroll-mt-24
         [&>h4]:text-[18px] [&>h4]:leading-[24px] [&>h4]:font-semibold [&>h4]:text-[#213547] [&>h4]:mt-6 [&>h4]:mb-2 [&>h4]:scroll-mt-24
+        [&>h5]:text-[16px] [&>h5]:leading-[22px] [&>h5]:font-semibold [&>h5]:text-[#213547] [&>h5]:mt-5 [&>h5]:mb-2 [&>h5]:scroll-mt-24
+        [&>h6]:text-[14px] [&>h6]:leading-[20px] [&>h6]:font-semibold [&>h6]:text-[#64748b] [&>h6]:mt-4 [&>h6]:mb-1 [&>h6]:scroll-mt-24
         [&>p]:text-[16px] [&>p]:leading-[28px] [&>p]:text-[#3c4858] [&>p]:my-4 [&>p]:tracking-normal
         [&>p>a]:text-[#5672cd] [&>p>a]:font-medium [&>p>a]:no-underline [&>p>a]:transition-colors hover:[&>p>a]:text-[#4558b8]
         [&>ul]:my-4 [&>ul]:pl-6 [&>ul]:text-[#3c4858]

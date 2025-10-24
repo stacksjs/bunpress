@@ -44,8 +44,8 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
  * Extract headings from HTML content and generate page TOC
  */
 async function generatePageTOC(html: string): Promise<string> {
-  // Extract h2, h3, h4 headings from HTML
-  const headingRegex = /<h([234])([^>]*)>(.*?)<\/h\1>/g
+  // Extract h2, h3, h4, h5, h6 headings from HTML (h1 is typically the page title)
+  const headingRegex = /<h([23456])([^>]*)>(.*?)<\/h\1>/g
   const headings: Array<{ level: number, text: string, id: string }> = []
 
   let match
@@ -82,7 +82,7 @@ async function generatePageTOC(html: string): Promise<string> {
  * Supports custom IDs with {#custom-id} syntax
  */
 function addHeadingIds(html: string): string {
-  return html.replace(/<h([234])([^>]*)>(.*?)<\/h\1>/g, (match, level, attributes, text) => {
+  return html.replace(/<h([1-6])([^>]*)>(.*?)<\/h\1>/g, (match, level, attributes, text) => {
     // Check if ID already exists
     if (attributes.includes('id=')) {
       return match
@@ -1185,7 +1185,31 @@ async function markdownToHtml(markdown: string, rootDir: string = './docs'): Pro
       continue
     }
 
-    // Headings
+    // Headings (check from longest to shortest to avoid conflicts)
+    if (line.startsWith('###### ')) {
+      if (inList) {
+        html.push('</ul>')
+        inList = false
+      }
+      html.push(`<h6>${processInlineFormatting(line.substring(7))}</h6>`)
+      continue
+    }
+    if (line.startsWith('##### ')) {
+      if (inList) {
+        html.push('</ul>')
+        inList = false
+      }
+      html.push(`<h5>${processInlineFormatting(line.substring(6))}</h5>`)
+      continue
+    }
+    if (line.startsWith('#### ')) {
+      if (inList) {
+        html.push('</ul>')
+        inList = false
+      }
+      html.push(`<h4>${processInlineFormatting(line.substring(5))}</h4>`)
+      continue
+    }
     if (line.startsWith('### ')) {
       if (inList) {
         html.push('</ul>')

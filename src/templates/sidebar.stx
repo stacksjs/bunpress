@@ -1,3 +1,3 @@
-<nav class="absolute top-[60px] left-0 bottom-0 w-[260px] bg-white border-r border-[#e2e2e3] overflow-y-auto py-6">
+<nav class="fixed top-[60px] left-0 bottom-0 w-[260px] bg-white border-r border-[#e2e2e3] overflow-y-auto py-6">
   {{ sections }}
 </nav>

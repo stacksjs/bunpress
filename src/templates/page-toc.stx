@@ -1,4 +1,4 @@
-<aside class="absolute top-[60px] right-0 bottom-0 w-[256px] overflow-y-auto py-8 px-4 hidden xl:block">
+<aside class="fixed top-[60px] right-0 bottom-0 w-[256px] overflow-y-auto py-8 px-4 hidden xl:block">
   <div class="text-sm">
     <p class="font-semibold text-[#213547] mb-4">On this page</p>
     <nav class="page-toc">
@@ -36,13 +36,21 @@
 .page-toc a.level-4 {
   padding-left: 40px;
 }
+
+.page-toc a.level-5 {
+  padding-left: 52px;
+}
+
+.page-toc a.level-6 {
+  padding-left: 64px;
+}
 </style>
 
 <script>
 // Track active heading based on scroll position
 function initPageTOC() {
   const tocLinks = document.querySelectorAll('.page-toc a');
-  const headings = Array.from(document.querySelectorAll('h2[id], h3[id], h4[id]'));
+  const headings = Array.from(document.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]'));
 
   if (!tocLinks.length || !headings.length) return;
 
