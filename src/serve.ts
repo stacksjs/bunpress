@@ -1160,8 +1160,8 @@ async function markdownToHtml(markdown: string, rootDir: string = './docs'): Pro
       continue
     }
 
-    // Skip lines inside containers and alerts (already processed)
-    if (line.includes('<div class="custom-block') || line.includes('<details class="custom-block') || line.includes('<div class="github-alert')) {
+    // Skip lines inside containers, alerts, and code groups (already processed)
+    if (line.includes('<div class="custom-block') || line.includes('<details class="custom-block') || line.includes('<div class="github-alert') || line.includes('<div class="code-group')) {
       inContainer = true
     }
     if (inContainer) {
