@@ -136,10 +136,14 @@ Content after TOC.
         // Should contain TOC
         expect(html).toContain('table-of-contents')
 
-        // Check that TOC appears between the paragraphs (order matters)
-        const tocIndex = html.indexOf('table-of-contents')
-        const beforeText = html.indexOf('Introduction paragraph before TOC')
-        const afterText = html.indexOf('Content after TOC')
+        // Extract content area (between <article> tags)
+        const articleMatch = html.match(/<article[^>]*>([\s\S]*?)<\/article>/)
+        const contentHtml = articleMatch ? articleMatch[1] : html
+
+        // Check that TOC appears between the paragraphs in the content (order matters)
+        const tocIndex = contentHtml.indexOf('table-of-contents')
+        const beforeText = contentHtml.indexOf('Introduction paragraph before TOC')
+        const afterText = contentHtml.indexOf('Content after TOC')
 
         expect(tocIndex).toBeGreaterThan(beforeText)
         expect(afterText).toBeGreaterThan(tocIndex)

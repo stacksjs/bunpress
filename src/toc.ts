@@ -29,6 +29,8 @@ export function generateSlug(text: string): string {
     .replace(/what's new\?\s*\(v2\.0\)/g, 'whats-new-v2-0')
     .replace(/features\s*&\s*benefits/g, 'features-benefits')
     .replace(/vue\.js\s*\+\s*typescript\s*=\s*❤️/g, 'vue-js-typescript')
+    // Replace slashes with hyphens (e.g., async/await -> async-await)
+    .replace(/\//g, '-')
     // Replace dots with hyphens
     .replace(/\./g, '-')
     // Remove other special characters

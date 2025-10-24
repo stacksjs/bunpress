@@ -101,7 +101,12 @@ function addHeadingIds(html: string): string {
     else {
       // Generate ID from text
       const plainText = text.replace(/<[^>]*>/g, '')
-      id = plainText.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')
+      id = plainText.toLowerCase()
+        .replace(/\//g, '-')  // Replace slashes with hyphens first
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]/g, '')
+        .replace(/-+/g, '-')  // Remove consecutive hyphens
+        .replace(/^-+|-+$/g, '')  // Remove leading/trailing hyphens
     }
 
     return `<h${level}${attributes} id="${id}">${displayText}</h${level}>`
@@ -283,6 +288,8 @@ function processInlineFormatting(text: string): string {
     .replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, '<em>$1</em>')
     // Subscript ~ (single, not double like strikethrough)
     .replace(/(?<!~)~(?!~)(.+?)(?<!~)~(?!~)/g, '<sub>$1</sub>')
+    // Images (must be before links to avoid conflicts)
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">')
     // Links
     .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
 }
@@ -515,6 +522,60 @@ function processBadges(content: string): string {
     const color = colors[type] || colors.info
 
     return `<span class="badge badge-${type}" style="display: inline-block; padding: 2px 8px; font-size: 0.85em; font-weight: 600; border-radius: 4px; background: ${color.bg}; color: ${color.text}; border: 1px solid ${color.border}; margin: 0 4px; vertical-align: middle;">${text}</span>`
+  })
+}
+
+/**
+ * Process external links in HTML to add target="_blank" and rel="noreferrer"
+ */
+function processExternalLinksHtml(html: string): string {
+  // Match HTML anchor tags
+  return html.replace(/<a\s+href="([^"]+)"([^>]*)>/g, (match, url, rest) => {
+    // Skip if already has target attribute
+    if (rest.includes('target='))
+      return match
+
+    // Check if it's an external link (starts with http:// or https://)
+    const isExternal = url.startsWith('http://') || url.startsWith('https://')
+
+    if (isExternal) {
+      // Add external link attributes and icon
+      const externalIcon = '<svg class="external-link-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; margin-left: 4px; vertical-align: middle;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>'
+      return `<a href="${url}" target="_blank" rel="noreferrer noopener"${rest}>`
+    }
+
+    // Internal link - keep as is
+    return match
+  })
+}
+
+/**
+ * Add external link icons to links with target="_blank"
+ */
+function addExternalLinkIcons(html: string): string {
+  // Find </a> tags that belong to external links (those with target="_blank")
+  return html.replace(/<a\s+href="([^"]+)"\s+target="_blank"[^>]*>([^<]+)<\/a>/g, (match, url, text) => {
+    // Don't add icon if it already has one
+    if (match.includes('external-link-icon'))
+      return match
+
+    const externalIcon = '<svg class="external-link-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; margin-left: 4px; vertical-align: middle;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>'
+    return match.replace('</a>', `${externalIcon}</a>`)
+  })
+}
+
+/**
+ * Process images in HTML to add lazy loading
+ */
+function processImagesHtml(html: string): string {
+  // Match img tags without loading attribute
+  return html.replace(/<img\s+([^>]*?)>/g, (match, attrs) => {
+    // Skip if already has loading attribute
+    if (attrs.includes('loading='))
+      return match
+
+    // Add loading="lazy" and decoding="async"
+    return `<img ${attrs} loading="lazy" decoding="async">`
   })
 }
 
@@ -1065,6 +1126,7 @@ async function markdownToHtml(markdown: string, rootDir: string = './docs'): Pro
   const { content: contentWithTocPlaceholder, tocHtml } = extractTocData(processedContent, frontmatter.toc)
 
   // Process in order: code imports, code groups, GitHub alerts, containers, emoji, badges
+  // NOTE: Links and images are processed AFTER HTML conversion to avoid conflicts
   processedContent = await processCodeImports(contentWithTocPlaceholder, rootDir)
   processedContent = await processCodeGroups(processedContent)
   processedContent = await processGitHubAlerts(processedContent)
@@ -1235,6 +1297,11 @@ async function markdownToHtml(markdown: string, rootDir: string = './docs'): Pro
   if (tocHtml) {
     finalHtml = injectTocHtml(finalHtml, tocHtml)
   }
+
+  // Process external links and images in the final HTML
+  finalHtml = processExternalLinksHtml(finalHtml)
+  finalHtml = addExternalLinkIcons(finalHtml)
+  finalHtml = processImagesHtml(finalHtml)
 
   return {
     html: finalHtml,
