@@ -3,6 +3,7 @@ import type { BunPressConfig } from './types'
 import { YAML } from 'bun'
 import process from 'node:process'
 import { config } from './config'
+import { getSyntaxHighlightingStyles, highlightCode } from './highlighter'
 import { clearTemplateCache, render } from './template-loader'
 import { buildTocHierarchy, defaultTocConfig, extractHeadings, filterHeadings, generateInlineTocHtml } from './toc'
 
@@ -152,7 +153,8 @@ function generateNav(config: BunPressConfig): string {
 async function wrapInLayout(content: string, config: BunPressConfig, currentPath: string, isHome: boolean = false): Promise<string> {
   const title = config.markdown?.title || 'BunPress Documentation'
   const description = config.markdown?.meta?.description || 'Documentation built with BunPress'
-  const customCSS = config.markdown?.css || ''
+  const syntaxHighlightingStyles = getSyntaxHighlightingStyles()
+  const customCSS = `${syntaxHighlightingStyles}\n${config.markdown?.css || ''}`
 
   const meta = Object.entries(config.markdown?.meta || {})
     .filter(([key]) => key !== 'description')
@@ -993,7 +995,7 @@ function parseCodeFenceInfo(infoString: string): {
 /**
  * Process code blocks with advanced features (line highlighting, line numbers, focus, etc.)
  */
-function processCodeBlock(lines: string[], startIndex: number): { html: string, endIndex: number } {
+async function processCodeBlock(lines: string[], startIndex: number): Promise<{ html: string, endIndex: number }> {
   const firstLine = lines[startIndex]
   const infoString = firstLine.substring(3).trim() // Remove ```
 
@@ -1054,8 +1056,15 @@ function processCodeBlock(lines: string[], startIndex: number): { html: string, 
 
   const hasFocusedLines = focusLines.size > 0
 
+  // Apply syntax highlighting to the entire code block
+  const code = processedLines.join('\n')
+  const highlightedCode = await highlightCode(code, lang)
+
+  // Split highlighted code back into lines
+  const highlightedLines = highlightedCode.split('\n')
+
   // Generate HTML with all features (highlighting, focus, diff, error, warning, line numbers)
-  const codeHtml = processedLines
+  const codeHtml = highlightedLines
     .map((line, index) => {
       const lineNumber = index + 1
       const isHighlighted = highlights.includes(lineNumber)
@@ -1065,7 +1074,7 @@ function processCodeBlock(lines: string[], startIndex: number): { html: string, 
       const isError = errorLines.has(index)
       const isWarning = warningLines.has(index)
 
-      const classes: string[] = []
+      const classes: string[] = ['line'] // Always include 'line' class
       if (isHighlighted)
         classes.push('highlighted')
       if (isFocused)
@@ -1081,22 +1090,33 @@ function processCodeBlock(lines: string[], startIndex: number): { html: string, 
       if (isWarning)
         classes.push('has-warning')
 
-      const lineClass = classes.length > 0 ? ` class="${classes.join(' ')}"` : ''
+      // Check if line already has <span class="line"> from highlighter
+      // If so, merge our classes with the existing line span
+      if (line.startsWith('<span class="line">')) {
+        // Extract existing classes and merge with our new ones
+        const existingClasses = 'line'
+        const allClasses = classes.join(' ')
+        // Replace the opening tag to include all classes
+        const updatedLine = line.replace('<span class="line">', `<span class="${allClasses}">`)
 
-      // Escape HTML entities in code
-      const escapedLine = line
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;')
+        // Add line number if enabled
+        if (showLineNumbers) {
+          // Insert line number after opening span
+          return updatedLine.replace('<span class=', `<span class="line-number">${lineNumber}</span><span class=`)
+        }
+
+        return updatedLine
+      }
+
+      // If no <span class="line">, wrap the line with our classes
+      const lineClass = ` class="${classes.join(' ')}"`
 
       // Add line number if enabled
       if (showLineNumbers) {
-        return `<span${lineClass}><span class="line-number">${lineNumber}</span>${escapedLine}</span>`
+        return `<span${lineClass}><span class="line-number">${lineNumber}</span>${line}</span>`
       }
 
-      return `<span${lineClass}>${escapedLine}</span>`
+      return `<span${lineClass}>${line}</span>`
     })
     .join('\n')
 
@@ -1177,7 +1197,7 @@ async function markdownToHtml(markdown: string, rootDir: string = './docs'): Pro
     if (line.startsWith('```')) {
       if (!inCodeBlock) {
         // Process the entire code block
-        const { html: codeHtml, endIndex } = processCodeBlock(lines, i)
+        const { html: codeHtml, endIndex } = await processCodeBlock(lines, i)
         html.push(codeHtml)
         i = endIndex // Skip to end of code block
         inCodeBlock = false

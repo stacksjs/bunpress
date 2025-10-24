@@ -482,12 +482,17 @@ export const defaultConfig: BunPressConfig = {
       display: block;
     }
 
-    pre code span {
+    pre code span.line {
       display: block;
       padding: 0 4px;
       margin: 0 -16px;
       padding-left: 16px;
       padding-right: 16px;
+    }
+
+    /* Token spans should remain inline */
+    pre code span.token {
+      display: inline;
     }
 
     /* Highlighted lines in code blocks */
