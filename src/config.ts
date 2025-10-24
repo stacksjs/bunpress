@@ -676,6 +676,35 @@ export const defaultConfig: BunPressConfig = {
         padding: 8px 12px;
       }
     }
+
+    /* Image Captions */
+    .image-figure {
+      margin: 24px 0;
+      text-align: center;
+    }
+
+    .image-figure img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .image-figure figcaption {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #64748b;
+      font-style: italic;
+      text-align: center;
+    }
+
+    /* Regular images (without captions) */
+    article img:not(.image-figure img) {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin: 16px 0;
+    }
     `,
     scripts: [`
 function switchCodeTab(groupId, panelIndex) {

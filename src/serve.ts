@@ -288,8 +288,18 @@ function processInlineFormatting(text: string): string {
     .replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, '<em>$1</em>')
     // Subscript ~ (single, not double like strikethrough)
     .replace(/(?<!~)~(?!~)(.+?)(?<!~)~(?!~)/g, '<sub>$1</sub>')
-    // Images (must be before links to avoid conflicts)
-    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">')
+    // Images with optional caption (must be before links to avoid conflicts)
+    // Matches: ![alt](src "caption") or ![alt](src) or ![alt]( src "caption")
+    .replace(/!\[([^\]]*)\]\(\s*([^\s")]+)(?:\s+"([^"]+)")?\)/g, (match, alt, src, caption) => {
+      if (caption) {
+        // Image with caption - wrap in figure/figcaption
+        return `<figure class="image-figure"><img src="${src}" alt="${alt}"><figcaption>${caption}</figcaption></figure>`
+      }
+      else {
+        // Regular image without caption
+        return `<img src="${src}" alt="${alt}">`
+      }
+    })
     // Links
     .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
 }

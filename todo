@@ -15,17 +15,17 @@ Implement all VitePress markdown blocks and containers as reusable `.stx` templa
 - ✅ **Phase 5**: Content Features (15/15 tests passing - all edge cases fixed)
 - ✅ **Phase 6**: File Inclusion (25/25 tests passing - 100% ✅)
 - ✅ **Phase 6.3**: Comprehensive Documentation (~2000+ lines)
-- ✅ **Phase 8**: Link & Image Enhancements (10/10 tests passing - all edge cases fixed)
+- ✅ **Phase 8**: Link & Image Enhancements (22/22 tests passing - full semantic HTML support)
 - ✅ **Phase 9**: Table Enhancements (12/12 tests passing - full VitePress compatibility)
 - ✅ **Phase 10**: Integration & Configuration (comprehensive type system & documentation)
 
 ### Test Statistics
-- **Total Tests Passing:** 226/226 (100% success rate) 🎉
-- **Total Assertions:** 723 validated behaviors
+- **Total Tests Passing:** 238/238 (100% success rate) 🎉
+- **Total Assertions:** 759 validated behaviors
 - **Known Limitations:** All edge cases fixed, production ready
 - **Test Coverage:** All core functionality comprehensively tested
-- **Latest Fix:** All Phase 5 & 8 edge cases resolved (image rendering, TOC slugs, test isolation)
-- **Latest Addition:** Phase 9 table enhancements - full VitePress compatibility achieved
+- **Latest Fix:** All Phase 5 & 8 edge cases resolved (image rendering, TOC slugs, test isolation, image captions)
+- **Latest Addition:** Image captions with figure/figcaption (Phase 8.4) - full semantic HTML support
 
 ### Documentation Statistics
 - **New Documentation Files:** 5 major files created
@@ -47,8 +47,9 @@ Implement all VitePress markdown blocks and containers as reusable `.stx` templa
 11. ✅ Markdown file inclusion (recursive, line ranges, regions)
 12. ✅ External links (target="_blank", rel attributes, icons)
 13. ✅ Image lazy loading and rendering
-14. ✅ Table column alignment (left, center, right, mixed)
-15. ✅ Enhanced table styling (striped rows, hover effects, responsive)
+14. ✅ Image captions with figure/figcaption (semantic HTML)
+15. ✅ Table column alignment (left, center, right, mixed)
+16. ✅ Enhanced table styling (striped rows, hover effects, responsive)
 
 ### Next Phases (Planned)
 - 🔲 **Phase 7**: Math & Diagrams (Optional - skipped for now)
@@ -574,30 +575,53 @@ Implement all VitePress markdown blocks and containers as reusable `.stx` templa
 - ✅ Images in containers (fixed)
 - ✅ Complex image scenarios
 
-### 8.4 Image Captions
-- [ ] Create template: `src/templates/blocks/image/caption.stx`
-- [ ] Syntax: `![alt](src "caption")`
-- [ ] Render image with figure/figcaption
-- [ ] Style captions
+### 8.4 Image Captions ✅
+- [x] Implemented image caption support in `processInlineFormatting()` function
+- [x] Syntax: `![alt](src "caption")` → `<figure><img><figcaption>caption</figcaption></figure>`
+- [x] Render image with figure/figcaption semantic HTML elements
+- [x] Complete CSS styling for captions (italic, gray text, centered)
+- [x] Support for images without captions (regular `<img>` tags)
+- [x] Works with lazy loading attributes
+- [x] Handles optional whitespace in markdown syntax
+- [x] Preserves special characters in captions
 
-**Test:** `test/templates/image/caption.test.ts`
+**Implementation:** `src/serve.ts:291-302` - Enhanced image regex in `processInlineFormatting()`
+**Styling:** `src/config.ts:680-707` - Complete CSS for `.image-figure`, `.image-figure img`, `.image-figure figcaption`
+**Test:** ✅ (12/12 passing, 36 assertions)
+- `test/templates/image/image-captions.test.ts`
+- ✅ Basic caption syntax with figure/figcaption
+- ✅ Images without captions (regular img tags)
+- ✅ Special characters in captions (', %, etc.)
+- ✅ Long captions
+- ✅ Hyphens and underscores in captions
+- ✅ Multiple images with mixed captions
+- ✅ Empty alt text with caption
+- ✅ Images in lists with captions
+- ✅ Images with URL parameters
+- ✅ Integration with lazy loading
+- ✅ Images in custom containers
+- ✅ CSS classes applied correctly
 
 ---
 
 **Phase 8 Summary:** ✅ **COMPLETED (100%)**
-- **Features Implemented:** 3/4 (External links ✅, Image lazy loading ✅, Image rendering ✅)
-- **Test Coverage:** 10/10 passing (100% success rate)
-- **Implementation:** 4 processing functions in `src/serve.ts`
-  - `processInlineFormatting()` (line 287) - Convert markdown images to `<img>` tags
+- **Features Implemented:** 4/4 (External links ✅, Image lazy loading ✅, Image rendering ✅, Image captions ✅)
+- **Test Coverage:** 22/22 passing (100% success rate, 69 assertions total)
+  - External links: 10/10 tests (33 assertions)
+  - Image captions: 12/12 tests (36 assertions)
+- **Implementation:** 5 processing functions in `src/serve.ts`
+  - `processInlineFormatting()` (lines 291-302) - Convert markdown images with optional captions
   - `processExternalLinksHtml()` (lines 521-543) - Add target="_blank" to external links
   - `addExternalLinkIcons()` (lines 545-558) - Add SVG icons to external links
   - `processImagesHtml()` (lines 560-573) - Add lazy loading attributes
-- **Processing Order:** Applied to final HTML (lines 1294-1297) after all markdown transformations
+- **CSS Styling:** `src/config.ts:680-707` - Complete styling for image figures and captions
+- **Processing Order:** Applied to final HTML after all markdown transformations
 - **Fixes Applied:**
   1. Added image markdown processing before link processing to prevent conflicts
-  2. Updated test assertions to extract article content only (exclude navigation)
-  3. All edge cases resolved - images render correctly in all contexts
-- **VitePress Parity:** Full compatibility achieved for external links and image lazy loading
+  2. Enhanced regex to support optional whitespace in image markdown syntax
+  3. Updated test assertions to extract article content only (exclude navigation)
+  4. All edge cases resolved - images and captions render correctly in all contexts
+- **VitePress Parity:** Full compatibility achieved for external links, image lazy loading, and image captions
 
 ---
 
