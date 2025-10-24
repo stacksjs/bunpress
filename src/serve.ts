@@ -287,6 +287,207 @@ function processInlineFormatting(text: string): string {
 }
 
 /**
+ * Process emoji shortcodes like :tada:, :rocket:, etc.
+ * Converts emoji shortcodes to their Unicode equivalents
+ */
+function processEmoji(content: string): string {
+  const emojiMap: Record<string, string> = {
+    // Smileys & Emotion
+    'smile': '😄',
+    'laughing': '😆',
+    'blush': '😊',
+    'heart_eyes': '😍',
+    'kissing_heart': '😘',
+    'relaxed': '☺️',
+    'wink': '😉',
+    'grin': '😁',
+    'joy': '😂',
+    'sweat_smile': '😅',
+    'rofl': '🤣',
+    'thinking': '🤔',
+    'zipper_mouth': '🤐',
+    'neutral_face': '😐',
+    'expressionless': '😑',
+    'confused': '😕',
+    'worried': '😟',
+    'slightly_frowning_face': '🙁',
+    'frowning_face': '☹️',
+    'persevere': '😣',
+    'disappointed': '😞',
+    'sweat': '😓',
+    'tired_face': '😫',
+    'cry': '😢',
+    'sob': '😭',
+    'triumph': '😤',
+    'angry': '😠',
+    'rage': '😡',
+    'no_mouth': '😶',
+    'sleeping': '😴',
+    '+1': '👍',
+    'thumbsup': '👍',
+    '-1': '👎',
+    'thumbsdown': '👎',
+    'clap': '👏',
+    'raised_hands': '🙌',
+    'pray': '🙏',
+    'wave': '👋',
+    'ok_hand': '👌',
+    'point_up': '☝️',
+    'point_down': '👇',
+    'point_left': '👈',
+    'point_right': '👉',
+    'muscle': '💪',
+
+    // Symbols & Signs
+    'heart': '❤️',
+    'blue_heart': '💙',
+    'green_heart': '💚',
+    'yellow_heart': '💛',
+    'purple_heart': '�purple',
+    'broken_heart': '💔',
+    'sparkling_heart': '💖',
+    'star': '⭐',
+    'star2': '🌟',
+    'sparkles': '✨',
+    'boom': '💥',
+    'fire': '🔥',
+    'tada': '🎉',
+    'confetti_ball': '🎊',
+    'rocket': '🚀',
+    'zap': '⚡',
+    'bulb': '💡',
+    'bell': '🔔',
+    'mega': '📣',
+    'loudspeaker': '📢',
+    'warning': '⚠️',
+    'white_check_mark': '✅',
+    'x': '❌',
+    'heavy_check_mark': '✔️',
+    'heavy_multiplication_x': '✖️',
+    'question': '❓',
+    'grey_question': '❔',
+    'exclamation': '❗',
+    'grey_exclamation': '❕',
+    'heavy_plus_sign': '➕',
+    'heavy_minus_sign': '➖',
+
+    // Objects & Tools
+    'pencil2': '✏️',
+    'memo': '📝',
+    'book': '📖',
+    'books': '📚',
+    'bookmark': '🔖',
+    'mag': '🔍',
+    'mag_right': '🔎',
+    'lock': '🔒',
+    'unlock': '🔓',
+    'key': '🔑',
+    'link': '🔗',
+    'computer': '💻',
+    'email': '📧',
+    'inbox_tray': '📥',
+    'outbox_tray': '📤',
+    'package': '📦',
+    'file_folder': '📁',
+    'open_file_folder': '📂',
+    'page_facing_up': '📄',
+    'calendar': '📅',
+    'chart_with_upwards_trend': '📈',
+    'chart_with_downwards_trend': '📉',
+    'bar_chart': '📊',
+    'clipboard': '📋',
+    'pushpin': '📌',
+    'round_pushpin': '📍',
+    'paperclip': '📎',
+    'straight_ruler': '📏',
+    'wrench': '🔧',
+    'hammer': '🔨',
+    'gear': '⚙️',
+    'nut_and_bolt': '🔩',
+
+    // Nature & Animals
+    'seedling': '🌱',
+    'evergreen_tree': '🌲',
+    'deciduous_tree': '🌳',
+    'palm_tree': '🌴',
+    'cactus': '🌵',
+    'herb': '🌿',
+    'shamrock': '☘️',
+    'four_leaf_clover': '🍀',
+    'bug': '🐛',
+    'bee': '🐝',
+    'bird': '🐦',
+    'dog': '🐶',
+    'cat': '🐱',
+    'penguin': '🐧',
+    'turtle': '🐢',
+    'fish': '🐟',
+
+    // Food & Drink
+    'coffee': '☕',
+    'tea': '🍵',
+    'beer': '🍺',
+    'beers': '🍻',
+    'wine_glass': '🍷',
+    'pizza': '🍕',
+    'hamburger': '🍔',
+    'fries': '🍟',
+    'cake': '🍰',
+    'birthday': '🎂',
+    'cookie': '🍪',
+    'doughnut': '🍩',
+    'apple': '🍎',
+    'green_apple': '🍏',
+    'banana': '🍌',
+    'strawberry': '🍓',
+
+    // Places & Transportation
+    'house': '🏠',
+    'office': '🏢',
+    'hospital': '🏥',
+    'school': '🏫',
+    'car': '🚗',
+    'taxi': '🚕',
+    'bus': '🚌',
+    'train': '🚂',
+    'airplane': '✈️',
+    'ship': '🚢',
+    'bike': '🚲',
+
+    // Activities & Events
+    'soccer': '⚽',
+    'basketball': '🏀',
+    'football': '🏈',
+    'baseball': '⚾',
+    'tennis': '🎾',
+    'trophy': '🏆',
+    'medal': '🏅',
+    'dart': '🎯',
+    'game_die': '🎲',
+    'musical_note': '🎵',
+    'notes': '🎶',
+    'art': '🎨',
+    'camera': '📷',
+    'movie_camera': '🎥',
+
+    // Flags (common ones)
+    'checkered_flag': '🏁',
+    'triangular_flag_on_post': '🚩',
+    'flag_us': '🇺🇸',
+    'flag_gb': '🇬🇧',
+    'flag_fr': '🇫🇷',
+    'flag_de': '🇩🇪',
+    'flag_jp': '🇯🇵',
+    'flag_cn': '🇨🇳',
+  }
+
+  // Replace emoji shortcodes with Unicode emoji
+  return content.replace(/:(\w+):/g, (match, shortcode) => {
+    return emojiMap[shortcode] || match
+  })
+}
+
+/**
  * Process GitHub-flavored alerts like > [!NOTE], > [!TIP], etc.
  */
 async function processGitHubAlerts(content: string): Promise<string> {
@@ -706,11 +907,12 @@ async function markdownToHtml(markdown: string, rootDir: string = './docs'): Pro
     }
   }
 
-  // Process in order: code imports, code groups, GitHub alerts, then custom containers
+  // Process in order: code imports, code groups, GitHub alerts, containers, then emoji
   let processedContent = await processCodeImports(content, rootDir)
   processedContent = await processCodeGroups(processedContent)
   processedContent = await processGitHubAlerts(processedContent)
   processedContent = await processContainers(processedContent)
+  processedContent = processEmoji(processedContent)
 
   // Very basic markdown conversion - will be replaced with full plugin
   // Split into lines for better processing
