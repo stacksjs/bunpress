@@ -102,11 +102,11 @@ function addHeadingIds(html: string): string {
       // Generate ID from text
       const plainText = text.replace(/<[^>]*>/g, '')
       id = plainText.toLowerCase()
-        .replace(/\//g, '-')  // Replace slashes with hyphens first
+        .replace(/\//g, '-') // Replace slashes with hyphens first
         .replace(/\s+/g, '-')
         .replace(/[^\w-]/g, '')
-        .replace(/-+/g, '-')  // Remove consecutive hyphens
-        .replace(/^-+|-+$/g, '')  // Remove leading/trailing hyphens
+        .replace(/-+/g, '-') // Remove consecutive hyphens
+        .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
     }
 
     return `<h${level}${attributes} id="${id}">${displayText}</h${level}>`
@@ -579,7 +579,7 @@ function addExternalLinkIcons(html: string): string {
  */
 function processImagesHtml(html: string): string {
   // Match img tags without loading attribute
-  return html.replace(/<img\s+([^>]*?)>/g, (match, attrs) => {
+  return html.replace(/<img\s+([^>]*)>/g, (match, attrs) => {
     // Skip if already has loading attribute
     if (attrs.includes('loading='))
       return match
@@ -888,7 +888,7 @@ async function processCodeGroups(content: string): Promise<string> {
           .join('\n')
 
         return `<div class="code-group-panel ${isActive ? 'active' : ''}" data-panel="${index}">
-  <pre><code class="language-${lang}">${escapedCode}</code></pre>
+  <pre data-lang="${lang}"><code class="language-${lang}">${escapedCode}</code></pre>
 </div>`
       }),
     )
@@ -1107,7 +1107,8 @@ function processCodeBlock(lines: string[], startIndex: number): { html: string, 
     preClasses.push('has-focused-lines')
 
   const preClass = preClasses.length > 0 ? ` class="${preClasses.join(' ')}"` : ''
-  const html = `<pre${preClass}><code class="language-${lang}">${codeHtml}</code></pre>`
+  const dataLang = lang ? ` data-lang="${lang}"` : ''
+  const html = `<pre${preClass}${dataLang}><code class="language-${lang}">${codeHtml}</code></pre>`
 
   return { html, endIndex }
 }

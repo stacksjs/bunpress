@@ -396,6 +396,68 @@ export const defaultConfig: BunPressConfig = {
       overflow-x: auto;
       margin: 16px 0;
       border: 1px solid #e1e4e8;
+      position: relative;
+    }
+
+    /* Language label in top-right corner */
+    pre[data-lang]::before {
+      content: attr(data-lang);
+      position: absolute;
+      top: 8px;
+      right: 52px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      z-index: 1;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    /* Copy button */
+    .copy-code-button {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      padding: 6px 8px;
+      background-color: transparent;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s ease, background-color 0.2s ease;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    pre:hover .copy-code-button {
+      opacity: 1;
+    }
+
+    .copy-code-button:hover {
+      background-color: #f6f8fa;
+    }
+
+    .copy-code-button:active {
+      background-color: #e2e8f0;
+    }
+
+    .copy-code-button.copied {
+      opacity: 1;
+      background-color: #dcfce7;
+      border-color: #22c55e;
+    }
+
+    .copy-code-button svg {
+      width: 16px;
+      height: 16px;
+      color: #6b7280;
+    }
+
+    .copy-code-button.copied svg {
+      color: #22c55e;
     }
 
     code {
@@ -729,6 +791,60 @@ function switchCodeTab(groupId, panelIndex) {
     } else {
       panel.classList.remove('active');
     }
+  });
+}
+
+function copyCode(button) {
+  const pre = button.closest('pre');
+  if (!pre) return;
+
+  const code = pre.querySelector('code');
+  if (!code) return;
+
+  // Get text content from code block
+  const text = code.textContent || '';
+
+  // Copy to clipboard
+  navigator.clipboard.writeText(text).then(() => {
+    // Show copied state
+    button.classList.add('copied');
+
+    // Change icon to checkmark
+    const svg = button.querySelector('svg');
+    if (svg) {
+      svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>';
+    }
+
+    // Reset after 2 seconds
+    setTimeout(() => {
+      button.classList.remove('copied');
+      if (svg) {
+        svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>';
+      }
+    }, 2000);
+  }).catch(err => {
+    console.error('Failed to copy code:', err);
+  });
+}
+
+// Add copy buttons to all code blocks when page loads
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => {
+    const codeBlocks = document.querySelectorAll('pre > code');
+    codeBlocks.forEach(code => {
+      const pre = code.parentElement;
+      if (!pre || pre.querySelector('.copy-code-button')) return;
+
+      const button = document.createElement('button');
+      button.className = 'copy-code-button';
+      button.setAttribute('onclick', 'copyCode(this)');
+      button.setAttribute('aria-label', 'Copy code');
+      button.innerHTML = \`<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+      </svg>\`;
+
+      pre.appendChild(button);
+    });
   });
 }
 `],
