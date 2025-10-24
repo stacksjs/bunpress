@@ -620,6 +620,62 @@ export const defaultConfig: BunPressConfig = {
       border-radius: 0;
       border: none;
     }
+
+    /* Enhanced Tables */
+    .table-responsive {
+      overflow-x: auto;
+      margin: 16px 0;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .enhanced-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background-color: white;
+    }
+
+    .enhanced-table thead {
+      background-color: #f6f8fa;
+    }
+
+    .enhanced-table th {
+      padding: 12px 16px;
+      font-weight: 600;
+      color: #213547;
+      border-bottom: 2px solid #e2e8f0;
+      white-space: nowrap;
+    }
+
+    .enhanced-table td {
+      padding: 12px 16px;
+      color: #3c4858;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    /* Striped rows */
+    .enhanced-table tbody tr:nth-child(even) {
+      background-color: #f9fafb;
+    }
+
+    /* Hover effect */
+    .enhanced-table tbody tr:hover {
+      background-color: #f0f9ff;
+      transition: background-color 0.2s ease;
+    }
+
+    /* Responsive behavior */
+    @media (max-width: 768px) {
+      .table-responsive {
+        font-size: 13px;
+      }
+
+      .enhanced-table th,
+      .enhanced-table td {
+        padding: 8px 12px;
+      }
+    }
     `,
     scripts: [`
 function switchCodeTab(groupId, panelIndex) {

@@ -1234,14 +1234,32 @@ async function markdownToHtml(markdown: string, rootDir: string = './docs'): Pro
           return processInlineFormatting(cell.trim())
         }
 
-        html.push('<table>')
+        // Parse alignment from separator row (index 1)
+        const separatorCells = tableRows[1].split('|').filter(cell => cell.trim())
+        const alignments = separatorCells.map((cell) => {
+          const trimmed = cell.trim()
+          if (trimmed.startsWith(':') && trimmed.endsWith(':')) {
+            return 'center'
+          }
+          else if (trimmed.endsWith(':')) {
+            return 'right'
+          }
+          else {
+            return 'left'
+          }
+        })
+
+        // Add responsive wrapper
+        html.push('<div class="table-responsive">')
+        html.push('<table class="enhanced-table">')
 
         // Header row
         const headerCells = tableRows[0].split('|').filter(cell => cell.trim())
         html.push('  <thead>')
         html.push('    <tr>')
-        headerCells.forEach((cell) => {
-          html.push(`      <th>${processCell(cell)}</th>`)
+        headerCells.forEach((cell, index) => {
+          const align = alignments[index] || 'left'
+          html.push(`      <th style="text-align: ${align}">${processCell(cell)}</th>`)
         })
         html.push('    </tr>')
         html.push('  </thead>')
@@ -1252,8 +1270,9 @@ async function markdownToHtml(markdown: string, rootDir: string = './docs'): Pro
           for (let j = 2; j < tableRows.length; j++) {
             const cells = tableRows[j].split('|').filter(cell => cell.trim())
             html.push('    <tr>')
-            cells.forEach((cell) => {
-              html.push(`      <td>${processCell(cell)}</td>`)
+            cells.forEach((cell, index) => {
+              const align = alignments[index] || 'left'
+              html.push(`      <td style="text-align: ${align}">${processCell(cell)}</td>`)
             })
             html.push('    </tr>')
           }
@@ -1261,6 +1280,7 @@ async function markdownToHtml(markdown: string, rootDir: string = './docs'): Pro
         }
 
         html.push('</table>')
+        html.push('</div>')
 
         // Skip the lines we just processed
         i = tableIndex - 1
