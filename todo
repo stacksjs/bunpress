@@ -237,13 +237,26 @@ Implement all VitePress markdown blocks and containers as reusable `.stx` templa
 
 **Test:** `test/templates/toc.test.ts` (enhance existing)
 
-### 5.2 Custom Header Anchors
-- [ ] Create template: `src/templates/blocks/heading-anchor.stx`
-- [ ] Syntax: `## Heading {#custom-id}`
-- [ ] Allow custom IDs for headings
-- [ ] Override auto-generated slugs
+### 5.2 Custom Header Anchors ✅
+- [x] Implement custom ID support in `addHeadingIds()` function
+- [x] Syntax: `## Heading {#custom-id}`
+- [x] Allow custom IDs for headings (alphanumeric, hyphens, underscores)
+- [x] Override auto-generated slugs
+- [x] Remove `{#custom-id}` syntax from display text
+- [x] Maintain backward compatibility with auto-generated IDs
+- [x] Integrate with TOC (custom IDs in links)
+- [x] Support for h2, h3, h4 headings
 
-**Test:** `test/templates/heading-anchor.test.ts`
+**Implementation:** `src/serve.ts:79-108` - `addHeadingIds()` function with custom anchor detection
+**Test:** ✅ (14/14 passing, 41 assertions)
+- `test/templates/content/custom-header-anchors.test.ts`
+- Basic custom anchors (h2, h3, h4)
+- Custom ID formats (hyphens, underscores, numbers)
+- Auto-generated IDs fallback
+- Multiple headings (mixed custom and auto)
+- TOC integration
+- Edge cases (whitespace, inline code, emphasis)
+- VitePress compatibility
 
 ### 5.3 Emoji Support
 - [ ] Create template: `src/templates/blocks/emoji.stx`

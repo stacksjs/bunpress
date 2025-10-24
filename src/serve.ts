@@ -78,6 +78,7 @@ async function generatePageTOC(html: string): Promise<string> {
 
 /**
  * Add IDs to headings in HTML content
+ * Supports custom IDs with {#custom-id} syntax
  */
 function addHeadingIds(html: string): string {
   return html.replace(/<h([234])([^>]*)>(.*?)<\/h\1>/g, (match, level, attributes, text) => {
@@ -86,11 +87,23 @@ function addHeadingIds(html: string): string {
       return match
     }
 
-    // Generate ID from text
-    const plainText = text.replace(/<[^>]*>/g, '')
-    const id = plainText.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')
+    // Check for custom ID syntax {#custom-id}
+    const customIdMatch = text.match(/\s*\{#([\w-]+)\}\s*$/)
+    let id: string
+    let displayText = text
 
-    return `<h${level}${attributes} id="${id}">${text}</h${level}>`
+    if (customIdMatch) {
+      // Use custom ID and remove the {#custom-id} from display text
+      id = customIdMatch[1]
+      displayText = text.replace(/\s*\{#[\w-]+\}\s*$/, '')
+    }
+    else {
+      // Generate ID from text
+      const plainText = text.replace(/<[^>]*>/g, '')
+      id = plainText.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')
+    }
+
+    return `<h${level}${attributes} id="${id}">${displayText}</h${level}>`
   })
 }
 
@@ -310,7 +323,7 @@ async function processGitHubAlerts(content: string): Promise<string> {
  * Optional label: <<< @/filepath [label]
  */
 async function processCodeImports(content: string, rootDir: string): Promise<string> {
-  const importRegex = /^<<<\s+@\/(.+?)(?:\{(\d+)-(\d+)\}|#(\w+))?\s*(?:\[.+?\])?\s*$/gm
+  const importRegex = /^<<<\s+@\/(.+?)(?:\{(\d+)-(\d+)\}|#(\w+))?\s*(?:\[.+?\]\s*)?$/gm
   const matches = Array.from(content.matchAll(importRegex))
 
   let result = content
@@ -329,7 +342,7 @@ async function processCodeImports(content: string, rootDir: string): Promise<str
         continue
       }
 
-      let fileContent = await file.text()
+      const fileContent = await file.text()
       let lines = fileContent.split('\n')
 
       // Extract language from file extension
