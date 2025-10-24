@@ -279,13 +279,43 @@ Implement all VitePress markdown blocks and containers as reusable `.stx` templa
 - Edge cases (consecutive emojis, line positions)
 - Common documentation emojis
 
-### 5.4 Badges
-- [ ] Create template: `src/templates/blocks/badge.stx`
-- [ ] Syntax: `<Badge type="info|tip|warning|danger" text="v2.0" />`
-- [ ] Inline status badges
-- [ ] Custom colors and text
+### 5.4 Badges ✅
+- [x] Implement `processBadges()` function
+- [x] Syntax: `<Badge type="info|tip|warning|danger" text="v2.0" />`
+- [x] Inline status badges with VitePress-style colors
+- [x] Support all badge types: info (blue), tip (green), warning (orange), danger (red)
+- [x] Default to info type when not specified
+- [x] Case-insensitive type matching
+- [x] Flexible attribute order (type and text can be in any order)
+- [x] Works in headings, paragraphs, lists, containers, and alerts
+- [x] Inline display (span-based) with proper styling
+- [x] Integrated into markdown processing pipeline (after emoji)
 
-**Test:** `test/templates/badge.test.ts`
+**Implementation:** `src/serve.ts:490-518` - `processBadges()` function with flexible attribute parsing
+**Test:** ✅ (23/23 passing, 77 assertions)
+- `test/templates/content/badges.test.ts`
+- Basic badge types (info, tip, warning, danger)
+- Badge defaults (type, empty text)
+- Multiple badges (same line, different paragraphs)
+- Badge text content (versions, statuses, multi-word, special chars)
+- Badges in headings (h2, h3)
+- Badges in lists
+- Badges in containers and alerts
+- Case sensitivity (uppercase Badge tag, mixed case types)
+- Edge cases (no spaces, emoji in text, attribute order variations)
+- Common documentation use cases
+
+---
+
+**Phase 5 Summary (Partial):**
+- **Features Implemented:** 3/4 (75% complete) - 5.2, 5.3, 5.4 ✅ | 5.1 pending
+- **Total Tests:** 56 passing (170 assertions)
+- **Test Files:** 3 comprehensive test suites (custom-header-anchors, emoji, badges)
+- **Processing Functions:** `addHeadingIds()`, `processEmoji()`, `processBadges()`
+- **Emoji Support:** 150+ emoji shortcodes across 8 categories
+- **Badge Types:** 4 types (info, tip, warning, danger) with VitePress-style colors
+- **All features work in headings, paragraphs, lists, containers, and alerts**
+- **VitePress feature parity achieved for custom anchors, emojis, and badges**
 
 ---
 

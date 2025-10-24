@@ -488,6 +488,36 @@ function processEmoji(content: string): string {
 }
 
 /**
+ * Process inline badges like <Badge type="info" text="v2.0" />
+ * Supports types: info, tip, warning, danger
+ */
+function processBadges(content: string): string {
+  // Match <Badge> components with type and text attributes in any order
+  const badgeRegex = /<Badge\s+([^>]+?)\s*\/>/gi
+
+  return content.replace(badgeRegex, (match, attributes) => {
+    // Extract type and text attributes
+    const typeMatch = attributes.match(/type="(info|tip|warning|danger)"/i)
+    const textMatch = attributes.match(/text="([^"]+)"/)
+
+    const type = typeMatch ? typeMatch[1].toLowerCase() : 'info'
+    const text = textMatch ? textMatch[1] : ''
+
+    // Badge color schemes matching VitePress
+    const colors: Record<string, { bg: string, text: string, border: string }> = {
+      'info': { bg: '#e0f2fe', text: '#0c4a6e', border: '#0ea5e9' },
+      'tip': { bg: '#dcfce7', text: '#14532d', border: '#22c55e' },
+      'warning': { bg: '#fef3c7', text: '#78350f', border: '#f59e0b' },
+      'danger': { bg: '#fee2e2', text: '#7f1d1d', border: '#ef4444' },
+    }
+
+    const color = colors[type] || colors.info
+
+    return `<span class="badge badge-${type}" style="display: inline-block; padding: 2px 8px; font-size: 0.85em; font-weight: 600; border-radius: 4px; background: ${color.bg}; color: ${color.text}; border: 1px solid ${color.border}; margin: 0 4px; vertical-align: middle;">${text}</span>`
+  })
+}
+
+/**
  * Process GitHub-flavored alerts like > [!NOTE], > [!TIP], etc.
  */
 async function processGitHubAlerts(content: string): Promise<string> {
@@ -907,12 +937,13 @@ async function markdownToHtml(markdown: string, rootDir: string = './docs'): Pro
     }
   }
 
-  // Process in order: code imports, code groups, GitHub alerts, containers, then emoji
+  // Process in order: code imports, code groups, GitHub alerts, containers, emoji, then badges
   let processedContent = await processCodeImports(content, rootDir)
   processedContent = await processCodeGroups(processedContent)
   processedContent = await processGitHubAlerts(processedContent)
   processedContent = await processContainers(processedContent)
   processedContent = processEmoji(processedContent)
+  processedContent = processBadges(processedContent)
 
   // Very basic markdown conversion - will be replaced with full plugin
   // Split into lines for better processing
