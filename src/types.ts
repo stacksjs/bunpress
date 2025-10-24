@@ -108,6 +108,11 @@ export interface MarkdownPluginConfig {
    * Robots.txt configuration
    */
   robots?: RobotsConfig
+
+  /**
+   * Markdown features configuration
+   */
+  features?: MarkdownFeaturesConfig
 }
 
 /**
@@ -265,6 +270,253 @@ export interface TocConfig {
  * TOC position options
  */
 export type TocPosition = 'sidebar' | 'inline' | 'floating'
+
+/**
+ * Markdown features configuration
+ * Controls which VitePress-compatible features are enabled
+ */
+export interface MarkdownFeaturesConfig {
+  /**
+   * Enable inline formatting (bold, italic, strikethrough, sub/sup, mark)
+   * @default true
+   */
+  inlineFormatting?: boolean
+
+  /**
+   * Enable custom containers (::: info, ::: tip, etc.)
+   * @default true
+   */
+  containers?: boolean | ContainersConfig
+
+  /**
+   * Enable GitHub-flavored alerts (> [!NOTE], > [!TIP], etc.)
+   * @default true
+   */
+  githubAlerts?: boolean | GitHubAlertsConfig
+
+  /**
+   * Enable code block enhancements (line highlighting, diffs, focus, etc.)
+   * @default true
+   */
+  codeBlocks?: boolean | CodeBlocksConfig
+
+  /**
+   * Enable code groups with tabs
+   * @default true
+   */
+  codeGroups?: boolean
+
+  /**
+   * Enable code imports from files (<<< @/filepath)
+   * @default true
+   */
+  codeImports?: boolean
+
+  /**
+   * Enable inline TOC [[toc]] macro
+   * @default true
+   */
+  inlineToc?: boolean
+
+  /**
+   * Enable custom header anchors (## Heading {#custom-id})
+   * @default true
+   */
+  customAnchors?: boolean
+
+  /**
+   * Enable emoji shortcodes (:tada:, :rocket:, etc.)
+   * @default true
+   */
+  emoji?: boolean
+
+  /**
+   * Enable inline badges (<Badge type="info" text="v2.0" />)
+   * @default true
+   */
+  badges?: boolean
+
+  /**
+   * Enable markdown file inclusion (<!--@include: ./file.md-->)
+   * @default true
+   */
+  includes?: boolean
+
+  /**
+   * Enable external link enhancements (target="_blank", icons)
+   * @default true
+   */
+  externalLinks?: boolean | ExternalLinksConfig
+
+  /**
+   * Enable image lazy loading
+   * @default true
+   */
+  imageLazyLoading?: boolean
+
+  /**
+   * Enable enhanced tables (alignment, styling, responsive)
+   * @default true
+   */
+  tables?: boolean | TablesConfig
+}
+
+/**
+ * Custom containers configuration
+ */
+export interface ContainersConfig {
+  /**
+   * Enable info containers
+   * @default true
+   */
+  info?: boolean
+
+  /**
+   * Enable tip containers
+   * @default true
+   */
+  tip?: boolean
+
+  /**
+   * Enable warning containers
+   * @default true
+   */
+  warning?: boolean
+
+  /**
+   * Enable danger containers
+   * @default true
+   */
+  danger?: boolean
+
+  /**
+   * Enable details containers
+   * @default true
+   */
+  details?: boolean
+
+  /**
+   * Enable raw containers
+   * @default true
+   */
+  raw?: boolean
+}
+
+/**
+ * GitHub alerts configuration
+ */
+export interface GitHubAlertsConfig {
+  /**
+   * Enable note alerts
+   * @default true
+   */
+  note?: boolean
+
+  /**
+   * Enable tip alerts
+   * @default true
+   */
+  tip?: boolean
+
+  /**
+   * Enable important alerts
+   * @default true
+   */
+  important?: boolean
+
+  /**
+   * Enable warning alerts
+   * @default true
+   */
+  warning?: boolean
+
+  /**
+   * Enable caution alerts
+   * @default true
+   */
+  caution?: boolean
+}
+
+/**
+ * Code blocks configuration
+ */
+export interface CodeBlocksConfig {
+  /**
+   * Enable line highlighting
+   * @default true
+   */
+  lineHighlighting?: boolean
+
+  /**
+   * Enable line numbers
+   * @default true
+   */
+  lineNumbers?: boolean
+
+  /**
+   * Enable code focus
+   * @default true
+   */
+  focus?: boolean
+
+  /**
+   * Enable code diffs
+   * @default true
+   */
+  diffs?: boolean
+
+  /**
+   * Enable error/warning markers
+   * @default true
+   */
+  errorWarningMarkers?: boolean
+}
+
+/**
+ * External links configuration
+ */
+export interface ExternalLinksConfig {
+  /**
+   * Auto-add target="_blank" to external links
+   * @default true
+   */
+  autoTarget?: boolean
+
+  /**
+   * Auto-add rel="noreferrer noopener" to external links
+   * @default true
+   */
+  autoRel?: boolean
+
+  /**
+   * Show external link icons
+   * @default true
+   */
+  showIcon?: boolean
+}
+
+/**
+ * Tables configuration
+ */
+export interface TablesConfig {
+  /**
+   * Enable column alignment (left, center, right)
+   * @default true
+   */
+  alignment?: boolean
+
+  /**
+   * Enable enhanced styling (striped rows, hover effects)
+   * @default true
+   */
+  enhancedStyling?: boolean
+
+  /**
+   * Enable responsive wrapper for horizontal scrolling
+   * @default true
+   */
+  responsive?: boolean
+}
 
 /**
  * Search configuration

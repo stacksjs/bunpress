@@ -704,6 +704,38 @@ function switchCodeTab(groupId, panelIndex) {
 }
 `],
     preserveDirectoryStructure: true,
+
+    // Markdown features configuration (all enabled by default)
+    features: {
+      inlineFormatting: true,
+      containers: true,
+      githubAlerts: true,
+      codeBlocks: {
+        lineHighlighting: true,
+        lineNumbers: true,
+        focus: true,
+        diffs: true,
+        errorWarningMarkers: true,
+      },
+      codeGroups: true,
+      codeImports: true,
+      inlineToc: true,
+      customAnchors: true,
+      emoji: true,
+      badges: true,
+      includes: true,
+      externalLinks: {
+        autoTarget: true,
+        autoRel: true,
+        showIcon: true,
+      },
+      imageLazyLoading: true,
+      tables: {
+        alignment: true,
+        enhancedStyling: true,
+        responsive: true,
+      },
+    },
   },
 
   verbose: true,

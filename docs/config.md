@@ -266,7 +266,127 @@ export default {
 
 ## Markdown Features Configuration
 
-BunPress supports extensive markdown feature configuration through the markdown options:
+BunPress supports extensive markdown feature configuration through the markdown options.
+
+### Features Toggle
+
+All VitePress-compatible markdown features can be enabled/disabled via the `features` configuration:
+
+```typescript
+export default {
+  markdown: {
+    features: {
+      // Inline formatting (bold, italic, strikethrough, sub/sup, mark)
+      inlineFormatting: true,
+
+      // Custom containers (::: info, ::: tip, etc.)
+      containers: true,  // Or configure specific types
+
+      // GitHub alerts (> [!NOTE], > [!TIP], etc.)
+      githubAlerts: true,  // Or configure specific types
+
+      // Code block enhancements
+      codeBlocks: {
+        lineHighlighting: true,
+        lineNumbers: true,
+        focus: true,
+        diffs: true,
+        errorWarningMarkers: true
+      },
+
+      // Code groups with tabs
+      codeGroups: true,
+
+      // Code imports from files
+      codeImports: true,
+
+      // Inline TOC [[toc]] macro
+      inlineToc: true,
+
+      // Custom header anchors (## Heading {#custom-id})
+      customAnchors: true,
+
+      // Emoji shortcodes (:tada:, :rocket:, etc.)
+      emoji: true,
+
+      // Inline badges (<Badge type="info" text="v2.0" />)
+      badges: true,
+
+      // Markdown file inclusion (<!--@include: ./file.md-->)
+      includes: true,
+
+      // External link enhancements
+      externalLinks: {
+        autoTarget: true,  // Add target="_blank"
+        autoRel: true,     // Add rel="noreferrer noopener"
+        showIcon: true     // Show external link icon
+      },
+
+      // Image lazy loading
+      imageLazyLoading: true,
+
+      // Enhanced tables
+      tables: {
+        alignment: true,       // Column alignment support
+        enhancedStyling: true, // Striped rows, hover effects
+        responsive: true       // Horizontal scroll wrapper
+      }
+    }
+  }
+}
+```
+
+#### Fine-Grained Container Control
+
+```typescript
+export default {
+  markdown: {
+    features: {
+      containers: {
+        info: true,
+        tip: true,
+        warning: true,
+        danger: true,
+        details: true,
+        raw: false  // Disable raw containers
+      }
+    }
+  }
+}
+```
+
+#### Fine-Grained Alert Control
+
+```typescript
+export default {
+  markdown: {
+    features: {
+      githubAlerts: {
+        note: true,
+        tip: true,
+        important: true,
+        warning: true,
+        caution: false  // Disable caution alerts
+      }
+    }
+  }
+}
+```
+
+#### Disabling Specific Features
+
+```typescript
+export default {
+  markdown: {
+    features: {
+      // Disable features you don't need
+      emoji: false,           // Disable emoji processing
+      badges: false,          // Disable badge syntax
+      imageLazyLoading: false // Disable lazy loading
+    }
+  }
+}
+```
 
 ### Table of Contents
 
