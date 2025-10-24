@@ -4,7 +4,7 @@ import { YAML } from 'bun'
 import process from 'node:process'
 import { config } from './config'
 import { clearTemplateCache, render } from './template-loader'
-import { extractHeadings, filterHeadings, buildTocHierarchy, generateInlineTocHtml, defaultTocConfig } from './toc'
+import { buildTocHierarchy, defaultTocConfig, extractHeadings, filterHeadings, generateInlineTocHtml } from './toc'
 
 /**
  * Generate sidebar HTML from BunPress config
@@ -506,10 +506,10 @@ function processBadges(content: string): string {
 
     // Badge color schemes matching VitePress
     const colors: Record<string, { bg: string, text: string, border: string }> = {
-      'info': { bg: '#e0f2fe', text: '#0c4a6e', border: '#0ea5e9' },
-      'tip': { bg: '#dcfce7', text: '#14532d', border: '#22c55e' },
-      'warning': { bg: '#fef3c7', text: '#78350f', border: '#f59e0b' },
-      'danger': { bg: '#fee2e2', text: '#7f1d1d', border: '#ef4444' },
+      info: { bg: '#e0f2fe', text: '#0c4a6e', border: '#0ea5e9' },
+      tip: { bg: '#dcfce7', text: '#14532d', border: '#22c55e' },
+      warning: { bg: '#fef3c7', text: '#78350f', border: '#f59e0b' },
+      danger: { bg: '#fee2e2', text: '#7f1d1d', border: '#ef4444' },
     }
 
     const color = colors[type] || colors.info
@@ -682,6 +682,83 @@ async function processCodeImports(content: string, rootDir: string): Promise<str
     }
     catch (error) {
       console.error(`Error importing code from ${filepath}:`, error)
+    }
+  }
+
+  return result
+}
+
+/**
+ * Process markdown file inclusion
+ * Syntax: <!--@include: ./filepath.md--> or <!--@include: ./filepath.md{10-20}--> or <!--@include: ./filepath.md{#region}-->
+ */
+async function processMarkdownIncludes(content: string, rootDir: string, processedFiles = new Set<string>()): Promise<string> {
+  const includeRegex = /<!--@include:\s*([^\s{]+)(?:\{(\d+)-(\d+)\}|\{#([\w-]+)\})?\s*-->/g
+  const matches = Array.from(content.matchAll(includeRegex))
+
+  let result = content
+  for (const match of matches.reverse()) {
+    const [fullMatch, filepath, startLine, endLine, regionName] = match
+
+    try {
+      // Resolve file path relative to root directory
+      const { join, resolve } = await import('node:path')
+      const fullPath = resolve(join(rootDir, filepath))
+
+      // Prevent circular includes
+      if (processedFiles.has(fullPath)) {
+        console.warn(`Markdown include: Circular reference detected for ${filepath}`)
+        continue
+      }
+
+      // Read the file
+      const file = Bun.file(fullPath)
+      if (!(await file.exists())) {
+        console.warn(`Markdown include: File not found: ${fullPath}`)
+        continue
+      }
+
+      const fileContent = await file.text()
+      let lines = fileContent.split('\n')
+
+      // Process line range
+      if (startLine && endLine) {
+        const start = Number.parseInt(startLine) - 1 // Convert to 0-indexed
+        const end = Number.parseInt(endLine)
+        lines = lines.slice(start, end)
+      }
+      // Process region
+      else if (regionName) {
+        const regionStart = lines.findIndex(line =>
+          line.includes(`<!-- #region ${regionName} -->`)
+          || line.includes(`<!-- region ${regionName} -->`),
+        )
+        const regionEnd = lines.findIndex((line, idx) =>
+          idx > regionStart && (line.includes('<!-- #endregion -->') || line.includes('<!-- endregion -->')),
+        )
+
+        if (regionStart !== -1 && regionEnd !== -1) {
+          lines = lines.slice(regionStart + 1, regionEnd)
+        }
+        else {
+          console.warn(`Markdown include: Region '${regionName}' not found in ${filepath}`)
+          continue // Skip this include if region not found
+        }
+      }
+
+      let includedContent = lines.join('\n')
+
+      // Mark this file as processed to prevent circular includes
+      const newProcessedFiles = new Set(processedFiles)
+      newProcessedFiles.add(fullPath)
+
+      // Recursively process includes in the included file
+      includedContent = await processMarkdownIncludes(includedContent, rootDir, newProcessedFiles)
+
+      result = result.slice(0, match.index) + includedContent + result.slice(match.index! + fullMatch.length)
+    }
+    catch (error) {
+      console.error(`Error including markdown from ${filepath}:`, error)
     }
   }
 
@@ -981,11 +1058,14 @@ async function markdownToHtml(markdown: string, rootDir: string = './docs'): Pro
     }
   }
 
+  // Process markdown includes first (before everything else)
+  let processedContent = await processMarkdownIncludes(content, rootDir)
+
   // Extract TOC data early (before any processing that modifies headings)
-  const { content: contentWithTocPlaceholder, tocHtml } = extractTocData(content, frontmatter.toc)
+  const { content: contentWithTocPlaceholder, tocHtml } = extractTocData(processedContent, frontmatter.toc)
 
   // Process in order: code imports, code groups, GitHub alerts, containers, emoji, badges
-  let processedContent = await processCodeImports(contentWithTocPlaceholder, rootDir)
+  processedContent = await processCodeImports(contentWithTocPlaceholder, rootDir)
   processedContent = await processCodeGroups(processedContent)
   processedContent = await processGitHubAlerts(processedContent)
   processedContent = await processContainers(processedContent)

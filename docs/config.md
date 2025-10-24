@@ -264,6 +264,263 @@ export default {
 }
 ```
 
+## Markdown Features Configuration
+
+BunPress supports extensive markdown feature configuration through the markdown options:
+
+### Table of Contents
+
+Configure TOC generation:
+
+```typescript
+export default {
+  markdown: {
+    toc: {
+      enabled: true,
+      minDepth: 2,  // Start from H2
+      maxDepth: 4,   // End at H4
+      position: 'sidebar', // 'sidebar', 'inline', or 'floating'
+      title: 'On This Page',
+      exclude: ['Appendix', 'References'],
+      pattern: '^(Appendix|References)',  // Regex pattern for exclusion
+      collapsible: true,
+      collapsed: false
+    }
+  }
+}
+```
+
+#### TOC Configuration Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `enabled` | `boolean` | `true` | Enable TOC generation |
+| `minDepth` | `number` | `2` | Minimum heading level (1-6) |
+| `maxDepth` | `number` | `4` | Maximum heading level (1-6) |
+| `position` | `string` | `'sidebar'` | TOC position: 'sidebar', 'inline', or 'floating' |
+| `title` | `string` | `'On This Page'` | TOC section title |
+| `exclude` | `string[]` | `[]` | Array of heading texts to exclude |
+| `pattern` | `string` | `undefined` | Regex pattern for heading exclusion |
+| `collapsible` | `boolean` | `true` | Allow collapsing sections |
+| `collapsed` | `boolean` | `false` | Start with sections collapsed |
+
+### Code Highlighting
+
+Configure syntax highlighting:
+
+```typescript
+export default {
+  markdown: {
+    highlighting: {
+      enabled: true,
+      theme: 'github-dark',
+      lineNumbers: true,
+      copyButton: true,
+      languages: [
+        'typescript', 'javascript', 'python', 'rust', 'go'
+      ]
+    }
+  }
+}
+```
+
+### GitHub Alerts
+
+GitHub-style alert boxes are enabled by default. All alert types are supported:
+
+- `[!NOTE]` - Essential information
+- `[!TIP]` - Helpful advice
+- `[!IMPORTANT]` - Critical information
+- `[!WARNING]` - Urgent attention required
+- `[!CAUTION]` - Potential risks
+
+No configuration required - use them directly in your markdown:
+
+```markdown
+> [!TIP]
+> This is automatically styled!
+```
+
+### Custom Containers
+
+Custom container syntax is enabled by default:
+
+```markdown
+::: tip
+This is a tip
+:::
+
+::: warning
+This is a warning
+:::
+
+::: danger
+This is dangerous
+:::
+
+::: info
+This is informational
+:::
+
+::: details Click to expand
+Hidden content
+:::
+```
+
+### Code Groups
+
+Code groups are automatically processed when using the syntax:
+
+````markdown
+::: code-group
+
+```js [JavaScript]
+// code here
+```
+
+```ts [TypeScript]
+// code here
+```
+
+:::
+````
+
+### Inline Badges
+
+Badges work out of the box:
+
+```markdown
+<Badge type="tip" text="new" />
+<Badge type="warning" text="deprecated" />
+<Badge type="danger" text="breaking" />
+<Badge type="info" text="beta" />
+```
+
+### Emoji Support
+
+Emoji shortcodes are automatically converted:
+
+```markdown
+:heart: :fire: :rocket:
+```
+
+Configure custom emoji mappings:
+
+```typescript
+export default {
+  markdown: {
+    emoji: {
+      enabled: true,
+      customMappings: {
+        'custom': '🎯',
+        'logo': '🚀'
+      }
+    }
+  }
+}
+```
+
+### Code Imports
+
+Import code from files with the `<<<` syntax:
+
+```markdown
+<<< ./examples/code.ts
+<<< ./src/api.ts{10-20}
+<<< ./src/config.ts{#region-name}
+```
+
+Configure base directories:
+
+```typescript
+export default {
+  markdown: {
+    codeImports: {
+      basePath: './examples',
+      extensions: ['.ts', '.js', '.py', '.go']
+    }
+  }
+}
+```
+
+### Markdown File Inclusion
+
+Include markdown files with HTML comment syntax:
+
+```markdown
+<!--@include: ./shared/intro.md-->
+<!--@include: ./guide.md{1-50}-->
+<!--@include: ./docs.md{#section}-->
+```
+
+Configure base paths:
+
+```typescript
+export default {
+  markdown: {
+    includes: {
+      basePath: './docs',
+      maxDepth: 10,  // Maximum nesting level
+      circularCheck: true
+    }
+  }
+}
+```
+
+## Frontmatter Configuration
+
+Configure page-specific settings via frontmatter:
+
+```yaml
+---
+title: Page Title
+description: Page description for SEO
+layout: doc  # 'home', 'doc', or 'page'
+
+# TOC Configuration
+toc:
+  enabled: true
+  minDepth: 2
+  maxDepth: 4
+
+# Hero Section (for home layout)
+hero:
+  name: Project Name
+  text: Tagline
+  tagline: Subheading
+  image: /logo.png
+  actions:
+    - theme: brand
+      text: Get Started
+      link: /guide/start
+    - theme: alt
+      text: View on GitHub
+      link: https://github.com/user/repo
+
+# Features (for home layout)
+features:
+  - title: Feature 1
+    details: Description of feature 1
+  - title: Feature 2
+    details: Description of feature 2
+
+# Navigation overrides
+sidebar: false  # Disable sidebar for this page
+navbar: true    # Show/hide navbar
+editLink: true  # Show edit link
+lastUpdated: true  # Show last updated date
+
+# SEO
+head:
+  - - meta
+    - name: keywords
+      content: keyword1, keyword2
+  - - meta
+    - property: og:title
+      content: Custom OG Title
+---
+```
+
 ## Default CSS
 
 BunPress includes a default stylesheet that provides a clean, responsive layout for your documentation.

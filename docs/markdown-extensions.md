@@ -387,6 +387,258 @@ function energy(mass) {
 Try it out! :rocket:
 :::
 
+## GitHub Alerts
+
+BunPress supports GitHub-flavored alert syntax for creating attention-grabbing callouts.
+
+### Available Alert Types
+
+```markdown
+> [!NOTE]
+> Essential information that users should know.
+
+> [!TIP]
+> Helpful advice for doing things better or more easily.
+
+> [!IMPORTANT]
+> Key information users need to know to achieve their goal.
+
+> [!WARNING]
+> Urgent information that requires immediate attention to avoid problems.
+
+> [!CAUTION]
+> Potential risks or negative outcomes of certain actions.
+```
+
+> [!NOTE]
+> Essential information that users should know.
+
+> [!TIP]
+> Helpful advice for doing things better or more easily.
+
+> [!IMPORTANT]
+> Key information users need to know to achieve their goal.
+
+> [!WARNING]
+> Urgent information that requires immediate attention to avoid problems.
+
+> [!CAUTION]
+> Potential risks or negative outcomes of certain actions.
+
+### Alert Features
+
+- **Icon indicators**: Each alert type has a distinctive icon
+- **Color coding**: Visual distinction with semantic colors
+- **Markdown support**: Full markdown rendering inside alerts including links, code, lists
+- **Nested content**: Supports multi-line content with proper formatting
+
+## Inline Badges
+
+Add inline badges to highlight version numbers, status indicators, or tags.
+
+### Basic Badge Syntax
+
+```markdown
+Available in <Badge type="tip" text="v2.0+" />
+<Badge type="warning" text="deprecated" />
+<Badge type="danger" text="breaking" />
+<Badge type="info" text="beta" />
+```
+
+Available in <Badge type="tip" text="v2.0+" />
+<Badge type="warning" text="deprecated" />
+<Badge type="danger" text="breaking" />
+<Badge type="info" text="beta" />
+
+### Badge Types
+
+- **tip** (green): New features, recommended practices
+- **warning** (yellow): Deprecation notices, caution
+- **danger** (red): Breaking changes, critical warnings
+- **info** (blue): General information, neutral status
+
+### Badge in Headings
+
+```markdown
+## New Feature <Badge type="tip" text="2.0+" />
+```
+
+## New Feature <Badge type="tip" text="2.0+" />
+
+## Code Groups
+
+Create tabbed code blocks to show multiple language examples or alternative implementations.
+
+### Basic Code Group
+
+````markdown
+::: code-group
+
+```javascript [JavaScript]
+const config = {
+  port: 3000,
+  host: 'localhost'
+}
+```
+
+```typescript [TypeScript]
+interface Config {
+  port: number
+  host: string
+}
+
+const config: Config = {
+  port: 3000,
+  host: 'localhost'
+}
+```
+
+```python [Python]
+config = {
+    'port': 3000,
+    'host': 'localhost'
+}
+```
+
+:::
+````
+
+::: code-group
+
+```javascript [JavaScript]
+const config = {
+  port: 3000,
+  host: 'localhost'
+}
+```
+
+```typescript [TypeScript]
+interface Config {
+  port: number
+  host: string
+}
+
+const config: Config = {
+  port: 3000,
+  host: 'localhost'
+}
+```
+
+```python [Python]
+config = {
+    'port': 3000,
+    'host': 'localhost'
+}
+```
+
+:::
+
+### Features
+
+- **Tab navigation**: Click tabs to switch between code examples
+- **Active state**: First tab is active by default
+- **Syntax highlighting**: Full support for all languages
+- **Line numbers**: Works with `:line-numbers` modifier
+- **Line highlighting**: Compatible with `{1,3-5}` syntax
+
+## Code File Imports
+
+Import code snippets directly from files in your codebase with support for line ranges and named regions.
+
+### Full File Import
+
+```markdown
+<<< ./examples/config.ts
+```
+
+### Line Range Import
+
+```markdown
+<<< ./examples/server.ts{10-25}
+```
+
+Import lines 10-25 from the file.
+
+### Named Region Import
+
+```markdown
+<<< ./examples/api.ts{#setup}
+```
+
+Imports content between region markers in the file:
+
+```typescript
+// #region setup
+const app = express()
+app.use(express.json())
+// #endregion setup
+```
+
+### Features
+
+- **Live imports**: Code is imported at build time from actual files
+- **Syntax detection**: Automatically detects language from file extension
+- **Error handling**: Gracefully handles missing files or invalid regions
+- **Line numbers**: Add `:line-numbers` after the path
+- **Highlighting**: Combine with `{1,3-5}` after language for highlights
+
+### Examples
+
+```markdown
+<<< ./src/utils/helper.ts:line-numbers
+<<< ./src/api/routes.ts{#auth}:line-numbers
+<<< ./examples/demo.js{1-20}
+```
+
+## Markdown File Inclusion
+
+Include entire markdown files or specific sections in your documentation to promote reusability and maintainability.
+
+### Full File Inclusion
+
+```markdown
+<!--@include: ./components/intro.md-->
+```
+
+### Line Range Inclusion
+
+```markdown
+<!--@include: ./guide.md{1-10}-->
+```
+
+Includes only lines 1-10 from the file.
+
+### Named Region Inclusion
+
+```markdown
+<!--@include: ./api-docs.md{#authentication}-->
+```
+
+Includes content between region markers:
+
+```markdown
+<!-- #region authentication -->
+## Authentication
+
+Your authentication content here...
+<!-- #endregion -->
+```
+
+### Features
+
+- **Recursive includes**: Included files can include other files
+- **Circular reference protection**: Prevents infinite loops
+- **Full markdown processing**: Included content is processed with all BunPress features
+- **Path resolution**: Relative paths resolved from the including file's directory
+- **Error handling**: Missing files or invalid regions fail gracefully
+
+### Use Cases
+
+- **Shared content**: Reuse common sections across multiple pages
+- **Modular documentation**: Break large docs into manageable files
+- **Version-specific content**: Include different content based on context
+- **Multi-language docs**: Share code examples across translations
+
 ## Configuration
 
 The syntax highlighting features are enabled by default and require no additional configuration. However, you can customize the behavior through your `bunpress.config.ts`:
