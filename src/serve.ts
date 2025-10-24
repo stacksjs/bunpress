@@ -4,6 +4,7 @@ import { YAML } from 'bun'
 import process from 'node:process'
 import { config } from './config'
 import { clearTemplateCache, render } from './template-loader'
+import { extractHeadings, filterHeadings, buildTocHierarchy, generateInlineTocHtml, defaultTocConfig } from './toc'
 
 /**
  * Generate sidebar HTML from BunPress config
@@ -518,6 +519,49 @@ function processBadges(content: string): string {
 }
 
 /**
+ * Extract TOC data from markdown content
+ * Returns the TOC HTML and content with placeholder
+ */
+function extractTocData(content: string, tocConfig?: any): { content: string, tocHtml: string | null } {
+  // Check if content contains [[toc]] macro
+  if (!content.includes('[[toc]]')) {
+    return { content, tocHtml: null }
+  }
+
+  // Extract headings from the content
+  const headings = extractHeadings(content)
+
+  // Apply config filters
+  const config = { ...defaultTocConfig, ...tocConfig }
+  const filteredHeadings = filterHeadings(headings, config)
+
+  // Build hierarchy
+  const hierarchicalHeadings = buildTocHierarchy(filteredHeadings)
+
+  // Generate inline TOC HTML
+  const tocData = {
+    items: hierarchicalHeadings,
+    title: config.title || 'Table of Contents',
+    config,
+  }
+
+  const tocHtml = generateInlineTocHtml(tocData)
+
+  // Replace [[toc]] with a placeholder that won't be affected by markdown processing
+  const placeholder = '<!--INLINE_TOC_PLACEHOLDER-->'
+  const contentWithPlaceholder = content.replace(/\[\[toc\]\]/g, placeholder)
+
+  return { content: contentWithPlaceholder, tocHtml }
+}
+
+/**
+ * Replace TOC placeholder with actual TOC HTML
+ */
+function injectTocHtml(html: string, tocHtml: string): string {
+  return html.replace(/<!--INLINE_TOC_PLACEHOLDER-->/g, tocHtml)
+}
+
+/**
  * Process GitHub-flavored alerts like > [!NOTE], > [!TIP], etc.
  */
 async function processGitHubAlerts(content: string): Promise<string> {
@@ -937,8 +981,11 @@ async function markdownToHtml(markdown: string, rootDir: string = './docs'): Pro
     }
   }
 
-  // Process in order: code imports, code groups, GitHub alerts, containers, emoji, then badges
-  let processedContent = await processCodeImports(content, rootDir)
+  // Extract TOC data early (before any processing that modifies headings)
+  const { content: contentWithTocPlaceholder, tocHtml } = extractTocData(content, frontmatter.toc)
+
+  // Process in order: code imports, code groups, GitHub alerts, containers, emoji, badges
+  let processedContent = await processCodeImports(contentWithTocPlaceholder, rootDir)
   processedContent = await processCodeGroups(processedContent)
   processedContent = await processGitHubAlerts(processedContent)
   processedContent = await processContainers(processedContent)
@@ -1084,6 +1131,12 @@ async function markdownToHtml(markdown: string, rootDir: string = './docs'): Pro
       continue
     }
 
+    // HTML comments (including TOC placeholder) - pass through as-is
+    if (line.trim().startsWith('<!--') && line.trim().endsWith('-->')) {
+      html.push(line)
+      continue
+    }
+
     // Regular paragraphs
     // Apply inline formatting: bold, italic, code, links, etc.
     line = processInlineFormatting(line)
@@ -1096,8 +1149,15 @@ async function markdownToHtml(markdown: string, rootDir: string = './docs'): Pro
     html.push('</ul>')
   }
 
+  let finalHtml = html.join('\n')
+
+  // Inject TOC HTML if it was extracted
+  if (tocHtml) {
+    finalHtml = injectTocHtml(finalHtml, tocHtml)
+  }
+
   return {
-    html: html.join('\n'),
+    html: finalHtml,
     frontmatter,
   }
 }
