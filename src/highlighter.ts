@@ -170,16 +170,15 @@ code {
   color: inherit;
 }
 
-/* Token fallback colors (when ts-syntax-highlighter doesn't provide inline styles) */
+/* Token spans inherit color from parent or use their inline styles */
+/* Don't set a default color on .token to avoid overriding inline styles */
 .token {
-  color: #24292f;
+  /* color is set via inline styles from highlighter */
 }
 
-.token.source-ts,
-.token.source-js,
-.token.source-javascript,
-.token.source-typescript {
-  color: #24292f;
+/* Fallback for tokens without inline styles - inherit from pre */
+.token:not([style*="color"]) {
+  color: inherit;
 }
 
 /* Dark theme support */
@@ -189,15 +188,8 @@ code {
     color: #e6edf3;
   }
 
-  .token {
-    color: #e6edf3;
-  }
-
-  .token.source-ts,
-  .token.source-js,
-  .token.source-javascript,
-  .token.source-typescript {
-    color: #e6edf3;
+  .token:not([style*="color"]) {
+    color: inherit;
   }
 }
 
