@@ -57,7 +57,7 @@
     "lint:fix": "bunx --bun eslint . --fix",
     "changelog": "bunx logsmith --verbose",
     "changelog:generate": "bunx logsmith --output CHANGELOG.md",
-    "release": "bun run changelog:generate && bunx --bun bumpx prompt --recursive",
+    "release": "bunx --bun bumpx -r --push",
     "dev:docs": "bun bin/cli.ts dev",
     "build:docs": "bun build.ts",
     "preview:docs": "bun serve --port 3000 dist",
@@ -72,8 +72,9 @@
     "@stacksjs/ts-i18n": "^0.0.0",
     "bun-git-hooks": "^0.3.1",
     "bun-plugin-dtsx": "0.21.12",
-    "bun-plugin-stx": "^0.1.15",
+    "bun-plugin-stx": "0.1.16",
     "bunfig": "^0.15.0",
+    "ts-syntax-highlighter": "^0.1.0",
     "typescript": "^5.9.3"
   },
   "git-hooks": {
@@ -83,5 +84,8 @@
       }
     },
     "commit-msg": "bunx gitlint --edit .git/COMMIT_EDITMSG"
+  },
+  "overrides": {
+    "bun-plugin-stx": "0.1.16"
   }
 }
