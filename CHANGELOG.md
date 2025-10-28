@@ -1,3 +1,57 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.0.5...v0.1.0)
+
+### 🚀 Features
+
+- add TOC ([0410c9e](https://github.com/stacksjs/bunpress/commit/0410c9e)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+
+### 🧹 Chores
+
+- release v0.1.0 ([863e50c](https://github.com/stacksjs/bunpress/commit/863e50c)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([94df272](https://github.com/stacksjs/bunpress/commit/94df272)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([092bdfd](https://github.com/stacksjs/bunpress/commit/092bdfd)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([6c45604](https://github.com/stacksjs/bunpress/commit/6c45604)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([49d6022](https://github.com/stacksjs/bunpress/commit/49d6022)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- fix ui ([5af99b8](https://github.com/stacksjs/bunpress/commit/5af99b8)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- fix code highlights ([259feed](https://github.com/stacksjs/bunpress/commit/259feed)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- fix highlighter colors ([2fc59cd](https://github.com/stacksjs/bunpress/commit/2fc59cd)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([c036a5d](https://github.com/stacksjs/bunpress/commit/c036a5d)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- fix tests ([7437fe0](https://github.com/stacksjs/bunpress/commit/7437fe0)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([a4a900f](https://github.com/stacksjs/bunpress/commit/a4a900f)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([9d94486](https://github.com/stacksjs/bunpress/commit/9d94486)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([e66ce1f](https://github.com/stacksjs/bunpress/commit/e66ce1f)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([15acab4](https://github.com/stacksjs/bunpress/commit/15acab4)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([b94e66a](https://github.com/stacksjs/bunpress/commit/b94e66a)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([3ccbce1](https://github.com/stacksjs/bunpress/commit/3ccbce1)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- update TOC ([6242ed2](https://github.com/stacksjs/bunpress/commit/6242ed2)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([96cc9d6](https://github.com/stacksjs/bunpress/commit/96cc9d6)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([5585f20](https://github.com/stacksjs/bunpress/commit/5585f20)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- add emoji support ([e6570a2](https://github.com/stacksjs/bunpress/commit/e6570a2)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- custom header anchor ([721629a](https://github.com/stacksjs/bunpress/commit/721629a)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([5764b61](https://github.com/stacksjs/bunpress/commit/5764b61)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([3ca64e6](https://github.com/stacksjs/bunpress/commit/3ca64e6)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([1b23bc0](https://github.com/stacksjs/bunpress/commit/1b23bc0)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([bd049e4](https://github.com/stacksjs/bunpress/commit/bd049e4)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([a2bf48e](https://github.com/stacksjs/bunpress/commit/a2bf48e)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- fix repeated log without update ([679ec06](https://github.com/stacksjs/bunpress/commit/679ec06)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([b8fabef](https://github.com/stacksjs/bunpress/commit/b8fabef)) _(by Chris <chrisbreuer93@gmail.com>)_
+- fix tables display ([8c525cb](https://github.com/stacksjs/bunpress/commit/8c525cb)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([9f7bc78](https://github.com/stacksjs/bunpress/commit/9f7bc78)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([6be6ea8](https://github.com/stacksjs/bunpress/commit/6be6ea8)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([ca17a6b](https://github.com/stacksjs/bunpress/commit/ca17a6b)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- improve ui ([ae8c823](https://github.com/stacksjs/bunpress/commit/ae8c823)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- add sidebar ([f8bf9c8](https://github.com/stacksjs/bunpress/commit/f8bf9c8)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([5f73a46](https://github.com/stacksjs/bunpress/commit/5f73a46)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([db1a9c9](https://github.com/stacksjs/bunpress/commit/db1a9c9)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([db48fc9](https://github.com/stacksjs/bunpress/commit/db48fc9)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([60e9947](https://github.com/stacksjs/bunpress/commit/60e9947)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([f3cd9e9](https://github.com/stacksjs/bunpress/commit/f3cd9e9)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([4c8bf13](https://github.com/stacksjs/bunpress/commit/4c8bf13)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+
+### Contributors
+
+- _Adelino Ngomacha <adelinob335@gmail.com>_
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.0.4...v0.0.5)
 
 ### 🧹 Chores
