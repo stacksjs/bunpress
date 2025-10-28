@@ -219,7 +219,7 @@ describe('Table Enhancements', () => {
         expect(html).toContain('</div>')
 
         // Table should be inside wrapper
-        const responsiveMatch = html.match(/<div class="table-responsive">([\s\S]*?)<\/div>/);
+        const responsiveMatch = html.match(/<div class="table-responsive">([\s\S]*?)<\/div>/)
         expect(responsiveMatch).toBeTruthy()
         expect(responsiveMatch![1]).toContain('<table')
       }

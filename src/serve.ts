@@ -50,6 +50,7 @@ async function generatePageTOC(html: string): Promise<string> {
   const headings: Array<{ level: number, text: string, id: string }> = []
 
   let match
+  // eslint-disable-next-line no-cond-assign
   while ((match = headingRegex.exec(html)) !== null) {
     const level = Number.parseInt(match[1])
     const attributes = match[2]

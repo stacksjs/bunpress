@@ -60,21 +60,6 @@ export function isLanguageSupported(lang: string): boolean {
 }
 
 /**
- * Extracts CSS from highlighted result
- */
-function extractCSS(html: string): string {
-  const styleMatch = html.match(/<style[^>]*>([\s\S]*?)<\/style>/)
-  return styleMatch ? styleMatch[1] : ''
-}
-
-/**
- * Extracts HTML content without style tags
- */
-function extractHTML(html: string): string {
-  return html.replace(/<style[^>]*>[\s\S]*?<\/style>/g, '').trim()
-}
-
-/**
  * Escapes HTML special characters
  */
 function escapeHtml(text: string): string {
@@ -99,6 +84,7 @@ function restoreWhitespaceFromOriginal(originalCode: string, highlightedHtml: st
   const tokens: string[] = []
   let match: RegExpExecArray | null
 
+  // eslint-disable-next-line no-cond-assign
   while ((match = tokenRegex.exec(highlightedHtml)) !== null) {
     // Decode HTML entities
     const content = match[1]
@@ -121,11 +107,11 @@ function restoreWhitespaceFromOriginal(originalCode: string, highlightedHtml: st
   // Now rebuild the HTML by walking through the original code and inserting whitespace
   let result = ''
   let originalPos = 0
-  const tokenIndex = 0
 
   // Extract token spans (with their full HTML) for reconstruction
   const tokenSpans: string[] = []
   const tokenSpanRegex = /<span[^>]*class="token[^"]*"[^>]*>[^<]*<\/span>/g
+  // eslint-disable-next-line no-cond-assign
   while ((match = tokenSpanRegex.exec(highlightedHtml)) !== null) {
     tokenSpans.push(match[0])
   }

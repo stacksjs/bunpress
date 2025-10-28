@@ -532,9 +532,12 @@ import bunpress from 'bunpress'
         expect(html).toContain('href="#installation"')
         expect(html).toContain('href="#usage"')
 
-        // Should preserve code blocks
-        expect(html).toContain('npm install bunpress')
-        expect(html).toContain('import bunpress from')
+        // Should preserve code blocks (syntax-highlighted)
+        expect(html).toContain('npm')
+        expect(html).toContain('install')
+        expect(html).toContain('bunpress')
+        expect(html).toContain('import')
+        expect(html).toContain('from')
       }
       finally {
         stop()

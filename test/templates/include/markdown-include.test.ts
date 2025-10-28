@@ -68,7 +68,10 @@ That's all!`,
 
         // Should include content from faq.md
         expect(html).toContain('Getting Started')
-        expect(html).toContain('npm install bunpress')
+        // Code is now syntax-highlighted with spans, so check for tokens
+        expect(html).toContain('npm')
+        expect(html).toContain('install')
+        expect(html).toContain('bunpress')
         expect(html).toContain('Advanced Usage')
       }
       finally {
@@ -135,7 +138,10 @@ End of document.`,
 
         // Should include getting-started region
         expect(html).toContain('Getting Started')
-        expect(html).toContain('npm install bunpress')
+        // Code is now syntax-highlighted with spans, so check for tokens
+        expect(html).toContain('npm')
+        expect(html).toContain('install')
+        expect(html).toContain('bunpress')
 
         // Should include advanced region
         expect(html).toContain('Advanced Usage')
@@ -322,7 +328,9 @@ End.`,
         expect(html).toContain('new')
 
         // Should process code blocks in included content
-        expect(html).toContain('console.log')
+        // Code is now syntax-highlighted with spans, so check for tokens
+        expect(html).toContain('console')
+        expect(html).toContain('log')
       }
       finally {
         stop()

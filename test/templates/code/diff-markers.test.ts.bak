@@ -18,16 +18,13 @@ describe('Code Block Diff Markers', () => {
         const html = await response.text()
 
         // Should have diff-add class
-        expect(html).toContain('const') // Check code renders
+        expect(html).toContain('class="diff-add"')
 
         // Should not display the marker
-        expect(html).toContain('const') // Markers not implemented, just check code renders
+        expect(html).not.toContain('[!code ++]')
 
-        // Should contain the code (syntax-highlighted, check for keywords)
-        expect(html).toContain('const')
-        expect(html).toContain('1')
-        expect(html).toContain('2')
-        expect(html).toContain('3')
+        // Should contain the code
+        expect(html).toContain('const b = 2')
       }
       finally {
         stop()
@@ -48,8 +45,8 @@ describe('Code Block Diff Markers', () => {
         const html = await response.text()
 
         // Should have 2 diff-add classes
-        // Diff markers not yet implemented - just check code renders
-        expect(html).toContain('const')
+        const diffAddCount = (html.match(/class="diff-add"/g) || []).length
+        expect(diffAddCount).toBe(2)
       }
       finally {
         stop()
@@ -72,16 +69,13 @@ describe('Code Block Diff Markers', () => {
         const html = await response.text()
 
         // Should have diff-remove class
-        expect(html).toContain('const') // Check code is rendered
+        expect(html).toContain('class="diff-remove"')
 
         // Should not display the marker
-        expect(html).toContain('const') // Markers not implemented, just check code renders
+        expect(html).not.toContain('[!code --]')
 
-        // Should contain the code (syntax-highlighted, check for keywords)
-        expect(html).toContain('const')
-        expect(html).toContain('1')
-        expect(html).toContain('2')
-        expect(html).toContain('3')
+        // Should contain the code
+        expect(html).toContain('const b = 2')
       }
       finally {
         stop()
@@ -102,8 +96,8 @@ describe('Code Block Diff Markers', () => {
         const html = await response.text()
 
         // Should have 3 diff-remove classes
-        // Diff markers not yet implemented - just check code renders
-        expect(html).toContain('const')
+        const diffRemoveCount = (html.match(/class="diff-remove"/g) || []).length
+        expect(diffRemoveCount).toBe(3)
       }
       finally {
         stop()
@@ -126,12 +120,12 @@ describe('Code Block Diff Markers', () => {
         const html = await response.text()
 
         // Should have both diff-add and diff-remove
-        expect(html).toContain('const') // Check code renders
-        expect(html).toContain('const') // Check code is rendered
+        expect(html).toContain('class="diff-add"')
+        expect(html).toContain('class="diff-remove"')
 
         // Should not display markers
-        expect(html).toContain('const') // Markers not implemented, just check code renders
-        expect(html).toContain('const') // Markers not implemented, just check code renders
+        expect(html).not.toContain('[!code ++]')
+        expect(html).not.toContain('[!code --]')
       }
       finally {
         stop()
@@ -154,7 +148,7 @@ describe('Code Block Diff Markers', () => {
         const html = await response.text()
 
         // Line 2 should have both highlighted and diff-add
-        expect(html).toContain('const') // Check code is rendered
+        expect(html).toContain('class="highlighted diff-add"')
       }
       finally {
         stop()
@@ -176,15 +170,15 @@ describe('Code Block Diff Markers', () => {
         const response = await fetch('http://localhost:9007/test-diff-line-numbers')
         const html = await response.text()
 
-        // Line numbers not yet implemented - just check code renders
-        expect(html).toContain('const')
+        // Should have line numbers mode
+        expect(html).toContain('line-numbers-mode')
 
         // Should have diff markers
-        expect(html).toContain('const') // Check code renders
-        expect(html).toContain('const') // Check code is rendered
+        expect(html).toContain('class="diff-add"')
+        expect(html).toContain('class="diff-remove"')
 
-        // Line numbers not yet implemented - just check code renders
-        expect(html).toContain('const')
+        // Should have line numbers
+        expect(html).toContain('class="line-number"')
       }
       finally {
         stop()
@@ -207,10 +201,10 @@ describe('Code Block Diff Markers', () => {
         const html = await response.text()
 
         // Should have both focused and diff-add
-        expect(html).toContain('const') // Check code is rendered
+        expect(html).toContain('class="focused diff-add"')
 
-        // Dimmed lines not yet implemented - just check code renders
-        expect(html).toContain('const')
+        // Other lines should be dimmed
+        expect(html).toContain('class="dimmed"')
       }
       finally {
         stop()
@@ -233,8 +227,8 @@ describe('Code Block Diff Markers', () => {
         const html = await response.text()
 
         expect(html).toContain('class="language-ts"')
-        expect(html).toContain('const') // Check code renders
-        expect(html).toContain('const') // Check code is rendered
+        expect(html).toContain('class="diff-add"')
+        expect(html).toContain('class="diff-remove"')
       }
       finally {
         stop()
@@ -255,8 +249,8 @@ describe('Code Block Diff Markers', () => {
         const html = await response.text()
 
         expect(html).toContain('class="language-python"')
-        expect(html).toContain('const') // Check code renders
-        expect(html).toContain('const') // Check code is rendered
+        expect(html).toContain('class="diff-add"')
+        expect(html).toContain('class="diff-remove"')
       }
       finally {
         stop()
@@ -279,8 +273,8 @@ describe('Code Block Diff Markers', () => {
         const html = await response.text()
 
         // Should have 3 diff-add lines
-        // Diff markers not yet implemented - just check code renders
-        expect(html).toContain('const')
+        const diffAddCount = (html.match(/class="diff-add"/g) || []).length
+        expect(diffAddCount).toBe(3)
       }
       finally {
         stop()
@@ -301,8 +295,8 @@ describe('Code Block Diff Markers', () => {
         const html = await response.text()
 
         // Should have 2 diff-remove lines
-        // Diff markers not yet implemented - just check code renders
-        expect(html).toContain('const')
+        const diffRemoveCount = (html.match(/class="diff-remove"/g) || []).length
+        expect(diffRemoveCount).toBe(2)
       }
       finally {
         stop()
@@ -325,11 +319,10 @@ describe('Code Block Diff Markers', () => {
         const html = await response.text()
 
         // Should contain the code without trailing spaces or markers
-        // Code is syntax-highlighted with spans, check for content
-        expect(html).toContain('test')
-        expect(html).toContain('value')
-        expect(html).toContain('old')
-        expect(html).toContain('removed')
+        expect(html).toContain('const test = &quot;value&quot;')
+        expect(html).toContain('const old = &quot;removed&quot;')
+        expect(html).not.toContain('[!code ++]')
+        expect(html).not.toContain('[!code --]')
       }
       finally {
         stop()
@@ -352,8 +345,8 @@ describe('Code Block Diff Markers', () => {
         const html = await response.text()
 
         // Should have both diff types
-        expect(html).toContain('const') // Check code renders
-        expect(html).toContain('const') // Check code is rendered
+        expect(html).toContain('class="diff-add"')
+        expect(html).toContain('class="diff-remove"')
 
         // Should have both languages
         expect(html).toContain('class="language-js"')
@@ -379,10 +372,18 @@ describe('Code Block Diff Markers', () => {
         const response = await fetch('http://localhost:9015/test-diff-all-features')
         const html = await response.text()
 
-        // These features not yet implemented - just check code renders
-        expect(html).toContain('const')
-        expect(html).toContain('const')
-        expect(html).toContain('const')
+        // Should have line numbers
+        expect(html).toContain('line-numbers-mode')
+
+        // Should have focus
+        expect(html).toContain('has-focused-lines')
+
+        // Should have diff markers (may be combined with other classes)
+        expect(html).toContain('diff-add')
+        expect(html).toContain('diff-remove')
+
+        // Should have highlighted line
+        expect(html).toContain('highlighted')
       }
       finally {
         stop()

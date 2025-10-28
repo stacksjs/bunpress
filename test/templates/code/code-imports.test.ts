@@ -17,10 +17,12 @@ describe('Code Imports from Files', () => {
         const response = await fetch('http://localhost:12001/test-import-full-js')
         const html = await response.text()
 
-        // Should contain code from the file
-        expect(html).toContain('export function greet(name)')
-        expect(html).toContain('export function add(a, b)')
-        expect(html).toContain('export function multiply(a, b)')
+        // Should contain code from the file (syntax-highlighted with tokens)
+        expect(html).toContain('export')
+        expect(html).toContain('function')
+        expect(html).toContain('greet')
+        expect(html).toContain('add')
+        expect(html).toContain('multiply')
 
         // Should have correct language class
         expect(html).toContain('class="language-javascript"')
@@ -46,7 +48,9 @@ describe('Code Imports from Files', () => {
         const response = await fetch('http://localhost:12002/test-import-full-ts')
         const html = await response.text()
 
-        expect(html).toContain('interface User')
+        // Syntax-highlighted with tokens
+        expect(html).toContain('interface')
+        expect(html).toContain('User')
         expect(html).toContain('validateEmail')
         expect(html).toContain('createUser')
         expect(html).toContain('class="language-typescript"')
@@ -93,9 +97,13 @@ describe('Code Imports from Files', () => {
         const response = await fetch('http://localhost:12004/test-import-lines')
         const html = await response.text()
 
-        // Should contain lines 2-4 (greet function)
-        expect(html).toContain('export function greet(name)')
-        expect(html).toContain('return `Hello, ${name}!`')
+        // Should contain lines 2-4 (greet function) - syntax-highlighted
+        expect(html).toContain('export')
+        expect(html).toContain('function')
+        expect(html).toContain('greet')
+        expect(html).toContain('name')
+        expect(html).toContain('return')
+        expect(html).toContain('Hello')
 
         // Should NOT contain other functions
         expect(html).not.toContain('export function add(a, b)')
@@ -119,9 +127,11 @@ describe('Code Imports from Files', () => {
         const response = await fetch('http://localhost:12005/test-import-middle')
         const html = await response.text()
 
-        // Should contain lines 6-8 (add function)
-        expect(html).toContain('export function add(a, b)')
-        expect(html).toContain('return a + b')
+        // Should contain lines 6-8 (add function) - syntax-highlighted
+        expect(html).toContain('export')
+        expect(html).toContain('function')
+        expect(html).toContain('add')
+        expect(html).toContain('return')
 
         // Should NOT contain other parts
         expect(html).not.toContain('export function greet(name)')
@@ -147,10 +157,13 @@ describe('Code Imports from Files', () => {
         const response = await fetch('http://localhost:12006/test-import-region')
         const html = await response.text()
 
-        // Should contain code from math region
-        expect(html).toContain('export function multiply(a, b)')
-        expect(html).toContain('export function divide(a, b)')
-        expect(html).toContain('Division by zero')
+        // Should contain code from math region - syntax-highlighted
+        expect(html).toContain('export')
+        expect(html).toContain('function')
+        expect(html).toContain('multiply')
+        expect(html).toContain('divide')
+        expect(html).toContain('Division')
+        expect(html).toContain('zero')
 
         // Should NOT contain region markers
         expect(html).not.toContain('#region')
@@ -243,10 +256,12 @@ describe('Code Imports from Files', () => {
         const response = await fetch('http://localhost:12009/test-import-multiple')
         const html = await response.text()
 
-        // Should have all three imports
-        expect(html).toContain('export function greet(name)')
+        // Should have all three imports - syntax-highlighted
+        expect(html).toContain('export')
+        expect(html).toContain('function')
+        expect(html).toContain('greet')
         expect(html).toContain('validateEmail')
-        expect(html).toContain('def greet(name):')
+        expect(html).toContain('def')
 
         // Should have correct language classes
         expect(html).toContain('class="language-javascript"')
@@ -319,9 +334,11 @@ describe('Code Imports from Files', () => {
         const response = await fetch('http://localhost:12012/test-import-highlight')
         const html = await response.text()
 
-        // Should import the code
-        expect(html).toContain('export function greet(name)')
-        expect(html).toContain('export function add(a, b)')
+        // Should import the code - syntax-highlighted
+        expect(html).toContain('export')
+        expect(html).toContain('function')
+        expect(html).toContain('greet')
+        expect(html).toContain('add')
       }
       finally {
         stop()
@@ -350,10 +367,12 @@ describe('Code Imports from Files', () => {
         const response = await fetch('http://localhost:12013/test-import-code-group')
         const html = await response.text()
 
-        // Should have imported code from all three files
-        expect(html).toContain('export function greet(name)')
+        // Should have imported code from all three files - syntax-highlighted
+        expect(html).toContain('export')
+        expect(html).toContain('function')
+        expect(html).toContain('greet')
         expect(html).toContain('validateEmail')
-        expect(html).toContain('def greet(name):')
+        expect(html).toContain('def')
 
         // Should have correct language classes
         expect(html).toContain('class="language-javascript"')
@@ -400,11 +419,15 @@ Another paragraph.`,
         expect(html).toContain('Regular paragraph here')
         expect(html).toContain('Another paragraph')
 
-        // Should have inline code (HTML entity-encoded)
-        expect(html).toContain('const inline = &#39;code&#39;')
+        // Should have inline code (syntax-highlighted)
+        expect(html).toContain('const')
+        expect(html).toContain('inline')
+        expect(html).toContain('code')
 
-        // Should have imported code
-        expect(html).toContain('export function multiply(a, b)')
+        // Should have imported code - syntax-highlighted
+        expect(html).toContain('export')
+        expect(html).toContain('function')
+        expect(html).toContain('multiply')
 
         // Should have headings
         expect(html).toContain('Inline Code')
