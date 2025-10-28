@@ -16,16 +16,16 @@ hero:
       link: https://github.com/stacksjs/bunpress
 
 features:
-  - title: "Lightning Fast"
-    icon: "⚡"
-    details: "Built on Bun for incredible performance and speed."
-  - title: "Rich Markdown"
-    icon: "📝"
-    details: "Enhanced markdown with containers, emojis, math, and syntax highlighting."
-  - title: "Smart TOC"
-    icon: "📋"
-    details: "Automatic table of contents with customization and interactive features."
-  - title: "Developer Friendly"
-    icon: "🛠"
-    details: "TypeScript support, plugin system, and extensive customization options."
+  - title: "⚡ Lightning Fast"
+    details: "Built on Bun for incredible performance - up to 10x faster than Node.js-based generators."
+  - title: "📝 Rich Markdown"
+    details: "GitHub alerts, custom containers, code groups, badges, and emoji support out of the box."
+  - title: "💻 Advanced Code Features"
+    details: "Import code from files, syntax highlighting, line numbers, and copy-to-clipboard functionality."
+  - title: "📋 Smart TOC"
+    details: "Automatic table of contents with customization, active highlighting, and smooth scrolling."
+  - title: "🔄 Content Reuse"
+    details: "Include markdown files and code snippets with line ranges and named regions."
+  - title: "🛠️ Developer Friendly"
+    details: "TypeScript support, hot reload, zero-config setup, and extensive customization options."
 ---

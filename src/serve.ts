@@ -1,10 +1,11 @@
 /* eslint-disable no-console */
 import type { BunPressConfig } from './types'
 import { YAML } from 'bun'
-import { readdir } from 'node:fs/promises'
 import process from 'node:process'
 import { config } from './config'
+import { getSyntaxHighlightingStyles, highlightCode } from './highlighter'
 import { clearTemplateCache, render } from './template-loader'
+import { buildTocHierarchy, defaultTocConfig, extractHeadings, filterHeadings, generateInlineTocHtml } from './toc'
 
 /**
  * Generate sidebar HTML from BunPress config
@@ -44,8 +45,8 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
  * Extract headings from HTML content and generate page TOC
  */
 async function generatePageTOC(html: string): Promise<string> {
-  // Extract h2, h3, h4 headings from HTML
-  const headingRegex = /<h([234])([^>]*)>(.*?)<\/h\1>/g
+  // Extract h2, h3, h4, h5, h6 headings from HTML (h1 is typically the page title)
+  const headingRegex = /<h([23456])([^>]*)>(.*?)<\/h\1>/g
   const headings: Array<{ level: number, text: string, id: string }> = []
 
   let match
@@ -79,19 +80,37 @@ async function generatePageTOC(html: string): Promise<string> {
 
 /**
  * Add IDs to headings in HTML content
+ * Supports custom IDs with {#custom-id} syntax
  */
 function addHeadingIds(html: string): string {
-  return html.replace(/<h([234])([^>]*)>(.*?)<\/h\1>/g, (match, level, attributes, text) => {
+  return html.replace(/<h([1-6])([^>]*)>(.*?)<\/h\1>/g, (match, level, attributes, text) => {
     // Check if ID already exists
     if (attributes.includes('id=')) {
       return match
     }
 
-    // Generate ID from text
-    const plainText = text.replace(/<[^>]*>/g, '')
-    const id = plainText.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')
+    // Check for custom ID syntax {#custom-id}
+    const customIdMatch = text.match(/\s*\{#([\w-]+)\}\s*$/)
+    let id: string
+    let displayText = text
 
-    return `<h${level}${attributes} id="${id}">${text}</h${level}>`
+    if (customIdMatch) {
+      // Use custom ID and remove the {#custom-id} from display text
+      id = customIdMatch[1]
+      displayText = text.replace(/\s*\{#[\w-]+\}\s*$/, '')
+    }
+    else {
+      // Generate ID from text
+      const plainText = text.replace(/<[^>]*>/g, '')
+      id = plainText.toLowerCase()
+        .replace(/\//g, '-') // Replace slashes with hyphens first
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]/g, '')
+        .replace(/-+/g, '-') // Remove consecutive hyphens
+        .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+    }
+
+    return `<h${level}${attributes} id="${id}">${displayText}</h${level}>`
   })
 }
 
@@ -134,14 +153,15 @@ function generateNav(config: BunPressConfig): string {
 async function wrapInLayout(content: string, config: BunPressConfig, currentPath: string, isHome: boolean = false): Promise<string> {
   const title = config.markdown?.title || 'BunPress Documentation'
   const description = config.markdown?.meta?.description || 'Documentation built with BunPress'
-  const customCSS = config.markdown?.css || ''
+  const syntaxHighlightingStyles = getSyntaxHighlightingStyles()
+  const customCSS = `${syntaxHighlightingStyles}\n${config.markdown?.css || ''}`
 
   const meta = Object.entries(config.markdown?.meta || {})
     .filter(([key]) => key !== 'description')
     .map(([key, value]) => `<meta name="${key}" content="${value}">`)
     .join('\n  ')
 
-  const scripts = config.markdown?.scripts?.map(script => `<script src="${script}"></script>`).join('\n') || ''
+  const scripts = config.markdown?.scripts?.map(script => `<script>${script}</script>`).join('\n') || ''
 
   // Home layout - no sidebar, no navigation, clean hero layout
   if (isHome) {
@@ -249,9 +269,874 @@ async function generateFeatures(features: any[]): Promise<string> {
 }
 
 /**
+ * Process inline markdown formatting
+ * Supports: bold, italic, strikethrough, code, links, subscript, superscript, mark
+ */
+function processInlineFormatting(text: string): string {
+  return text
+    // Bold - both ** and __
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/__(.+?)__/g, '<strong>$1</strong>')
+    // Strikethrough ~~
+    .replace(/~~(.+?)~~/g, '<del>$1</del>')
+    // Mark/highlight ==
+    .replace(/==(.+?)==/g, '<mark>$1</mark>')
+    // Superscript ^
+    .replace(/\^(.+?)\^/g, '<sup>$1</sup>')
+    // Code ` (before italic to avoid conflicts)
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    // Italic - both * and _ (single, not double)
+    .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>')
+    .replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, '<em>$1</em>')
+    // Subscript ~ (single, not double like strikethrough)
+    .replace(/(?<!~)~(?!~)(.+?)(?<!~)~(?!~)/g, '<sub>$1</sub>')
+    // Images with optional caption (must be before links to avoid conflicts)
+    // Matches: ![alt](src "caption") or ![alt](src) or ![alt]( src "caption")
+    .replace(/!\[([^\]]*)\]\(\s*([^\s")]+)(?:\s+"([^"]+)")?\)/g, (match, alt, src, caption) => {
+      if (caption) {
+        // Image with caption - wrap in figure/figcaption
+        return `<figure class="image-figure"><img src="${src}" alt="${alt}"><figcaption>${caption}</figcaption></figure>`
+      }
+      else {
+        // Regular image without caption
+        return `<img src="${src}" alt="${alt}">`
+      }
+    })
+    // Links
+    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
+}
+
+/**
+ * Process emoji shortcodes like :tada:, :rocket:, etc.
+ * Converts emoji shortcodes to their Unicode equivalents
+ */
+function processEmoji(content: string): string {
+  const emojiMap: Record<string, string> = {
+    // Smileys & Emotion
+    'smile': '😄',
+    'laughing': '😆',
+    'blush': '😊',
+    'heart_eyes': '😍',
+    'kissing_heart': '😘',
+    'relaxed': '☺️',
+    'wink': '😉',
+    'grin': '😁',
+    'joy': '😂',
+    'sweat_smile': '😅',
+    'rofl': '🤣',
+    'thinking': '🤔',
+    'zipper_mouth': '🤐',
+    'neutral_face': '😐',
+    'expressionless': '😑',
+    'confused': '😕',
+    'worried': '😟',
+    'slightly_frowning_face': '🙁',
+    'frowning_face': '☹️',
+    'persevere': '😣',
+    'disappointed': '😞',
+    'sweat': '😓',
+    'tired_face': '😫',
+    'cry': '😢',
+    'sob': '😭',
+    'triumph': '😤',
+    'angry': '😠',
+    'rage': '😡',
+    'no_mouth': '😶',
+    'sleeping': '😴',
+    '+1': '👍',
+    'thumbsup': '👍',
+    '-1': '👎',
+    'thumbsdown': '👎',
+    'clap': '👏',
+    'raised_hands': '🙌',
+    'pray': '🙏',
+    'wave': '👋',
+    'ok_hand': '👌',
+    'point_up': '☝️',
+    'point_down': '👇',
+    'point_left': '👈',
+    'point_right': '👉',
+    'muscle': '💪',
+
+    // Symbols & Signs
+    'heart': '❤️',
+    'blue_heart': '💙',
+    'green_heart': '💚',
+    'yellow_heart': '💛',
+    'purple_heart': '�purple',
+    'broken_heart': '💔',
+    'sparkling_heart': '💖',
+    'star': '⭐',
+    'star2': '🌟',
+    'sparkles': '✨',
+    'boom': '💥',
+    'fire': '🔥',
+    'tada': '🎉',
+    'confetti_ball': '🎊',
+    'rocket': '🚀',
+    'zap': '⚡',
+    'bulb': '💡',
+    'bell': '🔔',
+    'mega': '📣',
+    'loudspeaker': '📢',
+    'warning': '⚠️',
+    'white_check_mark': '✅',
+    'x': '❌',
+    'heavy_check_mark': '✔️',
+    'heavy_multiplication_x': '✖️',
+    'question': '❓',
+    'grey_question': '❔',
+    'exclamation': '❗',
+    'grey_exclamation': '❕',
+    'heavy_plus_sign': '➕',
+    'heavy_minus_sign': '➖',
+
+    // Objects & Tools
+    'pencil2': '✏️',
+    'memo': '📝',
+    'book': '📖',
+    'books': '📚',
+    'bookmark': '🔖',
+    'mag': '🔍',
+    'mag_right': '🔎',
+    'lock': '🔒',
+    'unlock': '🔓',
+    'key': '🔑',
+    'link': '🔗',
+    'computer': '💻',
+    'email': '📧',
+    'inbox_tray': '📥',
+    'outbox_tray': '📤',
+    'package': '📦',
+    'file_folder': '📁',
+    'open_file_folder': '📂',
+    'page_facing_up': '📄',
+    'calendar': '📅',
+    'chart_with_upwards_trend': '📈',
+    'chart_with_downwards_trend': '📉',
+    'bar_chart': '📊',
+    'clipboard': '📋',
+    'pushpin': '📌',
+    'round_pushpin': '📍',
+    'paperclip': '📎',
+    'straight_ruler': '📏',
+    'wrench': '🔧',
+    'hammer': '🔨',
+    'gear': '⚙️',
+    'nut_and_bolt': '🔩',
+
+    // Nature & Animals
+    'seedling': '🌱',
+    'evergreen_tree': '🌲',
+    'deciduous_tree': '🌳',
+    'palm_tree': '🌴',
+    'cactus': '🌵',
+    'herb': '🌿',
+    'shamrock': '☘️',
+    'four_leaf_clover': '🍀',
+    'bug': '🐛',
+    'bee': '🐝',
+    'bird': '🐦',
+    'dog': '🐶',
+    'cat': '🐱',
+    'penguin': '🐧',
+    'turtle': '🐢',
+    'fish': '🐟',
+
+    // Food & Drink
+    'coffee': '☕',
+    'tea': '🍵',
+    'beer': '🍺',
+    'beers': '🍻',
+    'wine_glass': '🍷',
+    'pizza': '🍕',
+    'hamburger': '🍔',
+    'fries': '🍟',
+    'cake': '🍰',
+    'birthday': '🎂',
+    'cookie': '🍪',
+    'doughnut': '🍩',
+    'apple': '🍎',
+    'green_apple': '🍏',
+    'banana': '🍌',
+    'strawberry': '🍓',
+
+    // Places & Transportation
+    'house': '🏠',
+    'office': '🏢',
+    'hospital': '🏥',
+    'school': '🏫',
+    'car': '🚗',
+    'taxi': '🚕',
+    'bus': '🚌',
+    'train': '🚂',
+    'airplane': '✈️',
+    'ship': '🚢',
+    'bike': '🚲',
+
+    // Activities & Events
+    'soccer': '⚽',
+    'basketball': '🏀',
+    'football': '🏈',
+    'baseball': '⚾',
+    'tennis': '🎾',
+    'trophy': '🏆',
+    'medal': '🏅',
+    'dart': '🎯',
+    'game_die': '🎲',
+    'musical_note': '🎵',
+    'notes': '🎶',
+    'art': '🎨',
+    'camera': '📷',
+    'movie_camera': '🎥',
+
+    // Flags (common ones)
+    'checkered_flag': '🏁',
+    'triangular_flag_on_post': '🚩',
+    'flag_us': '🇺🇸',
+    'flag_gb': '🇬🇧',
+    'flag_fr': '🇫🇷',
+    'flag_de': '🇩🇪',
+    'flag_jp': '🇯🇵',
+    'flag_cn': '🇨🇳',
+  }
+
+  // Replace emoji shortcodes with Unicode emoji
+  return content.replace(/:(\w+):/g, (match, shortcode) => {
+    return emojiMap[shortcode] || match
+  })
+}
+
+/**
+ * Process inline badges like <Badge type="info" text="v2.0" />
+ * Supports types: info, tip, warning, danger
+ */
+function processBadges(content: string): string {
+  // Match <Badge> components with type and text attributes in any order
+  const badgeRegex = /<Badge\s+([^>]+?)\s*\/>/gi
+
+  return content.replace(badgeRegex, (match, attributes) => {
+    // Extract type and text attributes
+    const typeMatch = attributes.match(/type="(info|tip|warning|danger)"/i)
+    const textMatch = attributes.match(/text="([^"]+)"/)
+
+    const type = typeMatch ? typeMatch[1].toLowerCase() : 'info'
+    const text = textMatch ? textMatch[1] : ''
+
+    // Badge color schemes matching VitePress
+    const colors: Record<string, { bg: string, text: string, border: string }> = {
+      info: { bg: '#e0f2fe', text: '#0c4a6e', border: '#0ea5e9' },
+      tip: { bg: '#dcfce7', text: '#14532d', border: '#22c55e' },
+      warning: { bg: '#fef3c7', text: '#78350f', border: '#f59e0b' },
+      danger: { bg: '#fee2e2', text: '#7f1d1d', border: '#ef4444' },
+    }
+
+    const color = colors[type] || colors.info
+
+    return `<span class="badge badge-${type}" style="display: inline-block; padding: 2px 8px; font-size: 0.85em; font-weight: 600; border-radius: 4px; background: ${color.bg}; color: ${color.text}; border: 1px solid ${color.border}; margin: 0 4px; vertical-align: middle;">${text}</span>`
+  })
+}
+
+/**
+ * Process external links in HTML to add target="_blank" and rel="noreferrer"
+ */
+function processExternalLinksHtml(html: string): string {
+  // Match HTML anchor tags
+  return html.replace(/<a\s+href="([^"]+)"([^>]*)>/g, (match, url, rest) => {
+    // Skip if already has target attribute
+    if (rest.includes('target='))
+      return match
+
+    // Check if it's an external link (starts with http:// or https://)
+    const isExternal = url.startsWith('http://') || url.startsWith('https://')
+
+    if (isExternal) {
+      // Add external link attributes and icon
+      const externalIcon = '<svg class="external-link-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; margin-left: 4px; vertical-align: middle;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>'
+      return `<a href="${url}" target="_blank" rel="noreferrer noopener"${rest}>`
+    }
+
+    // Internal link - keep as is
+    return match
+  })
+}
+
+/**
+ * Add external link icons to links with target="_blank"
+ */
+function addExternalLinkIcons(html: string): string {
+  // Find </a> tags that belong to external links (those with target="_blank")
+  return html.replace(/<a\s+href="([^"]+)"\s+target="_blank"[^>]*>([^<]+)<\/a>/g, (match, url, text) => {
+    // Don't add icon if it already has one
+    if (match.includes('external-link-icon'))
+      return match
+
+    const externalIcon = '<svg class="external-link-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; margin-left: 4px; vertical-align: middle;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>'
+    return match.replace('</a>', `${externalIcon}</a>`)
+  })
+}
+
+/**
+ * Process images in HTML to add lazy loading
+ */
+function processImagesHtml(html: string): string {
+  // Match img tags without loading attribute
+  return html.replace(/<img\s+([^>]*)>/g, (match, attrs) => {
+    // Skip if already has loading attribute
+    if (attrs.includes('loading='))
+      return match
+
+    // Add loading="lazy" and decoding="async"
+    return `<img ${attrs} loading="lazy" decoding="async">`
+  })
+}
+
+/**
+ * Extract TOC data from markdown content
+ * Returns the TOC HTML and content with placeholder
+ */
+function extractTocData(content: string, tocConfig?: any): { content: string, tocHtml: string | null } {
+  // Check if content contains [[toc]] macro
+  if (!content.includes('[[toc]]')) {
+    return { content, tocHtml: null }
+  }
+
+  // Extract headings from the content
+  const headings = extractHeadings(content)
+
+  // Apply config filters
+  const config = { ...defaultTocConfig, ...tocConfig }
+  const filteredHeadings = filterHeadings(headings, config)
+
+  // Build hierarchy
+  const hierarchicalHeadings = buildTocHierarchy(filteredHeadings)
+
+  // Generate inline TOC HTML
+  const tocData = {
+    items: hierarchicalHeadings,
+    title: config.title || 'Table of Contents',
+    config,
+  }
+
+  const tocHtml = generateInlineTocHtml(tocData)
+
+  // Replace [[toc]] with a placeholder that won't be affected by markdown processing
+  const placeholder = '<!--INLINE_TOC_PLACEHOLDER-->'
+  const contentWithPlaceholder = content.replace(/\[\[toc\]\]/g, placeholder)
+
+  return { content: contentWithPlaceholder, tocHtml }
+}
+
+/**
+ * Replace TOC placeholder with actual TOC HTML
+ */
+function injectTocHtml(html: string, tocHtml: string): string {
+  return html.replace(/<!--INLINE_TOC_PLACEHOLDER-->/g, tocHtml)
+}
+
+/**
+ * Process GitHub-flavored alerts like > [!NOTE], > [!TIP], etc.
+ */
+async function processGitHubAlerts(content: string): Promise<string> {
+  const alertRegex = /^>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*\n((?:>\s*.*\n?)*)/gm
+
+  const matches = Array.from(content.matchAll(alertRegex))
+
+  let result = content
+  for (const match of matches.reverse()) {
+    const [fullMatch, type, alertContent] = match
+
+    // Remove the > prefix from each line of content
+    const processedContent = alertContent
+      .split('\n')
+      .map(line => line.replace(/^>\s*/, ''))
+      .filter(line => line.trim())
+      .map(line => `<p>${processInlineFormatting(line)}</p>`)
+      .join('\n')
+
+    const alertType = type.toLowerCase()
+    const alertHtml = await render(`blocks/alerts/${alertType}`, {
+      content: processedContent,
+    })
+
+    result = result.slice(0, match.index) + alertHtml + result.slice(match.index! + fullMatch.length)
+  }
+
+  return result
+}
+
+/**
+ * Process code imports from files
+ * Syntax: <<< @/filepath or <<< @/filepath{1-10} or <<< @/filepath#region
+ * Optional label: <<< @/filepath [label]
+ */
+async function processCodeImports(content: string, rootDir: string): Promise<string> {
+  const importRegex = /^<<<\s+@\/(.+?)(?:\{(\d+)-(\d+)\}|#(\w+))?\s*(?:\[.+?\]\s*)?$/gm
+  const matches = Array.from(content.matchAll(importRegex))
+
+  let result = content
+  for (const match of matches.reverse()) {
+    const [fullMatch, filepath, startLine, endLine, regionName] = match
+
+    try {
+      // Resolve file path relative to root directory
+      const { join } = await import('node:path')
+      const fullPath = join(rootDir, filepath)
+
+      // Read the file
+      const file = Bun.file(fullPath)
+      if (!(await file.exists())) {
+        console.warn(`Code import: File not found: ${fullPath}`)
+        continue
+      }
+
+      const fileContent = await file.text()
+      let lines = fileContent.split('\n')
+
+      // Extract language from file extension
+      const ext = filepath.split('.').pop() || ''
+      const langMap: Record<string, string> = {
+        js: 'javascript',
+        ts: 'typescript',
+        jsx: 'jsx',
+        tsx: 'tsx',
+        py: 'python',
+        rb: 'ruby',
+        go: 'go',
+        rs: 'rust',
+        java: 'java',
+        cpp: 'cpp',
+        c: 'c',
+        cs: 'csharp',
+        php: 'php',
+        sh: 'bash',
+        bash: 'bash',
+        yaml: 'yaml',
+        yml: 'yaml',
+        json: 'json',
+        md: 'markdown',
+        html: 'html',
+        css: 'css',
+        scss: 'scss',
+        vue: 'vue',
+      }
+      const lang = langMap[ext] || ext
+
+      // Process line range
+      if (startLine && endLine) {
+        const start = Number.parseInt(startLine) - 1 // Convert to 0-indexed
+        const end = Number.parseInt(endLine)
+        lines = lines.slice(start, end)
+      }
+      // Process region
+      else if (regionName) {
+        const regionStart = lines.findIndex(line =>
+          line.includes(`#region ${regionName}`)
+          || line.includes(`// region ${regionName}`)
+          || line.includes(`# region ${regionName}`),
+        )
+        const regionEnd = lines.findIndex((line, idx) =>
+          idx > regionStart && (line.includes('#endregion') || line.includes('// endregion') || line.includes('# endregion')),
+        )
+
+        if (regionStart !== -1 && regionEnd !== -1) {
+          lines = lines.slice(regionStart + 1, regionEnd)
+        }
+        else {
+          console.warn(`Code import: Region '${regionName}' not found in ${filepath}`)
+        }
+      }
+
+      // Generate code block
+      const code = lines.join('\n')
+      const codeBlock = `\`\`\`${lang}\n${code}\n\`\`\``
+
+      result = result.slice(0, match.index) + codeBlock + result.slice(match.index! + fullMatch.length)
+    }
+    catch (error) {
+      console.error(`Error importing code from ${filepath}:`, error)
+    }
+  }
+
+  return result
+}
+
+/**
+ * Process markdown file inclusion
+ * Syntax: <!--@include: ./filepath.md--> or <!--@include: ./filepath.md{10-20}--> or <!--@include: ./filepath.md{#region}-->
+ */
+async function processMarkdownIncludes(content: string, rootDir: string, processedFiles = new Set<string>()): Promise<string> {
+  const includeRegex = /<!--@include:\s*([^\s{]+)(?:\{(\d+)-(\d+)\}|\{#([\w-]+)\})?\s*-->/g
+  const matches = Array.from(content.matchAll(includeRegex))
+
+  let result = content
+  for (const match of matches.reverse()) {
+    const [fullMatch, filepath, startLine, endLine, regionName] = match
+
+    try {
+      // Resolve file path relative to root directory
+      const { join, resolve } = await import('node:path')
+      const fullPath = resolve(join(rootDir, filepath))
+
+      // Prevent circular includes
+      if (processedFiles.has(fullPath)) {
+        console.warn(`Markdown include: Circular reference detected for ${filepath}`)
+        continue
+      }
+
+      // Read the file
+      const file = Bun.file(fullPath)
+      if (!(await file.exists())) {
+        console.warn(`Markdown include: File not found: ${fullPath}`)
+        continue
+      }
+
+      const fileContent = await file.text()
+      let lines = fileContent.split('\n')
+
+      // Process line range
+      if (startLine && endLine) {
+        const start = Number.parseInt(startLine) - 1 // Convert to 0-indexed
+        const end = Number.parseInt(endLine)
+        lines = lines.slice(start, end)
+      }
+      // Process region
+      else if (regionName) {
+        const regionStart = lines.findIndex(line =>
+          line.includes(`<!-- #region ${regionName} -->`)
+          || line.includes(`<!-- region ${regionName} -->`),
+        )
+        const regionEnd = lines.findIndex((line, idx) =>
+          idx > regionStart && (line.includes('<!-- #endregion -->') || line.includes('<!-- endregion -->')),
+        )
+
+        if (regionStart !== -1 && regionEnd !== -1) {
+          lines = lines.slice(regionStart + 1, regionEnd)
+        }
+        else {
+          console.warn(`Markdown include: Region '${regionName}' not found in ${filepath}`)
+          continue // Skip this include if region not found
+        }
+      }
+
+      let includedContent = lines.join('\n')
+
+      // Mark this file as processed to prevent circular includes
+      const newProcessedFiles = new Set(processedFiles)
+      newProcessedFiles.add(fullPath)
+
+      // Recursively process includes in the included file
+      includedContent = await processMarkdownIncludes(includedContent, rootDir, newProcessedFiles)
+
+      result = result.slice(0, match.index) + includedContent + result.slice(match.index! + fullMatch.length)
+    }
+    catch (error) {
+      console.error(`Error including markdown from ${filepath}:`, error)
+    }
+  }
+
+  return result
+}
+
+/**
+ * Process code groups (tabbed code blocks)
+ */
+async function processCodeGroups(content: string): Promise<string> {
+  const codeGroupRegex = /^:::\s+code-group\s*?\n([\s\S]*?)^:::$/gm
+  const matches = Array.from(content.matchAll(codeGroupRegex))
+
+  let result = content
+  for (const match of matches.reverse()) {
+    const [fullMatch, innerContent] = match
+
+    // Extract individual code blocks with labels
+    const codeBlockRegex = /^```(\w+)\s+\[(.+?)\]\s*?\n([\s\S]*?)^```$/gm
+    const codeBlocks = Array.from(innerContent.matchAll(codeBlockRegex))
+
+    if (codeBlocks.length === 0)
+      continue
+
+    // Generate unique ID for this code group
+    const groupId = `code-group-${Math.random().toString(36).substr(2, 9)}`
+
+    // Generate tab buttons HTML
+    const tabsHtml = codeBlocks
+      .map((block, index) => {
+        const label = block[2]
+        const isActive = index === 0
+        return `<button class="code-group-tab ${isActive ? 'active' : ''}" onclick="switchCodeTab('${groupId}', ${index})">${label}</button>`
+      })
+      .join('')
+
+    // Generate code panels HTML
+    const panelsHtml = await Promise.all(
+      codeBlocks.map(async (block, index) => {
+        const lang = block[1]
+        const code = block[3]
+        const isActive = index === 0
+
+        // Escape HTML in code
+        const escapedCode = code
+          .split('\n')
+          .map(line =>
+            line
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#39;'),
+          )
+          .map(line => `<span>${line}</span>`)
+          .join('\n')
+
+        return `<div class="code-group-panel ${isActive ? 'active' : ''}" data-panel="${index}">
+  <pre data-lang="${lang}"><code class="language-${lang}">${escapedCode}</code></pre>
+</div>`
+      }),
+    )
+
+    const codeGroupHtml = `<div class="code-group" id="${groupId}">
+  <div class="code-group-tabs">
+    ${tabsHtml}
+  </div>
+  <div class="code-group-panels">
+    ${panelsHtml.join('\n')}
+  </div>
+</div>`
+
+    result = result.slice(0, match.index) + codeGroupHtml + result.slice(match.index! + fullMatch.length)
+  }
+
+  return result
+}
+
+/**
+ * Process custom containers like ::: info, ::: tip, etc.
+ */
+async function processContainers(content: string): Promise<string> {
+  const containerRegex = /^:::\s+(info|tip|warning|danger|details|raw)(?: (.+?))?\s*?\n([\s\S]*?)^:::$/gm
+
+  const matches = Array.from(content.matchAll(containerRegex))
+
+  let result = content
+  for (const match of matches.reverse()) { // Process in reverse to maintain correct indices
+    const [fullMatch, type, customTitle, innerContent] = match
+    const defaultTitles: Record<string, string> = {
+      info: 'INFO',
+      tip: 'TIP',
+      warning: 'WARNING',
+      danger: 'DANGER',
+      details: 'Details',
+      raw: '',
+    }
+
+    const title = (customTitle && customTitle.trim()) || defaultTitles[type]
+
+    // Process inner content (convert markdown to HTML)
+    const processedContent = innerContent
+      .trim()
+      .split('\n')
+      .filter(line => line.trim())
+      .map(line => `<p>${processInlineFormatting(line)}</p>`)
+      .join('\n')
+
+    const containerHtml = await render(`blocks/containers/${type}`, {
+      title,
+      content: processedContent,
+    })
+
+    result = result.slice(0, match.index) + containerHtml + result.slice(match.index! + fullMatch.length)
+  }
+
+  return result
+}
+
+/**
+ * Parse code fence info string to extract language, line highlights, and flags
+ * Examples:
+ * - js{4} -> { lang: 'js', highlights: [4], showLineNumbers: false }
+ * - ts{1,4,6-8}:line-numbers -> { lang: 'ts', highlights: [1,4,6,7,8], showLineNumbers: true }
+ */
+function parseCodeFenceInfo(infoString: string): {
+  lang: string
+  highlights: number[]
+  showLineNumbers: boolean
+} {
+  // Extract language (everything before { or :)
+  const langMatch = infoString.match(/^(\w+)/)
+  const lang = langMatch ? langMatch[1] : ''
+
+  // Extract line highlights
+  const highlightMatch = infoString.match(/\{([^}]+)\}/)
+  const highlights: number[] = []
+
+  if (highlightMatch) {
+    const ranges = highlightMatch[1].split(',')
+    for (const range of ranges) {
+      const trimmed = range.trim()
+      if (trimmed.includes('-')) {
+        const [start, end] = trimmed.split('-').map(Number)
+        for (let i = start; i <= end; i++) {
+          highlights.push(i)
+        }
+      }
+      else {
+        highlights.push(Number(trimmed))
+      }
+    }
+  }
+
+  // Check for :line-numbers flag
+  const showLineNumbers = infoString.includes(':line-numbers')
+
+  return { lang, highlights, showLineNumbers }
+}
+
+/**
+ * Process code blocks with advanced features (line highlighting, line numbers, focus, etc.)
+ */
+async function processCodeBlock(lines: string[], startIndex: number): Promise<{ html: string, endIndex: number }> {
+  const firstLine = lines[startIndex]
+  const infoString = firstLine.substring(3).trim() // Remove ```
+
+  // Parse info string
+  const { lang, highlights, showLineNumbers } = parseCodeFenceInfo(infoString)
+
+  // Collect code content
+  const codeLines: string[] = []
+  let endIndex = startIndex + 1
+
+  while (endIndex < lines.length && !lines[endIndex].startsWith('```')) {
+    codeLines.push(lines[endIndex])
+    endIndex++
+  }
+
+  // Detect focus, diff, error, warning, and other markers
+  const focusLines = new Set<number>()
+  const diffAddLines = new Set<number>()
+  const diffRemoveLines = new Set<number>()
+  const errorLines = new Set<number>()
+  const warningLines = new Set<number>()
+
+  const processedLines = codeLines.map((line, index) => {
+    let processedLine = line
+
+    // Check for focus marker
+    if (processedLine.includes('// [!code focus]')) {
+      focusLines.add(index)
+      processedLine = processedLine.replace(/\/\/ \[!code focus\]/, '').trimEnd()
+    }
+
+    // Check for diff add marker
+    if (processedLine.includes('// [!code ++]')) {
+      diffAddLines.add(index)
+      processedLine = processedLine.replace(/\/\/ \[!code \+\+\]/, '').trimEnd()
+    }
+
+    // Check for diff remove marker
+    if (processedLine.includes('// [!code --]')) {
+      diffRemoveLines.add(index)
+      processedLine = processedLine.replace(/\/\/ \[!code --\]/, '').trimEnd()
+    }
+
+    // Check for error marker
+    if (processedLine.includes('// [!code error]')) {
+      errorLines.add(index)
+      processedLine = processedLine.replace(/\/\/ \[!code error\]/, '').trimEnd()
+    }
+
+    // Check for warning marker
+    if (processedLine.includes('// [!code warning]')) {
+      warningLines.add(index)
+      processedLine = processedLine.replace(/\/\/ \[!code warning\]/, '').trimEnd()
+    }
+
+    return processedLine
+  })
+
+  const hasFocusedLines = focusLines.size > 0
+
+  // Apply syntax highlighting to the entire code block
+  const code = processedLines.join('\n')
+  const highlightedCode = await highlightCode(code, lang)
+
+  // Split highlighted code back into lines
+  const highlightedLines = highlightedCode.split('\n')
+
+  // Generate HTML with all features (highlighting, focus, diff, error, warning, line numbers)
+  const codeHtml = highlightedLines
+    .map((line, index) => {
+      const lineNumber = index + 1
+      const isHighlighted = highlights.includes(lineNumber)
+      const isFocused = focusLines.has(index)
+      const isDiffAdd = diffAddLines.has(index)
+      const isDiffRemove = diffRemoveLines.has(index)
+      const isError = errorLines.has(index)
+      const isWarning = warningLines.has(index)
+
+      const classes: string[] = ['line'] // Always include 'line' class
+      if (isHighlighted)
+        classes.push('highlighted')
+      if (isFocused)
+        classes.push('focused')
+      if (hasFocusedLines && !isFocused)
+        classes.push('dimmed')
+      if (isDiffAdd)
+        classes.push('diff-add')
+      if (isDiffRemove)
+        classes.push('diff-remove')
+      if (isError)
+        classes.push('has-error')
+      if (isWarning)
+        classes.push('has-warning')
+
+      // Check if line already has <span class="line"> from highlighter
+      // If so, merge our classes with the existing line span
+      if (line.startsWith('<span class="line">')) {
+        // Extract existing classes and merge with our new ones
+        const existingClasses = 'line'
+        const allClasses = classes.join(' ')
+        // Replace the opening tag to include all classes
+        const updatedLine = line.replace('<span class="line">', `<span class="${allClasses}">`)
+
+        // Add line number if enabled
+        if (showLineNumbers) {
+          // Insert line number after opening span
+          return updatedLine.replace('<span class=', `<span class="line-number">${lineNumber}</span><span class=`)
+        }
+
+        return updatedLine
+      }
+
+      // If no <span class="line">, wrap the line with our classes
+      const lineClass = ` class="${classes.join(' ')}"`
+
+      // Add line number if enabled
+      if (showLineNumbers) {
+        return `<span${lineClass}><span class="line-number">${lineNumber}</span>${line}</span>`
+      }
+
+      return `<span${lineClass}>${line}</span>`
+    })
+    .join('\n')
+
+  const preClasses: string[] = []
+  if (showLineNumbers)
+    preClasses.push('line-numbers-mode')
+  if (hasFocusedLines)
+    preClasses.push('has-focused-lines')
+
+  const preClass = preClasses.length > 0 ? ` class="${preClasses.join(' ')}"` : ''
+  const dataLang = lang ? ` data-lang="${lang}"` : ''
+  const html = `<pre${preClass}${dataLang}><code class="language-${lang}">${codeHtml}</code></pre>`
+
+  return { html, endIndex }
+}
+
+/**
  * Simple markdown to HTML converter (placeholder until full markdown plugin is enabled)
  */
-async function markdownToHtml(markdown: string): Promise<{ html: string, frontmatter: any }> {
+async function markdownToHtml(markdown: string, rootDir: string = './docs'): Promise<{ html: string, frontmatter: any }> {
   // Parse frontmatter
   const { frontmatter, content } = parseFrontmatter(markdown)
 
@@ -265,42 +1150,92 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
     }
   }
 
+  // Process markdown includes first (before everything else)
+  let processedContent = await processMarkdownIncludes(content, rootDir)
+
+  // Extract TOC data early (before any processing that modifies headings)
+  const { content: contentWithTocPlaceholder, tocHtml } = extractTocData(processedContent, frontmatter.toc)
+
+  // Process in order: code imports, code groups, GitHub alerts, containers, emoji, badges
+  // NOTE: Links and images are processed AFTER HTML conversion to avoid conflicts
+  processedContent = await processCodeImports(contentWithTocPlaceholder, rootDir)
+  processedContent = await processCodeGroups(processedContent)
+  processedContent = await processGitHubAlerts(processedContent)
+  processedContent = await processContainers(processedContent)
+  processedContent = processEmoji(processedContent)
+  processedContent = processBadges(processedContent)
+
   // Very basic markdown conversion - will be replaced with full plugin
   // Split into lines for better processing
-  const lines = content.split('\n')
+  const lines = processedContent.split('\n')
   const html: string[] = []
   let inCodeBlock = false
   let inList = false
+  let inContainer = false
 
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i]
 
+    // Skip container markers (already processed)
+    if (line.trim().startsWith(':::')) {
+      continue
+    }
+
+    // Skip lines inside containers, alerts, and code groups (already processed)
+    if (line.includes('<div class="custom-block') || line.includes('<details class="custom-block') || line.includes('<div class="github-alert') || line.includes('<div class="code-group')) {
+      inContainer = true
+    }
+    if (inContainer) {
+      html.push(line)
+      if (line.includes('</div>') || line.includes('</details>')) {
+        inContainer = false
+      }
+      continue
+    }
+
     // Code blocks
     if (line.startsWith('```')) {
       if (!inCodeBlock) {
-        const lang = line.substring(3).trim()
-        html.push(`<pre><code class="language-${lang}">`)
-        inCodeBlock = true
-      }
-      else {
-        html.push('</code></pre>')
+        // Process the entire code block
+        const { html: codeHtml, endIndex } = await processCodeBlock(lines, i)
+        html.push(codeHtml)
+        i = endIndex // Skip to end of code block
         inCodeBlock = false
       }
       continue
     }
 
-    if (inCodeBlock) {
-      html.push(line)
+    // Headings (check from longest to shortest to avoid conflicts)
+    if (line.startsWith('###### ')) {
+      if (inList) {
+        html.push('</ul>')
+        inList = false
+      }
+      html.push(`<h6>${processInlineFormatting(line.substring(7))}</h6>`)
       continue
     }
-
-    // Headings
+    if (line.startsWith('##### ')) {
+      if (inList) {
+        html.push('</ul>')
+        inList = false
+      }
+      html.push(`<h5>${processInlineFormatting(line.substring(6))}</h5>`)
+      continue
+    }
+    if (line.startsWith('#### ')) {
+      if (inList) {
+        html.push('</ul>')
+        inList = false
+      }
+      html.push(`<h4>${processInlineFormatting(line.substring(5))}</h4>`)
+      continue
+    }
     if (line.startsWith('### ')) {
       if (inList) {
         html.push('</ul>')
         inList = false
       }
-      html.push(`<h3>${line.substring(4)}</h3>`)
+      html.push(`<h3>${processInlineFormatting(line.substring(4))}</h3>`)
       continue
     }
     if (line.startsWith('## ')) {
@@ -308,7 +1243,7 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
         html.push('</ul>')
         inList = false
       }
-      html.push(`<h2>${line.substring(3)}</h2>`)
+      html.push(`<h2>${processInlineFormatting(line.substring(3))}</h2>`)
       continue
     }
     if (line.startsWith('# ')) {
@@ -316,7 +1251,7 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
         html.push('</ul>')
         inList = false
       }
-      html.push(`<h1>${line.substring(2)}</h1>`)
+      html.push(`<h1>${processInlineFormatting(line.substring(2))}</h1>`)
       continue
     }
 
@@ -326,7 +1261,7 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
         html.push('<ul>')
         inList = true
       }
-      html.push(`<li>${line.replace(/^\s*[-*]\s+/, '')}</li>`)
+      html.push(`<li>${processInlineFormatting(line.replace(/^\s*[-*]\s+/, ''))}</li>`)
       continue
     }
 
@@ -351,21 +1286,35 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
         // Process table
         const processCell = (cell: string) => {
           // Apply inline formatting
-          return cell.trim()
-            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.+?)\*/g, '<em>$1</em>')
-            .replace(/`(.+?)`/g, '<code>$1</code>')
-            .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
+          return processInlineFormatting(cell.trim())
         }
 
-        html.push('<table>')
+        // Parse alignment from separator row (index 1)
+        const separatorCells = tableRows[1].split('|').filter(cell => cell.trim())
+        const alignments = separatorCells.map((cell) => {
+          const trimmed = cell.trim()
+          if (trimmed.startsWith(':') && trimmed.endsWith(':')) {
+            return 'center'
+          }
+          else if (trimmed.endsWith(':')) {
+            return 'right'
+          }
+          else {
+            return 'left'
+          }
+        })
+
+        // Add responsive wrapper
+        html.push('<div class="table-responsive">')
+        html.push('<table class="enhanced-table">')
 
         // Header row
         const headerCells = tableRows[0].split('|').filter(cell => cell.trim())
         html.push('  <thead>')
         html.push('    <tr>')
-        headerCells.forEach((cell) => {
-          html.push(`      <th>${processCell(cell)}</th>`)
+        headerCells.forEach((cell, index) => {
+          const align = alignments[index] || 'left'
+          html.push(`      <th style="text-align: ${align}">${processCell(cell)}</th>`)
         })
         html.push('    </tr>')
         html.push('  </thead>')
@@ -376,8 +1325,9 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
           for (let j = 2; j < tableRows.length; j++) {
             const cells = tableRows[j].split('|').filter(cell => cell.trim())
             html.push('    <tr>')
-            cells.forEach((cell) => {
-              html.push(`      <td>${processCell(cell)}</td>`)
+            cells.forEach((cell, index) => {
+              const align = alignments[index] || 'left'
+              html.push(`      <td style="text-align: ${align}">${processCell(cell)}</td>`)
             })
             html.push('    </tr>')
           }
@@ -385,6 +1335,7 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
         }
 
         html.push('</table>')
+        html.push('</div>')
 
         // Skip the lines we just processed
         i = tableIndex - 1
@@ -397,13 +1348,15 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
       continue
     }
 
+    // HTML comments (including TOC placeholder) - pass through as-is
+    if (line.trim().startsWith('<!--') && line.trim().endsWith('-->')) {
+      html.push(line)
+      continue
+    }
+
     // Regular paragraphs
-    // Apply inline formatting: bold, italic, code, links
-    line = line
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/`(.+?)`/g, '<code>$1</code>')
-      .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
+    // Apply inline formatting: bold, italic, code, links, etc.
+    line = processInlineFormatting(line)
 
     html.push(`<p>${line}</p>`)
   }
@@ -413,8 +1366,20 @@ async function markdownToHtml(markdown: string): Promise<{ html: string, frontma
     html.push('</ul>')
   }
 
+  let finalHtml = html.join('\n')
+
+  // Inject TOC HTML if it was extracted
+  if (tocHtml) {
+    finalHtml = injectTocHtml(finalHtml, tocHtml)
+  }
+
+  // Process external links and images in the final HTML
+  finalHtml = processExternalLinksHtml(finalHtml)
+  finalHtml = addExternalLinkIcons(finalHtml)
+  finalHtml = processImagesHtml(finalHtml)
+
   return {
-    html: html.join('\n'),
+    html: finalHtml,
     frontmatter,
   }
 }
@@ -472,7 +1437,7 @@ export async function startServer(options: {
         const mdFile = Bun.file(mdPath)
         if (await mdFile.exists()) {
           const markdown = await mdFile.text()
-          const { html, frontmatter } = await markdownToHtml(markdown)
+          const { html, frontmatter } = await markdownToHtml(markdown, root)
           const isHome = frontmatter.layout === 'home'
           const wrappedHtml = await wrapInLayout(html, bunPressConfig, path, isHome)
           return new Response(wrappedHtml, {
@@ -526,7 +1491,25 @@ export async function serveCLI(options: {
     console.log(`Watching for changes in ${root} directory...\n`)
 
     try {
-      const files = await readdir(root, { recursive: true })
+      const { Glob } = await import('bun')
+      const { stat } = await import('node:fs/promises')
+      const { join } = await import('node:path')
+
+      // Track file modification times
+      const fileStats = new Map<string, number>()
+
+      // Initialize file stats
+      const glob = new Glob('**/*.{md,stx,ts,js,css,html}')
+      for await (const file of glob.scan(root)) {
+        try {
+          const filePath = join(root, file)
+          const stats = await stat(filePath)
+          fileStats.set(file, stats.mtimeMs)
+        }
+        catch {
+          // Ignore files that can't be stat'd
+        }
+      }
 
       let timeout: Timer | null = null
       const rebuildDebounced = () => {
@@ -544,10 +1527,37 @@ export async function serveCLI(options: {
       // Use file polling for simplicity
       setInterval(async () => {
         try {
-          const newFiles = await readdir(root, { recursive: true })
-          if (JSON.stringify(files) !== JSON.stringify(newFiles)) {
-            files.length = 0
-            files.push(...newFiles)
+          let hasChanges = false
+          const currentFiles = new Set<string>()
+
+          const glob = new Glob('**/*.{md,stx,ts,js,css,html}')
+          for await (const file of glob.scan(root)) {
+            currentFiles.add(file)
+            try {
+              const filePath = join(root, file)
+              const stats = await stat(filePath)
+              const lastMtime = fileStats.get(file)
+
+              // Check if file is new or modified
+              if (lastMtime === undefined || stats.mtimeMs > lastMtime) {
+                hasChanges = true
+                fileStats.set(file, stats.mtimeMs)
+              }
+            }
+            catch {
+              // Ignore files that can't be stat'd
+            }
+          }
+
+          // Check for deleted files
+          for (const trackedFile of fileStats.keys()) {
+            if (!currentFiles.has(trackedFile)) {
+              hasChanges = true
+              fileStats.delete(trackedFile)
+            }
+          }
+
+          if (hasChanges) {
             rebuildDebounced()
           }
         }

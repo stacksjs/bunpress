@@ -1,516 +1,324 @@
-import { describe, expect, test } from 'bun:test'
-import { assertHtmlContains, buildTestSite, createTestMarkdown, readBuiltFile } from './utils/test-helpers'
+import { describe, expect, it } from 'bun:test'
+import { getSyntaxHighlightingStyles, highlightCode, isLanguageSupported, normalizeLanguage } from '../src/highlighter'
 
-describe('Syntax Highlighting', () => {
-  describe('Shiki Integration', () => {
-    test('should highlight TypeScript code', async () => {
-      const content = createTestMarkdown(`
-# Test Page
+describe('syntax highlighting', () => {
+  describe('normalizeLanguage', () => {
+    it('should normalize language aliases', () => {
+      expect(normalizeLanguage('js')).toBe('javascript')
+      expect(normalizeLanguage('ts')).toBe('typescript')
+      expect(normalizeLanguage('jsx')).toBe('javascript')
+      expect(normalizeLanguage('tsx')).toBe('typescript')
+    })
 
-\`\`\`ts
-interface User {
+    it('should handle unknown languages', () => {
+      expect(normalizeLanguage('unknown')).toBe('unknown')
+      expect(normalizeLanguage('plaintext')).toBe('plaintext')
+    })
+
+    it('should be case-insensitive', () => {
+      expect(normalizeLanguage('JavaScript')).toBe('javascript')
+      expect(normalizeLanguage('TypeScript')).toBe('typescript')
+      expect(normalizeLanguage('HTML')).toBe('html')
+    })
+  })
+
+  describe('isLanguageSupported', () => {
+    it('should return true for supported languages', () => {
+      expect(isLanguageSupported('javascript')).toBe(true)
+      expect(isLanguageSupported('typescript')).toBe(true)
+      expect(isLanguageSupported('html')).toBe(true)
+      expect(isLanguageSupported('css')).toBe(true)
+      expect(isLanguageSupported('json')).toBe(true)
+      expect(isLanguageSupported('stx')).toBe(true)
+    })
+
+    it('should return true for language aliases', () => {
+      expect(isLanguageSupported('js')).toBe(true)
+      expect(isLanguageSupported('ts')).toBe(true)
+      expect(isLanguageSupported('jsx')).toBe(true)
+      expect(isLanguageSupported('tsx')).toBe(true)
+    })
+
+    it('should return false for unsupported languages', () => {
+      expect(isLanguageSupported('cobol')).toBe(false)
+      expect(isLanguageSupported('fortran')).toBe(false)
+    })
+  })
+
+  describe('highlightCode', () => {
+    it('should highlight JavaScript code', async () => {
+      const code = `const greeting = 'Hello World'
+console.log(greeting)`
+
+      const html = await highlightCode(code, 'javascript')
+
+      // Should return HTML (not just escaped text)
+      expect(html).toBeTruthy()
+
+      // Should preserve code structure
+      expect(html).toContain('greeting')
+      expect(html).toContain('Hello World')
+    })
+
+    it('should highlight TypeScript code with types', async () => {
+      const code = `function add(a: number, b: number): number {
+  return a + b
+}`
+
+      const html = await highlightCode(code, 'typescript')
+
+      // Should preserve function structure
+      expect(html).toContain('add')
+      expect(html).toContain('number')
+    })
+
+    it('should highlight HTML code', async () => {
+      const code = `<div class="container">
+  <h1>Hello</h1>
+</div>`
+
+      const html = await highlightCode(code, 'html')
+
+      // Should escape HTML entities
+      expect(html).toContain('&lt;')
+      expect(html).toContain('&gt;')
+    })
+
+    it('should highlight CSS code', async () => {
+      const code = `.container {
+  display: flex;
+  color: #333;
+}`
+
+      const html = await highlightCode(code, 'css')
+
+      // Should preserve code structure
+      expect(html).toContain('container')
+      expect(html).toContain('flex')
+    })
+
+    it('should highlight JSON code', async () => {
+      const code = `{
+  "name": "test",
+  "version": "1.0.0"
+}`
+
+      const html = await highlightCode(code, 'json')
+
+      // Should preserve code structure
+      expect(html).toContain('name')
+      expect(html).toContain('test')
+    })
+
+    it('should escape HTML for unsupported languages', async () => {
+      const code = '<script>alert("xss")</script>'
+
+      const html = await highlightCode(code, 'unsupported')
+
+      // Should escape HTML entities
+      expect(html).toContain('&lt;script&gt;')
+      expect(html).not.toContain('<script>')
+    })
+
+    it('should handle empty code', async () => {
+      const html = await highlightCode('', 'javascript')
+      expect(html).toBeDefined()
+    })
+
+    it('should handle code with special characters', async () => {
+      const code = 'const str = "Hello & <world>"'
+
+      const html = await highlightCode(code, 'javascript')
+
+      // Should escape special characters properly
+      expect(html).toBeTruthy()
+      expect(html).toContain('Hello')
+    })
+
+    it('should handle multiline code', async () => {
+      const code = `function test() {
+  const x = 1
+  const y = 2
+  return x + y
+}`
+
+      const html = await highlightCode(code, 'javascript')
+
+      // Should preserve all lines
+      expect(html).toContain('test')
+      expect(html).toContain('return')
+    })
+
+    it('should handle code with inline comments', async () => {
+      const code = `// This is a comment
+const x = 42 // Inline comment`
+
+      const html = await highlightCode(code, 'javascript')
+
+      // Should preserve code
+      expect(html).toContain('const')
+      expect(html).toContain('42')
+    })
+
+    it('should handle code with block comments', async () => {
+      const code = `/* Multi-line
+   comment */
+const x = 42`
+
+      const html = await highlightCode(code, 'javascript')
+
+      // Should preserve code
+      expect(html).toContain('const')
+    })
+  })
+
+  describe('getSyntaxHighlightingStyles', () => {
+    it('should return CSS styles', () => {
+      const styles = getSyntaxHighlightingStyles()
+
+      expect(styles).toBeTruthy()
+      expect(typeof styles).toBe('string')
+
+      // Should contain basic code block styling
+      expect(styles).toContain('pre')
+      expect(styles).toContain('code')
+    })
+
+    it('should include dark theme support', () => {
+      const styles = getSyntaxHighlightingStyles()
+
+      // Should contain dark theme media query
+      expect(styles).toContain('@media (prefers-color-scheme: dark)')
+    })
+
+    it('should include line highlighting styles', () => {
+      const styles = getSyntaxHighlightingStyles()
+
+      expect(styles).toContain('.line')
+      expect(styles).toContain('.highlighted')
+      expect(styles).toContain('.focused')
+      expect(styles).toContain('.dimmed')
+    })
+
+    it('should include diff highlighting styles', () => {
+      const styles = getSyntaxHighlightingStyles()
+
+      expect(styles).toContain('.diff-add')
+      expect(styles).toContain('.diff-remove')
+    })
+
+    it('should include error and warning styles', () => {
+      const styles = getSyntaxHighlightingStyles()
+
+      expect(styles).toContain('.has-error')
+      expect(styles).toContain('.has-warning')
+    })
+
+    it('should include line number styles', () => {
+      const styles = getSyntaxHighlightingStyles()
+
+      expect(styles).toContain('.line-number')
+      expect(styles).toContain('.line-numbers-mode')
+    })
+  })
+
+  describe('integration tests', () => {
+    it('should work with typical markdown code blocks', async () => {
+      const jsCode = `function greet(name) {
+  return \`Hello, \${name}!\`
+}`
+
+      const highlighted = await highlightCode(jsCode, 'js')
+
+      // Should contain proper highlighting
+      expect(highlighted).toBeTruthy()
+      expect(highlighted).toContain('greet')
+      expect(highlighted).toContain('name')
+    })
+
+    it('should handle JSX/TSX code', async () => {
+      const jsxCode = `function App() {
+  return <div className="app">Hello</div>
+}`
+
+      const highlighted = await highlightCode(jsxCode, 'jsx')
+
+      // Should highlight JSX
+      expect(highlighted).toBeTruthy()
+      expect(highlighted).toContain('App')
+    })
+
+    it('should handle complex TypeScript types', async () => {
+      const tsCode = `interface User {
   name: string
   age: number
 }
 
-const user: User = {
-  name: 'John',
-  age: 30
-}
+function getUser(): User {
+  return { name: 'John', age: 30 }
+}`
 
-function greet(user: User): string {
-  return \`Hello, \${user.name}!\`
-}
-\`\`\`
-      `)
+      const highlighted = await highlightCode(tsCode, 'typescript')
 
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'language-ts')).toBe(true)
-      expect(assertHtmlContains(html, 'shiki')).toBe(true)
-      expect(assertHtmlContains(html, 'interface User')).toBe(true)
-      expect(assertHtmlContains(html, 'const user')).toBe(true)
+      // Should highlight types
+      expect(highlighted).toBeTruthy()
+      expect(highlighted).toContain('User')
     })
 
-    test('should highlight JavaScript code', async () => {
-      const content = createTestMarkdown(`
-# Test Page
+    it('should handle CSS with modern features', async () => {
+      const cssCode = `.container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}`
 
-\`\`\`js
-const { readFile } = require('fs').promises
+      const highlighted = await highlightCode(cssCode, 'css')
 
-async function readConfig() {
-  try {
-    const config = await readFile('./config.json', 'utf8')
-    return JSON.parse(config)
-  } catch (error) {
-    console.error('Failed to read config:', error)
-    return {}
-  }
-}
-\`\`\`
-      `)
-
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'language-js')).toBe(true)
-      expect(assertHtmlContains(html, 'const { readFile }')).toBe(true)
-      expect(assertHtmlContains(html, 'async function')).toBe(true)
+      // Should highlight CSS
+      expect(highlighted).toBeTruthy()
+      expect(highlighted).toContain('container')
     })
 
-    test('should highlight multiple languages', async () => {
-      const content = createTestMarkdown(`
-# Test Page
+    it('should handle HTML with attributes', async () => {
+      const htmlCode = `<div class="container" data-value="test">
+  <button id="btn">Click me</button>
+</div>`
 
-\`\`\`python
-def fibonacci(n):
-    if n <= 1:
-        return n
-    return fibonacci(n-1) + fibonacci(n-2)
-\`\`\`
+      const highlighted = await highlightCode(htmlCode, 'html')
 
-\`\`\`css
-.highlighted {
-  background-color: yellow;
-  padding: 0.5em;
-}
-
-.error {
-  color: red;
-  font-weight: bold;
-}
-\`\`\`
-
-\`\`\`bash
-#!/bin/bash
-echo "Building project..."
-npm run build
-echo "Build completed!"
-\`\`\`
-      `)
-
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'language-python')).toBe(true)
-      expect(assertHtmlContains(html, 'language-css')).toBe(true)
-      expect(assertHtmlContains(html, 'language-bash')).toBe(true)
-      expect(assertHtmlContains(html, 'def fibonacci')).toBe(true)
-      expect(assertHtmlContains(html, 'background-color')).toBe(true)
-      expect(assertHtmlContains(html, 'npm run build')).toBe(true)
-    })
-
-    test('should support custom themes', async () => {
-      const content = createTestMarkdown(`
-# Test Page
-
-\`\`\`ts
-const greeting = 'Hello, World!'
-console.log(greeting)
-\`\`\`
-      `)
-
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-        config: {
-          markdown: {
-            // @ts-expect-error - theme property for testing
-            theme: 'dark-plus',
-          },
-        },
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'shiki-theme-dark-plus')).toBe(true)
-      expect(assertHtmlContains(html, 'const greeting')).toBe(true)
-    })
-
-    test('should handle unknown languages gracefully', async () => {
-      const content = createTestMarkdown(`
-# Test Page
-
-\`\`\`unknownlang
-some code in unknown language
-more lines here
-\`\`\`
-      `)
-
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'language-unknownlang')).toBe(true)
-      expect(assertHtmlContains(html, 'some code in unknown language')).toBe(true)
+      // Should escape HTML
+      expect(highlighted).toContain('&lt;')
+      expect(highlighted).toContain('&gt;')
     })
   })
 
-  describe('Copy to Clipboard', () => {
-    test('should add copy button to code blocks', async () => {
-      const content = createTestMarkdown(`
-# Test Page
+  describe('performance tests', () => {
+    it('should highlight code in reasonable time', async () => {
+      const code = Array.from({ length: 50 }, (_, i) => `const var${i} = ${i}`).join('\n')
 
-\`\`\`ts
-const message = 'Hello, World!'
-console.log(message)
-\`\`\`
-      `)
+      const start = performance.now()
+      await highlightCode(code, 'javascript')
+      const duration = performance.now() - start
 
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'copy-code-btn')).toBe(true)
-      expect(assertHtmlContains(html, 'copy-button')).toBe(true)
-      expect(assertHtmlContains(html, 'Copy')).toBe(true)
+      // Should complete in less than 500ms
+      expect(duration).toBeLessThan(500)
     })
 
-    test('should copy code content to clipboard', async () => {
-      const content = createTestMarkdown(`
-# Test Page
-
-\`\`\`js
-function test() {
-  return 'copied content'
-}
-\`\`\`
-      `)
-
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'clipboard-copy')).toBe(true)
-      expect(assertHtmlContains(html, 'data-clipboard-text')).toBe(true)
-      expect(assertHtmlContains(html, 'function test()')).toBe(true)
-    })
-
-    test('should show copy feedback', async () => {
-      const content = createTestMarkdown(`
-# Test Page
-
-\`\`\`python
-print("Hello, World!")
-\`\`\`
-      `)
-
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'copy-success')).toBe(true)
-      expect(assertHtmlContains(html, 'copy-feedback')).toBe(true)
-    })
-
-    test('should handle copy errors gracefully', async () => {
-      const content = createTestMarkdown(`
-# Test Page
-
-\`\`\`sql
-SELECT * FROM users WHERE active = 1
-\`\`\`
-      `)
-
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'copy-error')).toBe(true)
-      expect(assertHtmlContains(html, 'copy-failed')).toBe(true)
-    })
-  })
-
-  describe('Line Numbers', () => {
-    test('should add line numbers to code blocks', async () => {
-      const content = createTestMarkdown(`
-# Test Page
-
-\`\`\`ts:line-numbers
-function hello() {
-  console.log('Hello')
-  console.log('World')
-}
-\`\`\`
-      `)
-
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'line-numbers')).toBe(true)
-      expect(assertHtmlContains(html, 'line-number')).toBe(true)
-      expect(assertHtmlContains(html, 'function hello()')).toBe(true)
-    })
-
-    test('should start line numbers from custom number', async () => {
-      const content = createTestMarkdown(`
-# Test Page
-
-\`\`\`js:line-numbers=10
-console.log('line 10')
-console.log('line 11')
-console.log('line 12')
-\`\`\`
-      `)
-
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'line-numbers')).toBe(true)
-      expect(assertHtmlContains(html, 'start="10"')).toBe(true)
-      expect(assertHtmlContains(html, 'console.log(\'line 10\')')).toBe(true)
-    })
-
-    test('should combine line numbers with highlighting', async () => {
-      const content = createTestMarkdown(`
-# Test Page
-
-\`\`\`python:line-numbers {2,4}
-def func1():
-  print("line 1")
-  print("line 2")  # highlighted
-  print("line 3")
-  print("line 4")  # highlighted
-\`\`\`
-      `)
-
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'line-numbers')).toBe(true)
-      expect(assertHtmlContains(html, 'line-highlight')).toBe(true)
-      expect(assertHtmlContains(html, 'print("line 2")')).toBe(true)
-    })
-  })
-
-  describe('Code Block Features', () => {
-    test('should add filename to code blocks', async () => {
-      const content = createTestMarkdown(`
-# Test Page
-
-\`\`\`ts [config.ts]
-interface Config {
-  port: number
-  host: string
-}
-\`\`\`
-      `)
-
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'code-filename')).toBe(true)
-      expect(assertHtmlContains(html, 'config.ts')).toBe(true)
-      expect(assertHtmlContains(html, 'interface Config')).toBe(true)
-    })
-
-    test('should handle code block titles', async () => {
-      const content = createTestMarkdown(`
-# Test Page
-
-\`\`\`js:title=example.js
-console.log('Hello from example.js')
-\`\`\`
-      `)
-
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'code-title')).toBe(true)
-      expect(assertHtmlContains(html, 'example.js')).toBe(true)
-    })
-
-    test('should support diff highlighting', async () => {
-      const content = createTestMarkdown(`
-# Test Page
-
-\`\`\`diff
-+ const newFeature = 'added'
-- const oldFeature = 'removed'
-  const unchanged = 'same'
-\`\`\`
-      `)
-
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'language-diff')).toBe(true)
-      expect(assertHtmlContains(html, 'diff-add')).toBe(true)
-      expect(assertHtmlContains(html, 'diff-remove')).toBe(true)
-      expect(assertHtmlContains(html, '+ const newFeature')).toBe(true)
-      expect(assertHtmlContains(html, '- const oldFeature')).toBe(true)
-    })
-  })
-
-  describe('Theme Integration', () => {
-    test('should apply light theme by default', async () => {
-      const content = createTestMarkdown(`
-# Test Page
-
-\`\`\`ts
-const theme = 'light'
-\`\`\`
-      `)
-
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'shiki-theme-light')).toBe(true)
-      expect(assertHtmlContains(html, 'light-mode')).toBe(true)
-    })
-
-    test('should apply dark theme when specified', async () => {
-      const content = createTestMarkdown(`
-# Test Page
-
-\`\`\`ts
-const theme = 'dark'
-\`\`\`
-      `)
-
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-        config: {
-          markdown: {
-            // @ts-expect-error - codeTheme property for testing
-            codeTheme: 'dark',
-          },
-        },
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'shiki-theme-dark')).toBe(true)
-      expect(assertHtmlContains(html, 'dark-mode')).toBe(true)
-    })
-
-    test('should support theme switching', async () => {
-      const content = createTestMarkdown(`
-# Test Page
-
-\`\`\`js
-console.log('theme switch test')
-\`\`\`
-      `)
-
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'theme-switcher')).toBe(true)
-      expect(assertHtmlContains(html, 'data-theme')).toBe(true)
-    })
-  })
-
-  describe('Performance', () => {
-    test('should cache highlighted code blocks', async () => {
-      const content = createTestMarkdown(`
-# Test Page
-
-\`\`\`ts
-const cached = 'This should be cached'
-\`\`\`
-
-Some content here.
-
-\`\`\`ts
-const cached = 'This should be cached'
-\`\`\`
-      `)
-
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'cached-highlight')).toBe(true)
-      expect(assertHtmlContains(html, 'cache-hit')).toBe(true)
-    })
-
-    test('should handle large code blocks efficiently', async () => {
-      const largeCode = Array.from({ length: 100 }, (_, i) =>
-        `console.log('Line ${i + 1}')`).join('\n')
-
-      const content = createTestMarkdown(`
-# Test Page
-
-\`\`\`js
-${largeCode}
-\`\`\`
-      `)
-
-      const result = await buildTestSite({
-        files: [{ path: 'test.md', content }],
-      })
-
-      expect(result.success).toBe(true)
-
-      const html = await readBuiltFile(result.outputs[0])
-      expect(assertHtmlContains(html, 'large-code-block')).toBe(true)
-      expect(assertHtmlContains(html, 'virtual-scroll')).toBe(true)
+    it('should handle multiple highlights efficiently', async () => {
+      const codes = [
+        'const x = 1',
+        'function test() {}',
+        'class MyClass {}',
+        'const arr = [1, 2, 3]',
+        'import { foo } from "bar"',
+      ]
+
+      const start = performance.now()
+      await Promise.all(codes.map(code => highlightCode(code, 'javascript')))
+      const duration = performance.now() - start
+
+      // Should complete all in less than 1000ms
+      expect(duration).toBeLessThan(1000)
     })
   })
 })

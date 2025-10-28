@@ -95,9 +95,797 @@ export const defaultConfig: BunPressConfig = {
         },
       ],
     },
-    css: '',
-    scripts: [],
+    css: `
+    /* Custom Container Blocks */
+    .custom-block {
+      padding: 16px;
+      border-left: 4px solid;
+      border-radius: 8px;
+      margin: 16px 0;
+    }
+
+    .custom-block-title {
+      font-weight: 600;
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .custom-block-content {
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .custom-block-content p {
+      margin: 8px 0;
+    }
+
+    .custom-block-content p:first-child {
+      margin-top: 0;
+    }
+
+    .custom-block-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Info Block - Blue Theme */
+    .custom-block.info {
+      background-color: #f0f9ff;
+      border-left-color: #3b82f6;
+    }
+
+    .custom-block.info .custom-block-title {
+      color: #1e40af;
+    }
+
+    .custom-block.info .custom-block-content {
+      color: #1e3a8a;
+    }
+
+    /* Tip Block - Green Theme */
+    .custom-block.tip {
+      background-color: #f0fdf4;
+      border-left-color: #22c55e;
+    }
+
+    .custom-block.tip .custom-block-title {
+      color: #15803d;
+    }
+
+    .custom-block.tip .custom-block-content {
+      color: #14532d;
+    }
+
+    /* Warning Block - Yellow/Orange Theme */
+    .custom-block.warning {
+      background-color: #fffbeb;
+      border-left-color: #f59e0b;
+    }
+
+    .custom-block.warning .custom-block-title {
+      color: #b45309;
+    }
+
+    .custom-block.warning .custom-block-content {
+      color: #78350f;
+    }
+
+    /* Danger Block - Red Theme */
+    .custom-block.danger {
+      background-color: #fef2f2;
+      border-left-color: #ef4444;
+    }
+
+    .custom-block.danger .custom-block-title {
+      color: #b91c1c;
+    }
+
+    .custom-block.danger .custom-block-content {
+      color: #7f1d1d;
+    }
+
+    /* Details Block - Collapsible */
+    details.custom-block.details {
+      background-color: #f9fafb;
+      border-left-color: #6b7280;
+      cursor: pointer;
+    }
+
+    details.custom-block.details summary {
+      font-weight: 600;
+      font-size: 14px;
+      color: #374151;
+      cursor: pointer;
+      user-select: none;
+      padding: 4px 0;
+    }
+
+    details.custom-block.details summary:hover {
+      color: #1f2937;
+    }
+
+    details.custom-block.details[open] summary {
+      margin-bottom: 8px;
+    }
+
+    details.custom-block.details .custom-block-content {
+      color: #4b5563;
+    }
+
+    /* Raw Container - No styling */
+    .vp-raw {
+      margin: 16px 0;
+    }
+
+    /* Inline code inside containers */
+    .custom-block code {
+      background-color: rgba(0, 0, 0, 0.05);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    }
+
+    /* Links inside containers */
+    .custom-block a {
+      color: inherit;
+      text-decoration: underline;
+      font-weight: 500;
+    }
+
+    .custom-block a:hover {
+      opacity: 0.8;
+    }
+
+    /* GitHub-Flavored Alerts */
+    .github-alert {
+      padding: 16px;
+      margin: 16px 0;
+      border-left: 4px solid;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .github-alert-title {
+      margin: 0;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .github-alert-icon {
+      flex-shrink: 0;
+    }
+
+    .github-alert-content {
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .github-alert-content p {
+      margin: 8px 0;
+    }
+
+    .github-alert-content p:first-child {
+      margin-top: 0;
+    }
+
+    .github-alert-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Note Alert - Blue (same as info) */
+    .github-alert-note {
+      background-color: #dff6ff;
+      border-left-color: #0969da;
+    }
+
+    .github-alert-note .github-alert-title {
+      color: #0969da;
+    }
+
+    .github-alert-note .github-alert-icon {
+      fill: #0969da;
+    }
+
+    .github-alert-note .github-alert-content {
+      color: #0a3069;
+    }
+
+    /* Tip Alert - Green */
+    .github-alert-tip {
+      background-color: #dff6dd;
+      border-left-color: #1a7f37;
+    }
+
+    .github-alert-tip .github-alert-title {
+      color: #1a7f37;
+    }
+
+    .github-alert-tip .github-alert-icon {
+      fill: #1a7f37;
+    }
+
+    .github-alert-tip .github-alert-content {
+      color: #0f4d24;
+    }
+
+    /* Important Alert - Purple */
+    .github-alert-important {
+      background-color: #f6e8ff;
+      border-left-color: #8250df;
+    }
+
+    .github-alert-important .github-alert-title {
+      color: #8250df;
+    }
+
+    .github-alert-important .github-alert-icon {
+      fill: #8250df;
+    }
+
+    .github-alert-important .github-alert-content {
+      color: #442e66;
+    }
+
+    /* Warning Alert - Orange/Amber */
+    .github-alert-warning {
+      background-color: #fff8e5;
+      border-left-color: #9a6700;
+    }
+
+    .github-alert-warning .github-alert-title {
+      color: #9a6700;
+    }
+
+    .github-alert-warning .github-alert-icon {
+      fill: #9a6700;
+    }
+
+    .github-alert-warning .github-alert-content {
+      color: #633c01;
+    }
+
+    /* Caution Alert - Red */
+    .github-alert-caution {
+      background-color: #ffebe9;
+      border-left-color: #d1242f;
+    }
+
+    .github-alert-caution .github-alert-title {
+      color: #d1242f;
+    }
+
+    .github-alert-caution .github-alert-icon {
+      fill: #d1242f;
+    }
+
+    .github-alert-caution .github-alert-content {
+      color: #6e011a;
+    }
+
+    /* Inline elements inside GitHub alerts */
+    .github-alert code {
+      background-color: rgba(0, 0, 0, 0.05);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    }
+
+    .github-alert a {
+      color: inherit;
+      text-decoration: underline;
+      font-weight: 500;
+    }
+
+    .github-alert a:hover {
+      opacity: 0.8;
+    }
+
+    /* Code Blocks with Advanced Features */
+    pre {
+      background-color: #f6f8fa;
+      border-radius: 6px;
+      padding: 16px;
+      overflow-x: auto;
+      margin: 16px 0;
+      border: 1px solid #e1e4e8;
+      position: relative;
+    }
+
+    /* Language label in top-right corner */
+    pre[data-lang]::before {
+      content: attr(data-lang);
+      position: absolute;
+      top: 8px;
+      right: 52px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      z-index: 1;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    /* Copy button */
+    .copy-code-button {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      padding: 6px 8px;
+      background-color: transparent;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s ease, background-color 0.2s ease;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    pre:hover .copy-code-button {
+      opacity: 1;
+    }
+
+    .copy-code-button:hover {
+      background-color: #f6f8fa;
+    }
+
+    .copy-code-button:active {
+      background-color: #e2e8f0;
+    }
+
+    .copy-code-button.copied {
+      opacity: 1;
+      background-color: #dcfce7;
+      border-color: #22c55e;
+    }
+
+    .copy-code-button svg {
+      width: 16px;
+      height: 16px;
+      color: #6b7280;
+    }
+
+    .copy-code-button.copied svg {
+      color: #22c55e;
+    }
+
+    code {
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* Inline code */
+    p code, li code, td code, th code {
+      background-color: rgba(175, 184, 193, 0.2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    /* Code block lines */
+    pre code {
+      background: none;
+      padding: 0;
+      border-radius: 0;
+      display: block;
+    }
+
+    pre code span.line {
+      display: block;
+      padding: 0 4px;
+      margin: 0 -16px;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    /* Token spans should remain inline */
+    pre code span.token {
+      display: inline;
+    }
+
+    /* Highlighted lines in code blocks */
+    pre code span.highlighted {
+      background-color: rgba(254, 243, 199, 0.5);
+      border-left: 3px solid #fbbf24;
+      padding-left: 13px; /* 16px - 3px border */
+    }
+
+    /* Line numbers in code blocks */
+    pre.line-numbers-mode {
+      padding-left: 48px;
+      position: relative;
+    }
+
+    pre.line-numbers-mode code span {
+      position: relative;
+    }
+
+    pre.line-numbers-mode .line-number {
+      position: absolute;
+      left: -48px;
+      width: 32px;
+      text-align: right;
+      color: #9ca3af;
+      user-select: none;
+      font-size: 13px;
+      padding-right: 12px;
+    }
+
+    pre.line-numbers-mode code span.highlighted .line-number {
+      color: #b45309;
+      font-weight: 500;
+    }
+
+    /* Code focus markers */
+    pre code span.focused {
+      background-color: rgba(147, 197, 253, 0.15);
+      border-left: 3px solid #3b82f6;
+      padding-left: 13px; /* 16px - 3px border */
+    }
+
+    pre code span.dimmed {
+      opacity: 0.4;
+      filter: blur(0.5px);
+      transition: opacity 0.2s ease, filter 0.2s ease;
+    }
+
+    pre code span.dimmed:hover {
+      opacity: 1;
+      filter: blur(0);
+    }
+
+    /* Combine focused and highlighted */
+    pre code span.focused.highlighted {
+      background-color: rgba(254, 243, 199, 0.7);
+      border-left: 3px solid #fbbf24;
+    }
+
+    /* Code diff markers */
+    pre code span.diff-add {
+      background-color: rgba(134, 239, 172, 0.2);
+      border-left: 3px solid #22c55e;
+      padding-left: 13px; /* 16px - 3px border */
+    }
+
+    pre code span.diff-add::before {
+      content: '+';
+      position: absolute;
+      left: -16px;
+      color: #22c55e;
+      font-weight: bold;
+      width: 16px;
+      text-align: center;
+    }
+
+    pre code span.diff-remove {
+      background-color: rgba(252, 165, 165, 0.2);
+      border-left: 3px solid #ef4444;
+      padding-left: 13px; /* 16px - 3px border */
+      opacity: 0.7;
+    }
+
+    pre code span.diff-remove::before {
+      content: '-';
+      position: absolute;
+      left: -16px;
+      color: #ef4444;
+      font-weight: bold;
+      width: 16px;
+      text-align: center;
+    }
+
+    /* Ensure proper positioning for diff indicators */
+    pre code span.diff-add,
+    pre code span.diff-remove {
+      position: relative;
+    }
+
+    /* Code error markers */
+    pre code span.has-error {
+      background-color: rgba(252, 165, 165, 0.15);
+      border-left: 3px solid #dc2626;
+      padding-left: 13px; /* 16px - 3px border */
+      position: relative;
+    }
+
+    pre code span.has-error::before {
+      content: '✕';
+      position: absolute;
+      left: -16px;
+      color: #dc2626;
+      font-weight: bold;
+      width: 16px;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    /* Code warning markers */
+    pre code span.has-warning {
+      background-color: rgba(251, 191, 36, 0.15);
+      border-left: 3px solid #f59e0b;
+      padding-left: 13px; /* 16px - 3px border */
+      position: relative;
+    }
+
+    pre code span.has-warning::before {
+      content: '⚠';
+      position: absolute;
+      left: -16px;
+      color: #f59e0b;
+      font-weight: bold;
+      width: 16px;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    /* Code Groups (Tabs) */
+    .code-group {
+      margin: 16px 0;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .code-group-tabs {
+      display: flex;
+      background-color: #f6f8fa;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 0;
+      margin: 0;
+    }
+
+    .code-group-tab {
+      background: transparent;
+      border: none;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: #6b7280;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .code-group-tab:hover {
+      color: #3b82f6;
+      background-color: #eff6ff;
+    }
+
+    .code-group-tab.active {
+      color: #3b82f6;
+      border-bottom-color: #3b82f6;
+      background-color: #eff6ff;
+    }
+
+    .code-group-panels {
+      position: relative;
+    }
+
+    .code-group-panel {
+      display: none;
+    }
+
+    .code-group-panel.active {
+      display: block;
+    }
+
+    .code-group-panel pre {
+      margin: 0;
+      border-radius: 0;
+      border: none;
+    }
+
+    /* Enhanced Tables */
+    .table-responsive {
+      overflow-x: auto;
+      margin: 16px 0;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .enhanced-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background-color: white;
+    }
+
+    .enhanced-table thead {
+      background-color: #f6f8fa;
+    }
+
+    .enhanced-table th {
+      padding: 12px 16px;
+      font-weight: 600;
+      color: #213547;
+      border-bottom: 2px solid #e2e8f0;
+      white-space: nowrap;
+    }
+
+    .enhanced-table td {
+      padding: 12px 16px;
+      color: #3c4858;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    /* Striped rows */
+    .enhanced-table tbody tr:nth-child(even) {
+      background-color: #f9fafb;
+    }
+
+    /* Hover effect */
+    .enhanced-table tbody tr:hover {
+      background-color: #f0f9ff;
+      transition: background-color 0.2s ease;
+    }
+
+    /* Responsive behavior */
+    @media (max-width: 768px) {
+      .table-responsive {
+        font-size: 13px;
+      }
+
+      .enhanced-table th,
+      .enhanced-table td {
+        padding: 8px 12px;
+      }
+    }
+
+    /* Image Captions */
+    .image-figure {
+      margin: 24px 0;
+      text-align: center;
+    }
+
+    .image-figure img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .image-figure figcaption {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #64748b;
+      font-style: italic;
+      text-align: center;
+    }
+
+    /* Regular images (without captions) */
+    article img:not(.image-figure img) {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin: 16px 0;
+    }
+    `,
+    scripts: [`
+function switchCodeTab(groupId, panelIndex) {
+  const group = document.getElementById(groupId);
+  if (!group) return;
+
+  // Update tabs
+  const tabs = group.querySelectorAll('.code-group-tab');
+  tabs.forEach((tab, index) => {
+    if (index === panelIndex) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+
+  // Update panels
+  const panels = group.querySelectorAll('.code-group-panel');
+  panels.forEach((panel, index) => {
+    if (index === panelIndex) {
+      panel.classList.add('active');
+    } else {
+      panel.classList.remove('active');
+    }
+  });
+}
+
+function copyCode(button) {
+  const pre = button.closest('pre');
+  if (!pre) return;
+
+  const code = pre.querySelector('code');
+  if (!code) return;
+
+  // Get text content from code block
+  const text = code.textContent || '';
+
+  // Copy to clipboard
+  navigator.clipboard.writeText(text).then(() => {
+    // Show copied state
+    button.classList.add('copied');
+
+    // Change icon to checkmark
+    const svg = button.querySelector('svg');
+    if (svg) {
+      svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>';
+    }
+
+    // Reset after 2 seconds
+    setTimeout(() => {
+      button.classList.remove('copied');
+      if (svg) {
+        svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>';
+      }
+    }, 2000);
+  }).catch(err => {
+    console.error('Failed to copy code:', err);
+  });
+}
+
+// Add copy buttons to all code blocks when page loads
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => {
+    const codeBlocks = document.querySelectorAll('pre > code');
+    codeBlocks.forEach(code => {
+      const pre = code.parentElement;
+      if (!pre || pre.querySelector('.copy-code-button')) return;
+
+      const button = document.createElement('button');
+      button.className = 'copy-code-button';
+      button.setAttribute('onclick', 'copyCode(this)');
+      button.setAttribute('aria-label', 'Copy code');
+      button.innerHTML = \`<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+      </svg>\`;
+
+      pre.appendChild(button);
+    });
+  });
+}
+`],
     preserveDirectoryStructure: true,
+
+    // Markdown features configuration (all enabled by default)
+    features: {
+      inlineFormatting: true,
+      containers: true,
+      githubAlerts: true,
+      codeBlocks: {
+        lineHighlighting: true,
+        lineNumbers: true,
+        focus: true,
+        diffs: true,
+        errorWarningMarkers: true,
+      },
+      codeGroups: true,
+      codeImports: true,
+      inlineToc: true,
+      customAnchors: true,
+      emoji: true,
+      badges: true,
+      includes: true,
+      externalLinks: {
+        autoTarget: true,
+        autoRel: true,
+        showIcon: true,
+      },
+      imageLazyLoading: true,
+      tables: {
+        alignment: true,
+        enhancedStyling: true,
+        responsive: true,
+      },
+    },
   },
 
   verbose: true,

@@ -264,6 +264,383 @@ export default {
 }
 ```
 
+## Markdown Features Configuration
+
+BunPress supports extensive markdown feature configuration through the markdown options.
+
+### Features Toggle
+
+All VitePress-compatible markdown features can be enabled/disabled via the `features` configuration:
+
+```typescript
+export default {
+  markdown: {
+    features: {
+      // Inline formatting (bold, italic, strikethrough, sub/sup, mark)
+      inlineFormatting: true,
+
+      // Custom containers (::: info, ::: tip, etc.)
+      containers: true,  // Or configure specific types
+
+      // GitHub alerts (> [!NOTE], > [!TIP], etc.)
+      githubAlerts: true,  // Or configure specific types
+
+      // Code block enhancements
+      codeBlocks: {
+        lineHighlighting: true,
+        lineNumbers: true,
+        focus: true,
+        diffs: true,
+        errorWarningMarkers: true
+      },
+
+      // Code groups with tabs
+      codeGroups: true,
+
+      // Code imports from files
+      codeImports: true,
+
+      // Inline TOC [[toc]] macro
+      inlineToc: true,
+
+      // Custom header anchors (## Heading {#custom-id})
+      customAnchors: true,
+
+      // Emoji shortcodes (:tada:, :rocket:, etc.)
+      emoji: true,
+
+      // Inline badges (<Badge type="info" text="v2.0" />)
+      badges: true,
+
+      // Markdown file inclusion (<!--@include: ./file.md-->)
+      includes: true,
+
+      // External link enhancements
+      externalLinks: {
+        autoTarget: true,  // Add target="_blank"
+        autoRel: true,     // Add rel="noreferrer noopener"
+        showIcon: true     // Show external link icon
+      },
+
+      // Image lazy loading
+      imageLazyLoading: true,
+
+      // Enhanced tables
+      tables: {
+        alignment: true,       // Column alignment support
+        enhancedStyling: true, // Striped rows, hover effects
+        responsive: true       // Horizontal scroll wrapper
+      }
+    }
+  }
+}
+```
+
+#### Fine-Grained Container Control
+
+```typescript
+export default {
+  markdown: {
+    features: {
+      containers: {
+        info: true,
+        tip: true,
+        warning: true,
+        danger: true,
+        details: true,
+        raw: false  // Disable raw containers
+      }
+    }
+  }
+}
+```
+
+#### Fine-Grained Alert Control
+
+```typescript
+export default {
+  markdown: {
+    features: {
+      githubAlerts: {
+        note: true,
+        tip: true,
+        important: true,
+        warning: true,
+        caution: false  // Disable caution alerts
+      }
+    }
+  }
+}
+```
+
+#### Disabling Specific Features
+
+```typescript
+export default {
+  markdown: {
+    features: {
+      // Disable features you don't need
+      emoji: false,           // Disable emoji processing
+      badges: false,          // Disable badge syntax
+      imageLazyLoading: false // Disable lazy loading
+    }
+  }
+}
+```
+
+### Table of Contents
+
+Configure TOC generation:
+
+```typescript
+export default {
+  markdown: {
+    toc: {
+      enabled: true,
+      minDepth: 2,  // Start from H2
+      maxDepth: 4,   // End at H4
+      position: 'sidebar', // 'sidebar', 'inline', or 'floating'
+      title: 'On This Page',
+      exclude: ['Appendix', 'References'],
+      pattern: '^(Appendix|References)',  // Regex pattern for exclusion
+      collapsible: true,
+      collapsed: false
+    }
+  }
+}
+```
+
+#### TOC Configuration Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `enabled` | `boolean` | `true` | Enable TOC generation |
+| `minDepth` | `number` | `2` | Minimum heading level (1-6) |
+| `maxDepth` | `number` | `4` | Maximum heading level (1-6) |
+| `position` | `string` | `'sidebar'` | TOC position: 'sidebar', 'inline', or 'floating' |
+| `title` | `string` | `'On This Page'` | TOC section title |
+| `exclude` | `string[]` | `[]` | Array of heading texts to exclude |
+| `pattern` | `string` | `undefined` | Regex pattern for heading exclusion |
+| `collapsible` | `boolean` | `true` | Allow collapsing sections |
+| `collapsed` | `boolean` | `false` | Start with sections collapsed |
+
+### Code Highlighting
+
+Configure syntax highlighting:
+
+```typescript
+export default {
+  markdown: {
+    highlighting: {
+      enabled: true,
+      theme: 'github-dark',
+      lineNumbers: true,
+      copyButton: true,
+      languages: [
+        'typescript', 'javascript', 'python', 'rust', 'go'
+      ]
+    }
+  }
+}
+```
+
+### GitHub Alerts
+
+GitHub-style alert boxes are enabled by default. All alert types are supported:
+
+- `[!NOTE]` - Essential information
+- `[!TIP]` - Helpful advice
+- `[!IMPORTANT]` - Critical information
+- `[!WARNING]` - Urgent attention required
+- `[!CAUTION]` - Potential risks
+
+No configuration required - use them directly in your markdown:
+
+```markdown
+> [!TIP]
+> This is automatically styled!
+```
+
+### Custom Containers
+
+Custom container syntax is enabled by default:
+
+```markdown
+::: tip
+This is a tip
+:::
+
+::: warning
+This is a warning
+:::
+
+::: danger
+This is dangerous
+:::
+
+::: info
+This is informational
+:::
+
+::: details Click to expand
+Hidden content
+:::
+```
+
+### Code Groups
+
+Code groups are automatically processed when using the syntax:
+
+````markdown
+::: code-group
+
+```js [JavaScript]
+// code here
+```
+
+```ts [TypeScript]
+// code here
+```
+
+:::
+````
+
+### Inline Badges
+
+Badges work out of the box:
+
+```markdown
+<Badge type="tip" text="new" />
+<Badge type="warning" text="deprecated" />
+<Badge type="danger" text="breaking" />
+<Badge type="info" text="beta" />
+```
+
+### Emoji Support
+
+Emoji shortcodes are automatically converted:
+
+```markdown
+:heart: :fire: :rocket:
+```
+
+Configure custom emoji mappings:
+
+```typescript
+export default {
+  markdown: {
+    emoji: {
+      enabled: true,
+      customMappings: {
+        'custom': '🎯',
+        'logo': '🚀'
+      }
+    }
+  }
+}
+```
+
+### Code Imports
+
+Import code from files with the `<<<` syntax:
+
+```markdown
+<<< ./examples/code.ts
+<<< ./src/api.ts{10-20}
+<<< ./src/config.ts{#region-name}
+```
+
+Configure base directories:
+
+```typescript
+export default {
+  markdown: {
+    codeImports: {
+      basePath: './examples',
+      extensions: ['.ts', '.js', '.py', '.go']
+    }
+  }
+}
+```
+
+### Markdown File Inclusion
+
+Include markdown files with HTML comment syntax:
+
+```markdown
+<!--@include: ./shared/intro.md-->
+<!--@include: ./guide.md{1-50}-->
+<!--@include: ./docs.md{#section}-->
+```
+
+Configure base paths:
+
+```typescript
+export default {
+  markdown: {
+    includes: {
+      basePath: './docs',
+      maxDepth: 10,  // Maximum nesting level
+      circularCheck: true
+    }
+  }
+}
+```
+
+## Frontmatter Configuration
+
+Configure page-specific settings via frontmatter:
+
+```yaml
+---
+title: Page Title
+description: Page description for SEO
+layout: doc  # 'home', 'doc', or 'page'
+
+# TOC Configuration
+toc:
+  enabled: true
+  minDepth: 2
+  maxDepth: 4
+
+# Hero Section (for home layout)
+hero:
+  name: Project Name
+  text: Tagline
+  tagline: Subheading
+  image: /logo.png
+  actions:
+    - theme: brand
+      text: Get Started
+      link: /guide/start
+    - theme: alt
+      text: View on GitHub
+      link: https://github.com/user/repo
+
+# Features (for home layout)
+features:
+  - title: Feature 1
+    details: Description of feature 1
+  - title: Feature 2
+    details: Description of feature 2
+
+# Navigation overrides
+sidebar: false  # Disable sidebar for this page
+navbar: true    # Show/hide navbar
+editLink: true  # Show edit link
+lastUpdated: true  # Show last updated date
+
+# SEO
+head:
+  - - meta
+    - name: keywords
+      content: keyword1, keyword2
+  - - meta
+    - property: og:title
+      content: Custom OG Title
+---
+```
+
 ## Default CSS
 
 BunPress includes a default stylesheet that provides a clean, responsive layout for your documentation.
