@@ -57,7 +57,7 @@
     "lint:fix": "bunx --bun eslint . --fix",
     "changelog": "bunx logsmith --verbose",
     "changelog:generate": "bunx logsmith --output CHANGELOG.md",
-    "release": "bunx --bun bumpx -r --push",
+    "release": "bunx --bun bumpx prompt --recursive",
     "dev:docs": "bun bin/cli.ts dev",
     "build:docs": "bun build.ts",
     "preview:docs": "bun serve --port 3000 dist",
