@@ -886,6 +886,7 @@ if (typeof document !== 'undefined') {
         responsive: true,
       },
     },
+    syntaxHighlightTheme: 'github-light',
   },
 
   verbose: true,

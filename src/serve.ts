@@ -46,7 +46,7 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
  */
 async function generatePageTOC(html: string): Promise<string> {
   // Extract h2, h3, h4, h5, h6 headings from HTML (h1 is typically the page title)
-  const headingRegex = /<h([23456])([^>]*)>(.*?)<\/h\1>/g
+  const headingRegex = /<h([2-6])([^>]*)>(.*?)<\/h\1>/g
   const headings: Array<{ level: number, text: string, id: string }> = []
 
   let match
@@ -875,22 +875,12 @@ async function processCodeGroups(content: string): Promise<string> {
         const code = block[3]
         const isActive = index === 0
 
-        // Escape HTML in code
-        const escapedCode = code
-          .split('\n')
-          .map(line =>
-            line
-              .replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;')
-              .replace(/"/g, '&quot;')
-              .replace(/'/g, '&#39;'),
-          )
-          .map(line => `<span>${line}</span>`)
-          .join('\n')
+        // Apply syntax highlighting to the code
+        const theme = config.markdown?.syntaxHighlightTheme || 'github-light'
+        const highlightedCode = await highlightCode(code, lang, theme)
 
         return `<div class="code-group-panel ${isActive ? 'active' : ''}" data-panel="${index}">
-  <pre data-lang="${lang}"><code class="language-${lang}">${escapedCode}</code></pre>
+  <pre data-lang="${lang}"><code class="language-${lang}">${highlightedCode}</code></pre>
 </div>`
       }),
     )
@@ -1058,7 +1048,8 @@ async function processCodeBlock(lines: string[], startIndex: number): Promise<{ 
 
   // Apply syntax highlighting to the entire code block
   const code = processedLines.join('\n')
-  const highlightedCode = await highlightCode(code, lang)
+  const theme = config.markdown?.syntaxHighlightTheme || 'github-light'
+  const highlightedCode = await highlightCode(code, lang, theme)
 
   // Split highlighted code back into lines
   const highlightedLines = highlightedCode.split('\n')

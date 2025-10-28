@@ -31,11 +31,14 @@ async function getHighlighter(): Promise<TSHighlighter> {
  * Language aliases mapping
  */
 const LANGUAGE_ALIASES: Record<string, string> = {
-  'js': 'javascript',
-  'ts': 'typescript',
-  'jsx': 'javascript', // ts-syntax-highlighter treats JSX as javascript
-  'tsx': 'typescript', // ts-syntax-highlighter treats TSX as typescript
-  'htm': 'html',
+  js: 'javascript',
+  ts: 'typescript',
+  jsx: 'javascript', // ts-syntax-highlighter treats JSX as javascript
+  tsx: 'typescript', // ts-syntax-highlighter treats TSX as typescript
+  htm: 'html',
+  sh: 'bash',
+  shell: 'bash',
+  zsh: 'bash',
 }
 
 /**
@@ -51,8 +54,8 @@ export function normalizeLanguage(lang: string): string {
  */
 export function isLanguageSupported(lang: string): boolean {
   const normalized = normalizeLanguage(lang)
-  // ts-syntax-highlighter supports: javascript, typescript, html, css, json, stx
-  const supported = ['javascript', 'typescript', 'html', 'css', 'json', 'stx']
+  // ts-syntax-highlighter supports these languages
+  const supported = ['javascript', 'typescript', 'html', 'css', 'json', 'stx', 'bash']
   return supported.includes(normalized)
 }
 
@@ -84,46 +87,124 @@ function escapeHtml(text: string): string {
 }
 
 /**
- * Highlights code using ts-syntax-highlighter (async)
+ * Intelligently restores whitespace from original code to highlighted HTML
+ * Preserves exact spacing, tabs, and newlines from the original source
  */
-export async function highlightCode(code: string, language: string): Promise<string> {
+function restoreWhitespaceFromOriginal(originalCode: string, highlightedHtml: string): string {
+  // The ts-syntax-highlighter output is a series of token spans
+  // We need to walk through the original code and match it with the tokens
+
+  // First, extract all text content from tokens (in order)
+  const tokenRegex = /<span[^>]*class="token[^"]*"[^>]*>([^<]*)<\/span>/g
+  const tokens: string[] = []
+  let match: RegExpExecArray | null
+
+  while ((match = tokenRegex.exec(highlightedHtml)) !== null) {
+    // Decode HTML entities
+    const content = match[1]
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, '\'')
+
+    if (content) {
+      tokens.push(content)
+    }
+  }
+
+  if (tokens.length === 0) {
+    // No tokens found, return as-is
+    return highlightedHtml
+  }
+
+  // Now rebuild the HTML by walking through the original code and inserting whitespace
+  let result = ''
+  let originalPos = 0
+  const tokenIndex = 0
+
+  // Extract token spans (with their full HTML) for reconstruction
+  const tokenSpans: string[] = []
+  const tokenSpanRegex = /<span[^>]*class="token[^"]*"[^>]*>[^<]*<\/span>/g
+  while ((match = tokenSpanRegex.exec(highlightedHtml)) !== null) {
+    tokenSpans.push(match[0])
+  }
+
+  for (let i = 0; i < tokens.length; i++) {
+    const tokenText = tokens[i]
+    const tokenSpan = tokenSpans[i]
+
+    // Find where this token appears in the original code
+    const tokenStart = originalCode.indexOf(tokenText, originalPos)
+
+    if (tokenStart === -1) {
+      // Token not found - this shouldn't happen but handle it gracefully
+      result += tokenSpan
+      continue
+    }
+
+    // Add any whitespace/characters before this token
+    if (tokenStart > originalPos) {
+      const whitespace = originalCode.substring(originalPos, tokenStart)
+      result += whitespace
+    }
+
+    // Add the token HTML
+    result += tokenSpan
+
+    // Move past this token in the original
+    originalPos = tokenStart + tokenText.length
+  }
+
+  // Add any trailing content
+  if (originalPos < originalCode.length) {
+    result += originalCode.substring(originalPos)
+  }
+
+  return result
+}
+
+/**
+ * Highlights code using ts-syntax-highlighter (async)
+ * IMPORTANT: Preserves original code structure and whitespace
+ */
+export async function highlightCode(code: string, language: string, theme: string = 'github-light'): Promise<string> {
   const normalized = normalizeLanguage(language)
 
-  // If language is not supported, return escaped code
+  // If language is not supported, return escaped code with proper line structure
   if (!isLanguageSupported(normalized)) {
-    return escapeHtml(code)
+    const escapedLines = code.split('\n').map(line =>
+      `<span class="line">${escapeHtml(line)}</span>`,
+    )
+    return escapedLines.join('\n')
   }
 
   try {
-    // Use the direct highlight function with theme option (not the cached highlighter)
-    const result = await highlightTS(code, normalized, { theme: 'github-light' })
+    // Use the direct highlight function with theme option
+    const result = await highlightTS(code, normalized, { theme })
 
-    // Extract just the HTML content (without wrapper divs and pre/code tags)
-    const fullHtml = result.html
+    // Extract just the HTML content
+    let html = result.html
 
-    // Remove the outer wrapper and extract code content
-    // Structure: <div class="syntax-wrapper"><pre class="syntax"><code>...</code></pre></div>
-    let html = fullHtml
-
-    // Remove outer div wrapper
+    // Remove wrappers
     html = html.replace(/<div[^>]*class="syntax-wrapper"[^>]*>/g, '')
     html = html.replace(/<\/div>\s*$/g, '')
-
-    // Remove pre and code tags
     html = html.replace(/<pre[^>]*>/g, '')
     html = html.replace(/<\/pre>/g, '')
     html = html.replace(/<code[^>]*>/g, '')
     html = html.replace(/<\/code>/g, '')
 
-    // Remove empty style attributes (style="") so CSS classes can take effect
-    // Empty inline styles override CSS classes due to specificity
-    html = html.replace(/\s+style=""/g, '')
+    // Restore original whitespace from source code
+    html = restoreWhitespaceFromOriginal(code, html)
 
     return html.trim()
   }
   catch (error) {
     console.warn(`Failed to highlight code for language "${language}":`, error)
-    return escapeHtml(code)
+    const escapedLines = code.split('\n').map(line =>
+      `<span class="line">${escapeHtml(line)}</span>`,
+    )
+    return escapedLines.join('\n')
   }
 }
 
@@ -161,6 +242,8 @@ pre {
   border-radius: 0.5rem;
   background: #f6f8fa;
   color: #24292f;
+  white-space: pre-wrap; /* Preserve whitespace and allow wrapping */
+  word-wrap: break-word;
 }
 
 code {
@@ -168,6 +251,7 @@ code {
   font-size: 0.875rem;
   line-height: 1.5;
   color: inherit;
+  white-space: inherit; /* Inherit pre-wrap from pre */
 }
 
 /* Token spans inherit color from parent or use their inline styles */

@@ -74,7 +74,7 @@
     "bun-plugin-dtsx": "0.9.5",
     "bun-plugin-stx": "0.1.16",
     "bunfig": "^0.15.0",
-    "ts-syntax-highlighter": "^0.1.0",
+    "ts-syntax-highlighter": "^0.2.0",
     "typescript": "^5.9.3"
   },
   "git-hooks": {

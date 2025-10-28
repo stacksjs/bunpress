@@ -100,6 +100,13 @@ export interface MarkdownPluginConfig {
   themeConfig?: ThemeConfig
 
   /**
+   * Syntax highlighting theme
+   * Supported values: 'github-light', 'github-dark'
+   * @default 'github-light'
+   */
+  syntaxHighlightTheme?: 'github-light' | 'github-dark'
+
+  /**
    * Sitemap and SEO configuration
    */
   sitemap?: SitemapConfig
