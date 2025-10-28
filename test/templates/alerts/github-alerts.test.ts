@@ -6,7 +6,7 @@ const TEST_MARKDOWN_DIR = './test/markdown/alerts'
 describe('GitHub-Flavored Alerts', () => {
   describe('Note Alert', () => {
     it('should render [!NOTE] alert', async () => {
-      const { server, stop } = await startServer({ port: 5001, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 5001, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -28,7 +28,7 @@ describe('GitHub-Flavored Alerts', () => {
     })
 
     it('should render multi-line [!NOTE] alert', async () => {
-      const { server, stop } = await startServer({ port: 5002, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 5002, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -52,7 +52,7 @@ describe('GitHub-Flavored Alerts', () => {
 
   describe('Tip Alert', () => {
     it('should render [!TIP] alert', async () => {
-      const { server, stop } = await startServer({ port: 5003, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 5003, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -76,7 +76,7 @@ describe('GitHub-Flavored Alerts', () => {
 
   describe('Important Alert', () => {
     it('should render [!IMPORTANT] alert', async () => {
-      const { server, stop } = await startServer({ port: 5004, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 5004, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -100,7 +100,7 @@ describe('GitHub-Flavored Alerts', () => {
 
   describe('Warning Alert', () => {
     it('should render [!WARNING] alert', async () => {
-      const { server, stop } = await startServer({ port: 5005, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 5005, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -124,7 +124,7 @@ describe('GitHub-Flavored Alerts', () => {
 
   describe('Caution Alert', () => {
     it('should render [!CAUTION] alert', async () => {
-      const { server, stop } = await startServer({ port: 5006, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 5006, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -148,7 +148,7 @@ describe('GitHub-Flavored Alerts', () => {
 
   describe('Alert with Inline Formatting', () => {
     it('should process inline formatting inside alerts', async () => {
-      const { server, stop } = await startServer({ port: 5007, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 5007, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -172,7 +172,7 @@ describe('GitHub-Flavored Alerts', () => {
 
   describe('Multiple Alerts', () => {
     it('should render multiple alerts in same document', async () => {
-      const { server, stop } = await startServer({ port: 5008, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 5008, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -197,7 +197,7 @@ describe('GitHub-Flavored Alerts', () => {
 
   describe('Alert Mixed with Regular Content', () => {
     it('should render alerts alongside regular markdown', async () => {
-      const { server, stop } = await startServer({ port: 5009, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 5009, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -223,7 +223,7 @@ describe('GitHub-Flavored Alerts', () => {
 
   describe('Alert with SVG Icons', () => {
     it('should include SVG icons in alerts', async () => {
-      const { server, stop } = await startServer({ port: 5010, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 5010, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(

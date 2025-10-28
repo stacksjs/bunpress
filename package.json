@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/bunpress",
   "type": "module",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "Modern documentation engine. Powered by Bun.",
   "author": "Chris Breuer <chris@stacksjs.org>",
   "license": "MIT",
@@ -57,7 +57,7 @@
     "lint:fix": "bunx --bun eslint . --fix",
     "changelog": "bunx logsmith --verbose",
     "changelog:generate": "bunx logsmith --output CHANGELOG.md",
-    "release": "bunx --bun bumpx -r --push",
+    "release": "bunx --bun bumpx prompt --recursive",
     "dev:docs": "bun bin/cli.ts dev",
     "build:docs": "bun build.ts",
     "preview:docs": "bun serve --port 3000 dist",
@@ -73,8 +73,9 @@
     "bun-git-hooks": "^0.3.1",
     "bun-plugin-dtsx": "0.21.12",
     "bun-plugin-stx": "0.1.16",
+    "bun-types": "^1.3.1",
     "bunfig": "^0.15.0",
-    "ts-syntax-highlighter": "^0.2.1",
+    "ts-syntax-highlighter": "^0.2.0",
     "typescript": "^5.9.3"
   },
   "git-hooks": {

@@ -6,7 +6,7 @@ const TEST_MARKDOWN_DIR = './test/markdown/links'
 describe('External Links & Images', () => {
   describe('External Links', () => {
     it('should add target="_blank" and rel="noreferrer noopener" to external links', async () => {
-      const { server, stop } = await startServer({ port: 18001, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 18001, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -39,7 +39,7 @@ Visit [Google](https://google.com) to search.`,
     })
 
     it('should not modify internal links', async () => {
-      const { server, stop } = await startServer({ port: 18002, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 18002, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -73,7 +73,7 @@ Check the [API Reference](/api) documentation.`,
     })
 
     it('should handle mixed internal and external links', async () => {
-      const { server, stop } = await startServer({ port: 18003, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 18003, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -103,7 +103,7 @@ External: [GitHub](https://github.com), [NPM](https://npmjs.com)`,
     })
 
     it('should work with external links in lists', async () => {
-      const { server, stop } = await startServer({ port: 18004, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 18004, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -137,7 +137,7 @@ Resources:
 
   describe('Image Lazy Loading', () => {
     it('should add loading="lazy" to images', async () => {
-      const { server, stop } = await startServer({ port: 18005, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 18005, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -169,7 +169,7 @@ Resources:
     })
 
     it('should preserve alt text in images', async () => {
-      const { server, stop } = await startServer({ port: 18006, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 18006, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -198,7 +198,7 @@ Resources:
     })
 
     it('should handle images with empty alt text', async () => {
-      const { server, stop } = await startServer({ port: 18007, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 18007, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -224,7 +224,7 @@ Resources:
     })
 
     it('should work with images in containers', async () => {
-      const { server, stop } = await startServer({ port: 18008, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 18008, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -252,7 +252,7 @@ Check out this feature:
 
   describe('Integration', () => {
     it('should work with links and images together', async () => {
-      const { server, stop } = await startServer({ port: 18009, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 18009, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -288,7 +288,7 @@ Visit our [GitHub](https://github.com/example/repo) page.
     })
 
     it('should work with other markdown features', async () => {
-      const { server, stop } = await startServer({ port: 18010, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 18010, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(

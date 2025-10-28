@@ -6,7 +6,7 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "types": ["bun"],
+    "types": ["bun-types"],
     "allowImportingTsExtensions": true,
     "strict": true,
     "strictNullChecks": true,
@@ -20,5 +20,10 @@
     "verbatimModuleSyntax": true,
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "buddy-bot.config.ts"
+  ]
 }

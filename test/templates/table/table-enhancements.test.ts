@@ -6,7 +6,7 @@ const TEST_MARKDOWN_DIR = './test/markdown/table'
 describe('Table Enhancements', () => {
   describe('Column Alignment', () => {
     it('should support left-aligned columns (default)', async () => {
-      const { server, stop } = await startServer({ port: 19001, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 19001, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -40,7 +40,7 @@ describe('Table Enhancements', () => {
     })
 
     it('should support center-aligned columns', async () => {
-      const { server, stop } = await startServer({ port: 19002, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 19002, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -67,7 +67,7 @@ describe('Table Enhancements', () => {
     })
 
     it('should support right-aligned columns', async () => {
-      const { server, stop } = await startServer({ port: 19003, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 19003, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -94,7 +94,7 @@ describe('Table Enhancements', () => {
     })
 
     it('should support mixed alignment in same table', async () => {
-      const { server, stop } = await startServer({ port: 19004, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 19004, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -135,7 +135,7 @@ describe('Table Enhancements', () => {
 
   describe('Table Styling', () => {
     it('should apply enhanced table classes', async () => {
-      const { server, stop } = await startServer({ port: 19005, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 19005, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -167,7 +167,7 @@ describe('Table Enhancements', () => {
     })
 
     it('should handle tables with inline formatting', async () => {
-      const { server, stop } = await startServer({ port: 19006, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 19006, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -199,7 +199,7 @@ describe('Table Enhancements', () => {
 
   describe('Responsive Tables', () => {
     it('should wrap tables in responsive container', async () => {
-      const { server, stop } = await startServer({ port: 19007, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 19007, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -219,7 +219,7 @@ describe('Table Enhancements', () => {
         expect(html).toContain('</div>')
 
         // Table should be inside wrapper
-        const responsiveMatch = html.match(/<div class="table-responsive">([\s\S]*?)<\/div>/);
+        const responsiveMatch = html.match(/<div class="table-responsive">([\s\S]*?)<\/div>/)
         expect(responsiveMatch).toBeTruthy()
         expect(responsiveMatch![1]).toContain('<table')
       }
@@ -230,7 +230,7 @@ describe('Table Enhancements', () => {
     })
 
     it('should handle wide tables with many columns', async () => {
-      const { server, stop } = await startServer({ port: 19008, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 19008, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -264,7 +264,7 @@ describe('Table Enhancements', () => {
 
   describe('Edge Cases', () => {
     it('should handle empty cells', async () => {
-      const { server, stop } = await startServer({ port: 19009, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 19009, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -295,7 +295,7 @@ describe('Table Enhancements', () => {
     })
 
     it('should handle tables with special characters', async () => {
-      const { server, stop } = await startServer({ port: 19010, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 19010, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -324,7 +324,7 @@ describe('Table Enhancements', () => {
     })
 
     it('should handle multiple tables in same document', async () => {
-      const { server, stop } = await startServer({ port: 19011, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 19011, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -364,7 +364,7 @@ describe('Table Enhancements', () => {
 
   describe('Integration', () => {
     it('should work with other markdown features', async () => {
-      const { server, stop } = await startServer({ port: 19012, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 19012, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(

@@ -6,7 +6,7 @@ const TEST_MARKDOWN_DIR = './test/markdown/content'
 describe('Custom Header Anchors', () => {
   describe('Basic Custom Anchors', () => {
     it('should use custom ID for h2 heading', async () => {
-      const { server, stop } = await startServer({ port: 13001, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 13001, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -33,7 +33,7 @@ describe('Custom Header Anchors', () => {
     })
 
     it('should use custom ID for h3 heading', async () => {
-      const { server, stop } = await startServer({ port: 13002, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 13002, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -55,7 +55,7 @@ describe('Custom Header Anchors', () => {
     })
 
     it('should use custom ID for h4 heading', async () => {
-      const { server, stop } = await startServer({ port: 13003, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 13003, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -83,7 +83,7 @@ Content here.`,
 
   describe('Custom ID Formats', () => {
     it('should support hyphens in custom IDs', async () => {
-      const { server, stop } = await startServer({ port: 13004, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 13004, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -104,7 +104,7 @@ Content here.`,
     })
 
     it('should support underscores in custom IDs', async () => {
-      const { server, stop } = await startServer({ port: 13005, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 13005, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -125,7 +125,7 @@ Content here.`,
     })
 
     it('should support numbers in custom IDs', async () => {
-      const { server, stop } = await startServer({ port: 13006, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 13006, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -148,7 +148,7 @@ Content here.`,
 
   describe('Auto-generated IDs (no custom anchor)', () => {
     it('should auto-generate ID when no custom anchor provided', async () => {
-      const { server, stop } = await startServer({ port: 13007, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 13007, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -170,7 +170,7 @@ Content here.`,
     })
 
     it('should handle special characters in auto-generated IDs', async () => {
-      const { server, stop } = await startServer({ port: 13008, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 13008, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -193,7 +193,7 @@ Content here.`,
 
   describe('Multiple Headings', () => {
     it('should handle mix of custom and auto-generated IDs', async () => {
-      const { server, stop } = await startServer({ port: 13009, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 13009, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -241,7 +241,7 @@ Final content.`,
 
   describe('TOC Integration', () => {
     it('should use custom IDs in table of contents links', async () => {
-      const { server, stop } = await startServer({ port: 13010, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 13010, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -283,7 +283,7 @@ Content for subsection.`,
 
   describe('Edge Cases', () => {
     it('should handle whitespace around custom anchor', async () => {
-      const { server, stop } = await startServer({ port: 13011, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 13011, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -306,7 +306,7 @@ Content for subsection.`,
     })
 
     it('should handle headings with inline code', async () => {
-      const { server, stop } = await startServer({ port: 13012, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 13012, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -328,7 +328,7 @@ Content for subsection.`,
     })
 
     it('should handle headings with emphasis', async () => {
-      const { server, stop } = await startServer({ port: 13013, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 13013, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -352,7 +352,7 @@ Content for subsection.`,
 
   describe('VitePress Compatibility', () => {
     it('should match VitePress custom anchor syntax', async () => {
-      const { server, stop } = await startServer({ port: 13014, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 13014, root: TEST_MARKDOWN_DIR })
 
       try {
         // VitePress example from documentation

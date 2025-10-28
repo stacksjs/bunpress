@@ -6,7 +6,7 @@ const TEST_MARKDOWN_DIR = './test/markdown/content'
 describe('Emoji Shortcodes', () => {
   describe('Basic Emojis', () => {
     it('should convert :tada: to 🎉', async () => {
-      const { server, stop } = await startServer({ port: 14001, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 14001, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -27,7 +27,7 @@ describe('Emoji Shortcodes', () => {
     })
 
     it('should convert :rocket: to 🚀', async () => {
-      const { server, stop } = await startServer({ port: 14002, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 14002, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -48,7 +48,7 @@ describe('Emoji Shortcodes', () => {
     })
 
     it('should convert :fire: to 🔥', async () => {
-      const { server, stop } = await startServer({ port: 14003, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 14003, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -71,7 +71,7 @@ describe('Emoji Shortcodes', () => {
 
   describe('Multiple Emojis', () => {
     it('should convert multiple emojis in same line', async () => {
-      const { server, stop } = await startServer({ port: 14004, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 14004, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -96,7 +96,7 @@ describe('Emoji Shortcodes', () => {
     })
 
     it('should convert emojis in different paragraphs', async () => {
-      const { server, stop } = await startServer({ port: 14005, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 14005, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -124,7 +124,7 @@ Third paragraph :star:`,
 
   describe('Emoji Categories', () => {
     it('should support smiley emojis', async () => {
-      const { server, stop } = await startServer({ port: 14006, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 14006, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -147,7 +147,7 @@ Third paragraph :star:`,
     })
 
     it('should support hand gesture emojis', async () => {
-      const { server, stop } = await startServer({ port: 14007, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 14007, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -169,7 +169,7 @@ Third paragraph :star:`,
     })
 
     it('should support symbol emojis', async () => {
-      const { server, stop } = await startServer({ port: 14008, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 14008, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -192,7 +192,7 @@ Third paragraph :star:`,
     })
 
     it('should support object emojis', async () => {
-      const { server, stop } = await startServer({ port: 14009, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 14009, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -217,7 +217,7 @@ Third paragraph :star:`,
 
   describe('Emoji in Headings', () => {
     it('should convert emojis in h2 headings', async () => {
-      const { server, stop } = await startServer({ port: 14010, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 14010, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -238,7 +238,7 @@ Third paragraph :star:`,
     })
 
     it('should convert emojis in multiple heading levels', async () => {
-      const { server, stop } = await startServer({ port: 14011, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 14011, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -263,7 +263,7 @@ Third paragraph :star:`,
 
   describe('Emoji in Lists', () => {
     it('should convert emojis in unordered lists', async () => {
-      const { server, stop } = await startServer({ port: 14012, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 14012, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -289,7 +289,7 @@ Third paragraph :star:`,
 
   describe('Emoji in Containers', () => {
     it('should convert emojis in custom containers', async () => {
-      const { server, stop } = await startServer({ port: 14013, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 14013, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -312,7 +312,7 @@ You did it! :rocket:
     })
 
     it('should convert emojis in GitHub alerts', async () => {
-      const { server, stop } = await startServer({ port: 14014, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 14014, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -335,7 +335,7 @@ You did it! :rocket:
 
   describe('Unknown Emojis', () => {
     it('should leave unknown emoji shortcodes unchanged', async () => {
-      const { server, stop } = await startServer({ port: 14015, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 14015, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -361,7 +361,7 @@ You did it! :rocket:
 
   describe('Edge Cases', () => {
     it('should not convert emoji-like text without colons', async () => {
-      const { server, stop } = await startServer({ port: 14016, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 14016, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -385,7 +385,7 @@ You did it! :rocket:
     })
 
     it('should convert emojis at start and end of lines', async () => {
-      const { server, stop } = await startServer({ port: 14017, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 14017, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -408,7 +408,7 @@ This ends with emoji :tada:`,
     })
 
     it('should handle consecutive emojis', async () => {
-      const { server, stop } = await startServer({ port: 14018, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 14018, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -430,7 +430,7 @@ This ends with emoji :tada:`,
 
   describe('Common Documentation Emojis', () => {
     it('should support common documentation emojis', async () => {
-      const { server, stop } = await startServer({ port: 14019, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 14019, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(

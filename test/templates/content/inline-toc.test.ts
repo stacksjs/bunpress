@@ -6,7 +6,7 @@ const TEST_MARKDOWN_DIR = './test/markdown/content'
 describe('Inline TOC [[toc]] Macro', () => {
   describe('Basic Inline TOC', () => {
     it('should render inline TOC from [[toc]] macro', async () => {
-      const { server, stop } = await startServer({ port: 16001, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 16001, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -63,7 +63,7 @@ Final thoughts.`,
     })
 
     it('should render TOC with nested structure', async () => {
-      const { server, stop } = await startServer({ port: 16002, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 16002, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -113,7 +113,7 @@ Final thoughts.`,
 
   describe('TOC Position', () => {
     it('should render TOC at specified position in content', async () => {
-      const { server, stop } = await startServer({ port: 16003, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 16003, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -155,7 +155,7 @@ Content after TOC.
     })
 
     it('should handle multiple [[toc]] macros', async () => {
-      const { server, stop } = await startServer({ port: 16004, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 16004, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -189,7 +189,7 @@ Second TOC location:
 
   describe('TOC Content', () => {
     it('should extract h2-h6 headings by default', async () => {
-      const { server, stop } = await startServer({ port: 16005, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 16005, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -230,7 +230,7 @@ Second TOC location:
     })
 
     it('should handle headings with inline code', async () => {
-      const { server, stop } = await startServer({ port: 16006, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 16006, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -268,7 +268,7 @@ Second TOC location:
     })
 
     it('should respect toc-ignore comments', async () => {
-      const { server, stop } = await startServer({ port: 16007, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 16007, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -305,7 +305,7 @@ Second TOC location:
 
   describe('TOC Styling and Classes', () => {
     it('should have inline TOC specific classes', async () => {
-      const { server, stop } = await startServer({ port: 16008, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 16008, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -341,7 +341,7 @@ Second TOC location:
 
   describe('Empty TOC Cases', () => {
     it('should handle document with no headings', async () => {
-      const { server, stop } = await startServer({ port: 16009, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 16009, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -370,7 +370,7 @@ Just a paragraph with no additional headings.`,
     })
 
     it('should handle document without [[toc]] macro', async () => {
-      const { server, stop } = await startServer({ port: 16010, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 16010, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -402,7 +402,7 @@ No TOC macro in this document.`,
 
   describe('TOC with Special Headings', () => {
     it('should handle headings with emojis', async () => {
-      const { server, stop } = await startServer({ port: 16011, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 16011, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -434,7 +434,7 @@ No TOC macro in this document.`,
     })
 
     it('should handle headings with custom anchors', async () => {
-      const { server, stop } = await startServer({ port: 16012, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 16012, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -468,7 +468,7 @@ No TOC macro in this document.`,
     })
 
     it('should handle headings with badges', async () => {
-      const { server, stop } = await startServer({ port: 16013, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 16013, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -502,7 +502,7 @@ No TOC macro in this document.`,
 
   describe('Integration with Content', () => {
     it('should work with code blocks', async () => {
-      const { server, stop } = await startServer({ port: 16014, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 16014, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -532,9 +532,12 @@ import bunpress from 'bunpress'
         expect(html).toContain('href="#installation"')
         expect(html).toContain('href="#usage"')
 
-        // Should preserve code blocks
-        expect(html).toContain('npm install bunpress')
-        expect(html).toContain('import bunpress from')
+        // Should preserve code blocks (syntax-highlighted)
+        expect(html).toContain('npm')
+        expect(html).toContain('install')
+        expect(html).toContain('bunpress')
+        expect(html).toContain('import')
+        expect(html).toContain('from')
       }
       finally {
         stop()
@@ -543,7 +546,7 @@ import bunpress from 'bunpress'
     })
 
     it('should work with containers', async () => {
-      const { server, stop } = await startServer({ port: 16015, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 16015, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(

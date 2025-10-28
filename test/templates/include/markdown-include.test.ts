@@ -6,7 +6,7 @@ const TEST_MARKDOWN_DIR = './test/markdown/include'
 describe('Markdown File Inclusion', () => {
   describe('Basic File Inclusion', () => {
     it('should include entire markdown file', async () => {
-      const { server, stop } = await startServer({ port: 17001, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 17001, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -44,7 +44,7 @@ That's all!`,
     })
 
     it('should handle multiple includes in same file', async () => {
-      const { server, stop } = await startServer({ port: 17002, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 17002, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -68,7 +68,10 @@ That's all!`,
 
         // Should include content from faq.md
         expect(html).toContain('Getting Started')
-        expect(html).toContain('npm install bunpress')
+        // Code is now syntax-highlighted with spans, so check for tokens
+        expect(html).toContain('npm')
+        expect(html).toContain('install')
+        expect(html).toContain('bunpress')
         expect(html).toContain('Advanced Usage')
       }
       finally {
@@ -80,7 +83,7 @@ That's all!`,
 
   describe('Line Range Inclusion', () => {
     it('should include specific line range', async () => {
-      const { server, stop } = await startServer({ port: 17003, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 17003, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -114,7 +117,7 @@ End of document.`,
 
   describe('Region Inclusion', () => {
     it('should include specific region', async () => {
-      const { server, stop } = await startServer({ port: 17004, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 17004, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -135,7 +138,10 @@ End of document.`,
 
         // Should include getting-started region
         expect(html).toContain('Getting Started')
-        expect(html).toContain('npm install bunpress')
+        // Code is now syntax-highlighted with spans, so check for tokens
+        expect(html).toContain('npm')
+        expect(html).toContain('install')
+        expect(html).toContain('bunpress')
 
         // Should include advanced region
         expect(html).toContain('Advanced Usage')
@@ -154,7 +160,7 @@ End of document.`,
 
   describe('Nested Includes', () => {
     it('should support recursive includes', async () => {
-      const { server, stop } = await startServer({ port: 17005, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 17005, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -185,7 +191,7 @@ Done.`,
 
   describe('Error Handling', () => {
     it('should handle missing file gracefully', async () => {
-      const { server, stop } = await startServer({ port: 17006, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 17006, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -212,7 +218,7 @@ Rest of document.`,
     })
 
     it('should handle invalid region gracefully', async () => {
-      const { server, stop } = await startServer({ port: 17007, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 17007, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -239,7 +245,7 @@ Rest of document.`,
     })
 
     it('should prevent circular includes', async () => {
-      const { server, stop } = await startServer({ port: 17008, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 17008, root: TEST_MARKDOWN_DIR })
 
       try {
         // Create circular reference: circular-a.md includes circular-b.md
@@ -286,7 +292,7 @@ Done.`,
 
   describe('Integration with Other Features', () => {
     it('should process included markdown with other features', async () => {
-      const { server, stop } = await startServer({ port: 17009, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 17009, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -322,7 +328,9 @@ End.`,
         expect(html).toContain('new')
 
         // Should process code blocks in included content
-        expect(html).toContain('console.log')
+        // Code is now syntax-highlighted with spans, so check for tokens
+        expect(html).toContain('console')
+        expect(html).toContain('log')
       }
       finally {
         stop()
@@ -332,7 +340,7 @@ End.`,
     })
 
     it('should work with custom containers in included files', async () => {
-      const { server, stop } = await startServer({ port: 17010, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 17010, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -368,7 +376,7 @@ Done.`,
 
   describe('Position and Formatting', () => {
     it('should preserve whitespace around includes', async () => {
-      const { server, stop } = await startServer({ port: 17011, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 17011, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
