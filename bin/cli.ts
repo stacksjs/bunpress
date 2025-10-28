@@ -6,6 +6,14 @@ import { CLI } from '@stacksjs/clapp'
 import { version } from '../package.json'
 import { config } from '../src/config'
 import { serveCLI } from '../src/serve'
+import { cleanCommand } from './commands/clean'
+import { configInitCommand, configShowCommand, configValidateCommand } from './commands/config'
+import { doctorCommand } from './commands/doctor'
+import { initCommand } from './commands/init'
+import { newCommand } from './commands/new'
+import { previewCommand } from './commands/preview'
+import { statsCommand } from './commands/stats'
+import { formatTime, logSuccess, Spinner } from './utils'
 // import { markdown, stx } from '../src/plugin'
 
 const cli: CLI = new CLI('bunpress')
@@ -20,6 +28,12 @@ interface CliOption {
   dir?: string
   full?: boolean
   output?: string
+  minify?: boolean
+  sourcemap?: boolean
+  name?: string
+  template?: string
+  title?: string
+  force?: boolean
 }
 
 const defaultOptions = {
@@ -81,6 +95,15 @@ async function copyStaticAssets(outdir: string, verbose: boolean = false): Promi
 export async function buildDocs(options: CliOption = {}): Promise<boolean> {
   const outdir = options.outdir || defaultOptions.outdir
   const verbose = options.verbose ?? defaultOptions.verbose
+  const minify = options.minify ?? false
+  const sourcemap = options.sourcemap ?? false
+
+  const startTime = performance.now()
+  const spinner = new Spinner('Building documentation...')
+
+  if (!verbose) {
+    spinner.start()
+  }
 
   // Ensure output directory exists
   await mkdir(outdir, { recursive: true })
@@ -90,7 +113,12 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
   const markdownFiles = await findMarkdownFiles(docsDir)
 
   if (markdownFiles.length === 0) {
-    console.log('No markdown files found in docs directory')
+    if (!verbose) {
+      spinner.fail('No markdown files found in docs directory')
+    }
+    else {
+      console.log('No markdown files found in docs directory')
+    }
     return false
   }
 
@@ -103,10 +131,15 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
     const result = await Bun.build({
       entrypoints: markdownFiles,
       outdir,
+      minify,
+      sourcemap: sourcemap ? 'external' : 'none',
       // plugins: [markdown(), stx()],
     })
 
     if (!result.success) {
+      if (!verbose) {
+        spinner.fail('Build failed')
+      }
       console.error('Build failed:')
       for (const log of result.logs) {
         console.error(log)
@@ -117,20 +150,30 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
     // Copy static assets from docs/public to output directory
     await copyStaticAssets(outdir, verbose)
 
-    if (verbose) {
+    // Create index.html for navigation
+    await generateIndexHtml(outdir, markdownFiles)
+
+    const endTime = performance.now()
+    const duration = endTime - startTime
+
+    if (!verbose) {
+      spinner.succeed(`Built ${markdownFiles.length} files in ${formatTime(duration)}`)
+    }
+    else {
       console.log('Build successful!')
       console.log('Generated files:')
       for (const output of result.outputs) {
         console.log(`- ${output.path}`)
       }
+      logSuccess(`Build completed in ${formatTime(duration)}`)
     }
-
-    // Create index.html for navigation
-    await generateIndexHtml(outdir, markdownFiles)
 
     return true
   }
   catch (err) {
+    if (!verbose) {
+      spinner.fail('Build failed')
+    }
     console.error('Error during build:', err)
     return false
   }
@@ -222,13 +265,32 @@ cli
   .command('build', 'Build the documentation site')
   .option('--outdir <outdir>', 'Output directory', { default: defaultOptions.outdir })
   .option('--config <config>', 'Path to config file')
+  .option('--minify', 'Minify output files', { default: false })
+  .option('--sourcemap', 'Generate source maps', { default: false })
+  .option('--watch', 'Watch for changes and rebuild', { default: false })
   .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
   .action(async (options: CliOption) => {
     const success = await buildDocs(options)
     if (!success)
       process.exit(1)
 
-    console.log('Documentation built successfully!')
+    // Watch mode
+    if (options.watch) {
+      const { watch } = await import('node:fs')
+      const docsDir = './docs'
+
+      console.log('\nWatching for changes...')
+
+      watch(docsDir, { recursive: true }, async (eventType, filename) => {
+        if (filename && filename.endsWith('.md')) {
+          console.log(`\nDetected change in ${filename}, rebuilding...`)
+          await buildDocs(options)
+        }
+      })
+
+      // Keep process alive
+      await new Promise(() => {})
+    }
   })
 
 cli
@@ -371,6 +433,94 @@ cli
   .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
   .action(async (options: CliOption) => {
     const success = await generateLlmMarkdown(options)
+    if (!success)
+      process.exit(1)
+  })
+
+cli
+  .command('init', 'Initialize a new BunPress project')
+  .option('--name <name>', 'Project name')
+  .option('--template <template>', 'Template to use')
+  .option('--force', 'Overwrite existing files', { default: false })
+  .action(async (options: CliOption) => {
+    const success = await initCommand(options)
+    if (!success)
+      process.exit(1)
+  })
+
+cli
+  .command('preview', 'Preview the production build')
+  .option('--port <port>', 'Port to listen on', { default: defaultOptions.port })
+  .option('--outdir <outdir>', 'Build directory', { default: defaultOptions.outdir })
+  .option('--open', 'Open in browser', { default: false })
+  .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
+  .action(async (options: CliOption) => {
+    await previewCommand(options)
+  })
+
+cli
+  .command('clean', 'Clean build artifacts')
+  .option('--outdir <outdir>', 'Output directory to clean', { default: defaultOptions.outdir })
+  .option('--force', 'Skip confirmation prompt', { default: false })
+  .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
+  .action(async (options: CliOption) => {
+    const success = await cleanCommand(options)
+    if (!success)
+      process.exit(1)
+  })
+
+cli
+  .command('doctor', 'Run diagnostic checks on the project')
+  .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
+  .action(async (options: CliOption) => {
+    const success = await doctorCommand(options)
+    if (!success)
+      process.exit(1)
+  })
+
+cli
+  .command('config:show', 'Show current configuration')
+  .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
+  .action(async (options: CliOption) => {
+    const success = await configShowCommand(options)
+    if (!success)
+      process.exit(1)
+  })
+
+cli
+  .command('config:validate', 'Validate configuration file')
+  .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
+  .action(async (options: CliOption) => {
+    const success = await configValidateCommand(options)
+    if (!success)
+      process.exit(1)
+  })
+
+cli
+  .command('config:init', 'Initialize configuration file')
+  .action(async (options: CliOption) => {
+    const success = await configInitCommand(options)
+    if (!success)
+      process.exit(1)
+  })
+
+cli
+  .command('new <path>', 'Create a new markdown file')
+  .option('--title <title>', 'Page title')
+  .option('--template <template>', 'Template to use (default, guide, api, blog)', { default: 'default' })
+  .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
+  .action(async (path: string, options: CliOption) => {
+    const success = await newCommand(path, options)
+    if (!success)
+      process.exit(1)
+  })
+
+cli
+  .command('stats', 'Show documentation statistics')
+  .option('--dir <dir>', 'Documentation directory', { default: './docs' })
+  .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
+  .action(async (options: CliOption) => {
+    const success = await statsCommand(options)
     if (!success)
       process.exit(1)
   })
