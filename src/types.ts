@@ -1,5 +1,3 @@
-import type { marked } from 'marked'
-
 export interface BunPressConfig {
   verbose: boolean
 
@@ -66,7 +64,7 @@ export interface MarkdownPluginConfig {
    * Custom marked options
    * @see https://marked.js.org/using_advanced
    */
-  markedOptions?: Parameters<typeof marked.parse>[1]
+  markedOptions?: any
 
   /**
    * Enable or disable preserving directory structure in output
