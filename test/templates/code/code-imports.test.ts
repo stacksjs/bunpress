@@ -6,7 +6,7 @@ const TEST_MARKDOWN_DIR = './test/markdown/code'
 describe('Code Imports from Files', () => {
   describe('Full File Import', () => {
     it('should import entire JavaScript file', async () => {
-      const { server, stop } = await startServer({ port: 12001, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 12001, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -37,7 +37,7 @@ describe('Code Imports from Files', () => {
     })
 
     it('should import entire TypeScript file', async () => {
-      const { server, stop } = await startServer({ port: 12002, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 12002, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -62,7 +62,7 @@ describe('Code Imports from Files', () => {
     })
 
     it('should import entire Python file', async () => {
-      const { server, stop } = await startServer({ port: 12003, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 12003, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -86,7 +86,7 @@ describe('Code Imports from Files', () => {
 
   describe('Line Range Import', () => {
     it('should import specific line range', async () => {
-      const { server, stop } = await startServer({ port: 12004, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 12004, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -116,7 +116,7 @@ describe('Code Imports from Files', () => {
     })
 
     it('should import middle section with line range', async () => {
-      const { server, stop } = await startServer({ port: 12005, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 12005, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -146,7 +146,7 @@ describe('Code Imports from Files', () => {
 
   describe('Region Import', () => {
     it('should import code from named region', async () => {
-      const { server, stop } = await startServer({ port: 12006, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 12006, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -180,7 +180,7 @@ describe('Code Imports from Files', () => {
     })
 
     it('should import TypeScript region', async () => {
-      const { server, stop } = await startServer({ port: 12007, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 12007, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -206,7 +206,7 @@ describe('Code Imports from Files', () => {
     })
 
     it('should import Python region with // region syntax', async () => {
-      const { server, stop } = await startServer({ port: 12008, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 12008, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -233,7 +233,7 @@ describe('Code Imports from Files', () => {
 
   describe('Multiple Imports', () => {
     it('should handle multiple imports in same file', async () => {
-      const { server, stop } = await startServer({ port: 12009, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 12009, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -277,7 +277,7 @@ describe('Code Imports from Files', () => {
 
   describe('Error Handling', () => {
     it('should handle missing file gracefully', async () => {
-      const { server, stop } = await startServer({ port: 12010, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 12010, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -299,7 +299,7 @@ describe('Code Imports from Files', () => {
     })
 
     it('should handle invalid region gracefully', async () => {
-      const { server, stop } = await startServer({ port: 12011, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 12011, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -323,7 +323,7 @@ describe('Code Imports from Files', () => {
 
   describe('Integration with Other Features', () => {
     it('should work with line highlighting', async () => {
-      const { server, stop } = await startServer({ port: 12012, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 12012, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -347,7 +347,7 @@ describe('Code Imports from Files', () => {
     })
 
     it('should work with multiple imports forming a code group', async () => {
-      const { server, stop } = await startServer({ port: 12013, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 12013, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -388,7 +388,7 @@ describe('Code Imports from Files', () => {
 
   describe('Mixed with Regular Content', () => {
     it('should work alongside regular markdown and code blocks', async () => {
-      const { server, stop } = await startServer({ port: 12014, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 12014, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(

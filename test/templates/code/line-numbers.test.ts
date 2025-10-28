@@ -6,7 +6,7 @@ const TEST_MARKDOWN_DIR = './test/markdown/code'
 describe('Code Block Line Numbers', () => {
   describe('Line Numbers Flag', () => {
     it('should show line numbers with :line-numbers flag', async () => {
-      const { server, stop } = await startServer({ port: 7001, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 7001, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -35,7 +35,7 @@ describe('Code Block Line Numbers', () => {
     })
 
     it('should not show line numbers without flag', async () => {
-      const { server, stop } = await startServer({ port: 7002, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 7002, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -61,7 +61,7 @@ describe('Code Block Line Numbers', () => {
 
   describe('Line Numbers with Highlighting', () => {
     it('should combine line numbers with highlighting', async () => {
-      const { server, stop } = await startServer({ port: 7003, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 7003, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -89,7 +89,7 @@ describe('Code Block Line Numbers', () => {
     })
 
     it('should combine line numbers with multiple highlights', async () => {
-      const { server, stop } = await startServer({ port: 7004, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 7004, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -123,7 +123,7 @@ describe('Code Block Line Numbers', () => {
 
   describe('Different Languages with Line Numbers', () => {
     it('should support line numbers for TypeScript', async () => {
-      const { server, stop } = await startServer({ port: 7005, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 7005, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -146,7 +146,7 @@ describe('Code Block Line Numbers', () => {
     })
 
     it('should support line numbers for Python', async () => {
-      const { server, stop } = await startServer({ port: 7006, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 7006, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -171,7 +171,7 @@ describe('Code Block Line Numbers', () => {
 
   describe('Line Numbers with Large Code Blocks', () => {
     it('should handle double-digit line numbers', async () => {
-      const { server, stop } = await startServer({ port: 7007, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 7007, root: TEST_MARKDOWN_DIR })
 
       try {
         const lines = Array.from({ length: 15 }, (_, i) => `line ${i + 1}`).join('\n')
@@ -195,7 +195,7 @@ describe('Code Block Line Numbers', () => {
     })
 
     it('should handle triple-digit line numbers', async () => {
-      const { server, stop } = await startServer({ port: 7008, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 7008, root: TEST_MARKDOWN_DIR })
 
       try {
         const lines = Array.from({ length: 105 }, (_, i) => `line ${i + 1}`).join('\n')
@@ -220,7 +220,7 @@ describe('Code Block Line Numbers', () => {
 
   describe('Multiple Code Blocks with Line Numbers', () => {
     it('should handle multiple blocks with different line number settings', async () => {
-      const { server, stop } = await startServer({ port: 7009, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 7009, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -248,7 +248,7 @@ describe('Code Block Line Numbers', () => {
 
   describe('Edge Cases', () => {
     it('should handle empty code block with line numbers', async () => {
-      const { server, stop } = await startServer({ port: 7010, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 7010, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -269,7 +269,7 @@ describe('Code Block Line Numbers', () => {
     })
 
     it('should handle single line with line numbers', async () => {
-      const { server, stop } = await startServer({ port: 7011, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 7011, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(

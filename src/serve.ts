@@ -514,9 +514,10 @@ function processEmoji(content: string): string {
  */
 function processBadges(content: string): string {
   // Match <Badge> components with type and text attributes in any order
-  const badgeRegex = /<Badge\s+([^>]+?)\s*\/>/gi
+  // Fixed: use [^/>]+ to avoid backtracking with \s+
+  const badgeRegex = /<Badge([^/>]+)\/>/gi
 
-  return content.replace(badgeRegex, (match, attributes) => {
+  return content.replace(badgeRegex, (_match, attributes) => {
     // Extract type and text attributes
     const typeMatch = attributes.match(/type="(info|tip|warning|danger)"/i)
     const textMatch = attributes.match(/text="([^"]+)"/)
@@ -552,8 +553,7 @@ function processExternalLinksHtml(html: string): string {
     const isExternal = url.startsWith('http://') || url.startsWith('https://')
 
     if (isExternal) {
-      // Add external link attributes and icon
-      const externalIcon = '<svg class="external-link-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; margin-left: 4px; vertical-align: middle;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>'
+      // Add external link attributes (icon removed as unused)
       return `<a href="${url}" target="_blank" rel="noreferrer noopener"${rest}>`
     }
 
@@ -567,7 +567,7 @@ function processExternalLinksHtml(html: string): string {
  */
 function addExternalLinkIcons(html: string): string {
   // Find </a> tags that belong to external links (those with target="_blank")
-  return html.replace(/<a\s+href="([^"]+)"\s+target="_blank"[^>]*>([^<]+)<\/a>/g, (match, url, text) => {
+  return html.replace(/<a\s+href="([^"]+)"\s+target="_blank"[^>]*>([^<]+)<\/a>/g, (match, _url, _text) => {
     // Don't add icon if it already has one
     if (match.includes('external-link-icon'))
       return match
@@ -582,7 +582,8 @@ function addExternalLinkIcons(html: string): string {
  */
 function processImagesHtml(html: string): string {
   // Match img tags without loading attribute
-  return html.replace(/<img\s+([^>]*)>/g, (match, attrs) => {
+  // Fixed: use [^>]+ to avoid backtracking with \s+
+  return html.replace(/<img([^>]+)>/g, (match, attrs) => {
     // Skip if already has loading attribute
     if (attrs.includes('loading='))
       return match
@@ -672,7 +673,8 @@ async function processGitHubAlerts(content: string): Promise<string> {
  * Optional label: <<< @/filepath [label]
  */
 async function processCodeImports(content: string, rootDir: string): Promise<string> {
-  const importRegex = /^<<<\s+@\/(.+?)(?:\{(\d+)-(\d+)\}|#(\w+))?\s*(?:\[.+?\]\s*)?$/gm
+  // Fixed: remove unnecessary escape character for [, keep escape for { as it's meaningful
+  const importRegex = /^<<<\s+@\/([^\s[{#]+)(?:\{(\d+)-(\d+)\}|#(\w+))?\s*(?:\[[^\]]+\]\s*)?$/gm
   const matches = Array.from(content.matchAll(importRegex))
 
   let result = content
@@ -843,7 +845,8 @@ async function processMarkdownIncludes(content: string, rootDir: string, process
  * Process code groups (tabbed code blocks)
  */
 async function processCodeGroups(content: string): Promise<string> {
-  const codeGroupRegex = /^:::\s+code-group\s*?\n([\s\S]*?)^:::$/gm
+  // Fixed: use (?:(?!^:::)[\s\S])* instead of [\s\S]*? to avoid backtracking with \s*
+  const codeGroupRegex = /^:::\s+code-group[ \t]*\n((?:(?!^:::)[\s\S])*)^:::$/gm
   const matches = Array.from(content.matchAll(codeGroupRegex))
 
   let result = content
@@ -851,7 +854,8 @@ async function processCodeGroups(content: string): Promise<string> {
     const [fullMatch, innerContent] = match
 
     // Extract individual code blocks with labels
-    const codeBlockRegex = /^```(\w+)\s+\[(.+?)\]\s*?\n([\s\S]*?)^```$/gm
+    // Fixed: use (?:(?!^```)[\s\S])* to avoid backtracking with \s*
+    const codeBlockRegex = /^```(\w+)[ \t]+\[([^\]]+)\][ \t]*\n((?:(?!^```)[\s\S])*)^```$/gm
     const codeBlocks = Array.from(innerContent.matchAll(codeBlockRegex))
 
     if (codeBlocks.length === 0)
@@ -905,7 +909,8 @@ async function processCodeGroups(content: string): Promise<string> {
  * Process custom containers like ::: info, ::: tip, etc.
  */
 async function processContainers(content: string): Promise<string> {
-  const containerRegex = /^:::\s+(info|tip|warning|danger|details|raw)(?: (.+?))?\s*?\n([\s\S]*?)^:::$/gm
+  // Fixed: use (?:(?!^:::)[\s\S])* to avoid backtracking, use [^\n\t ]+ then [^\n]* to avoid backtracking
+  const containerRegex = /^:::\s+(info|tip|warning|danger|details|raw)(?: +([^\n\t ][^\n]*))?\n((?:(?!^:::)[\s\S])*)^:::$/gm
 
   const matches = Array.from(content.matchAll(containerRegex))
 
@@ -1085,8 +1090,7 @@ async function processCodeBlock(lines: string[], startIndex: number): Promise<{ 
       // Check if line already has <span class="line"> from highlighter
       // If so, merge our classes with the existing line span
       if (line.startsWith('<span class="line">')) {
-        // Extract existing classes and merge with our new ones
-        const existingClasses = 'line'
+        // Merge our classes with existing 'line' class
         const allClasses = classes.join(' ')
         // Replace the opening tag to include all classes
         const updatedLine = line.replace('<span class="line">', `<span class="${allClasses}">`)

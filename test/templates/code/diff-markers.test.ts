@@ -6,7 +6,7 @@ const TEST_MARKDOWN_DIR = './test/markdown/code'
 describe('Code Block Diff Markers', () => {
   describe('Added Lines', () => {
     it('should mark added lines with // [!code ++]', async () => {
-      const { server, stop } = await startServer({ port: 9001, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 9001, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -36,7 +36,7 @@ describe('Code Block Diff Markers', () => {
     })
 
     it('should mark multiple added lines', async () => {
-      const { server, stop } = await startServer({ port: 9002, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 9002, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -60,7 +60,7 @@ describe('Code Block Diff Markers', () => {
 
   describe('Removed Lines', () => {
     it('should mark removed lines with // [!code --]', async () => {
-      const { server, stop } = await startServer({ port: 9003, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 9003, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -90,7 +90,7 @@ describe('Code Block Diff Markers', () => {
     })
 
     it('should mark multiple removed lines', async () => {
-      const { server, stop } = await startServer({ port: 9004, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 9004, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -114,7 +114,7 @@ describe('Code Block Diff Markers', () => {
 
   describe('Mixed Diff Markers', () => {
     it('should handle both added and removed lines', async () => {
-      const { server, stop } = await startServer({ port: 9005, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 9005, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -142,7 +142,7 @@ describe('Code Block Diff Markers', () => {
 
   describe('Diff with Line Highlighting', () => {
     it('should combine diff-add with line highlighting', async () => {
-      const { server, stop } = await startServer({ port: 9006, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 9006, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -165,7 +165,7 @@ describe('Code Block Diff Markers', () => {
 
   describe('Diff with Line Numbers', () => {
     it('should combine diff markers with line numbers', async () => {
-      const { server, stop } = await startServer({ port: 9007, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 9007, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -195,7 +195,7 @@ describe('Code Block Diff Markers', () => {
 
   describe('Diff with Focus', () => {
     it('should combine diff markers with focus', async () => {
-      const { server, stop } = await startServer({ port: 9008, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 9008, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -221,7 +221,7 @@ describe('Code Block Diff Markers', () => {
 
   describe('Different Languages', () => {
     it('should support diff for TypeScript', async () => {
-      const { server, stop } = await startServer({ port: 9009, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 9009, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -243,7 +243,7 @@ describe('Code Block Diff Markers', () => {
     })
 
     it('should support diff for Python', async () => {
-      const { server, stop } = await startServer({ port: 9010, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 9010, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -267,7 +267,7 @@ describe('Code Block Diff Markers', () => {
 
   describe('Consecutive Diff Lines', () => {
     it('should handle consecutive added lines', async () => {
-      const { server, stop } = await startServer({ port: 9011, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 9011, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -289,7 +289,7 @@ describe('Code Block Diff Markers', () => {
     })
 
     it('should handle consecutive removed lines', async () => {
-      const { server, stop } = await startServer({ port: 9012, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 9012, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -313,7 +313,7 @@ describe('Code Block Diff Markers', () => {
 
   describe('Marker Removal', () => {
     it('should properly remove diff markers from code', async () => {
-      const { server, stop } = await startServer({ port: 9013, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 9013, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -340,7 +340,7 @@ describe('Code Block Diff Markers', () => {
 
   describe('Multiple Code Blocks', () => {
     it('should handle multiple code blocks with different diff patterns', async () => {
-      const { server, stop } = await startServer({ port: 9014, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 9014, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -368,7 +368,7 @@ describe('Code Block Diff Markers', () => {
 
   describe('All Features Combined', () => {
     it('should combine highlighting, line numbers, focus, and diff markers', async () => {
-      const { server, stop } = await startServer({ port: 9015, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 9015, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(

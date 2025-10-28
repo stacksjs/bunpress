@@ -6,7 +6,7 @@ const TEST_MARKDOWN_DIR = './test/markdown/image'
 describe('Image Captions', () => {
   describe('Basic Caption Syntax', () => {
     it('should render image with caption as figure/figcaption', async () => {
-      const { server, stop } = await startServer({ port: 20001, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20001, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -37,7 +37,7 @@ describe('Image Captions', () => {
     })
 
     it('should render image without caption as regular img tag', async () => {
-      const { server, stop } = await startServer({ port: 20002, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20002, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -69,7 +69,7 @@ describe('Image Captions', () => {
 
   describe('Caption Content', () => {
     it('should handle captions with special characters', async () => {
-      const { server, stop } = await startServer({ port: 20003, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20003, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -92,7 +92,7 @@ describe('Image Captions', () => {
     })
 
     it('should handle long captions', async () => {
-      const { server, stop } = await startServer({ port: 20004, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20004, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -116,7 +116,7 @@ describe('Image Captions', () => {
     })
 
     it('should handle captions with hyphens and underscores', async () => {
-      const { server, stop } = await startServer({ port: 20005, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20005, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -140,7 +140,7 @@ describe('Image Captions', () => {
 
   describe('Multiple Images', () => {
     it('should handle multiple images with mixed captions', async () => {
-      const { server, stop } = await startServer({ port: 20006, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20006, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -182,7 +182,7 @@ describe('Image Captions', () => {
 
   describe('Edge Cases', () => {
     it('should handle empty alt text with caption', async () => {
-      const { server, stop } = await startServer({ port: 20007, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20007, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -207,7 +207,7 @@ describe('Image Captions', () => {
     })
 
     it('should handle images in lists with captions', async () => {
-      const { server, stop } = await startServer({ port: 20008, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20008, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -235,7 +235,7 @@ describe('Image Captions', () => {
     })
 
     it('should handle images with URLs containing query params', async () => {
-      const { server, stop } = await startServer({ port: 20009, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20009, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -261,7 +261,7 @@ describe('Image Captions', () => {
 
   describe('Integration with Other Features', () => {
     it('should work with lazy loading attributes', async () => {
-      const { server, stop } = await startServer({ port: 20010, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20010, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -286,7 +286,7 @@ describe('Image Captions', () => {
     })
 
     it('should work in custom containers', async () => {
-      const { server, stop } = await startServer({ port: 20011, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20011, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -317,7 +317,7 @@ Check out this diagram:
 
   describe('CSS Classes', () => {
     it('should apply correct CSS classes', async () => {
-      const { server, stop } = await startServer({ port: 20012, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20012, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(

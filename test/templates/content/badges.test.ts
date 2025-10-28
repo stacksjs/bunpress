@@ -6,7 +6,7 @@ const TEST_MARKDOWN_DIR = './test/markdown/content'
 describe('Inline Badges', () => {
   describe('Basic Badge Types', () => {
     it('should render info badge', async () => {
-      const { server, stop } = await startServer({ port: 15001, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15001, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -36,7 +36,7 @@ describe('Inline Badges', () => {
     })
 
     it('should render tip badge', async () => {
-      const { server, stop } = await startServer({ port: 15002, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15002, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -62,7 +62,7 @@ describe('Inline Badges', () => {
     })
 
     it('should render warning badge', async () => {
-      const { server, stop } = await startServer({ port: 15003, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15003, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -88,7 +88,7 @@ describe('Inline Badges', () => {
     })
 
     it('should render danger badge', async () => {
-      const { server, stop } = await startServer({ port: 15004, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15004, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -116,7 +116,7 @@ describe('Inline Badges', () => {
 
   describe('Badge Defaults', () => {
     it('should default to info type when no type specified', async () => {
-      const { server, stop } = await startServer({ port: 15005, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15005, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -138,7 +138,7 @@ describe('Inline Badges', () => {
     })
 
     it('should handle empty text attribute', async () => {
-      const { server, stop } = await startServer({ port: 15006, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15006, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -162,7 +162,7 @@ describe('Inline Badges', () => {
 
   describe('Multiple Badges', () => {
     it('should render multiple badges in same line', async () => {
-      const { server, stop } = await startServer({ port: 15007, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15007, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -188,7 +188,7 @@ describe('Inline Badges', () => {
     })
 
     it('should render badges in different paragraphs', async () => {
-      const { server, stop } = await startServer({ port: 15008, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15008, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -216,7 +216,7 @@ Third feature <Badge type="danger" text="removed" />`,
 
   describe('Badge Text Content', () => {
     it('should support version numbers', async () => {
-      const { server, stop } = await startServer({ port: 15009, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15009, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -236,7 +236,7 @@ Third feature <Badge type="danger" text="removed" />`,
     })
 
     it('should support status text', async () => {
-      const { server, stop } = await startServer({ port: 15010, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15010, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -256,7 +256,7 @@ Third feature <Badge type="danger" text="removed" />`,
     })
 
     it('should support multi-word text', async () => {
-      const { server, stop } = await startServer({ port: 15011, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15011, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -276,7 +276,7 @@ Third feature <Badge type="danger" text="removed" />`,
     })
 
     it('should support special characters in text', async () => {
-      const { server, stop } = await startServer({ port: 15012, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15012, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -298,7 +298,7 @@ Third feature <Badge type="danger" text="removed" />`,
 
   describe('Badges in Headings', () => {
     it('should render badges in h2 headings', async () => {
-      const { server, stop } = await startServer({ port: 15013, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15013, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -320,7 +320,7 @@ Third feature <Badge type="danger" text="removed" />`,
     })
 
     it('should render badges in multiple heading levels', async () => {
-      const { server, stop } = await startServer({ port: 15014, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15014, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -347,7 +347,7 @@ Third feature <Badge type="danger" text="removed" />`,
 
   describe('Badges in Lists', () => {
     it('should render badges in unordered lists', async () => {
-      const { server, stop } = await startServer({ port: 15015, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15015, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -376,7 +376,7 @@ Third feature <Badge type="danger" text="removed" />`,
 
   describe('Badges in Containers', () => {
     it('should render badges in custom containers', async () => {
-      const { server, stop } = await startServer({ port: 15016, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15016, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -400,7 +400,7 @@ This feature is now available <Badge type="info" text="stable" />
     })
 
     it('should render badges in GitHub alerts', async () => {
-      const { server, stop } = await startServer({ port: 15017, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15017, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -424,7 +424,7 @@ This feature is now available <Badge type="info" text="stable" />
 
   describe('Case Sensitivity', () => {
     it('should handle uppercase Badge tag', async () => {
-      const { server, stop } = await startServer({ port: 15018, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15018, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -445,7 +445,7 @@ This feature is now available <Badge type="info" text="stable" />
     })
 
     it('should handle mixed case type values', async () => {
-      const { server, stop } = await startServer({ port: 15019, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15019, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -469,7 +469,7 @@ This feature is now available <Badge type="info" text="stable" />
 
   describe('Edge Cases', () => {
     it('should handle badges without spaces around attributes', async () => {
-      const { server, stop } = await startServer({ port: 15020, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15020, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -490,7 +490,7 @@ This feature is now available <Badge type="info" text="stable" />
     })
 
     it('should work with emojis in badge text', async () => {
-      const { server, stop } = await startServer({ port: 15021, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15021, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -511,7 +511,7 @@ This feature is now available <Badge type="info" text="stable" />
     })
 
     it('should handle attribute order variations', async () => {
-      const { server, stop } = await startServer({ port: 15022, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15022, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -536,7 +536,7 @@ This feature is now available <Badge type="info" text="stable" />
 
   describe('Common Use Cases', () => {
     it('should support version documentation badges', async () => {
-      const { server, stop } = await startServer({ port: 15023, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 15023, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(

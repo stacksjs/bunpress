@@ -6,7 +6,7 @@ const TEST_MARKDOWN_DIR = './test/markdown/containers'
 describe('Custom Containers', () => {
   describe('Info Container', () => {
     it('should render ::: info container with default title', async () => {
-      const { server, stop } = await startServer({ port: 4001, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 4001, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -28,7 +28,7 @@ describe('Custom Containers', () => {
     })
 
     it('should render ::: info container with custom title', async () => {
-      const { server, stop } = await startServer({ port: 4002, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 4002, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -51,7 +51,7 @@ describe('Custom Containers', () => {
 
   describe('Tip Container', () => {
     it('should render ::: tip container', async () => {
-      const { server, stop } = await startServer({ port: 4003, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 4003, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -75,7 +75,7 @@ describe('Custom Containers', () => {
 
   describe('Warning Container', () => {
     it('should render ::: warning container', async () => {
-      const { server, stop } = await startServer({ port: 4004, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 4004, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -99,7 +99,7 @@ describe('Custom Containers', () => {
 
   describe('Danger Container', () => {
     it('should render ::: danger container', async () => {
-      const { server, stop } = await startServer({ port: 4005, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 4005, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -123,7 +123,7 @@ describe('Custom Containers', () => {
 
   describe('Details Container', () => {
     it('should render ::: details container as collapsible', async () => {
-      const { server, stop } = await startServer({ port: 4006, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 4006, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -145,7 +145,7 @@ describe('Custom Containers', () => {
     })
 
     it('should render ::: details with custom summary', async () => {
-      const { server, stop } = await startServer({ port: 4007, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 4007, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -167,7 +167,7 @@ describe('Custom Containers', () => {
 
   describe('Raw Container', () => {
     it('should render ::: raw container without processing', async () => {
-      const { server, stop } = await startServer({ port: 4008, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 4008, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -191,7 +191,7 @@ describe('Custom Containers', () => {
 
   describe('Container with Inline Formatting', () => {
     it('should process inline formatting inside containers', async () => {
-      const { server, stop } = await startServer({ port: 4009, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 4009, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -215,7 +215,7 @@ describe('Custom Containers', () => {
 
   describe('Multiple Containers', () => {
     it('should render multiple containers in same document', async () => {
-      const { server, stop } = await startServer({ port: 4010, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 4010, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -240,7 +240,7 @@ describe('Custom Containers', () => {
 
   describe('Container with Multiple Lines', () => {
     it('should render multi-line container content', async () => {
-      const { server, stop } = await startServer({ port: 4011, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 4011, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -264,7 +264,7 @@ describe('Custom Containers', () => {
 
   describe('Container Mixed with Regular Content', () => {
     it('should render containers alongside regular markdown', async () => {
-      const { server, stop } = await startServer({ port: 4012, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 4012, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(

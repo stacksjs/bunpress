@@ -6,7 +6,7 @@ const TEST_MARKDOWN_DIR = './test/markdown/code'
 describe('Code Block Line Highlighting', () => {
   describe('Single Line Highlighting', () => {
     it('should highlight a single line with {n} syntax', async () => {
-      const { server, stop } = await startServer({ port: 6001, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 6001, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -37,7 +37,7 @@ describe('Code Block Line Highlighting', () => {
 
   describe('Multiple Line Highlighting', () => {
     it('should highlight multiple lines with {a,b,c} syntax', async () => {
-      const { server, stop } = await startServer({ port: 6002, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 6002, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -64,7 +64,7 @@ describe('Code Block Line Highlighting', () => {
 
   describe('Range Line Highlighting', () => {
     it('should highlight line ranges with {start-end} syntax', async () => {
-      const { server, stop } = await startServer({ port: 6003, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 6003, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -88,7 +88,7 @@ describe('Code Block Line Highlighting', () => {
 
   describe('Mixed Line Highlighting', () => {
     it('should highlight mixed single and range syntax {1,3-5,7}', async () => {
-      const { server, stop } = await startServer({ port: 6004, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 6004, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -112,7 +112,7 @@ describe('Code Block Line Highlighting', () => {
 
   describe('No Highlighting', () => {
     it('should render code blocks without highlighting when no range specified', async () => {
-      const { server, stop } = await startServer({ port: 6005, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 6005, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -142,7 +142,7 @@ describe('Code Block Line Highlighting', () => {
 
   describe('Different Languages', () => {
     it('should support line highlighting for TypeScript', async () => {
-      const { server, stop } = await startServer({ port: 6006, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 6006, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -164,7 +164,7 @@ describe('Code Block Line Highlighting', () => {
     })
 
     it('should support line highlighting for Python', async () => {
-      const { server, stop } = await startServer({ port: 6007, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 6007, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -187,7 +187,7 @@ describe('Code Block Line Highlighting', () => {
 
   describe('HTML Escaping', () => {
     it('should properly escape HTML entities in code blocks', async () => {
-      const { server, stop } = await startServer({ port: 6008, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 6008, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -214,7 +214,7 @@ describe('Code Block Line Highlighting', () => {
 
   describe('Edge Cases', () => {
     it('should handle empty code blocks', async () => {
-      const { server, stop } = await startServer({ port: 6009, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 6009, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -235,7 +235,7 @@ describe('Code Block Line Highlighting', () => {
     })
 
     it('should handle highlighting beyond code length', async () => {
-      const { server, stop } = await startServer({ port: 6010, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 6010, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -259,7 +259,7 @@ describe('Code Block Line Highlighting', () => {
 
   describe('Multiple Code Blocks', () => {
     it('should handle multiple code blocks with different highlighting', async () => {
-      const { server, stop } = await startServer({ port: 6011, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 6011, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(

@@ -6,7 +6,7 @@ const TEST_MARKDOWN_DIR = './test/markdown/code'
 describe('Code Block Focus Markers', () => {
   describe('Basic Focus', () => {
     it('should focus a single line with // [!code focus]', async () => {
-      const { server, stop } = await startServer({ port: 8001, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 8001, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -39,7 +39,7 @@ describe('Code Block Focus Markers', () => {
     })
 
     it('should focus multiple lines', async () => {
-      const { server, stop } = await startServer({ port: 8002, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 8002, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -67,7 +67,7 @@ describe('Code Block Focus Markers', () => {
 
   describe('Focus without Dimming', () => {
     it('should not add dimmed class when no focus markers', async () => {
-      const { server, stop } = await startServer({ port: 8003, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 8003, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -97,7 +97,7 @@ describe('Code Block Focus Markers', () => {
 
   describe('Focus with Line Highlighting', () => {
     it('should combine focus and line highlighting', async () => {
-      const { server, stop } = await startServer({ port: 8004, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 8004, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -121,7 +121,7 @@ describe('Code Block Focus Markers', () => {
     })
 
     it('should handle focus on highlighted ranges', async () => {
-      const { server, stop } = await startServer({ port: 8005, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 8005, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -147,7 +147,7 @@ describe('Code Block Focus Markers', () => {
 
   describe('Focus with Line Numbers', () => {
     it('should combine focus with line numbers', async () => {
-      const { server, stop } = await startServer({ port: 8006, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 8006, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -177,7 +177,7 @@ describe('Code Block Focus Markers', () => {
 
   describe('Different Languages', () => {
     it('should support focus for TypeScript', async () => {
-      const { server, stop } = await startServer({ port: 8007, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 8007, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -200,7 +200,7 @@ describe('Code Block Focus Markers', () => {
     })
 
     it('should support focus for Python', async () => {
-      const { server, stop } = await startServer({ port: 8008, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 8008, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -228,7 +228,7 @@ describe('Code Block Focus Markers', () => {
 
   describe('Consecutive Focused Lines', () => {
     it('should handle multiple consecutive focused lines', async () => {
-      const { server, stop } = await startServer({ port: 8009, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 8009, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -256,7 +256,7 @@ describe('Code Block Focus Markers', () => {
 
   describe('All Lines Focused', () => {
     it('should handle when all lines are focused', async () => {
-      const { server, stop } = await startServer({ port: 8010, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 8010, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -284,7 +284,7 @@ describe('Code Block Focus Markers', () => {
 
   describe('Marker Removal', () => {
     it('should properly remove focus marker from code', async () => {
-      const { server, stop } = await startServer({ port: 8011, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 8011, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -310,7 +310,7 @@ describe('Code Block Focus Markers', () => {
 
   describe('Multiple Blocks', () => {
     it('should handle multiple code blocks with different focus patterns', async () => {
-      const { server, stop } = await startServer({ port: 8012, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 8012, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
