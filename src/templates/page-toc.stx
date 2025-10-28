@@ -1,4 +1,4 @@
-<aside class="fixed top-[60px] right-0 bottom-0 w-[256px] overflow-y-auto py-8 px-4 hidden xl:block">
+<aside class="fixed top-[60px] bottom-0 w-[256px] overflow-y-auto py-8 px-4 hidden xl:block right-[max(0px,calc((100vw-1440px)/2))]">
   <div class="text-sm">
     <p class="font-semibold text-[#213547] mb-4">On this page</p>
     <nav class="page-toc">

@@ -13,68 +13,72 @@
   </style>
 </head>
 <body class="m-0 p-0 box-border font-sans leading-relaxed">
-  <div class="relative mx-auto max-w-[1440px]">
-    <header class="fixed top-0 left-0 right-0 h-[60px] bg-white border-b border-[#e2e2e3] z-[100]">
-      <div class="mx-auto max-w-[1440px] w-full h-full flex items-center justify-between px-6">
-        <!-- Left side: Logo/Title + Search -->
-        <div class="flex items-center gap-6 flex-1 min-w-0">
-          <div class="text-[16px] font-semibold text-[#213547] whitespace-nowrap">{{ title }}</div>
-          <div class="relative flex items-center max-w-[260px] w-full">
-            <svg class="absolute left-3 w-4 h-4 text-[#747474]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-            <input type="text" placeholder="Search" class="w-full h-[32px] pl-9 pr-12 text-[13px] bg-[#f6f6f7] border border-[#e2e2e3] rounded text-[#213547] placeholder-[#747474] focus:outline-none focus:border-[#5672cd] focus:bg-white transition-colors" />
-            <kbd class="absolute right-2 px-1.5 py-0.5 text-[11px] font-semibold text-[#747474] bg-white border border-[#e2e2e3] rounded">⌘ K</kbd>
-          </div>
-        </div>
-
-        <!-- Right side: Navigation + Icons -->
-        <div class="flex items-center gap-6">
-          {{ nav }}
-          <div class="flex items-center gap-3 pl-6 border-l border-[#e2e2e3]">
-            <a href="https://github.com/stacksjs/bunpress" target="_blank" class="text-[#747474] hover:text-[#213547] transition-colors">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-              </svg>
-            </a>
-          </div>
+  <!-- Header - Fixed at top, full width with centered content -->
+  <header class="fixed top-0 left-0 right-0 h-[60px] bg-white border-b border-[#e2e2e3] z-[100]">
+    <div class="mx-auto max-w-[1440px] w-full h-full flex items-center justify-between px-6">
+      <!-- Left side: Logo/Title + Search -->
+      <div class="flex items-center gap-6 flex-1 min-w-0">
+        <div class="text-[16px] font-semibold text-[#213547] whitespace-nowrap">{{ title }}</div>
+        <div class="relative flex items-center max-w-[260px] w-full">
+          <svg class="absolute left-3 w-4 h-4 text-[#747474]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <input type="text" placeholder="Search" class="w-full h-[32px] pl-9 pr-12 text-[13px] bg-[#f6f6f7] border border-[#e2e2e3] rounded text-[#213547] placeholder-[#747474] focus:outline-none focus:border-[#5672cd] focus:bg-white transition-colors" />
+          <kbd class="absolute right-2 px-1.5 py-0.5 text-[11px] font-semibold text-[#747474] bg-white border border-[#e2e2e3] rounded">⌘ K</kbd>
         </div>
       </div>
-    </header>
 
-    {{ sidebar }}
+      <!-- Right side: Navigation + Icons -->
+      <div class="flex items-center gap-6">
+        {{ nav }}
+        <div class="flex items-center gap-3 pl-6 border-l border-[#e2e2e3]">
+          <a href="https://github.com/stacksjs/bunpress" target="_blank" class="text-[#747474] hover:text-[#213547] transition-colors">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
 
-    <main class="ml-[260px] xl:mr-[256px] mt-[60px] px-6 md:px-8 py-8">
+  <!-- Sidebar with independent scrolling -->
+  {{ sidebar }}
+
+  <!-- Main content area with independent scrolling -->
+  <main class="fixed top-[60px] bottom-0 overflow-y-auto left-[max(260px,calc((100vw-1440px)/2+260px))] right-[max(0px,calc((100vw-1440px)/2))] xl:right-[max(256px,calc((100vw-1440px)/2+256px))]">
+    <div class="px-6 md:px-8 py-8">
       <div class="mx-auto max-w-[960px]">
         <article class="max-w-none text-[#213547]
-        [&>h1]:text-[40px] [&>h1]:leading-[48px] [&>h1]:font-bold [&>h1]:tracking-tight [&>h1]:text-[#213547] [&>h1]:mt-0 [&>h1]:mb-8
-        [&>h2]:text-[28px] [&>h2]:leading-[36px] [&>h2]:font-semibold [&>h2]:tracking-tight [&>h2]:text-[#213547] [&>h2]:mt-12 [&>h2]:mb-4 [&>h2]:pt-6 [&>h2]:border-t [&>h2]:border-[#e2e8f0] [&>h2]:scroll-mt-24
-        [&>h3]:text-[20px] [&>h3]:leading-[28px] [&>h3]:font-semibold [&>h3]:text-[#213547] [&>h3]:mt-8 [&>h3]:mb-3 [&>h3]:scroll-mt-24
-        [&>h4]:text-[18px] [&>h4]:leading-[24px] [&>h4]:font-semibold [&>h4]:text-[#213547] [&>h4]:mt-6 [&>h4]:mb-2 [&>h4]:scroll-mt-24
-        [&>h5]:text-[16px] [&>h5]:leading-[22px] [&>h5]:font-semibold [&>h5]:text-[#213547] [&>h5]:mt-5 [&>h5]:mb-2 [&>h5]:scroll-mt-24
-        [&>h6]:text-[14px] [&>h6]:leading-[20px] [&>h6]:font-semibold [&>h6]:text-[#64748b] [&>h6]:mt-4 [&>h6]:mb-1 [&>h6]:scroll-mt-24
-        [&>p]:text-[16px] [&>p]:leading-[28px] [&>p]:text-[#3c4858] [&>p]:my-4 [&>p]:tracking-normal
-        [&>p>a]:text-[#5672cd] [&>p>a]:font-medium [&>p>a]:no-underline [&>p>a]:transition-colors hover:[&>p>a]:text-[#4558b8]
-        [&>ul]:my-4 [&>ul]:pl-6 [&>ul]:text-[#3c4858]
-        [&>ol]:my-4 [&>ol]:pl-6 [&>ol]:text-[#3c4858]
-        [&>ul>li]:my-2 [&>ul>li]:leading-[28px] [&>ul>li]:text-[16px]
-        [&>ol>li]:my-2 [&>ol>li]:leading-[28px] [&>ol>li]:text-[16px]
-        [&_code]:text-[#476582] [&_code]:bg-[#f6f6f7] [&_code]:px-[6px] [&_code]:py-[3px] [&_code]:rounded [&_code]:font-mono [&_code]:text-[0.875em] [&_code]:font-normal [&_code]:before:content-[''] [&_code]:after:content-['']
-        [&>pre]:bg-[#f6f6f7] [&>pre]:border [&>pre]:border-[#e2e2e3] [&>pre]:p-4 [&>pre]:rounded-lg [&>pre]:overflow-x-auto [&>pre]:my-6 [&>pre]:text-[14px] [&>pre]:leading-[24px]
-        [&>pre>code]:bg-transparent [&>pre>code]:p-0 [&>pre>code]:text-[#213547]
-        [&>blockquote]:border-l-4 [&>blockquote]:border-[#5672cd] [&>blockquote]:pl-4 [&>blockquote]:my-6 [&>blockquote]:text-[#3c4858] [&>blockquote]:italic
-        [&>table]:border-collapse [&>table]:w-full [&>table]:my-6 [&>table]:text-[14px]
-        [&_th]:border [&_th]:border-[#e2e8f0] [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:bg-[#f6f6f7] [&_th]:font-semibold [&_th]:text-[#213547]
-        [&_td]:border [&_td]:border-[#e2e8f0] [&_td]:px-4 [&_td]:py-3 [&_td]:text-[#3c4858]
-        [&>p>strong]:font-semibold [&>p>strong]:text-[#213547]
-        [&>hr]:my-8 [&>hr]:border-t [&>hr]:border-[#e2e8f0]">
-        {{ content }}
-        </article>
+          [&>h1]:text-[40px] [&>h1]:leading-[48px] [&>h1]:font-bold [&>h1]:tracking-tight [&>h1]:text-[#213547] [&>h1]:mt-0 [&>h1]:mb-8
+          [&>h2]:text-[28px] [&>h2]:leading-[36px] [&>h2]:font-semibold [&>h2]:tracking-tight [&>h2]:text-[#213547] [&>h2]:mt-12 [&>h2]:mb-4 [&>h2]:pt-6 [&>h2]:border-t [&>h2]:border-[#e2e8f0] [&>h2]:scroll-mt-24
+          [&>h3]:text-[20px] [&>h3]:leading-[28px] [&>h3]:font-semibold [&>h3]:text-[#213547] [&>h3]:mt-8 [&>h3]:mb-3 [&>h3]:scroll-mt-24
+          [&>h4]:text-[18px] [&>h4]:leading-[24px] [&>h4]:font-semibold [&>h4]:text-[#213547] [&>h4]:mt-6 [&>h4]:mb-2 [&>h4]:scroll-mt-24
+          [&>h5]:text-[16px] [&>h5]:leading-[22px] [&>h5]:font-semibold [&>h5]:text-[#213547] [&>h5]:mt-5 [&>h5]:mb-2 [&>h5]:scroll-mt-24
+          [&>h6]:text-[14px] [&>h6]:leading-[20px] [&>h6]:font-semibold [&>h6]:text-[#64748b] [&>h6]:mt-4 [&>h6]:mb-1 [&>h6]:scroll-mt-24
+          [&>p]:text-[16px] [&>p]:leading-[28px] [&>p]:text-[#3c4858] [&>p]:my-4 [&>p]:tracking-normal
+          [&>p>a]:text-[#5672cd] [&>p>a]:font-medium [&>p>a]:no-underline [&>p>a]:transition-colors hover:[&>p>a]:text-[#4558b8]
+          [&>ul]:my-4 [&>ul]:pl-6 [&>ul]:text-[#3c4858]
+          [&>ol]:my-4 [&>ol]:pl-6 [&>ol]:text-[#3c4858]
+          [&>ul>li]:my-2 [&>ul>li]:leading-[28px] [&>ul>li]:text-[16px]
+          [&>ol>li]:my-2 [&>ol>li]:leading-[28px] [&>ol>li]:text-[16px]
+          [&_code]:text-[#476582] [&_code]:bg-[#f6f6f7] [&_code]:px-[6px] [&_code]:py-[3px] [&_code]:rounded [&_code]:font-mono [&_code]:text-[0.875em] [&_code]:font-normal [&_code]:before:content-[''] [&_code]:after:content-['']
+          [&>pre]:bg-[#f6f6f7] [&>pre]:border [&>pre]:border-[#e2e2e3] [&>pre]:p-4 [&>pre]:rounded-lg [&>pre]:overflow-x-auto [&>pre]:my-6 [&>pre]:text-[14px] [&>pre]:leading-[24px]
+          [&>pre>code]:bg-transparent [&>pre>code]:p-0 [&>pre>code]:text-[#213547]
+          [&>blockquote]:border-l-4 [&>blockquote]:border-[#5672cd] [&>blockquote]:pl-4 [&>blockquote]:my-6 [&>blockquote]:text-[#3c4858] [&>blockquote]:italic
+          [&>table]:border-collapse [&>table]:w-full [&>table]:my-6 [&>table]:text-[14px]
+          [&_th]:border [&_th]:border-[#e2e8f0] [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:bg-[#f6f6f7] [&_th]:font-semibold [&_th]:text-[#213547]
+          [&_td]:border [&_td]:border-[#e2e8f0] [&_td]:px-4 [&_td]:py-3 [&_td]:text-[#3c4858]
+          [&>p>strong]:font-semibold [&>p>strong]:text-[#213547]
+          [&>hr]:my-8 [&>hr]:border-t [&>hr]:border-[#e2e8f0]">
+          {{ content }}
+          </article>
+        </div>
       </div>
     </main>
 
-    {{ pageTOC }}
-  </div>
+  <!-- TOC with independent scrolling -->
+  {{ pageTOC }}
 
   {{ scripts }}
 </body>
