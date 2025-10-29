@@ -25,6 +25,7 @@ const config: ESLintConfig = stacks({
     'test/blocks/**/test.md',
     'test/use-cases/**/test.md',
     'bin/**',
+    'benchmarks/**', // Benchmarks use console.log for output
   ],
 })
 
