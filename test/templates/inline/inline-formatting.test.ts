@@ -2,17 +2,18 @@ import { describe, expect, it } from 'bun:test'
 import { startServer } from '../../../src/serve'
 
 const TEST_MARKDOWN_DIR = './test/markdown/inline'
+const BASE_PORT = 20001
 
 describe('Inline Formatting', () => {
   describe('Italic (em)', () => {
     it('should convert *text* to <em>text</em>', async () => {
-      const { server: _server, stop } = await startServer({ port: 3001, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: BASE_PORT, root: TEST_MARKDOWN_DIR })
 
       try {
         // Create a test markdown file
         await Bun.write(`${TEST_MARKDOWN_DIR}/test-italic-asterisk.md`, 'This is *italic* text.')
 
-        const response = await fetch('http://localhost:3001/test-italic-asterisk')
+        const response = await fetch(`http://localhost:${BASE_PORT}/test-italic-asterisk`)
         const html = await response.text()
 
         expect(html).toContain('<em>italic</em>')
@@ -24,12 +25,12 @@ describe('Inline Formatting', () => {
     })
 
     it('should convert _text_ to <em>text</em>', async () => {
-      const { server: _server, stop } = await startServer({ port: 3002, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20002, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(`${TEST_MARKDOWN_DIR}/test-italic-underscore.md`, 'This is _italic_ text.')
 
-        const response = await fetch('http://localhost:3002/test-italic-underscore')
+        const response = await fetch('http://localhost:20002/test-italic-underscore')
         const html = await response.text()
 
         expect(html).toContain('<em>italic</em>')
@@ -41,12 +42,12 @@ describe('Inline Formatting', () => {
     })
 
     it('should handle multiple italic sections', async () => {
-      const { server: _server, stop } = await startServer({ port: 3003, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20003, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(`${TEST_MARKDOWN_DIR}/test-italic-multiple.md`, 'This is *italic* and this is _also italic_.')
 
-        const response = await fetch('http://localhost:3003/test-italic-multiple')
+        const response = await fetch('http://localhost:20003/test-italic-multiple')
         const html = await response.text()
 
         expect(html).toContain('<em>italic</em>')
@@ -61,12 +62,12 @@ describe('Inline Formatting', () => {
 
   describe('Bold (strong)', () => {
     it('should convert **text** to <strong>text</strong>', async () => {
-      const { server: _server, stop } = await startServer({ port: 3004, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20004, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(`${TEST_MARKDOWN_DIR}/test-bold-asterisk.md`, 'This is **bold** text.')
 
-        const response = await fetch('http://localhost:3004/test-bold-asterisk')
+        const response = await fetch('http://localhost:20004/test-bold-asterisk')
         const html = await response.text()
 
         expect(html).toContain('<strong>bold</strong>')
@@ -78,12 +79,12 @@ describe('Inline Formatting', () => {
     })
 
     it('should convert __text__ to <strong>text</strong>', async () => {
-      const { server: _server, stop } = await startServer({ port: 3005, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20005, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(`${TEST_MARKDOWN_DIR}/test-bold-underscore.md`, 'This is __bold__ text.')
 
-        const response = await fetch('http://localhost:3005/test-bold-underscore')
+        const response = await fetch('http://localhost:20005/test-bold-underscore')
         const html = await response.text()
 
         expect(html).toContain('<strong>bold</strong>')
@@ -95,12 +96,12 @@ describe('Inline Formatting', () => {
     })
 
     it('should handle bold and italic together', async () => {
-      const { server: _server, stop } = await startServer({ port: 3006, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20006, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(`${TEST_MARKDOWN_DIR}/test-bold-italic.md`, 'This is **bold** and *italic*.')
 
-        const response = await fetch('http://localhost:3006/test-bold-italic')
+        const response = await fetch('http://localhost:20006/test-bold-italic')
         const html = await response.text()
 
         expect(html).toContain('<strong>bold</strong>')
@@ -115,12 +116,12 @@ describe('Inline Formatting', () => {
 
   describe('Strikethrough (del)', () => {
     it('should convert ~~text~~ to <del>text</del>', async () => {
-      const { server: _server, stop } = await startServer({ port: 3007, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20007, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(`${TEST_MARKDOWN_DIR}/test-strikethrough.md`, 'This is ~~strikethrough~~ text.')
 
-        const response = await fetch('http://localhost:3007/test-strikethrough')
+        const response = await fetch('http://localhost:20007/test-strikethrough')
         const html = await response.text()
 
         expect(html).toContain('<del>strikethrough</del>')
@@ -134,12 +135,12 @@ describe('Inline Formatting', () => {
 
   describe('Code (code)', () => {
     it('should convert `text` to <code>text</code>', async () => {
-      const { server: _server, stop } = await startServer({ port: 3008, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20008, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(`${TEST_MARKDOWN_DIR}/test-code.md`, 'This is `inline code` text.')
 
-        const response = await fetch('http://localhost:3008/test-code')
+        const response = await fetch('http://localhost:20008/test-code')
         const html = await response.text()
 
         expect(html).toContain('<code>inline code</code>')
@@ -153,12 +154,12 @@ describe('Inline Formatting', () => {
 
   describe('Subscript (sub)', () => {
     it('should convert ~text~ to <sub>text</sub>', async () => {
-      const { server: _server, stop } = await startServer({ port: 3009, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20009, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(`${TEST_MARKDOWN_DIR}/test-subscript.md`, 'H~2~O is water.')
 
-        const response = await fetch('http://localhost:3009/test-subscript')
+        const response = await fetch('http://localhost:20009/test-subscript')
         const html = await response.text()
 
         expect(html).toContain('<sub>2</sub>')
@@ -172,12 +173,12 @@ describe('Inline Formatting', () => {
 
   describe('Superscript (sup)', () => {
     it('should convert ^text^ to <sup>text</sup>', async () => {
-      const { server: _server, stop } = await startServer({ port: 3010, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20010, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(`${TEST_MARKDOWN_DIR}/test-superscript.md`, 'E = mc^2^ is famous.')
 
-        const response = await fetch('http://localhost:3010/test-superscript')
+        const response = await fetch('http://localhost:20010/test-superscript')
         const html = await response.text()
 
         expect(html).toContain('<sup>2</sup>')
@@ -191,12 +192,12 @@ describe('Inline Formatting', () => {
 
   describe('Mark/Highlight (mark)', () => {
     it('should convert ==text== to <mark>text</mark>', async () => {
-      const { server: _server, stop } = await startServer({ port: 3011, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20011, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(`${TEST_MARKDOWN_DIR}/test-mark.md`, 'This is ==highlighted== text.')
 
-        const response = await fetch('http://localhost:3011/test-mark')
+        const response = await fetch('http://localhost:20011/test-mark')
         const html = await response.text()
 
         expect(html).toContain('<mark>highlighted</mark>')
@@ -210,7 +211,7 @@ describe('Inline Formatting', () => {
 
   describe('Combined Formatting', () => {
     it('should handle multiple formats in one line', async () => {
-      const { server: _server, stop } = await startServer({ port: 3012, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20012, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -218,7 +219,7 @@ describe('Inline Formatting', () => {
           'This has **bold**, *italic*, `code`, ~~strikethrough~~, ==highlight==, H~2~O, and E=mc^2^.',
         )
 
-        const response = await fetch('http://localhost:3012/test-combined')
+        const response = await fetch('http://localhost:20012/test-combined')
         const html = await response.text()
 
         expect(html).toContain('<strong>bold</strong>')
@@ -236,12 +237,12 @@ describe('Inline Formatting', () => {
     })
 
     it('should work in headings', async () => {
-      const { server: _server, stop } = await startServer({ port: 3013, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20013, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(`${TEST_MARKDOWN_DIR}/test-heading-formatting.md`, '## This is **bold** and *italic*')
 
-        const response = await fetch('http://localhost:3013/test-heading-formatting')
+        const response = await fetch('http://localhost:20013/test-heading-formatting')
         const html = await response.text()
 
         expect(html).toMatch(/<h2[^>]*>.*<strong>bold<\/strong>.*<em>italic<\/em>.*<\/h2>/)
@@ -253,12 +254,12 @@ describe('Inline Formatting', () => {
     })
 
     it('should work in lists', async () => {
-      const { server: _server, stop } = await startServer({ port: 3014, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20014, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(`${TEST_MARKDOWN_DIR}/test-list-formatting.md`, '- This is **bold** item\n- This is *italic* item')
 
-        const response = await fetch('http://localhost:3014/test-list-formatting')
+        const response = await fetch('http://localhost:20014/test-list-formatting')
         const html = await response.text()
 
         expect(html).toMatch(/<li>.*<strong>bold<\/strong>.*<\/li>/)
@@ -271,7 +272,7 @@ describe('Inline Formatting', () => {
     })
 
     it('should work in tables', async () => {
-      const { server: _server, stop } = await startServer({ port: 3015, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20015, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -279,7 +280,7 @@ describe('Inline Formatting', () => {
           '| Header |\n| --- |\n| **bold** |\n| *italic* |',
         )
 
-        const response = await fetch('http://localhost:3015/test-table-formatting')
+        const response = await fetch('http://localhost:20015/test-table-formatting')
         const html = await response.text()
 
         expect(html).toContain('<strong>bold</strong>')
@@ -294,12 +295,12 @@ describe('Inline Formatting', () => {
 
   describe('Edge Cases', () => {
     it('should not confuse ** with *', async () => {
-      const { server: _server, stop } = await startServer({ port: 3016, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20016, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(`${TEST_MARKDOWN_DIR}/test-edge-bold-italic.md`, 'This is **bold not *italic**.')
 
-        const response = await fetch('http://localhost:3016/test-edge-bold-italic')
+        const response = await fetch('http://localhost:20016/test-edge-bold-italic')
         const html = await response.text()
 
         // Should have bold, and the inner * should be literal or converted correctly
@@ -312,12 +313,12 @@ describe('Inline Formatting', () => {
     })
 
     it('should not confuse ~~ with ~', async () => {
-      const { server: _server, stop } = await startServer({ port: 3017, root: TEST_MARKDOWN_DIR })
+      const { server: _server, stop } = await startServer({ port: 20017, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(`${TEST_MARKDOWN_DIR}/test-edge-strike-sub.md`, 'H~2~O and ~~deleted~~.')
 
-        const response = await fetch('http://localhost:3017/test-edge-strike-sub')
+        const response = await fetch('http://localhost:20017/test-edge-strike-sub')
         const html = await response.text()
 
         expect(html).toContain('<sub>2</sub>')
