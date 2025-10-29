@@ -162,7 +162,12 @@ async function wrapInLayout(content: string, config: BunPressConfig, currentPath
     .map(([key, value]) => `<meta name="${key}" content="${value}">`)
     .join('\n  ')
 
-  const scripts = config.markdown?.scripts?.map(script => `<script>${script}</script>`).join('\n') || ''
+  // Generate Fathom analytics script
+  const fathomScript = generateFathomScript(config)
+
+  // Combine custom scripts with Fathom script
+  const customScripts = config.markdown?.scripts?.map(script => `<script>${script}</script>`).join('\n') || ''
+  const scripts = [fathomScript, customScripts].filter(Boolean).join('\n')
 
   // Home layout - no sidebar, no navigation, clean hero layout
   if (isHome) {
@@ -192,6 +197,35 @@ async function wrapInLayout(content: string, config: BunPressConfig, currentPath
     pageTOC,
     scripts,
   })
+}
+
+/**
+ * Generate Fathom Analytics tracking script
+ */
+function generateFathomScript(config: BunPressConfig): string {
+  // Check if Fathom is enabled and has a site ID
+  if (!config.fathom?.enabled || !config.fathom?.siteId) {
+    return ''
+  }
+
+  const scriptUrl = config.fathom.scriptUrl || 'https://cdn.usefathom.com/script.js'
+  const defer = config.fathom.defer !== false // Default to true
+  const honorDNT = config.fathom.honorDNT || false
+  const auto = config.fathom.auto !== false // Default to true
+  const canonical = config.fathom.canonical
+  const spa = config.fathom.spa || false
+
+  // Build data attributes
+  const dataAttrs = [
+    `data-site="${config.fathom.siteId}"`,
+    honorDNT ? 'data-honor-dnt="true"' : '',
+    !auto ? 'data-auto="false"' : '',
+    canonical ? `data-canonical="${canonical}"` : '',
+    spa ? 'data-spa="auto"' : '',
+  ].filter(Boolean).join(' ')
+
+  // Build script tag
+  return `<script src="${scriptUrl}" ${dataAttrs}${defer ? ' defer' : ''}></script>`
 }
 
 /**
