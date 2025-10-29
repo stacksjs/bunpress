@@ -264,6 +264,149 @@ export default {
 }
 ```
 
+## Fathom Analytics Configuration
+
+BunPress supports [Fathom Analytics](https://usefathom.com) - a privacy-focused analytics platform. The analytics script will be automatically injected into all pages when enabled.
+
+### Basic Setup
+
+```typescript
+export default {
+  fathom: {
+    enabled: true,
+    siteId: 'ABCDEFGH'  // Your Fathom site ID
+  }
+}
+```
+
+### Full Configuration
+
+```typescript
+export default {
+  fathom: {
+    // Enable/disable Fathom Analytics
+    enabled: true,
+
+    // Your Fathom site ID (required when enabled)
+    // Find this in your Fathom dashboard
+    siteId: 'ABCDEFGH',
+
+    // Custom Fathom script URL (optional)
+    // Default: 'https://cdn.usefathom.com/script.js'
+    scriptUrl: 'https://cdn.usefathom.com/script.js',
+
+    // Load script with defer attribute (recommended)
+    // Default: true
+    defer: true,
+
+    // Honor Do Not Track browser setting
+    // Default: false
+    honorDNT: false,
+
+    // Canonical URL for the site (optional)
+    // Overrides automatic canonical URL detection
+    canonical: 'https://example.com',
+
+    // Enable auto tracking (tracks pageviews automatically)
+    // Default: true
+    auto: true,
+
+    // Enable SPA (Single Page Application) mode
+    // Default: false
+    spa: false
+  }
+}
+```
+
+### Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | `boolean` | `false` | Enable Fathom Analytics tracking |
+| `siteId` | `string` | - | Your Fathom site ID (required when enabled) |
+| `scriptUrl` | `string` | `'https://cdn.usefathom.com/script.js'` | Custom Fathom script URL |
+| `defer` | `boolean` | `true` | Load script with defer attribute for better performance |
+| `honorDNT` | `boolean` | `false` | Honor Do Not Track browser setting |
+| `canonical` | `string` | - | Override automatic canonical URL detection |
+| `auto` | `boolean` | `true` | Enable automatic pageview tracking |
+| `spa` | `boolean` | `false` | Enable SPA mode for single-page applications |
+
+### Finding Your Fathom Site ID
+
+1. Log in to your [Fathom Analytics dashboard](https://app.usefathom.com)
+2. Select your site from the dashboard
+3. Go to **Settings** > **Sites**
+4. Copy the **Site ID** (e.g., `NXCLHKXQ`)
+5. Add it to your `bunpress.config.ts`
+
+### Privacy Features
+
+Fathom Analytics is privacy-focused by design:
+
+- **No cookies** - GDPR, CCPA, and PECR compliant
+- **No personal data** - Only anonymized metrics
+- **No tracking across sites** - Site-isolated analytics
+- **No fingerprinting** - Respects user privacy
+
+### Advanced Usage
+
+#### Single Page Application (SPA) Mode
+
+If your documentation uses client-side routing (SPA), enable SPA mode:
+
+```typescript
+export default {
+  fathom: {
+    enabled: true,
+    siteId: 'ABCDEFGH',
+    spa: true  // Automatically tracks route changes
+  }
+}
+```
+
+#### Do Not Track (DNT)
+
+Respect users who have enabled Do Not Track in their browser:
+
+```typescript
+export default {
+  fathom: {
+    enabled: true,
+    siteId: 'ABCDEFGH',
+    honorDNT: true  // Skip tracking for DNT users
+  }
+}
+```
+
+#### Custom Canonical URL
+
+Override the default canonical URL detection:
+
+```typescript
+export default {
+  fathom: {
+    enabled: true,
+    siteId: 'ABCDEFGH',
+    canonical: 'https://docs.example.com'  // Custom canonical base
+  }
+}
+```
+
+### Disabling Analytics
+
+To temporarily disable analytics without removing the configuration:
+
+```typescript
+export default {
+  fathom: {
+    enabled: false,  // Analytics disabled
+    siteId: 'ABCDEFGH'
+  }
+}
+```
+
+Or simply omit the `fathom` configuration entirely - no tracking script will be added.
+
 ## Markdown Features Configuration
 
 BunPress supports extensive markdown feature configuration through the markdown options.

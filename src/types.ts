@@ -25,6 +25,11 @@ export interface BunPressConfig {
    * Robots.txt configuration
    */
   robots?: RobotsConfig
+
+  /**
+   * Fathom Analytics configuration
+   */
+  fathom?: FathomConfig
 }
 
 export type BunPressOptions = Partial<BunPressConfig>
@@ -886,4 +891,57 @@ export interface RobotsRule {
    * Crawl-delay directive
    */
   crawlDelay?: number
+}
+
+/**
+ * Fathom Analytics configuration
+ */
+export interface FathomConfig {
+  /**
+   * Enable Fathom Analytics
+   * @default false
+   */
+  enabled?: boolean
+
+  /**
+   * Fathom site ID (e.g., 'NXCLHKXQ')
+   * Required if enabled is true
+   */
+  siteId?: string
+
+  /**
+   * Custom Fathom script URL
+   * @default 'https://cdn.usefathom.com/script.js'
+   */
+  scriptUrl?: string
+
+  /**
+   * Include Fathom script with defer attribute
+   * @default true
+   */
+  defer?: boolean
+
+  /**
+   * Honor Do Not Track (DNT) browser setting
+   * @default false
+   */
+  honorDNT?: boolean
+
+  /**
+   * Canonical URL for the site (optional)
+   * Overrides automatic canonical URL detection
+   */
+  canonical?: string
+
+  /**
+   * Enable auto tracking (tracks pageviews automatically)
+   * @default true
+   */
+  auto?: boolean
+
+  /**
+   * Enable SPA (Single Page Application) mode
+   * @default false
+   */
+  spa?: boolean
 }

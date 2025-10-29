@@ -16,6 +16,54 @@ BunPress is a lightning-fast static site generator designed specifically for doc
 
 ## Common Development Commands
 
+### CLI Commands
+
+BunPress provides a comprehensive set of CLI commands for working with documentation:
+
+```bash
+# Project initialization
+bunpress init                    # Initialize a new BunPress project
+bunpress init --force            # Overwrite existing files
+
+# Development & Building
+bunpress dev                     # Start dev server with hot reload
+bunpress dev --port 4000         # Custom port
+bunpress build                   # Build documentation site
+bunpress build --watch           # Build and watch for changes
+bunpress build --minify          # Minify output
+bunpress build --sourcemap       # Generate source maps
+
+# Content creation
+bunpress new <path>              # Create new markdown file
+bunpress new guides/getting-started --title "Getting Started"
+bunpress new api/reference --template api
+# Templates: default, guide, api, blog
+
+# Preview & Serve
+bunpress preview                 # Preview production build
+bunpress preview --port 8080     # Custom port
+
+# Maintenance
+bunpress clean                   # Remove build artifacts
+bunpress clean --force           # Skip confirmation
+
+# Configuration
+bunpress config:show             # Show current configuration
+bunpress config:validate         # Validate configuration file
+bunpress config:init             # Create new configuration file
+
+# Utilities
+bunpress stats                   # Show documentation statistics
+bunpress stats --verbose         # Detailed per-file stats
+bunpress doctor                  # Run diagnostic checks
+bunpress llm                     # Generate LLM-friendly markdown
+bunpress llm --full              # Include full content
+
+# Help & Version
+bunpress --help                  # Show help
+bunpress --version               # Show version
+```
+
 ### Building & Development
 ```bash
 # Build the library (transpiles and generates types)
@@ -141,21 +189,95 @@ BunPress uses **@stacksjs/headwind** for utility-first CSS styling. Headwind is 
 
 ### CLI (bin/cli.ts)
 
-The CLI provides two main commands:
+The CLI provides comprehensive commands for documentation management:
 
-- **build** - Converts markdown files to HTML
+#### Core Commands
+
+- **init** - Initialize a new BunPress project
+  - Creates `docs/` directory structure
+  - Generates `bunpress.config.ts` with defaults
+  - Creates sample documentation files (index.md, guide/index.md)
+  - Sets up `.gitignore` and `README.md`
+  - Options: `--name`, `--template`, `--force`
+
+- **build** - Convert markdown files to HTML
   - Finds all `**/*.md` files in `./docs` directory
   - Uses `Bun.build()` with markdown/stx plugins (currently disabled)
   - Copies static assets from `docs/public/` to output directory
   - Generates `index.html` with navigation to all pages
-  - Options: `--outdir`, `--config`, `--verbose`
+  - Shows build time and spinner progress indicator
+  - Options: `--outdir`, `--config`, `--verbose`, `--minify`, `--sourcemap`, `--watch`
 
 - **dev** - Development server with watch mode
   - Builds documentation initially
   - Serves at http://localhost:3000 (configurable with `--port`)
   - Custom fetch handler that serves static files and HTML
-  - File watching with debounced rebuild (polls every 1s)
-  - Options: `--port`, `--outdir`, `--open`, `--watch`, `--verbose`
+  - File watching with debounced rebuild
+  - Options: `--port`, `--dir`, `--open`, `--watch`, `--verbose`
+
+- **preview** - Preview production build
+  - Serves built files from `dist/` directory
+  - Static file server with proper MIME types
+  - Options: `--port`, `--outdir`, `--open`
+
+#### Content Management
+
+- **new <path>** - Create new markdown files
+  - Supports nested paths (e.g., `guides/advanced/testing`)
+  - Multiple templates: default, guide, api, blog
+  - Auto-generates frontmatter and structure
+  - Options: `--title`, `--template`
+
+#### Configuration Management
+
+- **config:show** - Display current configuration file
+- **config:validate** - Validate configuration against schema
+  - Checks required fields
+  - Validates nav/sidebar structure
+  - Verifies markdown config options
+- **config:init** - Create new configuration file
+
+#### Utilities
+
+- **clean** - Remove build artifacts
+  - Deletes `dist/` directory by default
+  - Shows size before deletion
+  - Options: `--outdir`, `--force`, `--verbose`
+
+- **stats** - Documentation statistics
+  - File count, total size, line/word counts
+  - Heading and code block analysis
+  - Per-file breakdown (with --verbose)
+  - Reading time estimation
+  - Top largest files
+  - Options: `--dir`, `--verbose`
+
+- **doctor** - Project diagnostics
+  - Checks Bun runtime version
+  - Validates configuration file
+  - Verifies docs/ directory and markdown files
+  - Checks package.json scripts
+  - Verifies dependencies installed
+  - Git repository status
+  - TypeScript configuration
+  - Provides recommended actions for failures
+
+- **llm** - Generate LLM-friendly markdown
+  - Combines all documentation into single file
+  - Extracts structure (headings only) or full content
+  - Useful for AI/LLM context
+  - Options: `--dir`, `--output`, `--full`
+
+#### CLI Utilities (bin/utils.ts)
+
+Helper functions for CLI development:
+- Color formatting with ANSI codes
+- Success/error/warning/info loggers
+- Spinner for long-running operations
+- File size and time formatting
+- User prompts (input and confirmation)
+- Table rendering
+- File existence checking
 
 ### Build System (build.ts)
 
