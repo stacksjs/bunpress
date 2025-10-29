@@ -5,6 +5,9 @@ import process from 'node:process'
 import { CLI } from '@stacksjs/clapp'
 import { version } from '../package.json'
 import { config } from '../src/config'
+import type { BunPressConfig } from '../src/types'
+import { generateRobotsTxt } from '../src/robots'
+import { generateSitemap } from '../src/sitemap'
 import { serveCLI } from '../src/serve'
 import { cleanCommand } from './commands/clean'
 import { configInitCommand, configShowCommand, configValidateCommand } from './commands/config'
@@ -12,6 +15,7 @@ import { doctorCommand } from './commands/doctor'
 import { initCommand } from './commands/init'
 import { newCommand } from './commands/new'
 import { previewCommand } from './commands/preview'
+import { seoCheck } from './commands/seo'
 import { statsCommand } from './commands/stats'
 import { formatTime, logSuccess, Spinner } from './utils'
 // import { markdown, stx } from '../src/plugin'
@@ -90,6 +94,33 @@ async function copyStaticAssets(outdir: string, verbose: boolean = false): Promi
 }
 
 /**
+ * Generate SEO files (sitemap, robots.txt, RSS feed)
+ */
+async function generateSeoFiles(docsDir: string, outdir: string, verbose: boolean): Promise<void> {
+  try {
+    const bunPressConfig = await config as BunPressConfig
+
+    // Generate sitemap
+    if (bunPressConfig.sitemap?.enabled !== false && bunPressConfig.sitemap?.baseUrl) {
+      await generateSitemap(docsDir, outdir, bunPressConfig)
+    }
+
+    // Generate robots.txt
+    if (bunPressConfig.robots?.enabled !== false) {
+      await generateRobotsTxt(outdir, bunPressConfig)
+    }
+
+    // Note: RSS feed generation requires additional configuration
+    // and would be added here when RssFeedConfig is added to BunPressConfig
+  }
+  catch (error) {
+    if (verbose) {
+      console.error('Error generating SEO files:', error)
+    }
+  }
+}
+
+/**
  * Build the documentation files
  */
 export async function buildDocs(options: CliOption = {}): Promise<boolean> {
@@ -152,6 +183,9 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
 
     // Create index.html for navigation
     await generateIndexHtml(outdir, markdownFiles)
+
+    // Generate sitemap, robots.txt, and RSS feed
+    await generateSeoFiles(docsDir, outdir, verbose || false)
 
     const endTime = performance.now()
     const duration = endTime - startTime
@@ -523,6 +557,14 @@ cli
     const success = await statsCommand(options)
     if (!success)
       process.exit(1)
+  })
+
+cli
+  .command('seo:check', 'Check SEO for all documentation pages')
+  .option('--dir <dir>', 'Documentation directory', { default: './docs' })
+  .option('--fix', 'Automatically fix issues (add missing titles/descriptions)', { default: false })
+  .action(async (options: CliOption) => {
+    await seoCheck(options)
   })
 
 cli.help()

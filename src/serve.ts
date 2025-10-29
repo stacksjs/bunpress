@@ -149,6 +149,151 @@ function generateNav(config: BunPressConfig): string {
 }
 
 /**
+ * Generate canonical URL for the current page
+ */
+function generateCanonicalUrl(config: BunPressConfig, currentPath: string): string {
+  const baseUrl = config.sitemap?.baseUrl
+  if (!baseUrl) {
+    return ''
+  }
+
+  const cleanBaseUrl = baseUrl.replace(/\/$/, '')
+  const cleanPath = currentPath === '/index' ? '/' : currentPath
+  return `<link rel="canonical" href="${cleanBaseUrl}${cleanPath}">`
+}
+
+/**
+ * Generate Open Graph meta tags
+ */
+function generateOpenGraphTags(
+  title: string,
+  description: string,
+  config: BunPressConfig,
+  currentPath: string,
+): string {
+  const baseUrl = config.sitemap?.baseUrl
+  if (!baseUrl) {
+    return ''
+  }
+
+  const cleanBaseUrl = baseUrl.replace(/\/$/, '')
+  const cleanPath = currentPath === '/index' ? '/' : currentPath
+  const url = `${cleanBaseUrl}${cleanPath}`
+
+  const siteName = config.markdown?.title || title
+  const ogImage = config.markdown?.meta?.['og:image'] || config.markdown?.meta?.ogImage
+
+  const tags = [
+    `<meta property="og:type" content="website">`,
+    `<meta property="og:url" content="${url}">`,
+    `<meta property="og:title" content="${title}">`,
+    `<meta property="og:description" content="${description}">`,
+    `<meta property="og:site_name" content="${siteName}">`,
+  ]
+
+  if (ogImage) {
+    tags.push(`<meta property="og:image" content="${ogImage}">`)
+  }
+
+  return tags.join('\n  ')
+}
+
+/**
+ * Generate Twitter Card meta tags
+ */
+function generateTwitterCardTags(
+  title: string,
+  description: string,
+  config: BunPressConfig,
+): string {
+  const twitterCard = config.markdown?.meta?.['twitter:card'] || config.markdown?.meta?.twitterCard || 'summary'
+  const twitterSite = config.markdown?.meta?.['twitter:site'] || config.markdown?.meta?.twitterSite
+  const twitterImage = config.markdown?.meta?.['twitter:image'] || config.markdown?.meta?.twitterImage
+
+  const tags = [
+    `<meta name="twitter:card" content="${twitterCard}">`,
+    `<meta name="twitter:title" content="${title}">`,
+    `<meta name="twitter:description" content="${description}">`,
+  ]
+
+  if (twitterSite) {
+    tags.push(`<meta name="twitter:site" content="${twitterSite}">`)
+  }
+
+  if (twitterImage) {
+    tags.push(`<meta name="twitter:image" content="${twitterImage}">`)
+  }
+
+  return tags.join('\n  ')
+}
+
+/**
+ * Generate JSON-LD structured data
+ */
+function generateStructuredData(
+  title: string,
+  description: string,
+  config: BunPressConfig,
+  currentPath: string,
+): string {
+  const baseUrl = config.sitemap?.baseUrl
+  if (!baseUrl) {
+    return ''
+  }
+
+  const cleanBaseUrl = baseUrl.replace(/\/$/, '')
+  const cleanPath = currentPath === '/index' ? '/' : currentPath
+  const url = `${cleanBaseUrl}${cleanPath}`
+
+  // WebSite schema for home page
+  if (cleanPath === '/') {
+    const websiteSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      'name': config.markdown?.title || title,
+      'description': description,
+      'url': cleanBaseUrl,
+    }
+
+    return `<script type="application/ld+json">\n${JSON.stringify(websiteSchema, null, 2)}\n</script>`
+  }
+
+  // Article schema for content pages
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    'headline': title,
+    'description': description,
+    'url': url,
+  }
+
+  // Add breadcrumb schema
+  const pathParts = cleanPath.split('/').filter(Boolean)
+  const breadcrumbItems = pathParts.map((part, index) => {
+    const position = index + 1
+    const itemUrl = `${cleanBaseUrl}/${pathParts.slice(0, position).join('/')}`
+    return {
+      '@type': 'ListItem',
+      'position': position,
+      'name': part.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      'item': itemUrl,
+    }
+  })
+
+  if (breadcrumbItems.length > 0) {
+    const breadcrumbSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      'itemListElement': breadcrumbItems,
+    }
+
+    return `<script type="application/ld+json">\n${JSON.stringify(articleSchema, null, 2)}\n</script>\n<script type="application/ld+json">\n${JSON.stringify(breadcrumbSchema, null, 2)}\n</script>`
+  }
+
+  return `<script type="application/ld+json">\n${JSON.stringify(articleSchema, null, 2)}\n</script>`
+}
+
+/**
  * Wrap content in BunPress documentation layout
  */
 async function wrapInLayout(content: string, config: BunPressConfig, currentPath: string, isHome: boolean = false): Promise<string> {
@@ -157,24 +302,33 @@ async function wrapInLayout(content: string, config: BunPressConfig, currentPath
   const syntaxHighlightingStyles = getSyntaxHighlightingStyles()
   const customCSS = `${syntaxHighlightingStyles}\n${config.markdown?.css || ''}`
 
-  const meta = Object.entries(config.markdown?.meta || {})
-    .filter(([key]) => key !== 'description')
+  // Generate SEO meta tags
+  const canonicalUrl = generateCanonicalUrl(config, currentPath)
+  const openGraphTags = generateOpenGraphTags(title, description, config, currentPath)
+  const twitterCardTags = generateTwitterCardTags(title, description, config)
+  const structuredData = generateStructuredData(title, description, config, currentPath)
+
+  // Combine all meta tags
+  const basicMeta = Object.entries(config.markdown?.meta || {})
+    .filter(([key]) => !key.startsWith('og:') && !key.startsWith('twitter:') && key !== 'description' && key !== 'ogImage' && key !== 'twitterCard' && key !== 'twitterSite' && key !== 'twitterImage')
     .map(([key, value]) => `<meta name="${key}" content="${value}">`)
     .join('\n  ')
+
+  const allMeta = [basicMeta, canonicalUrl, openGraphTags, twitterCardTags].filter(Boolean).join('\n  ')
 
   // Generate Fathom analytics script
   const fathomScript = generateFathomScript(config)
 
-  // Combine custom scripts with Fathom script
+  // Combine custom scripts with Fathom script and structured data
   const customScripts = config.markdown?.scripts?.map(script => `<script>${script}</script>`).join('\n') || ''
-  const scripts = [fathomScript, customScripts].filter(Boolean).join('\n')
+  const scripts = [structuredData, fathomScript, customScripts].filter(Boolean).join('\n')
 
   // Home layout - no sidebar, no navigation, clean hero layout
   if (isHome) {
     return await render('layout-home', {
       title,
       description,
-      meta,
+      meta: allMeta,
       customCSS,
       content,
       scripts,
@@ -189,7 +343,7 @@ async function wrapInLayout(content: string, config: BunPressConfig, currentPath
   return await render('layout-doc', {
     title,
     description,
-    meta,
+    meta: allMeta,
     customCSS,
     nav: generateNav(config),
     sidebar: await generateSidebar(config, currentPath),
