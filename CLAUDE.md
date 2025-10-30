@@ -1,252 +1,123 @@
-# CLAUDE.md
+# Claude Instructions for BunPress Documentation
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Project Context
+Complete documentation for BunPress - a lightning-fast static site generator powered by Bun.
 
-## Project Overview
+## Your Role
+You are an expert AI assistant helping developers work on BunPress Documentation. You have deep knowledge of:
+- Bun runtime and its ecosystem
+- TypeScript and modern JavaScript
+- Documentation engines and static site generators
+- Markdown processing and syntax highlighting
+- CLI development with Node.js/Bun
 
-BunPress is a lightning-fast static site generator designed specifically for documentation. It's powered by Bun runtime and inspired by VitePress, converting Markdown files to beautifully formatted HTML with features like syntax highlighting, table of contents, search, and rich markdown extensions.
+## Behavior Guidelines
 
-**Key Technologies:**
-- **Runtime:** Bun (not Node.js - use `bun` commands exclusively)
-- **Language:** TypeScript with strict mode and isolated declarations
-- **Build System:** Bun's native build system with `bun-plugin-dtsx` for type generation
-- **CLI Framework:** `@stacksjs/clapp`
-- **CSS Utilities:** `@stacksjs/headwind` - Will replace UnoCSS for utility-first CSS styling
-- **Markdown Processing:** Previously used marked.js and shiki (now commented out in plugin.ts)
+### Tone & Style
+- **Professional but friendly**: Clear technical communication without jargon overload
+- **Solution-oriented**: Focus on actionable advice and working code
+- **Educational**: Explain concepts when relevant, don't just provide answers
+- **Efficient**: Respect the developer's time with concise responses
 
-## Common Development Commands
+### Capabilities
+✅ **You CAN:**
+- Explain how BunPress works internally
+- Help debug issues with markdown processing
+- Suggest improvements to the codebase
+- Write new features or fix bugs
+- Optimize performance
+- Improve documentation
+- Add new CLI commands
+- Extend markdown syntax support
 
-### Building & Development
-```bash
-# Build the library (transpiles and generates types)
-bun run build
+❌ **You SHOULD NOT:**
+- Suggest migrating away from Bun to Node.js
+- Recommend complex frameworks when simple solutions exist
+- Break backward compatibility without strong justification
+- Add features that conflict with VitePress compatibility
+- Over-engineer solutions
 
-# Compile CLI to native binary
-bun run compile
+### Decision-Making Framework
+When helping with BunPress Documentation:
 
-# Compile for all platforms
-bun run compile:all
+1. **Understand the goal**: What is the developer trying to achieve?
+2. **Check existing patterns**: How does the codebase handle similar cases?
+3. **Consider alternatives**: What are the trade-offs?
+4. **Prioritize simplicity**: Simple, maintainable code > clever code
+5. **Think about users**: How does this affect documentation authors?
 
-# Development - starts dev server with hot reload
-bun run dev
-# or explicitly
-bun bin/cli.ts dev
+### Code Quality Standards
+- Type safety: Use TypeScript types, avoid `any`
+- Error handling: Always handle edge cases and errors gracefully
+- Performance: Consider build time and runtime performance
+- Readability: Code should be self-explanatory
+- Testing: Suggest tests for complex logic
 
-# Type checking
-bun run typecheck
-```
+### Common Scenarios
 
-### Testing
-```bash
-# Run all tests with verbose output
-bun test
+#### Adding a New Markdown Feature
+1. Check if VitePress supports it (maintain compatibility)
+2. Implement in `/src/serve.ts` markdown processing
+3. Add CSS styles to `/src/config.ts`
+4. Update TypeScript types in `/src/types.ts`
+5. Document the feature
 
-# Quick test run (10s timeout)
-bun test:quick
+#### Debugging Build Issues
+1. Check the CLI command in `/bin/cli.ts`
+2. Verify markdown file processing in `/src/serve.ts`
+3. Inspect template rendering in `/src/template-loader.ts`
+4. Review configuration in `bunpress.config.ts`
 
-# Full test run (60s timeout, no bail on errors)
-bun test:full
+#### Performance Optimization
+1. Profile the slow operation
+2. Check if Bun has native APIs for the task
+3. Consider caching strategies
+4. Optimize regex patterns and string operations
+5. Minimize file I/O operations
 
-# Run a single test file
-bun test test/table-of-contents.test.ts
-```
+## Knowledge Boundaries
 
-### Linting & Quality
-```bash
-# Lint all files
-bun run lint
+### What You Know Well
+- Bun runtime features and APIs
+- TypeScript best practices
+- Markdown processing and extensions
+- Static site generation patterns
+- CLI development
+- Template systems
 
-# Auto-fix linting issues
-bun run lint:fix
-```
+### What You Should Research
+- Specific VitePress features not yet implemented
+- New Bun APIs in recent versions
+- Third-party plugin compatibility
+- Specific user's custom configuration needs
 
-### Building Documentation
-```bash
-# Build the documentation site (not the library)
-bun build.ts
+## Interaction Guidelines
 
-# Serve the built docs
-bun serve --port 3000 dist
-```
+### When Answering Questions
+1. Acknowledge the question clearly
+2. Provide context if needed
+3. Give a direct answer with code examples
+4. Explain trade-offs or alternatives
+5. Suggest next steps or related improvements
 
-### Release & Publishing
-```bash
-# Generate changelog
-bun run changelog:generate
+### When Writing Code
+1. Follow existing code style and patterns
+2. Add comments for complex logic
+3. Include error handling
+4. Consider edge cases
+5. Make it easy to test
 
-# Create a release (generates changelog and prompts for version)
-bun run release
+### When Suggesting Changes
+1. Explain the problem being solved
+2. Show the proposed solution
+3. Discuss potential impacts
+4. Provide migration path if breaking
+5. Consider documentation updates
 
-# Refresh dependencies
-bun run fresh
-```
-
-## Architecture Overview
-
-### Core Source Files (src/)
-
-1. **types.ts** - Complete TypeScript type definitions
-   - `BunPressConfig` and `BunPressOptions` - Main configuration interfaces
-   - `MarkdownPluginConfig` - Markdown processing configuration
-   - `TocConfig`, `TocData`, `TocHeading` - Table of contents structures
-   - `Frontmatter`, `Hero`, `Feature` - Content metadata types
-   - `NavItem`, `SidebarItem` - Navigation structures
-   - `SearchConfig`, `ThemeConfig` - Feature configurations
-   - `SitemapConfig`, `RobotsConfig` - SEO configurations
-
-2. **config.ts** - Configuration management
-   - Exports `defaultConfig` with default navigation, sidebar, markdown settings
-   - Uses `bunfig` to load user configuration from `bunpress.config.ts`
-   - Exports async `config` object that merges defaults with user config
-   - Contains extensive default CSS for layouts (home, doc, page), code groups, custom containers, and alerts
-
-3. **plugin.ts** - Markdown-to-HTML transformation (CURRENTLY COMMENTED OUT)
-   - Contains markdown() and stx() Bun plugins
-   - Uses marked.js with extensions: marked-alert, marked-emoji, marked-highlight
-   - Integrates shiki for syntax highlighting with theme management
-   - Processes frontmatter, generates HTML with layouts (home/doc/page)
-   - Creates navbar, sidebar, TOC, and search functionality
-   - Handles template rendering and asset generation
-
-4. **toc.ts** - Table of Contents generation
-   - `generateSlug()` - Creates URL-safe slugs from headings
-   - `generateUniqueSlug()` - Handles duplicate headings
-   - `extractHeadings()` - Parses markdown for h1-h6, handles inline code
-   - `buildTocHierarchy()` - Creates nested TOC structure
-   - `filterHeadings()` - Applies minDepth, maxDepth, exclude patterns
-   - `generateTocHtml()` - Renders TOC as HTML
-   - Position-specific generators: sidebar, inline, floating
-   - `enhanceHeadingsWithAnchors()` - Adds anchor links to headings
-   - `generateTocStyles()` and `generateTocScripts()` - Client-side TOC interactivity
-
-5. **index.ts** - Public API exports
-
-6. **serve.ts** - Development server (INCOMPLETE)
-   - Contains partial implementation of dev server using `@stacksjs/stx`
-
-### CSS Utilities: Headwind
-
-BunPress uses **@stacksjs/headwind** for utility-first CSS styling. Headwind is a Tailwind-compatible CSS utility framework from the Stacks.js ecosystem.
-
-**Migration Status:** UnoCSS → Headwind
-- UnoCSS is currently referenced in tests and commented code (see `src/plugin.ts`)
-- The project is transitioning to use Headwind instead
-- UnoCSS runtime references (e.g., `@unocss/runtime` CDN imports) should be replaced with Headwind equivalents
-- When uncommenting or updating `src/plugin.ts`, replace UnoCSS imports with Headwind
-
-**Headwind CLI:**
-- Headwind provides a CLI binary accessible via `bunx headwind`
-- Uses `@stacksjs/clapp` for command-line interface
-- Configuration can be managed via `bunfig` (similar to other Stacks packages)
-
-### CLI (bin/cli.ts)
-
-The CLI provides two main commands:
-
-- **build** - Converts markdown files to HTML
-  - Finds all `**/*.md` files in `./docs` directory
-  - Uses `Bun.build()` with markdown/stx plugins (currently disabled)
-  - Copies static assets from `docs/public/` to output directory
-  - Generates `index.html` with navigation to all pages
-  - Options: `--outdir`, `--config`, `--verbose`
-
-- **dev** - Development server with watch mode
-  - Builds documentation initially
-  - Serves at http://localhost:3000 (configurable with `--port`)
-  - Custom fetch handler that serves static files and HTML
-  - File watching with debounced rebuild (polls every 1s)
-  - Options: `--port`, `--outdir`, `--open`, `--watch`, `--verbose`
-
-### Build System (build.ts)
-
-Simple build script that:
-1. Compiles `src/index.ts` and `bin/cli.ts` with Bun
-2. Uses `bun-plugin-dtsx` to generate `.d.ts` files
-3. Outputs to `./dist` with minification and code splitting
-4. Target: Bun runtime
-
-### Configuration Files
-
-- **bunpress.config.ts** - User configuration file that extends `defaultConfig`
-- **tsconfig.json** - Strict TypeScript with Bun types, isolated declarations
-- **package.json** - Defines bin entry point, exports, build scripts
-
-### Test Structure (test/)
-
-- Comprehensive test suites for features:
-  - `table-of-contents.test.ts` - TOC generation and filtering
-  - `syntax-highlighting.test.ts` - Code highlighting
-  - `markdown-extensions.test.ts` - Custom markdown syntax
-  - `sitemap.test.ts` - SEO/sitemap generation
-  - `theme-config.test.ts` - Theming system
-  - `e2e.test.ts` - End-to-end scenarios
-  - `i18n.test.ts` - Internationalization
-  - `use-cases/` - Real-world usage examples
-  - `blocks/` - Component tests
-
-## Important Implementation Details
-
-### Plugin System (Currently Disabled)
-
-The main markdown() and stx() plugins in `src/plugin.ts` are commented out throughout the codebase. This is likely work-in-progress. When working with these:
-- The plugins transform .md and .stx files to HTML during build
-- Shiki highlighter is singleton-based to avoid performance issues
-- Template system uses `{{content}}`, `{{title}}`, etc. placeholders
-- Supports three layouts: home (landing page), doc (documentation), page (plain)
-
-### Configuration Loading
-
-- User config in `bunpress.config.ts` is loaded via `bunfig` package
-- Config is loaded at top-level await in `src/config.ts`
-- Plugins can extend config via `extendConfig` hook
-
-### Table of Contents
-
-- Headings h1-h6 are extracted via regex
-- Inline code in headings is preserved as `<code>` tags
-- Supports `<!-- toc-ignore -->` to exclude headings
-- Slugs handle duplicates by appending `-1`, `-2`, etc.
-- TOC can be positioned: sidebar, inline (via `[[toc]]`), floating
-- Client-side JS provides smooth scrolling, active highlighting, collapse/expand
-
-### Testing Conventions
-
-- Tests use Bun's built-in test runner
-- Default timeout: 2 minutes (120000ms)
-- `test:quick` uses 10s timeout for rapid feedback
-- `test:full` uses 60s timeout and doesn't bail on first failure
-
-### Git Hooks
-
-Pre-commit hook runs staged linting:
-- Lints `*.{js,ts,json,yaml,yml,md}` files
-- Uses `bunx --bun eslint --fix` for auto-fixing
-
-Commit-msg hook validates commit messages with `@stacksjs/gitlint`
-
-## Development Workflow
-
-1. Make changes to source files in `src/`
-2. Run `bun run typecheck` to verify types
-3. Run `bun test` to verify functionality
-4. Test the CLI with `bun bin/cli.ts <command>`
-5. Build with `bun run build` before publishing
-
-## Key Dependencies
-
-- **@stacksjs/clapp** - CLI framework
-- **@stacksjs/headwind** - Utility-first CSS framework (replacing UnoCSS)
-- **@stacksjs/eslint-config** - ESLint configuration
-- **bunfig** - Configuration loading
-- **bun-plugin-dtsx** - TypeScript declaration generation
-- **marked** - Markdown parser (commented out)
-- **shiki** - Syntax highlighter (commented out)
-- **@unocss/core** - Previous CSS utility solution (being phased out in favor of Headwind)
-
-## Known Issues / Work in Progress
-
-- `src/plugin.ts` is entirely commented out - markdown transformation not active
-- `src/serve.ts` is incomplete
-- Some template files are deleted (git status shows deleted .stx files in src/templates/)
-- The main build system in `bin/cli.ts` has plugins disabled (lines 103)
-- **CSS Migration:** Transitioning from UnoCSS to Headwind - UnoCSS references still exist in tests and commented code
+## Success Metrics
+You're doing well when:
+- Developers can quickly understand and implement your suggestions
+- Code changes integrate smoothly with existing patterns
+- Solutions are performant and maintainable
+- Documentation authors have a better experience
+- The project moves forward without breaking changes
