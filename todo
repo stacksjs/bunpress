@@ -1534,3 +1534,444 @@ Each theme should support:
 - Consider adding a CLI command to list available blocks
 - Document migration path from VitePress to BunPress
 - **Theme system should be implemented after Phase 4-6 completion**
+
+---
+
+## Phase 13: Documentation Completeness & Dead Link Resolution ⏳ IN PROGRESS
+
+**Goal:** Ensure all documentation accurately reflects the project's capabilities, fix all broken links, and create missing pages.
+
+### 13.1 Documentation Audit - Missing Pages ❌
+
+**Critical Missing Pages (referenced but don't exist):**
+- [ ] `docs/api.md` - API Reference page (linked from nav and various docs)
+- [ ] `docs/accessibility.md` - Accessibility guide (linked from best-practices.md)
+- [ ] `docs/guide/configuration.md` - Detailed configuration guide (linked from quick-start.md)
+- [ ] `docs/migration/from-vitepress.md` - Migration guide from VitePress
+- [ ] `docs/migration/from-docusaurus.md` - Migration guide from Docusaurus
+- [ ] `docs/cli.md` - CLI Commands reference (comprehensive list of all 15+ commands)
+- [ ] `docs/seo.md` - SEO Features & Configuration guide
+- [ ] `docs/deployment.md` - Deployment guide (various hosting platforms)
+- [ ] `docs/troubleshooting.md` - Common issues and solutions
+- [ ] `docs/contributing.md` - Contribution guidelines
+- [ ] `docs/changelog.md` - Changelog / Release notes
+
+**Missing Assets:**
+- [ ] `/docs/public/images/dashboard.png` - Referenced in features.md
+- [ ] `/docs/public/images/logo.webp` - Logo image
+- [ ] `/docs/public/images/diagram.svg` - Diagram referenced somewhere
+- [ ] `/docs/public/images/screenshot.avif` - Screenshot image
+
+### 13.2 Features Documentation Updates ⏳ IN PROGRESS
+
+**Current `docs/features.md` is missing:**
+- [ ] **SEO Features Section** - Complete coverage of Phase 12 features:
+  - XML Sitemap generation with customization
+  - Robots.txt generation
+  - Open Graph tags
+  - Twitter Cards
+  - Canonical URLs
+  - Structured Data (JSON-LD schemas: TechArticle, Breadcrumb, WebSite)
+  - RSS Feed generation
+  - SEO validation CLI command
+- [ ] **Analytics Integration**:
+  - Fathom Analytics (privacy-focused)
+  - Configuration options (DNT, SPA mode, etc.)
+- [ ] **CLI Commands Section** - Full list of 15+ commands:
+  - `init`, `dev`, `build`, `preview`
+  - `new`, `clean`, `doctor`, `stats`, `llm`
+  - `config:show`, `config:validate`, `config:init`
+  - `seo:check` with --fix flag
+- [ ] **Advanced Code Features**:
+  - Code diff markers (++/--)
+  - Code focus markers
+  - Error/warning markers in code blocks
+  - Full code import details (line ranges, regions)
+- [ ] **Table Enhancements**:
+  - Column alignment (left, center, right, mixed)
+  - Striped rows, hover effects
+  - Responsive wrapper
+  - Enhanced styling
+- [ ] **Image Features**:
+  - Image captions with figure/figcaption
+  - Lazy loading attributes
+  - External link icons
+- [ ] **Performance Metrics**:
+  - Actual benchmark data (~500ms build for 100 files)
+  - Memory usage (~50MB dev server)
+  - Bundle size (~45KB per page)
+  - Comparison with VitePress, Docusaurus, Hugo
+
+### 13.3 Home Page (index.md) Enhancement ⏳ IN PROGRESS
+
+**Current hero section needs update to reflect ALL major features:**
+- [ ] Add SEO & Analytics feature card
+- [ ] Add CLI Tools feature card (15+ commands)
+- [ ] Add Performance feature card with actual metrics
+- [ ] Update feature descriptions to be more specific
+- [ ] Add links to detailed feature pages
+- [ ] Consider adding "Why BunPress?" section with comparison table
+
+**Current features section (6 items) vs actual capabilities (35+ features):**
+```yaml
+features:
+  - title: "⚡ Lightning Fast"
+    details: "~500ms builds, ~100ms dev startup, 5x faster than VitePress"
+  - title: "📝 Rich Markdown"
+    details: "VitePress-compatible: containers, alerts, code groups, badges, emoji, 150+ shortcodes"
+  - title: "💻 Advanced Code"
+    details: "Imports, highlighting, line numbers, diffs, focus, errors/warnings, copy-to-clipboard"
+  - title: "📋 Smart TOC"
+    details: "Automatic generation, 3 positions, active highlighting, collapsible, configurable depth"
+  - title: "🔍 Complete SEO"
+    details: "Sitemap, robots.txt, Open Graph, Twitter Cards, JSON-LD, RSS feeds, SEO validator"
+  - title: "📊 Privacy Analytics"
+    details: "Fathom Analytics with GDPR/CCPA compliance, DNT support, SPA mode"
+  - title: "🔄 Content Reuse"
+    details: "Include markdown files and code snippets with line ranges, regions, recursive includes"
+  - title: "🛠️ Powerful CLI"
+    details: "15+ commands: init, dev, build, preview, stats, doctor, seo:check, and more"
+  - title: "🎨 Tables & Images"
+    details: "Enhanced tables with alignment & styling, image captions with figure/figcaption"
+```
+
+### 13.4 Update Existing Documentation Files
+
+**docs/quick-start.md:**
+- [ ] Add section on SEO configuration (sitemap, robots.txt)
+- [ ] Add section on analytics setup (Fathom)
+- [ ] Update CLI commands section with all 15+ commands
+- [ ] Add troubleshooting subsection
+
+**docs/config.md:**
+- [ ] Already has Fathom config ✅
+- [ ] Verify all configuration options are documented
+- [ ] Add examples for sitemap customization (priorityMap, changefreqMap, exclude)
+- [ ] Add examples for RSS feed configuration
+
+**docs/markdown-extensions.md:**
+- [ ] Add section on code focus markers
+- [ ] Add section on code error/warning markers
+- [ ] Add section on code diff markers
+- [ ] Add section on table enhancements (alignment, styling)
+- [ ] Add section on image captions
+- [ ] Update code imports section with more examples
+
+**docs/examples.md:**
+- [ ] Add SEO configuration examples
+- [ ] Add analytics setup examples
+- [ ] Add deployment examples
+- [ ] Verify all example links work
+
+**docs/advanced.md:**
+- [ ] Add section on custom SEO transformations
+- [ ] Add section on RSS feed customization
+- [ ] Add section on plugin development (with working examples)
+
+**docs/best-practices.md:**
+- [ ] Add SEO best practices subsection
+- [ ] Add accessibility best practices with actionable tips
+- [ ] Update deployment best practices with modern platforms
+
+### 13.5 Create Missing Critical Pages
+
+#### 13.5.1 docs/api.md ❌
+```markdown
+# API Reference
+
+Complete TypeScript API documentation for:
+- BunPressConfig interface
+- MarkdownPluginConfig
+- TocConfig, SearchConfig, ThemeConfig
+- SitemapConfig, RobotsConfig, RssFeedConfig, FathomConfig
+- Plugin API (ConfigPlugin interface)
+- All exported functions from src/index.ts
+```
+
+#### 13.5.2 docs/cli.md ❌
+```markdown
+# CLI Reference
+
+Comprehensive documentation for all 15+ commands:
+
+## Core Commands
+- bunpress init [options]
+- bunpress dev [options]
+- bunpress build [options]
+- bunpress preview [options]
+
+## Content Management
+- bunpress new <path> [options]
+
+## Maintenance
+- bunpress clean [options]
+- bunpress stats [options]
+- bunpress doctor [options]
+- bunpress llm [options]
+
+## Configuration
+- bunpress config:show
+- bunpress config:validate
+- bunpress config:init
+
+## SEO
+- bunpress seo:check [options]
+
+Each command with:
+- Description
+- Usage syntax
+- Available options/flags
+- Examples
+- Related commands
+```
+
+#### 13.5.3 docs/seo.md ❌
+```markdown
+# SEO Features
+
+Complete guide covering:
+- Sitemap generation (configuration, customization)
+- Robots.txt generation
+- Meta tags (Open Graph, Twitter Cards)
+- Canonical URLs
+- Structured Data (JSON-LD)
+- RSS feeds
+- SEO validation (bunpress seo:check)
+- Best practices for documentation SEO
+```
+
+#### 13.5.4 docs/deployment.md ❌
+```markdown
+# Deployment Guide
+
+Platform-specific guides for:
+- Vercel
+- Netlify
+- GitHub Pages
+- Cloudflare Pages
+- AWS S3 + CloudFront
+- Self-hosted (nginx, Apache)
+
+Including:
+- Build configuration
+- Environment variables
+- Custom domains
+- SSL/HTTPS setup
+```
+
+#### 13.5.5 docs/migration/ (2 files) ❌
+- `from-vitepress.md` - Step-by-step migration from VitePress
+- `from-docusaurus.md` - Step-by-step migration from Docusaurus
+
+Including:
+- Feature comparison table
+- Configuration mapping
+- Markdown syntax differences
+- Plugin/theme migration
+- Common issues and solutions
+
+#### 13.5.6 docs/accessibility.md ❌
+```markdown
+# Accessibility Guide
+
+- Semantic HTML usage in BunPress
+- ARIA attributes in navigation/TOC
+- Keyboard navigation support
+- Screen reader compatibility
+- Color contrast compliance
+- Alt text best practices
+- WCAG 2.1 AA compliance checklist
+```
+
+#### 13.5.7 docs/troubleshooting.md ❌
+```markdown
+# Troubleshooting
+
+Common issues organized by category:
+- Installation issues
+- Build errors
+- Dev server issues
+- Configuration problems
+- Markdown rendering issues
+- Performance problems
+- Deployment issues
+
+Each with:
+- Problem description
+- Possible causes
+- Step-by-step solutions
+- Related commands (bunpress doctor)
+```
+
+#### 13.5.8 docs/contributing.md ❌
+```markdown
+# Contributing Guide
+
+- Development setup
+- Project structure
+- Running tests
+- Code style guidelines
+- Commit message format
+- PR process
+- Issue reporting
+```
+
+#### 13.5.9 docs/changelog.md ❌
+```markdown
+# Changelog
+
+Version history with:
+- Release dates
+- New features
+- Bug fixes
+- Breaking changes
+- Migration notes
+```
+
+### 13.6 Update Navigation & Sidebar Configuration
+
+**Update src/config.ts sidebar to reflect new structure:**
+```typescript
+sidebar: {
+  '/': [
+    {
+      text: 'Getting Started',
+      items: [
+        { text: 'Introduction', link: '/' },
+        { text: 'Installation', link: '/install' },
+        { text: 'Quick Start', link: '/quick-start' },
+        { text: 'Configuration', link: '/config' },
+      ],
+    },
+    {
+      text: 'Core Features',
+      items: [
+        { text: 'Features Overview', link: '/features' },
+        { text: 'Markdown Extensions', link: '/markdown-extensions' },
+        { text: 'Syntax Highlighting', link: '/syntax-highlighting' },
+        { text: 'Table of Contents', link: '/table-of-contents' },
+        { text: 'CLI Commands', link: '/cli' },
+      ],
+    },
+    {
+      text: 'SEO & Analytics',
+      items: [
+        { text: 'SEO Features', link: '/seo' },
+        { text: 'Analytics (Fathom)', link: '/config#fathom-analytics' },
+      ],
+    },
+    {
+      text: 'Advanced',
+      items: [
+        { text: 'Advanced Usage', link: '/advanced' },
+        { text: 'API Reference', link: '/api' },
+        { text: 'Deployment', link: '/deployment' },
+        { text: 'Accessibility', link: '/accessibility' },
+      ],
+    },
+    {
+      text: 'Migration',
+      items: [
+        { text: 'From VitePress', link: '/migration/from-vitepress' },
+        { text: 'From Docusaurus', link: '/migration/from-docusaurus' },
+      ],
+    },
+    {
+      text: 'Resources',
+      items: [
+        { text: 'Examples', link: '/examples' },
+        { text: 'Best Practices', link: '/best-practices' },
+        { text: 'Troubleshooting', link: '/troubleshooting' },
+        { text: 'Contributing', link: '/contributing' },
+        { text: 'Changelog', link: '/changelog' },
+      ],
+    },
+    {
+      text: 'More',
+      items: [
+        { text: 'Showcase', link: '/showcase' },
+        { text: 'Partners', link: '/partners' },
+        { text: 'License', link: '/license' },
+        { text: 'Postcardware', link: '/postcardware' },
+      ],
+    },
+  ],
+}
+```
+
+### 13.7 Create Missing Assets
+
+**Required images in docs/public/images/:**
+- [ ] `logo.png` or `logo.svg` - BunPress logo
+- [ ] `logo-white.png` - White version for dark backgrounds
+- [ ] `dashboard.png` - Dashboard/UI screenshot
+- [ ] `screenshot.avif` - General screenshot
+- [ ] `diagram.svg` - Architecture diagram
+- [ ] Social card image for Open Graph (1200x630)
+
+### 13.8 Link Validation Process
+
+**Automated link checking:**
+- [ ] Write script to extract all internal links from markdown files
+- [ ] Check each link against existing files
+- [ ] Generate report of broken links
+- [ ] Fix or remove broken links
+
+**Manual validation:**
+- [ ] Test all navigation links
+- [ ] Test all sidebar links
+- [ ] Test all inline documentation links
+- [ ] Test all anchor links (#section-name)
+- [ ] Verify external links are still valid
+
+### 13.9 Documentation Consistency
+
+**Ensure consistency across all docs:**
+- [ ] Uniform code block syntax highlighting
+- [ ] Consistent heading structure
+- [ ] Consistent terminology (BunPress vs bunpress)
+- [ ] Consistent example formatting
+- [ ] Consistent CLI command notation
+- [ ] All configuration examples use TypeScript
+- [ ] All file paths are absolute and correct
+
+### 13.10 README.md Synchronization
+
+**Ensure README.md matches documentation:**
+- [ ] Feature list matches docs/features.md
+- [ ] CLI commands list is current
+- [ ] Performance benchmarks are up-to-date
+- [ ] Links to documentation are correct
+- [ ] Installation instructions match docs/install.md
+
+---
+
+**Phase 13 Summary:**
+
+- **Missing Pages to Create:** 11 critical pages
+- **Existing Pages to Update:** 7 pages
+- **Missing Assets:** 6 images
+- **Configuration Updates:** 1 file (src/config.ts sidebar)
+- **Estimated Time:** 6-8 hours for complete documentation overhaul
+- **Priority:** HIGH - Dead links harm user experience and SEO
+
+**Phase 13 Deliverables:**
+1. Zero broken internal links
+2. Comprehensive feature coverage in documentation
+3. Clear migration paths from other tools
+4. Complete CLI reference
+5. SEO guide with all Phase 12 features
+6. Deployment guide for major platforms
+7. Updated navigation reflecting actual project capabilities
+
+**Quality Checklist:**
+- [ ] All internal links verified working
+- [ ] All code examples tested
+- [ ] All CLI commands documented
+- [ ] All features from types.ts documented
+- [ ] All configuration options from config.ts documented
+- [ ] Search functionality works with new pages
+- [ ] Sitemap includes all new pages
+- [ ] No 404 errors when navigating docs
+
+---
