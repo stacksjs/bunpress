@@ -163,12 +163,16 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
   }
 
   try {
+    // Note: Markdown plugins are currently disabled in src/plugin.ts
+    // So we skip the Bun.build step and only generate static assets
+    // When plugins are enabled, uncomment the build step below:
+    /*
     const result = await Bun.build({
       entrypoints: markdownFiles,
       outdir,
       minify,
       sourcemap: sourcemap ? 'external' : 'none',
-      // plugins: [markdown(), stx()],
+      plugins: [markdown(), stx()],
     })
 
     if (!result.success) {
@@ -180,6 +184,13 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
         console.error(log)
       }
       return false
+    }
+    */
+
+    if (verbose) {
+      console.log('Generating static assets...')
+      console.log(`Note: Markdown files are served dynamically by the dev/preview server.`)
+      console.log(`Found ${markdownFiles.length} markdown files that will be available.`)
     }
 
     // Copy static assets from docs/public to output directory
@@ -195,15 +206,16 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
     const duration = endTime - startTime
 
     if (!verbose) {
-      spinner.succeed(`Built ${markdownFiles.length} files in ${formatTime(duration)}`)
+      spinner.succeed(`Generated static assets for ${markdownFiles.length} pages in ${formatTime(duration)}`)
     }
     else {
-      console.log('Build successful!')
-      console.log('Generated files:')
-      for (const output of result.outputs) {
-        console.log(`- ${output.path}`)
-      }
       logSuccess(`Build completed in ${formatTime(duration)}`)
+      console.log('\nGenerated files:')
+      console.log(`- ${outdir}/index.html (navigation page)`)
+      console.log(`- ${outdir}/sitemap.xml`)
+      console.log(`- ${outdir}/robots.txt`)
+      console.log(`\nStatic assets copied from ${docsDir}/public`)
+      console.log(`\n${markdownFiles.length} markdown pages will be served dynamically.`)
     }
 
     return true

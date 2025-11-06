@@ -205,7 +205,7 @@ describe('CLI Commands', () => {
       expect(existsSync('./dist/.bunpress/index.html')).toBe(true)
       expect(existsSync('./dist/.bunpress')).toBe(true)
 
-      const result = await cleanCommand({ force: true, verbose: true })
+      const result = await cleanCommand({ outdir: './dist', force: true, verbose: true })
 
       expect(result).toBe(true)
 
@@ -222,7 +222,7 @@ describe('CLI Commands', () => {
     })
 
     it('should return true when directory does not exist', async () => {
-      const result = await cleanCommand({ force: true, verbose: true })
+      const result = await cleanCommand({ outdir: './dist', force: true, verbose: true })
 
       expect(result).toBe(true)
     })
