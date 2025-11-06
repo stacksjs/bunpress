@@ -15,7 +15,7 @@ export const defaultConfig: BunPressConfig = {
     },
     {
       text: 'API',
-      link: '/usage',
+      link: '/advanced#api-reference',
     },
     {
       text: 'Examples',

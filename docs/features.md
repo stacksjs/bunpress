@@ -824,6 +824,178 @@ export default {
 
 See [Configuration Guide](/config#fathom-analytics) for details.
 
+## Environment Variables
+
+BunPress supports environment variables for dynamic configuration:
+
+```typescript
+// bunpress.config.ts
+export default {
+  verbose: process.env.NODE_ENV === 'development',
+  markdown: {
+    title: process.env.SITE_TITLE || 'My Documentation',
+    description: process.env.SITE_DESCRIPTION || 'Documentation site'
+  },
+  sitemap: {
+    enabled: process.env.ENABLE_SITEMAP === 'true',
+    baseUrl: process.env.SITE_URL || 'https://example.com'
+  },
+  fathom: {
+    enabled: process.env.ENABLE_ANALYTICS === 'true',
+    siteId: process.env.FATHOM_SITE_ID
+  }
+}
+```
+
+**Common Environment Variables:**
+- `NODE_ENV` - Environment mode (development/production)
+- `SITE_TITLE` - Site title
+- `SITE_DESCRIPTION` - Site description
+- `SITE_URL` - Base URL for sitemap and canonical links
+- `ENABLE_SITEMAP` - Toggle sitemap generation
+- `ENABLE_ANALYTICS` - Toggle analytics
+- `FATHOM_SITE_ID` - Fathom Analytics site ID
+
+**Using .env files:**
+
+```bash
+# .env
+NODE_ENV=production
+SITE_TITLE=My Awesome Docs
+SITE_URL=https://docs.example.com
+ENABLE_SITEMAP=true
+FATHOM_SITE_ID=ABCDEFGH
+```
+
+Load with your favorite .env loader (e.g., `dotenv` or Bun's native support):
+
+```typescript
+// Load .env file (Bun does this automatically)
+import { config } from './bunpress.config'
+```
+
+## Internationalization (i18n)
+
+BunPress supports multiple languages for documentation:
+
+```typescript
+// bunpress.config.ts
+export default {
+  i18n: {
+    locales: ['en', 'es', 'fr', 'de'],
+    defaultLocale: 'en',
+    localePath: './locales'
+  }
+}
+```
+
+### Localized Content
+
+Create locale-specific markdown files:
+
+```markdown
+<!-- docs/intro.en.md -->
+# Introduction
+Welcome to our documentation!
+
+<!-- docs/intro.es.md -->
+# Introducción
+¡Bienvenido a nuestra documentación!
+
+<!-- docs/intro.fr.md -->
+# Introduction
+Bienvenue dans notre documentation !
+
+<!-- docs/intro.de.md -->
+# Einführung
+Willkommen zu unserer Dokumentation!
+```
+
+### Locale Detection
+
+BunPress can automatically detect user locale:
+
+```typescript
+export default {
+  i18n: {
+    locales: ['en', 'es', 'fr'],
+    defaultLocale: 'en',
+    detectLocale: true,          // Auto-detect from browser
+    fallbackLocale: 'en'         // Fallback if locale not found
+  }
+}
+```
+
+### Translation Files
+
+Structure your translations:
+
+```
+locales/
+├── en/
+│   ├── common.json
+│   └── navigation.json
+├── es/
+│   ├── common.json
+│   └── navigation.json
+└── fr/
+    ├── common.json
+    └── navigation.json
+```
+
+**Example translation file:**
+
+```json
+{
+  "nav": {
+    "home": "Home",
+    "guide": "Guide",
+    "api": "API Reference",
+    "examples": "Examples"
+  },
+  "toc": {
+    "title": "On This Page"
+  },
+  "search": {
+    "placeholder": "Search documentation..."
+  }
+}
+```
+
+### Per-locale Configuration
+
+Override configuration for specific locales:
+
+```typescript
+export default {
+  i18n: {
+    locales: ['en', 'es'],
+    defaultLocale: 'en',
+    localeConfig: {
+      en: {
+        title: 'Documentation',
+        description: 'Comprehensive documentation'
+      },
+      es: {
+        title: 'Documentación',
+        description: 'Documentación completa'
+      }
+    }
+  }
+}
+```
+
+**Features:**
+- Multiple language support
+- Automatic locale detection
+- Translation file management
+- Per-locale configuration
+- Fallback locale support
+- URL structure: `/es/guide`, `/fr/api`, etc.
+
+> [!NOTE]
+> i18n support is currently in development. Full internationalization features are planned for a future release.
+
 ## Performance Metrics
 
 Real benchmark data (100 markdown files):
