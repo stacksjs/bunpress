@@ -68,6 +68,9 @@
     "bench:features": "bun benchmarks/features-comparison.bench.ts",
     "bench:all": "bun run bench"
   },
+  "dependencies": {
+    "marked": "^16.4.1"
+  },
   "devDependencies": {
     "@stacksjs/bumpx": "^0.2.2",
     "@stacksjs/eslint-config": "^4.14.0-beta.3",

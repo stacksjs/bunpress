@@ -1,10 +1,10 @@
 # Netlify Configuration for BunPress
 [build]
-# Build command
-command = "bun install && bun run build:docs"
+# Build command - use dist for production deployment
+command = "bun install && bun bin/cli.ts build --outdir ./dist"
 
 # Directory to publish
-publish = "dist"
+publish = "dist/.bunpress"
 
 # Environment variables for build
 [build.environment]
@@ -12,11 +12,19 @@ NODE_VERSION = "20"
 BUN_VERSION = "1.3.1"
 
 # Redirect rules for clean URLs
+# Note: BunPress markdown plugins are currently disabled, so only navigation page works
+# TODO: Enable markdown plugins in src/plugin.ts for full static site generation
 [[redirects]]
 from = "/*"
 to = "/index.html"
 status = 200
 force = false
+
+# Temporary: All pages redirect to navigation until plugins are enabled
+[[redirects]]
+from = "/*.html"
+to = "/index.html"
+status = 200
 
 # Security headers
 [[headers]]

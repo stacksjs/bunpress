@@ -163,34 +163,77 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
   }
 
   try {
-    // Note: Markdown plugins are currently disabled in src/plugin.ts
-    // So we skip the Bun.build step and only generate static assets
-    // When plugins are enabled, uncomment the build step below:
-    /*
-    const result = await Bun.build({
-      entrypoints: markdownFiles,
-      outdir,
-      minify,
-      sourcemap: sourcemap ? 'external' : 'none',
-      plugins: [markdown(), stx()],
-    })
-
-    if (!result.success) {
-      if (!verbose) {
-        spinner.fail('Build failed')
-      }
-      console.error('Build failed:')
-      for (const log of result.logs) {
-        console.error(log)
-      }
-      return false
-    }
-    */
+    // Direct markdown-to-HTML transformation (no plugins needed!)
+    const { marked } = await import('marked')
+    const { mkdir: mkdirAsync, writeFile: writeFileAsync } = await import('node:fs/promises')
 
     if (verbose) {
-      console.log('Generating static assets...')
-      console.log(`Note: Markdown files are served dynamically by the dev/preview server.`)
-      console.log(`Found ${markdownFiles.length} markdown files that will be available.`)
+      console.log('Transforming markdown to HTML...')
+    }
+
+    // Process each markdown file
+    for (const file of markdownFiles) {
+      const content = await Bun.file(file).text()
+
+      // Parse markdown to HTML
+      const htmlContent = await marked.parse(content)
+
+      // Simple HTML template
+      const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BunPress Documentation</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    pre {
+      background: #f6f8fa;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+    }
+    code {
+      font-family: 'Monaco', 'Courier New', monospace;
+      background: #f6f8fa;
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  ${htmlContent}
+</body>
+</html>`
+
+      // Determine output path
+      const relativePath = file.replace(docsDir, '').replace(/^\//, '')
+      const outputPath = join(outdir, relativePath.replace('.md', '.html'))
+
+      // Ensure output directory exists
+      const outputDir = outputPath.substring(0, outputPath.lastIndexOf('/'))
+      await mkdirAsync(outputDir, { recursive: true })
+
+      // Write HTML file
+      await writeFileAsync(outputPath, html)
+
+      if (verbose) {
+        console.log(`Generated: ${outputPath}`)
+      }
+    }
+
+    if (verbose) {
+      console.log(`Processed ${markdownFiles.length} markdown files.`)
     }
 
     // Copy static assets from docs/public to output directory
@@ -206,16 +249,11 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
     const duration = endTime - startTime
 
     if (!verbose) {
-      spinner.succeed(`Generated static assets for ${markdownFiles.length} pages in ${formatTime(duration)}`)
+      spinner.succeed(`Built ${markdownFiles.length} pages to HTML in ${formatTime(duration)}`)
     }
     else {
       logSuccess(`Build completed in ${formatTime(duration)}`)
-      console.log('\nGenerated files:')
-      console.log(`- ${outdir}/index.html (navigation page)`)
-      console.log(`- ${outdir}/sitemap.xml`)
-      console.log(`- ${outdir}/robots.txt`)
-      console.log(`\nStatic assets copied from ${docsDir}/public`)
-      console.log(`\n${markdownFiles.length} markdown pages will be served dynamically.`)
+      console.log(`\nGenerated ${markdownFiles.length} HTML files in ${outdir}`)
     }
 
     return true
