@@ -2,6 +2,18 @@ export interface BunPressConfig {
   verbose: boolean
 
   /**
+   * Source directory containing markdown files
+   * @default './docs'
+   */
+  docsDir?: string
+
+  /**
+   * Output directory for build artifacts
+   * @default './dist'
+   */
+  outDir?: string
+
+  /**
    * Configuration for the markdown-to-html plugin
    */
   markdown: MarkdownPluginConfig

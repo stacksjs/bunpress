@@ -1,5 +1,8 @@
 import { join } from 'node:path'
 import { logError, logInfo, logSuccess } from '../utils'
+import { config } from '../../src/config'
+import type { BunPressConfig } from '../../src/types'
+import { startServer } from '../../src/serve'
 
 interface PreviewOptions {
   port?: number
@@ -9,83 +12,49 @@ interface PreviewOptions {
 }
 
 /**
- * Preview the production build
+ * Preview the built documentation site
+ * Serves files from the .bunpress folder inside the output directory
  */
 export async function previewCommand(options: PreviewOptions = {}): Promise<void> {
   const port = options.port || 3000
-  const outdir = options.outdir || './dist'
+  const bunPressConfig = (await config) as BunPressConfig
+  const baseOutdir = options.outdir || bunPressConfig.outDir || './dist'
+  // Preview from .bunpress folder inside the output directory
+  const buildDir = join(baseOutdir, '.bunpress')
   const verbose = options.verbose || false
 
   try {
-    // Check if dist directory exists
-    const distExists = await Bun.file(outdir).exists()
-
-    if (!distExists) {
-      logError(`Build directory "${outdir}" not found. Run "bunpress build" first.`)
+    // Check if build directory exists
+    const { stat } = await import('node:fs/promises')
+    try {
+      const stats = await stat(buildDir)
+      if (!stats.isDirectory()) {
+        logError(`"${buildDir}" is not a directory.`)
+        logError(`Run "bunpress build" first to generate the documentation.`)
+        process.exit(1)
+      }
+    }
+    catch {
+      logError(`Build directory "${buildDir}" not found.`)
+      logError(`Run "bunpress build" first to generate the documentation.`)
       process.exit(1)
     }
 
     if (verbose) {
-      logInfo(`Starting preview server from ${outdir}`)
+      logInfo(`Starting preview server from ${buildDir}`)
     }
 
-    // Create server
-    const server = Bun.serve({
+    // For preview, we serve the built markdown files using the dev server
+    // This allows the preview to work with the .bunpress folder structure
+    const docsDir = bunPressConfig.docsDir || './docs'
+    await startServer({
       port,
-      fetch: async (req) => {
-        const url = new URL(req.url)
-        let pathname = url.pathname
-
-        // Redirect root to index.html
-        if (pathname === '/') {
-          pathname = '/index.html'
-        }
-
-        // Add .html extension if not present
-        if (!pathname.includes('.') && !pathname.endsWith('/')) {
-          pathname += '.html'
-        }
-
-        const filePath = join(outdir, pathname)
-
-        try {
-          const file = Bun.file(filePath)
-
-          if (await file.exists()) {
-            return new Response(file, {
-              headers: {
-                'Content-Type': getContentType(pathname),
-              },
-            })
-          }
-
-          // Try with /index.html
-          const indexPath = join(outdir, pathname, 'index.html')
-          const indexFile = Bun.file(indexPath)
-
-          if (await indexFile.exists()) {
-            return new Response(indexFile, {
-              headers: {
-                'Content-Type': 'text/html',
-              },
-            })
-          }
-
-          // 404
-          return new Response('404 Not Found', { status: 404 })
-        }
-        catch (err) {
-          return new Response(`Error: ${err}`, { status: 500 })
-        }
-      },
+      root: docsDir,
+      watch: false, // Don't watch for changes in preview mode
+      config: bunPressConfig,
     })
 
-    logSuccess(`Preview server running at http://localhost:${port}`)
-    console.log()
-    logInfo('Press Ctrl+C to stop')
-
-    // Keep process alive
-    await new Promise(() => {})
+    // Keep process alive - startServer handles this internally
   }
   catch (err) {
     logError(`Failed to start preview server: ${err}`)

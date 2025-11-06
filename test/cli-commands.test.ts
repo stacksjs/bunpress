@@ -197,13 +197,13 @@ describe('CLI Commands', () => {
 
   describe('clean command', () => {
     it('should clean build directory', async () => {
-      // Create dist directory with some files
-      await mkdir('./dist', { recursive: true })
-      await writeFile('./dist/index.html', '<html></html>')
+      // Create dist/.bunpress directory with some files
+      await mkdir('./dist/.bunpress', { recursive: true })
+      await writeFile('./dist/.bunpress/index.html', '<html></html>')
 
       // Verify it was created
-      expect(existsSync('./dist/index.html')).toBe(true)
-      expect(existsSync('./dist')).toBe(true)
+      expect(existsSync('./dist/.bunpress/index.html')).toBe(true)
+      expect(existsSync('./dist/.bunpress')).toBe(true)
 
       const result = await cleanCommand({ force: true, verbose: true })
 
@@ -212,13 +212,13 @@ describe('CLI Commands', () => {
       // Wait for deletion to complete
       let attempts = 0
       const maxAttempts = 10
-      while (existsSync('./dist') && attempts < maxAttempts) {
+      while (existsSync('./dist/.bunpress') && attempts < maxAttempts) {
         await new Promise(resolve => setTimeout(resolve, 50))
         attempts++
       }
 
-      // Verify it was deleted
-      expect(existsSync('./dist')).toBe(false)
+      // Verify .bunpress was deleted
+      expect(existsSync('./dist/.bunpress')).toBe(false)
     })
 
     it('should return true when directory does not exist', async () => {

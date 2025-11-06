@@ -3,6 +3,10 @@ import { loadConfig } from 'bunfig'
 
 // Default configuration
 export const defaultConfig: BunPressConfig = {
+  // Directory configuration
+  docsDir: './docs',
+  outDir: './docs/bunpress',
+
   // Navigation configuration
   nav: [
     {

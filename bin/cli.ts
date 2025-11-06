@@ -41,7 +41,8 @@ interface CliOption {
 }
 
 const defaultOptions = {
-  outdir: './dist',
+  outdir: config.outDir || './dist',
+  docsdir: config.docsDir || './docs',
   port: 3000,
   open: true,
   watch: true,
@@ -65,8 +66,8 @@ export async function findMarkdownFiles(dir: string): Promise<string[]> {
 /**
  * Copy static assets from docs/public to the output directory
  */
-async function copyStaticAssets(outdir: string, verbose: boolean = false): Promise<void> {
-  const publicDir = './docs/public'
+async function copyStaticAssets(outdir: string, docsDir: string, verbose: boolean = false): Promise<void> {
+  const publicDir = `${docsDir}/public`
 
   try {
     // Check if public directory exists
@@ -124,7 +125,11 @@ async function generateSeoFiles(docsDir: string, outdir: string, verbose: boolea
  * Build the documentation files
  */
 export async function buildDocs(options: CliOption = {}): Promise<boolean> {
-  const outdir = options.outdir || defaultOptions.outdir
+  const bunPressConfig = await config as BunPressConfig
+  const baseOutdir = options.outdir || bunPressConfig.outDir || defaultOptions.outdir
+  // Build to .bunpress folder inside the output directory
+  const outdir = join(baseOutdir, '.bunpress')
+  const docsDir = options.dir || bunPressConfig.docsDir || defaultOptions.docsdir
   const verbose = options.verbose ?? defaultOptions.verbose
   const minify = options.minify ?? false
   const sourcemap = options.sourcemap ?? false
@@ -140,7 +145,6 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
   await mkdir(outdir, { recursive: true })
 
   // Find all markdown files
-  const docsDir = './docs'
   const markdownFiles = await findMarkdownFiles(docsDir)
 
   if (markdownFiles.length === 0) {
@@ -179,10 +183,10 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
     }
 
     // Copy static assets from docs/public to output directory
-    await copyStaticAssets(outdir, verbose)
+    await copyStaticAssets(outdir, docsDir, verbose)
 
     // Create index.html for navigation
-    await generateIndexHtml(outdir, markdownFiles)
+    await generateIndexHtml(outdir, markdownFiles, docsDir)
 
     // Generate sitemap, robots.txt, and RSS feed
     await generateSeoFiles(docsDir, outdir, verbose || false)
@@ -216,9 +220,9 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
 /**
  * Generate an index.html file with links to all documentation pages
  */
-async function generateIndexHtml(outdir: string, markdownFiles: string[]) {
+async function generateIndexHtml(outdir: string, markdownFiles: string[], docsDir: string) {
   const linksList = markdownFiles.map((file) => {
-    const relativePath = file.replace('./docs/', '')
+    const relativePath = file.replace(`${docsDir}/`, '')
     const htmlPath = relativePath.replace('.md', '.html')
     const name = relativePath.replace('.md', '').replace(/\.([^.]+)$/, '')
     // Capitalize first letter and replace dashes with spaces
@@ -297,7 +301,8 @@ async function generateIndexHtml(outdir: string, markdownFiles: string[]) {
 
 cli
   .command('build', 'Build the documentation site')
-  .option('--outdir <outdir>', 'Output directory', { default: defaultOptions.outdir })
+  .option('--outdir <outdir>', 'Output directory')
+  .option('--dir <dir>', 'Documentation directory')
   .option('--config <config>', 'Path to config file')
   .option('--minify', 'Minify output files', { default: false })
   .option('--sourcemap', 'Generate source maps', { default: false })
@@ -311,7 +316,8 @@ cli
     // Watch mode
     if (options.watch) {
       const { watch } = await import('node:fs')
-      const docsDir = './docs'
+      const bunPressConfig = await config as BunPressConfig
+      const docsDir = options.dir || bunPressConfig.docsDir || './docs'
 
       console.log('\nWatching for changes...')
 
@@ -330,12 +336,13 @@ cli
 cli
   .command('dev', 'Build and serve documentation using BunPress server')
   .option('--port <port>', 'Port to listen on', { default: defaultOptions.port })
-  .option('--dir <dir>', 'Documentation directory', { default: './docs' })
+  .option('--dir <dir>', 'Documentation directory')
   .option('--watch', 'Watch for changes', { default: defaultOptions.watch })
   .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
   .action(async (options: CliOption) => {
+    const bunPressConfig = await config as BunPressConfig
     const port = options.port || defaultOptions.port
-    const root = options.dir || './docs'
+    const root = options.dir || bunPressConfig.docsDir || defaultOptions.docsdir
     const watch = options.watch ?? defaultOptions.watch
     const verbose = options.verbose ?? defaultOptions.verbose
 
@@ -353,7 +360,7 @@ cli
       port,
       root,
       watch,
-      config: config as any,
+      config: bunPressConfig as any,
     })
   })
 
@@ -361,7 +368,8 @@ cli
  * Generate LLM-friendly markdown file from all documentation
  */
 async function generateLlmMarkdown(options: CliOption = {}): Promise<boolean> {
-  const docsDir = options.dir || './docs'
+  const bunPressConfig = await config as BunPressConfig
+  const docsDir = options.dir || bunPressConfig.docsDir || defaultOptions.docsdir
   const outputFile = options.output || './docs.md'
   const full = options.full ?? false
   const verbose = options.verbose ?? defaultOptions.verbose
@@ -483,9 +491,9 @@ cli
   })
 
 cli
-  .command('preview', 'Preview the production build')
+  .command('preview', 'Preview the built documentation site')
   .option('--port <port>', 'Port to listen on', { default: defaultOptions.port })
-  .option('--outdir <outdir>', 'Build directory', { default: defaultOptions.outdir })
+  .option('--outdir <outdir>', 'Output directory (looks for .bunpress folder inside)')
   .option('--open', 'Open in browser', { default: false })
   .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
   .action(async (options: CliOption) => {
