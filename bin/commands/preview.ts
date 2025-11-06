@@ -40,21 +40,61 @@ export async function previewCommand(options: PreviewOptions = {}): Promise<void
       process.exit(1)
     }
 
-    if (verbose) {
-      logInfo(`Starting preview server from ${buildDir}`)
-    }
+    logInfo(`Starting preview server from ${buildDir}`)
 
-    // For preview, we serve the built markdown files using the dev server
-    // This allows the preview to work with the .bunpress folder structure
-    const docsDir = bunPressConfig.docsDir || './docs'
-    await startServer({
+    // Serve static files from the build directory
+    const server = Bun.serve({
       port,
-      root: docsDir,
-      watch: false, // Don't watch for changes in preview mode
-      config: bunPressConfig,
+      fetch: async (req: Request) => {
+        const url = new URL(req.url)
+        let pathname = url.pathname
+
+        // Remove leading slash
+        if (pathname.startsWith('/'))
+          pathname = pathname.slice(1)
+
+        // Default to index.html
+        if (pathname === '' || pathname === '/')
+          pathname = 'index.html'
+
+        // Construct full path
+        const filePath = join(buildDir, pathname)
+
+        // Try to serve the file
+        const file = Bun.file(filePath)
+        const exists = await file.exists()
+
+        if (exists) {
+          return new Response(file, {
+            headers: {
+              'Content-Type': getContentType(pathname),
+            },
+          })
+        }
+
+        // Try adding .html if not found
+        const htmlPath = `${filePath}.html`
+        const htmlFile = Bun.file(htmlPath)
+        const htmlExists = await htmlFile.exists()
+
+        if (htmlExists) {
+          return new Response(htmlFile, {
+            headers: {
+              'Content-Type': 'text/html',
+            },
+          })
+        }
+
+        // 404 response
+        return new Response('404 - Not Found', { status: 404 })
+      },
     })
 
-    // Keep process alive - startServer handles this internally
+    logSuccess(`Preview server running at http://localhost:${port}`)
+    console.log('Press Ctrl+C to stop\n')
+
+    // Keep process alive
+    await new Promise(() => {})
   }
   catch (err) {
     logError(`Failed to start preview server: ${err}`)
