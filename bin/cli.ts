@@ -242,13 +242,22 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
 
 /**
  * Copy the hero page (docs/index.html) to the root as index.html
+ * and fix internal links to point to /docs/ directory
  */
 async function copyHeroToRoot(outdir: string) {
   const heroPath = join(outdir, 'docs', 'index.html')
   const rootIndexPath = join(outdir, 'index.html')
 
   try {
-    const heroContent = await Bun.file(heroPath).text()
+    let heroContent = await Bun.file(heroPath).text()
+
+    // Fix internal documentation links to point to /docs/ directory
+    // Match href="/<path>" where path doesn't start with http/https
+    heroContent = heroContent.replace(
+      /href="\/(?!docs\/|http|https)([^"]+)"/g,
+      'href="/docs/$1"'
+    )
+
     await Bun.write(rootIndexPath, heroContent)
   }
   catch (err) {

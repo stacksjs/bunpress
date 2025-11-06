@@ -23,7 +23,7 @@ status = 301
 from = "/docs/*"
 to = "/docs/:splat.html"
 status = 200
-conditions = {path = "!*.html, !*.css, !*.js, !*.png, !*.jpg, !*.svg"}
+conditions = { path = "!*.html, !*.css, !*.js, !*.png, !*.jpg, !*.svg" }
 
 # Security headers
 [[headers]]
