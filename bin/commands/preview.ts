@@ -43,58 +43,71 @@ export async function previewCommand(options: PreviewOptions = {}): Promise<void
     logInfo(`Starting preview server from ${buildDir}`)
 
     // Serve static files from the build directory
-    const server = Bun.serve({
-      port,
-      fetch: async (req: Request) => {
-        const url = new URL(req.url)
-        let pathname = url.pathname
+    try {
+      const server = Bun.serve({
+        port,
+        fetch: async (req: Request) => {
+          const url = new URL(req.url)
+          let pathname = url.pathname
 
-        // Remove leading slash
-        if (pathname.startsWith('/'))
-          pathname = pathname.slice(1)
+          // Remove leading slash
+          if (pathname.startsWith('/'))
+            pathname = pathname.slice(1)
 
-        // Default to index.html
-        if (pathname === '' || pathname === '/')
-          pathname = 'index.html'
+          // Default to index.html
+          if (pathname === '' || pathname === '/')
+            pathname = 'index.html'
 
-        // Construct full path
-        const filePath = join(buildDir, pathname)
+          // Construct full path
+          const filePath = join(buildDir, pathname)
 
-        // Try to serve the file
-        const file = Bun.file(filePath)
-        const exists = await file.exists()
+          // Try to serve the file
+          const file = Bun.file(filePath)
+          const exists = await file.exists()
 
-        if (exists) {
-          return new Response(file, {
-            headers: {
-              'Content-Type': getContentType(pathname),
-            },
-          })
-        }
+          if (exists) {
+            return new Response(file, {
+              headers: {
+                'Content-Type': getContentType(pathname),
+              },
+            })
+          }
 
-        // Try adding .html if not found
-        const htmlPath = `${filePath}.html`
-        const htmlFile = Bun.file(htmlPath)
-        const htmlExists = await htmlFile.exists()
+          // Try adding .html if not found
+          const htmlPath = `${filePath}.html`
+          const htmlFile = Bun.file(htmlPath)
+          const htmlExists = await htmlFile.exists()
 
-        if (htmlExists) {
-          return new Response(htmlFile, {
-            headers: {
-              'Content-Type': 'text/html',
-            },
-          })
-        }
+          if (htmlExists) {
+            return new Response(htmlFile, {
+              headers: {
+                'Content-Type': 'text/html',
+              },
+            })
+          }
 
-        // 404 response
-        return new Response('404 - Not Found', { status: 404 })
-      },
-    })
+          // 404 response
+          return new Response('404 - Not Found', { status: 404 })
+        },
+      })
 
-    logSuccess(`Preview server running at http://localhost:${port}`)
-    console.log('Press Ctrl+C to stop\n')
+      logSuccess(`Preview server running at http://localhost:${port}`)
+      console.log('Press Ctrl+C to stop\n')
 
-    // Keep process alive
-    await new Promise(() => {})
+      // Keep process alive
+      await new Promise(() => {})
+    }
+    catch (serverError: any) {
+      if (serverError.message?.includes('EADDRINUSE') || serverError.code === 'EADDRINUSE') {
+        logError(`Port ${port} is already in use.`)
+        logError(`Try running with a different port: bunpress preview --port <port>`)
+        logError(`Or stop any processes using port ${port}`)
+      }
+      else {
+        logError(`Failed to start server: ${serverError.message || serverError}`)
+      }
+      process.exit(1)
+    }
   }
   catch (err) {
     logError(`Failed to start preview server: ${err}`)

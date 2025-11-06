@@ -296,7 +296,7 @@ function generateStructuredData(
 /**
  * Wrap content in BunPress documentation layout
  */
-async function wrapInLayout(content: string, config: BunPressConfig, currentPath: string, isHome: boolean = false): Promise<string> {
+export async function wrapInLayout(content: string, config: BunPressConfig, currentPath: string, isHome: boolean = false): Promise<string> {
   const title = config.markdown?.title || 'BunPress Documentation'
   const description = config.markdown?.meta?.description || 'Documentation built with BunPress'
   const syntaxHighlightingStyles = getSyntaxHighlightingStyles()
@@ -1320,7 +1320,7 @@ async function processCodeBlock(lines: string[], startIndex: number): Promise<{ 
 /**
  * Simple markdown to HTML converter (placeholder until full markdown plugin is enabled)
  */
-async function markdownToHtml(markdown: string, rootDir: string = './docs'): Promise<{ html: string, frontmatter: any }> {
+export async function markdownToHtml(markdown: string, rootDir: string = './docs'): Promise<{ html: string, frontmatter: any }> {
   // Parse frontmatter
   const { frontmatter, content } = parseFrontmatter(markdown)
 
