@@ -1,5 +1,7 @@
 import { join } from 'node:path'
 import { colorize, formatBytes, getFileSize, logError, logInfo, table } from '../utils'
+import { config } from '../../src/config'
+import type { BunPressConfig } from '../../src/types'
 
 interface StatsOptions {
   dir?: string
@@ -61,7 +63,8 @@ async function analyzeMarkdownFile(filePath: string): Promise<FileStats> {
  * Show statistics about documentation content
  */
 export async function statsCommand(options: StatsOptions = {}): Promise<boolean> {
-  const docsDir = options.dir || './docs'
+  const bunPressConfig = await config as BunPressConfig
+  const docsDir = options.dir || bunPressConfig.docsDir || './docs'
   const verbose = options.verbose || false
 
   try {

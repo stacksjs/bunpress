@@ -41,7 +41,8 @@ interface CliOption {
 }
 
 const defaultOptions = {
-  outdir: './dist',
+  outdir: config.outDir || './dist',
+  docsdir: config.docsDir || './docs',
   port: 3000,
   open: true,
   watch: true,
@@ -65,8 +66,8 @@ export async function findMarkdownFiles(dir: string): Promise<string[]> {
 /**
  * Copy static assets from docs/public to the output directory
  */
-async function copyStaticAssets(outdir: string, verbose: boolean = false): Promise<void> {
-  const publicDir = './docs/public'
+async function copyStaticAssets(outdir: string, docsDir: string, verbose: boolean = false): Promise<void> {
+  const publicDir = `${docsDir}/public`
 
   try {
     // Check if public directory exists
@@ -124,7 +125,11 @@ async function generateSeoFiles(docsDir: string, outdir: string, verbose: boolea
  * Build the documentation files
  */
 export async function buildDocs(options: CliOption = {}): Promise<boolean> {
-  const outdir = options.outdir || defaultOptions.outdir
+  const bunPressConfig = await config as BunPressConfig
+  const baseOutdir = options.outdir || bunPressConfig.outDir || defaultOptions.outdir
+  // Build to .bunpress folder inside the output directory
+  const outdir = join(baseOutdir, '.bunpress')
+  const docsDir = options.dir || bunPressConfig.docsDir || defaultOptions.docsdir
   const verbose = options.verbose ?? defaultOptions.verbose
   const minify = options.minify ?? false
   const sourcemap = options.sourcemap ?? false
@@ -140,7 +145,6 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
   await mkdir(outdir, { recursive: true })
 
   // Find all markdown files
-  const docsDir = './docs'
   const markdownFiles = await findMarkdownFiles(docsDir)
 
   if (markdownFiles.length === 0) {
@@ -159,30 +163,57 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
   }
 
   try {
-    const result = await Bun.build({
-      entrypoints: markdownFiles,
-      outdir,
-      minify,
-      sourcemap: sourcemap ? 'external' : 'none',
-      // plugins: [markdown(), stx()],
-    })
+    // Use the same markdown-to-HTML transformation as the dev server
+    const { markdownToHtml, wrapInLayout } = await import('../src/serve')
+    const { mkdir: mkdirAsync, writeFile: writeFileAsync } = await import('node:fs/promises')
 
-    if (!result.success) {
-      if (!verbose) {
-        spinner.fail('Build failed')
+    if (verbose) {
+      console.log('Transforming markdown to HTML...')
+    }
+
+    // Process each markdown file
+    for (const file of markdownFiles) {
+      const markdown = await Bun.file(file).text()
+
+      // Convert markdown to HTML (handles frontmatter, hero, features, etc.)
+      const { html, frontmatter } = await markdownToHtml(markdown, docsDir)
+
+      // Determine current path for navigation
+      const relativePath = file.replace(docsDir, '').replace(/^\//, '').replace(/\.md$/, '')
+      const currentPath = `/${relativePath}`
+
+      // Check if this is a home page
+      const isHome = frontmatter.layout === 'home'
+
+      // Wrap in layout (handles navbar, sidebar, SEO, etc.)
+      const fullHtml = await wrapInLayout(html, bunPressConfig, currentPath, isHome)
+
+      // Determine output path
+      const outputPath = join(outdir, relativePath + '.html')
+
+      // Ensure output directory exists
+      const outputDir = outputPath.substring(0, outputPath.lastIndexOf('/'))
+      if (outputDir) {
+        await mkdirAsync(outputDir, { recursive: true })
       }
-      console.error('Build failed:')
-      for (const log of result.logs) {
-        console.error(log)
+
+      // Write HTML file
+      await writeFileAsync(outputPath, fullHtml)
+
+      if (verbose) {
+        console.log(`Generated: ${outputPath}`)
       }
-      return false
+    }
+
+    if (verbose) {
+      console.log(`Processed ${markdownFiles.length} markdown files.`)
     }
 
     // Copy static assets from docs/public to output directory
-    await copyStaticAssets(outdir, verbose)
+    await copyStaticAssets(outdir, docsDir, verbose)
 
-    // Create index.html for navigation
-    await generateIndexHtml(outdir, markdownFiles)
+    // Copy docs/index.html to root as index.html (hero page)
+    await copyHeroToRoot(outdir)
 
     // Generate sitemap, robots.txt, and RSS feed
     await generateSeoFiles(docsDir, outdir, verbose || false)
@@ -191,15 +222,11 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
     const duration = endTime - startTime
 
     if (!verbose) {
-      spinner.succeed(`Built ${markdownFiles.length} files in ${formatTime(duration)}`)
+      spinner.succeed(`Built ${markdownFiles.length} pages to HTML in ${formatTime(duration)}`)
     }
     else {
-      console.log('Build successful!')
-      console.log('Generated files:')
-      for (const output of result.outputs) {
-        console.log(`- ${output.path}`)
-      }
       logSuccess(`Build completed in ${formatTime(duration)}`)
+      console.log(`\nGenerated ${markdownFiles.length} HTML files in ${outdir}`)
     }
 
     return true
@@ -214,90 +241,47 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
 }
 
 /**
- * Generate an index.html file with links to all documentation pages
+ * Copy the hero page (docs/index.html) to the root as index.html
+ * and fix internal links to point to /docs/ directory
  */
-async function generateIndexHtml(outdir: string, markdownFiles: string[]) {
-  const linksList = markdownFiles.map((file) => {
-    const relativePath = file.replace('./docs/', '')
-    const htmlPath = relativePath.replace('.md', '.html')
-    const name = relativePath.replace('.md', '').replace(/\.([^.]+)$/, '')
-    // Capitalize first letter and replace dashes with spaces
-    const displayName = name.charAt(0).toUpperCase()
-      + name.slice(1).replace(/-/g, ' ')
+async function copyHeroToRoot(outdir: string) {
+  const heroPath = join(outdir, 'docs', 'index.html')
+  const rootIndexPath = join(outdir, 'index.html')
 
-    return `<li><a href="${htmlPath}">${displayName}</a></li>`
-  }).join('\n      ')
+  try {
+    let heroContent = await Bun.file(heroPath).text()
 
-  const indexHtml = `<!DOCTYPE html>
+    // Fix internal documentation links to point to /docs/ directory
+    // Match href="/<path>" where path doesn't start with http/https
+    heroContent = heroContent.replace(
+      /href="\/(?!docs\/|http|https)([^"]+)"/g,
+      'href="/docs/$1"'
+    )
+
+    await Bun.write(rootIndexPath, heroContent)
+  }
+  catch (err) {
+    console.error('Error copying hero page to root:', err)
+    // If hero page doesn't exist, create a simple redirect
+    const redirectHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BunPress Documentation</title>
-  <style>
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-      line-height: 1.6;
-      color: #333;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-
-    .markdown-body {
-      padding: 1rem;
-    }
-
-    a {
-      color: #1F1FE9;
-      text-decoration: none;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
-    h1 {
-      border-bottom: 1px solid #eaecef;
-      padding-bottom: 0.3em;
-    }
-
-    ul {
-      padding-left: 2rem;
-    }
-
-    li {
-      margin-bottom: 0.5rem;
-    }
-  </style>
+  <meta http-equiv="refresh" content="0; url=/docs/">
+  <title>Redirecting...</title>
 </head>
 <body>
-  <div class="markdown-body">
-    <h1>BunPress Documentation</h1>
-
-    <p>Welcome to the BunPress documentation! BunPress is a modern documentation engine powered by Bun.</p>
-
-    <h2>Documentation Pages</h2>
-
-    <ul>
-      ${linksList}
-    </ul>
-
-    <h2>About BunPress</h2>
-
-    <p>BunPress is a documentation engine that converts Markdown files to HTML. It offers full customization of the generated HTML, including custom CSS, scripts, and templates.</p>
-
-    <p>Visit the <a href="https://github.com/stacksjs/bunpress">GitHub repository</a> to learn more.</p>
-  </div>
+  <p>Redirecting to <a href="/docs/">documentation</a>...</p>
 </body>
 </html>`
-
-  await Bun.write(join(outdir, 'index.html'), indexHtml)
+    await Bun.write(rootIndexPath, redirectHtml)
+  }
 }
 
 cli
   .command('build', 'Build the documentation site')
-  .option('--outdir <outdir>', 'Output directory', { default: defaultOptions.outdir })
+  .option('--outdir <outdir>', 'Output directory')
+  .option('--dir <dir>', 'Documentation directory')
   .option('--config <config>', 'Path to config file')
   .option('--minify', 'Minify output files', { default: false })
   .option('--sourcemap', 'Generate source maps', { default: false })
@@ -311,7 +295,8 @@ cli
     // Watch mode
     if (options.watch) {
       const { watch } = await import('node:fs')
-      const docsDir = './docs'
+      const bunPressConfig = await config as BunPressConfig
+      const docsDir = options.dir || bunPressConfig.docsDir || './docs'
 
       console.log('\nWatching for changes...')
 
@@ -330,12 +315,13 @@ cli
 cli
   .command('dev', 'Build and serve documentation using BunPress server')
   .option('--port <port>', 'Port to listen on', { default: defaultOptions.port })
-  .option('--dir <dir>', 'Documentation directory', { default: './docs' })
+  .option('--dir <dir>', 'Documentation directory')
   .option('--watch', 'Watch for changes', { default: defaultOptions.watch })
   .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
   .action(async (options: CliOption) => {
+    const bunPressConfig = await config as BunPressConfig
     const port = options.port || defaultOptions.port
-    const root = options.dir || './docs'
+    const root = options.dir || bunPressConfig.docsDir || defaultOptions.docsdir
     const watch = options.watch ?? defaultOptions.watch
     const verbose = options.verbose ?? defaultOptions.verbose
 
@@ -353,7 +339,7 @@ cli
       port,
       root,
       watch,
-      config: config as any,
+      config: bunPressConfig as any,
     })
   })
 
@@ -361,7 +347,8 @@ cli
  * Generate LLM-friendly markdown file from all documentation
  */
 async function generateLlmMarkdown(options: CliOption = {}): Promise<boolean> {
-  const docsDir = options.dir || './docs'
+  const bunPressConfig = await config as BunPressConfig
+  const docsDir = options.dir || bunPressConfig.docsDir || defaultOptions.docsdir
   const outputFile = options.output || './docs.md'
   const full = options.full ?? false
   const verbose = options.verbose ?? defaultOptions.verbose
@@ -483,9 +470,9 @@ cli
   })
 
 cli
-  .command('preview', 'Preview the production build')
+  .command('preview', 'Preview the built documentation site')
   .option('--port <port>', 'Port to listen on', { default: defaultOptions.port })
-  .option('--outdir <outdir>', 'Build directory', { default: defaultOptions.outdir })
+  .option('--outdir <outdir>', 'Output directory (looks for .bunpress folder inside)')
   .option('--open', 'Open in browser', { default: false })
   .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
   .action(async (options: CliOption) => {

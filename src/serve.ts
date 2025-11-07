@@ -25,8 +25,22 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
   const sectionsHtml = await Promise.all(sidebarSections.map(async (section) => {
     const itemsHtml = section.items
       ? section.items.map((item) => {
-          const isActive = item.link === currentPath
-          return `<li><a href="${item.link}" class="block py-1.5 px-6 text-[#476582] no-underline text-sm hover:text-[#3451b2] ${isActive ? 'text-[#3451b2] font-medium border-r-2 border-[#3451b2]' : ''}">${item.text}</a></li>`
+          // Prepend /docs to internal links for static build
+          // Skip if already has /docs or is external (http/https)
+          let link = item.link
+          if (link && !link.startsWith('http') && !link.startsWith('/docs/')) {
+            // For root path, keep as /docs/
+            if (link === '/') {
+              link = '/docs/'
+            }
+            // For other paths, prepend /docs
+            else if (link.startsWith('/')) {
+              link = `/docs${link}`
+            }
+          }
+
+          const isActive = link === currentPath || item.link === currentPath
+          return `<li><a href="${link}" class="block py-1.5 px-6 text-[#476582] no-underline text-sm hover:text-[#3451b2] ${isActive ? 'text-[#3451b2] font-medium border-r-2 border-[#3451b2]' : ''}">${item.text}</a></li>`
         }).join('')
       : ''
 
@@ -123,6 +137,19 @@ function generateNav(config: BunPressConfig): string {
     return ''
   }
 
+  // Helper function to fix nav links
+  const fixNavLink = (link: string | undefined): string => {
+    if (!link || link.startsWith('http') || link.startsWith('/docs/'))
+      return link || ''
+
+    if (link === '/')
+      return '/docs/'
+    else if (link.startsWith('/'))
+      return `/docs${link}`
+
+    return link
+  }
+
   const links = config.nav.map((item) => {
     // Handle items with sub-items (dropdown)
     if (item.items && item.items.length > 0) {
@@ -135,13 +162,13 @@ function generateNav(config: BunPressConfig): string {
         </button>
         <div class="hidden group-hover:block absolute top-full right-0 bg-white border border-[#e2e2e3] rounded-lg shadow-lg min-w-[160px] py-2 mt-2">
           ${item.items.map(subItem =>
-            `<a href="${subItem.link}" class="block px-4 py-2 text-[13px] text-[#213547] hover:bg-[#f6f6f7] hover:text-[#5672cd] transition-colors">${subItem.text}</a>`,
+            `<a href="${fixNavLink(subItem.link)}" class="block px-4 py-2 text-[13px] text-[#213547] hover:bg-[#f6f6f7] hover:text-[#5672cd] transition-colors">${subItem.text}</a>`,
           ).join('')}
         </div>
       </div>`
     }
     else {
-      return `<a href="${item.link}" class="text-[14px] font-medium text-[#213547] hover:text-[#5672cd] transition-colors">${item.text}</a>`
+      return `<a href="${fixNavLink(item.link)}" class="text-[14px] font-medium text-[#213547] hover:text-[#5672cd] transition-colors">${item.text}</a>`
     }
   }).join('')
 
@@ -296,7 +323,7 @@ function generateStructuredData(
 /**
  * Wrap content in BunPress documentation layout
  */
-async function wrapInLayout(content: string, config: BunPressConfig, currentPath: string, isHome: boolean = false): Promise<string> {
+export async function wrapInLayout(content: string, config: BunPressConfig, currentPath: string, isHome: boolean = false): Promise<string> {
   const title = config.markdown?.title || 'BunPress Documentation'
   const description = config.markdown?.meta?.description || 'Documentation built with BunPress'
   const syntaxHighlightingStyles = getSyntaxHighlightingStyles()
@@ -1320,7 +1347,7 @@ async function processCodeBlock(lines: string[], startIndex: number): Promise<{ 
 /**
  * Simple markdown to HTML converter (placeholder until full markdown plugin is enabled)
  */
-async function markdownToHtml(markdown: string, rootDir: string = './docs'): Promise<{ html: string, frontmatter: any }> {
+export async function markdownToHtml(markdown: string, rootDir: string = './docs'): Promise<{ html: string, frontmatter: any }> {
   // Parse frontmatter
   const { frontmatter, content } = parseFrontmatter(markdown)
 

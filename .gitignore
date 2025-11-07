@@ -18,3 +18,4 @@ docs/.vitepress/
 test/use-cases/**/temp-output/**
 test/use-cases/**/output/**
 test/use-cases/**/.gitignore
+docs/.bunpress/

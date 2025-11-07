@@ -182,20 +182,6 @@ export default {
 }
 ```
 
-## Environment Variables
-
-BunPress supports environment variables for configuration.
-
-```typescript
-// Use environment variables
-export default {
-  verbose: process.env.NODE_ENV === 'development',
-  markdown: {
-    title: process.env.SITE_TITLE || 'My Documentation'
-  }
-}
-```
-
 ## Custom Marked Extensions
 
 Extend Marked.js with custom extensions.
@@ -389,34 +375,6 @@ bun run build --analyze
 
 # Generate bundle report
 bun run build --report
-```
-
-## Internationalization (i18n)
-
-Support multiple languages in your documentation.
-
-```typescript
-export default {
-  i18n: {
-    locales: ['en', 'es', 'fr'],
-    defaultLocale: 'en',
-    localePath: './locales'
-  }
-}
-```
-
-### Localized Content
-
-```markdown
-<!-- docs/intro.en.md -->
-# Introduction
-
-Welcome to our documentation!
-
-<!-- docs/intro.es.md -->
-# Introducción
-
-¡Bienvenido a nuestra documentación!
 ```
 
 ## Sitemap Generation
@@ -615,30 +573,20 @@ export default {
 
 ## API Reference
 
-### Programmatic Usage
+For complete TypeScript API documentation, see the dedicated [API Reference](/api) page.
 
-```typescript
-import { build } from 'bunpress'
+### Quick Reference
 
-await build({
-  entrypoints: ['./docs/**/*.md'],
-  outdir: './dist',
-  config: {
-    // Configuration options
-  }
-})
-```
+**Core Functions:**
+- `build(options)` - Build documentation
+- `serve(options)` - Start dev server
+- `preview(options)` - Preview production build
 
-### Plugin API
+**Configuration Interfaces:**
+- `BunPressConfig` - Main configuration
+- `MarkdownPluginConfig` - Markdown options
+- `TocConfig` - Table of contents
+- `SitemapConfig` - SEO sitemap
+- `FathomConfig` - Analytics
 
-```typescript
-interface BunPressPlugin {
-  name: string
-  setup: (build: BuildContext) => void | Promise<void>
-}
-
-interface BuildContext {
-  onLoad: (options: OnLoadOptions, callback: OnLoadCallback) => void
-  onResolve: (options: OnResolveOptions, callback: OnResolveCallback) => void
-}
-```
+See [API Reference](/api) for detailed documentation of all interfaces, types, and functions.

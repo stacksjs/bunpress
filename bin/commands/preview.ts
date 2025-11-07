@@ -1,5 +1,8 @@
 import { join } from 'node:path'
 import { logError, logInfo, logSuccess } from '../utils'
+import { config } from '../../src/config'
+import type { BunPressConfig } from '../../src/types'
+import { startServer } from '../../src/serve'
 
 interface PreviewOptions {
   port?: number
@@ -9,49 +12,60 @@ interface PreviewOptions {
 }
 
 /**
- * Preview the production build
+ * Preview the built documentation site
+ * Serves files from the .bunpress folder inside the output directory
  */
 export async function previewCommand(options: PreviewOptions = {}): Promise<void> {
   const port = options.port || 3000
-  const outdir = options.outdir || './dist'
+  const bunPressConfig = (await config) as BunPressConfig
+  const baseOutdir = options.outdir || bunPressConfig.outDir || './dist'
+  // Preview from .bunpress folder inside the output directory
+  const buildDir = join(baseOutdir, '.bunpress')
   const verbose = options.verbose || false
 
   try {
-    // Check if dist directory exists
-    const distExists = await Bun.file(outdir).exists()
-
-    if (!distExists) {
-      logError(`Build directory "${outdir}" not found. Run "bunpress build" first.`)
+    // Check if build directory exists
+    const { stat } = await import('node:fs/promises')
+    try {
+      const stats = await stat(buildDir)
+      if (!stats.isDirectory()) {
+        logError(`"${buildDir}" is not a directory.`)
+        logError(`Run "bunpress build" first to generate the documentation.`)
+        process.exit(1)
+      }
+    }
+    catch {
+      logError(`Build directory "${buildDir}" not found.`)
+      logError(`Run "bunpress build" first to generate the documentation.`)
       process.exit(1)
     }
 
-    if (verbose) {
-      logInfo(`Starting preview server from ${outdir}`)
-    }
+    logInfo(`Starting preview server from ${buildDir}`)
 
-    // Create server
-    const server = Bun.serve({
-      port,
-      fetch: async (req) => {
-        const url = new URL(req.url)
-        let pathname = url.pathname
+    // Serve static files from the build directory
+    try {
+      const server = Bun.serve({
+        port,
+        fetch: async (req: Request) => {
+          const url = new URL(req.url)
+          let pathname = url.pathname
 
-        // Redirect root to index.html
-        if (pathname === '/') {
-          pathname = '/index.html'
-        }
+          // Remove leading slash
+          if (pathname.startsWith('/'))
+            pathname = pathname.slice(1)
 
-        // Add .html extension if not present
-        if (!pathname.includes('.') && !pathname.endsWith('/')) {
-          pathname += '.html'
-        }
+          // Default to index.html
+          if (pathname === '' || pathname === '/')
+            pathname = 'index.html'
 
-        const filePath = join(outdir, pathname)
+          // Construct full path
+          const filePath = join(buildDir, pathname)
 
-        try {
+          // Try to serve the file
           const file = Bun.file(filePath)
+          const exists = await file.exists()
 
-          if (await file.exists()) {
+          if (exists) {
             return new Response(file, {
               headers: {
                 'Content-Type': getContentType(pathname),
@@ -59,33 +73,41 @@ export async function previewCommand(options: PreviewOptions = {}): Promise<void
             })
           }
 
-          // Try with /index.html
-          const indexPath = join(outdir, pathname, 'index.html')
-          const indexFile = Bun.file(indexPath)
+          // Try adding .html if not found
+          const htmlPath = `${filePath}.html`
+          const htmlFile = Bun.file(htmlPath)
+          const htmlExists = await htmlFile.exists()
 
-          if (await indexFile.exists()) {
-            return new Response(indexFile, {
+          if (htmlExists) {
+            return new Response(htmlFile, {
               headers: {
                 'Content-Type': 'text/html',
               },
             })
           }
 
-          // 404
-          return new Response('404 Not Found', { status: 404 })
-        }
-        catch (err) {
-          return new Response(`Error: ${err}`, { status: 500 })
-        }
-      },
-    })
+          // 404 response
+          return new Response('404 - Not Found', { status: 404 })
+        },
+      })
 
-    logSuccess(`Preview server running at http://localhost:${port}`)
-    console.log()
-    logInfo('Press Ctrl+C to stop')
+      logSuccess(`Preview server running at http://localhost:${port}`)
+      console.log('Press Ctrl+C to stop\n')
 
-    // Keep process alive
-    await new Promise(() => {})
+      // Keep process alive
+      await new Promise(() => {})
+    }
+    catch (serverError: any) {
+      if (serverError.message?.includes('EADDRINUSE') || serverError.code === 'EADDRINUSE') {
+        logError(`Port ${port} is already in use.`)
+        logError(`Try running with a different port: bunpress preview --port <port>`)
+        logError(`Or stop any processes using port ${port}`)
+      }
+      else {
+        logError(`Failed to start server: ${serverError.message || serverError}`)
+      }
+      process.exit(1)
+    }
   }
   catch (err) {
     logError(`Failed to start preview server: ${err}`)

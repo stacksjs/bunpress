@@ -2,6 +2,8 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { YAML } from 'bun'
 import { colorize, logError, logInfo, logSuccess, logWarning, table } from '../utils'
+import { config } from '../../src/config'
+import type { BunPressConfig } from '../../src/types'
 
 interface SeoIssue {
   type: 'error' | 'warning'
@@ -24,7 +26,8 @@ export async function seoCheck(options: {
   dir?: string
   fix?: boolean
 } = {}): Promise<void> {
-  const docsDir = options.dir || './docs'
+  const bunPressConfig = await config as BunPressConfig
+  const docsDir = options.dir || bunPressConfig.docsDir || './docs'
   const fix = options.fix || false
 
   logInfo('🔍 Running SEO checks...')

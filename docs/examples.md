@@ -2,8 +2,6 @@
 
 Real-world examples of BunPress features in action. Copy and adapt these examples for your own documentation.
 
-[[toc]]
-
 ## Documentation Page Templates
 
 ### API Reference Page

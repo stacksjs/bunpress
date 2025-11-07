@@ -2,8 +2,6 @@
 
 BunPress provides beautiful code syntax highlighting powered by `ts-syntax-highlighter`, a blazing-fast, zero-dependency syntax highlighter built specifically for Bun.
 
-[[toc]]
-
 ## Overview
 
 Code blocks in your markdown are automatically highlighted with proper syntax coloring for better readability. The highlighter supports multiple languages and includes features like line highlighting, line numbers, and diff indicators.

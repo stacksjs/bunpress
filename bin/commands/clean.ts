@@ -1,6 +1,9 @@
 import { existsSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
+import { join } from 'node:path'
 import { confirm, formatBytes, getFileSize, logError, logInfo, logSuccess, Spinner } from '../utils'
+import { config } from '../../src/config'
+import type { BunPressConfig } from '../../src/types'
 
 interface CleanOptions {
   outdir?: string
@@ -34,7 +37,10 @@ async function getDirectorySize(dirPath: string): Promise<number> {
  * Clean build artifacts and output directories
  */
 export async function cleanCommand(options: CleanOptions = {}): Promise<boolean> {
-  const outdir = options.outdir || './dist'
+  const bunPressConfig = await config as BunPressConfig
+  const baseOutdir = options.outdir || bunPressConfig.outDir || './dist'
+  // Clean the .bunpress folder inside the output directory
+  const outdir = join(baseOutdir, '.bunpress')
   const force = options.force || false
   const verbose = options.verbose || false
 

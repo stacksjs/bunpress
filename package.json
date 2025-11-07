@@ -59,14 +59,17 @@
     "changelog:generate": "bunx logsmith --output CHANGELOG.md",
     "release": "bunx --bun bumpx prompt --recursive",
     "dev:docs": "bun bin/cli.ts dev",
-    "build:docs": "bun build.ts",
-    "preview:docs": "bun serve --port 3000 dist",
+    "build:docs": "bun bin/cli.ts build --outdir ./dist",
+    "preview:docs": "bun bin/cli.ts preview --outdir ./dist",
     "typecheck": "bun --bun tsc --noEmit",
     "bench": "bun run bench:build && bun run bench:server && bun run bench:features",
     "bench:build": "bun benchmarks/build-performance.bench.ts",
     "bench:server": "bun benchmarks/dev-server.bench.ts",
     "bench:features": "bun benchmarks/features-comparison.bench.ts",
     "bench:all": "bun run bench"
+  },
+  "dependencies": {
+    "marked": "^16.4.1"
   },
   "devDependencies": {
     "@stacksjs/bumpx": "^0.2.2",
