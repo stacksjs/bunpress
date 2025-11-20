@@ -69,7 +69,7 @@
     "bench:all": "bun run bench"
   },
   "dependencies": {
-    "marked": "^17.0.0"
+    "marked": "^17.0.1"
   },
   "devDependencies": {
     "@stacksjs/bumpx": "^0.2.4",
