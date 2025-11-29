@@ -5,6 +5,7 @@ import process from 'node:process'
 import { config } from './config'
 import { getSyntaxHighlightingStyles, highlightCode } from './highlighter'
 import { clearTemplateCache, render } from './template-loader'
+import { getThemeCSS } from './themes'
 import { buildTocHierarchy, defaultTocConfig, extractHeadings, filterHeadings, generateInlineTocHtml } from './toc'
 
 /**
@@ -40,7 +41,8 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
           }
 
           const isActive = link === currentPath || item.link === currentPath
-          return `<li><a href="${link}" class="block py-1.5 px-6 text-[#476582] no-underline text-sm hover:text-[#3451b2] ${isActive ? 'text-[#3451b2] font-medium border-r-2 border-[#3451b2]' : ''}">${item.text}</a></li>`
+          const activeStyle = isActive ? 'color: var(--vp-c-brand-1); font-weight: 500;' : ''
+          return `<li><a href="${link}" style="display: block; padding: 6px 24px; color: var(--vp-c-text-2); text-decoration: none; font-size: 14px; transition: color 0.25s; ${activeStyle}" onmouseover="this.style.color='var(--vp-c-brand-1)'" onmouseout="this.style.color='${isActive ? 'var(--vp-c-brand-1)' : 'var(--vp-c-text-2)'}'">${item.text}</a></li>`
         }).join('')
       : ''
 
@@ -326,8 +328,12 @@ function generateStructuredData(
 export async function wrapInLayout(content: string, config: BunPressConfig, currentPath: string, isHome: boolean = false): Promise<string> {
   const title = config.markdown?.title || 'BunPress Documentation'
   const description = config.markdown?.meta?.description || 'Documentation built with BunPress'
+
+  // Get theme CSS (defaults to 'vitepress' theme)
+  const themeName = config.theme || 'vitepress'
+  const themeCSS = getThemeCSS(themeName)
   const syntaxHighlightingStyles = getSyntaxHighlightingStyles()
-  const customCSS = `${syntaxHighlightingStyles}\n${config.markdown?.css || ''}`
+  const customCSS = `${themeCSS}\n${syntaxHighlightingStyles}\n${config.markdown?.css || ''}`
 
   // Generate SEO meta tags
   const canonicalUrl = generateCanonicalUrl(config, currentPath)

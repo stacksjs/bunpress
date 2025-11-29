@@ -1,7 +1,20 @@
-<div class="py-16 px-6 lg:px-8 border-t border-[#e2e2e3]">
-  <div class="mx-auto max-w-[1152px]">
-    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+<div class="VPHomeFeatures" style="padding: 64px 24px; border-top: 1px solid var(--vp-c-divider);">
+  <div style="max-width: 1152px; margin: 0 auto;">
+    <div class="VPFeatures" style="display: grid; grid-template-columns: repeat(1, 1fr); gap: 24px;">
       {{ items }}
     </div>
   </div>
 </div>
+
+<style>
+@media (min-width: 640px) {
+  .VPFeatures {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (min-width: 960px) {
+  .VPFeatures {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+</style>

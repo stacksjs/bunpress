@@ -1,15 +1,17 @@
-<div class="mb-4 sidebar-section">
+<div class="VPSidebarItem sidebar-section" style="margin-bottom: 16px;">
   <button
-    class="w-full flex items-center justify-between px-6 py-2 text-sm font-semibold text-[#213547] hover:text-[#5672cd] transition-colors cursor-pointer"
+    style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 8px 24px; font-size: 14px; font-weight: 600; color: var(--vp-c-text-1); background: transparent; border: none; cursor: pointer; transition: color 0.25s;"
     onclick="toggleSection(this.parentElement)"
+    onmouseover="this.style.color='var(--vp-c-brand-1)'"
+    onmouseout="this.style.color='var(--vp-c-text-1)'"
   >
     <span>{{ title }}</span>
-    <svg class="chevron w-4 h-4 transition-transform duration-200 ease-in-out" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg class="chevron" style="width: 16px; height: 16px; transition: transform 0.2s ease-in-out;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
     </svg>
   </button>
   <div class="sidebar-items-wrapper">
-    <ul class="list-none mt-1 sidebar-items">
+    <ul class="sidebar-items" style="list-style: none; margin: 4px 0 0 0; padding: 0;">
       {{ items }}
     </ul>
   </div>

@@ -8,14 +8,16 @@
   {{ meta }}
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Custom CSS from config */
+    /* VitePress Theme CSS */
     {{ customCSS }}
   </style>
 </head>
-<body class="m-0 p-0 box-border font-sans antialiased bg-white">
-  <main>
-    {{ content }}
-  </main>
+<body>
+  <div class="Layout">
+    <main class="VPHome">
+      {{ content }}
+    </main>
+  </div>
 
   {{ scripts }}
 </body>

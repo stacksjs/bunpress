@@ -1,6 +1,6 @@
-<aside class="fixed top-[60px] bottom-0 w-[256px] overflow-y-auto py-8 px-4 hidden xl:block right-[max(0px,calc((100vw-1440px)/2))]">
-  <div class="text-sm">
-    <p class="font-semibold text-[#213547] mb-4">On this page</p>
+<aside class="VPDocAside" style="position: fixed; top: var(--vp-nav-height, 64px); bottom: 0; width: 256px; overflow-y: auto; padding: 32px 16px; display: none; right: max(0px, calc((100vw - var(--vp-layout-max-width, 1440px)) / 2));">
+  <div class="VPDocAsideOutline" style="font-size: 14px;">
+    <p style="font-weight: 600; color: var(--vp-c-text-1); margin-bottom: 16px;">On this page</p>
     <nav class="page-toc">
       {{ items }}
     </nav>
@@ -8,24 +8,31 @@
 </aside>
 
 <style>
+/* Show aside on xl screens */
+@media (min-width: 1280px) {
+  .VPDocAside {
+    display: block !important;
+  }
+}
+
 .page-toc a {
   display: block;
   padding: 4px 0 4px 16px;
-  color: #476582;
+  color: var(--vp-c-text-2);
   text-decoration: none;
-  border-left: 1px solid #e2e2e3;
-  transition: all 0.2s ease-in-out;
+  border-left: 1px solid var(--vp-c-divider);
+  transition: all 0.25s ease-in-out;
   font-size: 13px;
   line-height: 20px;
 }
 
 .page-toc a:hover {
-  color: #5672cd;
+  color: var(--vp-c-brand-1);
 }
 
 .page-toc a.active {
-  color: #5672cd;
-  border-left-color: #5672cd;
+  color: var(--vp-c-brand-1);
+  border-left-color: var(--vp-c-brand-1);
   font-weight: 500;
 }
 

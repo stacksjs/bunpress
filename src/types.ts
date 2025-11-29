@@ -14,6 +14,12 @@ export interface BunPressConfig {
   outDir?: string
 
   /**
+   * Theme to use for the documentation site
+   * @default 'vitepress'
+   */
+  theme?: 'vitepress'
+
+  /**
    * Configuration for the markdown-to-html plugin
    */
   markdown: MarkdownPluginConfig
