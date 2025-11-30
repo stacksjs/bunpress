@@ -349,12 +349,13 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
 
   const allMeta = [basicMeta, canonicalUrl, openGraphTags, twitterCardTags].filter(Boolean).join('\n  ')
 
-  // Generate Fathom analytics script
+  // Generate analytics scripts
   const fathomScript = generateFathomScript(config)
+  const selfHostedScript = generateSelfHostedAnalyticsScript(config)
 
-  // Combine custom scripts with Fathom script and structured data
+  // Combine custom scripts with analytics and structured data
   const customScripts = config.markdown?.scripts?.map(script => `<script>${script}</script>`).join('\n') || ''
-  const scripts = [structuredData, fathomScript, customScripts].filter(Boolean).join('\n')
+  const scripts = [structuredData, fathomScript, selfHostedScript, customScripts].filter(Boolean).join('\n')
 
   // Home layout - no sidebar, no navigation, clean hero layout
   if (isHome) {
@@ -413,6 +414,60 @@ function generateFathomScript(config: BunPressConfig): string {
 
   // Build script tag
   return `<script src="${scriptUrl}" ${dataAttrs}${defer ? ' defer' : ''}></script>`
+}
+
+/**
+ * Generate Self-Hosted Analytics tracking script
+ * Privacy-focused, cookie-free analytics you can run on your own infrastructure
+ */
+function generateSelfHostedAnalyticsScript(config: BunPressConfig): string {
+  const analytics = config.selfHostedAnalytics
+  if (!analytics?.enabled || !analytics?.siteId || !analytics?.apiEndpoint) {
+    return ''
+  }
+
+  const siteId = escapeAttr(analytics.siteId)
+  const apiEndpoint = escapeAttr(analytics.apiEndpoint)
+  const honorDnt = analytics.honorDNT ? `if(n.doNotTrack==="1")return;` : ''
+  const hashTracking = analytics.trackHashChanges ? `w.addEventListener('hashchange',pv);` : ''
+  const outboundTracking = analytics.trackOutboundLinks
+    ? `d.addEventListener('click',function(e){var a=e.target.closest('a');if(a&&a.hostname!==location.hostname){t('outbound',{url:a.href});}});`
+    : ''
+
+  return `<!-- Self-Hosted Analytics -->
+<script data-site="${siteId}" data-api="${apiEndpoint}" defer>
+(function(){
+'use strict';
+var d=document,w=window,n=navigator,s=d.currentScript;
+var site=s.dataset.site,api=s.dataset.api;
+${honorDnt}
+var q=[],sid=Math.random().toString(36).slice(2);
+function t(e,p){
+var x=new XMLHttpRequest();
+x.open('POST',api+'/collect',true);
+x.setRequestHeader('Content-Type','application/json');
+x.send(JSON.stringify({s:site,sid:sid,e:e,p:p||{},u:location.href,r:d.referrer,t:d.title,sw:screen.width,sh:screen.height}));
+}
+function pv(){t('pageview');}
+${hashTracking}
+${outboundTracking}
+if(d.readyState==='complete')pv();
+else w.addEventListener('load',pv);
+w.bunpressAnalytics={track:function(n,v){t('event',{name:n,value:v});}};
+})();
+</script>`
+}
+
+/**
+ * Escape attribute value for safe HTML insertion
+ */
+function escapeAttr(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
 }
 
 /**

@@ -48,6 +48,11 @@ export interface BunPressConfig {
    * Fathom Analytics configuration
    */
   fathom?: FathomConfig
+
+  /**
+   * Self-hosted analytics configuration (using Stacks Analytics / dynamodb-tooling)
+   */
+  selfHostedAnalytics?: SelfHostedAnalyticsConfig
 }
 
 export type BunPressOptions = Partial<BunPressConfig>
@@ -962,4 +967,47 @@ export interface FathomConfig {
    * @default false
    */
   spa?: boolean
+}
+
+/**
+ * Self-hosted analytics configuration (using Stacks Analytics / dynamodb-tooling)
+ * A privacy-focused, cookie-free analytics solution you can run on your own infrastructure.
+ */
+export interface SelfHostedAnalyticsConfig {
+  /**
+   * Enable self-hosted analytics
+   * @default false
+   */
+  enabled?: boolean
+
+  /**
+   * Site ID for tracking (unique identifier for your site)
+   * Required if enabled is true
+   */
+  siteId?: string
+
+  /**
+   * API endpoint URL for collecting analytics data
+   * Example: 'https://api.example.com/analytics'
+   * Required if enabled is true
+   */
+  apiEndpoint?: string
+
+  /**
+   * Honor Do Not Track (DNT) browser setting
+   * @default false
+   */
+  honorDNT?: boolean
+
+  /**
+   * Track hash changes as page views (for hash-based routing)
+   * @default false
+   */
+  trackHashChanges?: boolean
+
+  /**
+   * Track outbound link clicks
+   * @default false
+   */
+  trackOutboundLinks?: boolean
 }
