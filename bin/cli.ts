@@ -215,6 +215,9 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
     // Copy docs/index.html to root as index.html (hero page)
     await copyHeroToRoot(outdir)
 
+    // Generate 404 page
+    await generate404Page(outdir, bunPressConfig)
+
     // Generate sitemap, robots.txt, and RSS feed
     await generateSeoFiles(docsDir, outdir, verbose || false)
 
@@ -238,6 +241,98 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
     console.error('Error during build:', err)
     return false
   }
+}
+
+/**
+ * Generate a styled 404 page for the documentation site
+ * Styled to match VitePress's NotFound component
+ */
+async function generate404Page(outdir: string, bunPressConfig: BunPressConfig): Promise<void> {
+  const { wrapInLayout } = await import('../src/serve')
+
+  const notFoundContent = `
+<style>
+.NotFound {
+  padding: 64px 24px 96px;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .NotFound {
+    padding: 96px 32px 168px;
+  }
+}
+
+.NotFound .code {
+  line-height: 64px;
+  font-size: 64px;
+  font-weight: 600;
+}
+
+.NotFound .title {
+  padding-top: 12px;
+  letter-spacing: 2px;
+  line-height: 20px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.NotFound .divider {
+  margin: 24px auto 18px;
+  width: 64px;
+  height: 1px;
+  background-color: var(--vp-c-divider);
+}
+
+.NotFound .quote {
+  margin: 0 auto;
+  max-width: 256px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+}
+
+.NotFound .action {
+  padding-top: 20px;
+}
+
+.NotFound .link {
+  display: inline-block;
+  border: 1px solid var(--vp-c-brand-1);
+  border-radius: 16px;
+  padding: 3px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--vp-c-brand-1);
+  transition: border-color 0.25s, color 0.25s;
+  text-decoration: none;
+}
+
+.NotFound .link:hover {
+  border-color: var(--vp-c-brand-2);
+  color: var(--vp-c-brand-2);
+}
+</style>
+
+<div class="NotFound">
+  <p class="code">404</p>
+  <h1 class="title">PAGE NOT FOUND</h1>
+  <div class="divider"></div>
+  <blockquote class="quote">
+    But if you don't change your direction, and if you keep looking, you may end up where you are heading.
+  </blockquote>
+  <div class="action">
+    <a class="link" href="/docs/" aria-label="go to home">
+      Take me home
+    </a>
+  </div>
+</div>
+`
+
+  const fullHtml = await wrapInLayout(notFoundContent, bunPressConfig, '/404', false)
+
+  // Write 404.html to the output directory root
+  await Bun.write(join(outdir, '404.html'), fullHtml)
 }
 
 /**
