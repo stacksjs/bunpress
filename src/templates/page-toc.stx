@@ -1,4 +1,4 @@
-<aside class="VPDocAside" style="position: fixed; top: var(--bp-nav-height, 64px); bottom: 0; width: 256px; overflow-y: auto; padding: 32px 16px; display: none; right: max(0px, calc((100vw - var(--bp-layout-max-width, 1440px)) / 2));">
+<aside class="VPDocAside" style="position: fixed; top: var(--bp-nav-height, 64px); bottom: 0; width: 224px; overflow-y: auto; padding: 32px 16px 32px 16px; display: none; right: max(32px, calc((100vw - var(--bp-layout-max-width, 1440px)) / 2 + 32px)); background-color: var(--bp-c-bg);">
   <div class="VPDocAsideOutline" style="font-size: 14px;">
     <p style="font-weight: 600; color: var(--bp-c-text-1); margin-bottom: 16px;">On this page</p>
     <nav class="page-toc">
@@ -8,10 +8,14 @@
 </aside>
 
 <style>
-/* Show aside on xl screens */
+/* Show aside on xl screens and adjust main content */
 @media (min-width: 1280px) {
   .VPDocAside {
     display: block !important;
+  }
+
+  .VPContent {
+    right: max(256px, calc((100vw - var(--bp-layout-max-width, 1440px)) / 2 + 256px)) !important;
   }
 }
 
