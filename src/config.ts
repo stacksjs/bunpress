@@ -95,8 +95,8 @@ export const defaultConfig: BunPressConfig = {
       top: 12px;
       right: 12px;
       padding: 6px 8px;
-      background-color: var(--vp-code-copy-code-bg, var(--vp-c-bg-soft, #f6f6f7));
-      border: 1px solid var(--vp-code-copy-code-border-color, var(--vp-c-divider, #e2e2e3));
+      background-color: var(--bp-code-copy-code-bg, var(--bp-c-bg-soft, #f6f6f7));
+      border: 1px solid var(--bp-code-copy-code-border-color, var(--bp-c-divider, #e2e2e3));
       border-radius: 4px;
       cursor: pointer;
       opacity: 0;
@@ -112,24 +112,24 @@ export const defaultConfig: BunPressConfig = {
     }
 
     .copy-code-button:hover {
-      background-color: var(--vp-code-copy-code-hover-bg, var(--vp-c-bg, #ffffff));
-      border-color: var(--vp-code-copy-code-hover-border-color, var(--vp-c-divider, #e2e2e3));
+      background-color: var(--bp-code-copy-code-hover-bg, var(--bp-c-bg, #ffffff));
+      border-color: var(--bp-code-copy-code-hover-border-color, var(--bp-c-divider, #e2e2e3));
     }
 
     .copy-code-button.copied {
       opacity: 1;
-      background-color: var(--vp-c-success-soft, rgba(16, 185, 129, 0.14));
-      border-color: var(--vp-c-success-1, #18794e);
+      background-color: var(--bp-c-success-soft, rgba(16, 185, 129, 0.14));
+      border-color: var(--bp-c-success-1, #18794e);
     }
 
     .copy-code-button svg {
       width: 16px;
       height: 16px;
-      color: var(--vp-c-text-2, #67676c);
+      color: var(--bp-c-text-2, #67676c);
     }
 
     .copy-code-button.copied svg {
-      color: var(--vp-c-success-1, #18794e);
+      color: var(--bp-c-success-1, #18794e);
     }
 
     /* Enhanced Tables */
@@ -137,40 +137,40 @@ export const defaultConfig: BunPressConfig = {
       overflow-x: auto;
       margin: 16px 0;
       border-radius: 8px;
-      border: 1px solid var(--vp-c-divider, #e2e2e3);
+      border: 1px solid var(--bp-c-divider, #e2e2e3);
     }
 
     .enhanced-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 14px;
-      background-color: var(--vp-c-bg, #ffffff);
+      background-color: var(--bp-c-bg, #ffffff);
     }
 
     .enhanced-table thead {
-      background-color: var(--vp-c-bg-soft, #f6f6f7);
+      background-color: var(--bp-c-bg-soft, #f6f6f7);
     }
 
     .enhanced-table th {
       padding: 12px 16px;
       font-weight: 600;
-      color: var(--vp-c-text-2, #67676c);
-      border-bottom: 2px solid var(--vp-c-divider, #e2e2e3);
+      color: var(--bp-c-text-2, #67676c);
+      border-bottom: 2px solid var(--bp-c-divider, #e2e2e3);
       white-space: nowrap;
     }
 
     .enhanced-table td {
       padding: 12px 16px;
-      color: var(--vp-c-text-1, #3c3c43);
-      border-bottom: 1px solid var(--vp-c-divider, #e2e2e3);
+      color: var(--bp-c-text-1, #3c3c43);
+      border-bottom: 1px solid var(--bp-c-divider, #e2e2e3);
     }
 
     .enhanced-table tbody tr:nth-child(2n) {
-      background-color: var(--vp-c-bg-soft, #f6f6f7);
+      background-color: var(--bp-c-bg-soft, #f6f6f7);
     }
 
     .enhanced-table tbody tr:hover {
-      background-color: var(--vp-c-default-soft, rgba(142, 150, 170, 0.14));
+      background-color: var(--bp-c-default-soft, rgba(142, 150, 170, 0.14));
       transition: background-color 0.2s ease;
     }
 
@@ -184,13 +184,13 @@ export const defaultConfig: BunPressConfig = {
       max-width: 100%;
       height: auto;
       border-radius: 8px;
-      border: 1px solid var(--vp-c-divider, #e2e2e3);
+      border: 1px solid var(--bp-c-divider, #e2e2e3);
     }
 
     .image-figure figcaption {
       margin-top: 12px;
       font-size: 14px;
-      color: var(--vp-c-text-2, #67676c);
+      color: var(--bp-c-text-2, #67676c);
       font-style: italic;
       text-align: center;
     }
@@ -204,7 +204,7 @@ export const defaultConfig: BunPressConfig = {
     }
 
     /* Raw Container - No styling */
-    .vp-raw {
+    .bp-raw {
       margin: 16px 0;
     }
     `,

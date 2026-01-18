@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 import type { BunPressConfig } from './types'
-import { YAML } from 'bun'
+import { Glob, YAML } from 'bun'
+import { stat } from 'node:fs/promises'
+import { join } from 'node:path'
 import process from 'node:process'
 import { config } from './config'
 import { getSyntaxHighlightingStyles, highlightCode } from './highlighter'
@@ -41,8 +43,8 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
           }
 
           const isActive = link === currentPath || item.link === currentPath
-          const activeStyle = isActive ? 'color: var(--vp-c-brand-1); font-weight: 500;' : ''
-          return `<li><a href="${link}" style="display: block; padding: 6px 24px; color: var(--vp-c-text-2); text-decoration: none; font-size: 14px; transition: color 0.25s; ${activeStyle}" onmouseover="this.style.color='var(--vp-c-brand-1)'" onmouseout="this.style.color='${isActive ? 'var(--vp-c-brand-1)' : 'var(--vp-c-text-2)'}'">${item.text}</a></li>`
+          const activeStyle = isActive ? 'color: var(--bp-c-brand-1); font-weight: 500;' : ''
+          return `<li><a href="${link}" style="display: block; padding: 6px 24px; color: var(--bp-c-text-2); text-decoration: none; font-size: 14px; transition: color 0.25s; ${activeStyle}" onmouseover="this.style.color='var(--bp-c-brand-1)'" onmouseout="this.style.color='${isActive ? 'var(--bp-c-brand-1)' : 'var(--bp-c-text-2)'}'">${item.text}</a></li>`
         }).join('')
       : ''
 
@@ -1763,10 +1765,6 @@ export async function serveCLI(options: {
     console.log(`Watching for changes in ${root} directory...\n`)
 
     try {
-      const { Glob } = await import('bun')
-      const { stat } = await import('node:fs/promises')
-      const { join } = await import('node:path')
-
       // Track file modification times
       const fileStats = new Map<string, number>()
 

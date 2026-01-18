@@ -1,9 +1,9 @@
 <div class="VPSidebarItem sidebar-section" style="margin-bottom: 16px;">
   <button
-    style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 8px 24px; font-size: 14px; font-weight: 600; color: var(--vp-c-text-1); background: transparent; border: none; cursor: pointer; transition: color 0.25s;"
+    style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 8px 24px; font-size: 14px; font-weight: 600; color: var(--bp-c-text-1); background: transparent; border: none; cursor: pointer; transition: color 0.25s;"
     onclick="toggleSection(this.parentElement)"
-    onmouseover="this.style.color='var(--vp-c-brand-1)'"
-    onmouseout="this.style.color='var(--vp-c-text-1)'"
+    onmouseover="this.style.color='var(--bp-c-brand-1)'"
+    onmouseout="this.style.color='var(--bp-c-text-1)'"
   >
     <span>{{ title }}</span>
     <svg class="chevron" style="width: 16px; height: 16px; transition: transform 0.2s ease-in-out;" fill="none" stroke="currentColor" viewBox="0 0 24 24">

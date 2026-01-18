@@ -1,6 +1,6 @@
-<aside class="VPDocAside" style="position: fixed; top: var(--vp-nav-height, 64px); bottom: 0; width: 256px; overflow-y: auto; padding: 32px 16px; display: none; right: max(0px, calc((100vw - var(--vp-layout-max-width, 1440px)) / 2));">
+<aside class="VPDocAside" style="position: fixed; top: var(--bp-nav-height, 64px); bottom: 0; width: 256px; overflow-y: auto; padding: 32px 16px; display: none; right: max(0px, calc((100vw - var(--bp-layout-max-width, 1440px)) / 2));">
   <div class="VPDocAsideOutline" style="font-size: 14px;">
-    <p style="font-weight: 600; color: var(--vp-c-text-1); margin-bottom: 16px;">On this page</p>
+    <p style="font-weight: 600; color: var(--bp-c-text-1); margin-bottom: 16px;">On this page</p>
     <nav class="page-toc">
       {{ items }}
     </nav>
@@ -18,21 +18,21 @@
 .page-toc a {
   display: block;
   padding: 4px 0 4px 16px;
-  color: var(--vp-c-text-2);
+  color: var(--bp-c-text-2);
   text-decoration: none;
-  border-left: 1px solid var(--vp-c-divider);
+  border-left: 1px solid var(--bp-c-divider);
   transition: all 0.25s ease-in-out;
   font-size: 13px;
   line-height: 20px;
 }
 
 .page-toc a:hover {
-  color: var(--vp-c-brand-1);
+  color: var(--bp-c-brand-1);
 }
 
 .page-toc a.active {
-  color: var(--vp-c-brand-1);
-  border-left-color: var(--vp-c-brand-1);
+  color: var(--bp-c-brand-1);
+  border-left-color: var(--bp-c-brand-1);
   font-weight: 500;
 }
 

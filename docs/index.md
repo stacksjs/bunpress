@@ -5,7 +5,7 @@ layout: home
 hero:
   name: "BunPress"
   text: "Fast, modern documentation engine"
-  tagline: "Powered by Bun, inspired by VitePress. 5x faster builds with complete SEO."
+  tagline: "Powered by Bun, inspired by VitePress. 11x faster than Eleventy, the fastest SSG."
   image: /images/logo-white.png
   actions:
     - theme: brand
@@ -17,7 +17,7 @@ hero:
 
 features:
   - title: "⚡ Lightning Fast"
-    details: "~500ms builds for 100 files, ~100ms dev server startup. 5x faster than VitePress, 16x faster than Docusaurus."
+    details: "4,000 files in 0.18s. 11x faster than Eleventy, 130x faster than Astro. 22,000+ files/second throughput."
   - title: "📝 Rich Markdown"
     details: "VitePress-compatible: containers, alerts, code groups, badges, emoji (150+ shortcodes), custom anchors."
   - title: "💻 Advanced Code"

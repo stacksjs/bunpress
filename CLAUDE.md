@@ -338,6 +338,30 @@ The main markdown() and stx() plugins in `src/plugin.ts` are commented out throu
 - `test:quick` uses 10s timeout for rapid feedback
 - `test:full` uses 60s timeout and doesn't bail on first failure
 
+### Performance Benchmark
+
+The `test/benchmark.test.ts` file contains a comprehensive performance benchmark comparing BunPress against other static site generators using the same methodology as [11ty's official benchmarks](https://www.11ty.dev/docs/performance/):
+
+```bash
+# Run the benchmark
+bun test test/benchmark.test.ts --timeout 600000
+```
+
+**Results (4,000 markdown files):**
+
+| Mode | BunPress | Eleventy | Astro | Gatsby | Next.js |
+|------|----------|----------|-------|--------|---------|
+| Fast | **0.18s** | 1.93s | 22.90s | 29.05s | 70.65s |
+| Full | **4.12s** | - | 22.90s | 29.05s | 70.65s |
+
+- **Fast Mode**: Simple markdown to HTML (comparable to Eleventy) - 22,000+ files/second
+- **Full Mode**: With syntax highlighting, templates, TOC (comparable to Astro)
+
+The benchmark includes:
+- `fastMarkdownToHtml()` - Optimized parser for pure speed benchmarks
+- `runFastBuildBenchmark()` - Tests fast mode performance
+- `runFullBuildBenchmark()` - Tests full-featured mode performance
+
 ### Git Hooks
 
 Pre-commit hook runs staged linting:

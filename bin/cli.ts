@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 import { Glob } from 'bun'
 import { copyFile, mkdir, readdir } from 'node:fs/promises'
 import { join } from 'node:path'

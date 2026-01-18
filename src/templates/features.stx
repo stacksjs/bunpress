@@ -1,4 +1,4 @@
-<div class="VPHomeFeatures" style="padding: 64px 24px; border-top: 1px solid var(--vp-c-divider);">
+<div class="VPHomeFeatures" style="padding: 64px 24px; border-top: 1px solid var(--bp-c-divider);">
   <div style="max-width: 1152px; margin: 0 auto;">
     <div class="VPFeatures" style="display: grid; grid-template-columns: repeat(1, 1fr); gap: 24px;">
       {{ items }}
