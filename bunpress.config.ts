@@ -17,11 +17,23 @@ const config: BunPressOptions = {
   // SEO Configuration
   sitemap: {
     enabled: true,
-    baseUrl: 'https://bunpress.sh',
+    baseUrl: 'https://bunpress.stacksjs.com',
   },
 
   robots: {
     enabled: true,
+  },
+
+  // Cloud Deployment Configuration
+  cloud: {
+    driver: 'aws',
+    region: 'us-east-1',
+    subdomain: 'bunpress',
+    baseDomain: 'stacksjs.com',
+    // bucket, hostedZoneId, distributionId, and certificateArn are auto-inferred
+    invalidateCache: true,
+    waitForInvalidation: false,
+    cacheControl: 'max-age=31536000, public',
   },
 }
 

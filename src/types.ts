@@ -53,6 +53,96 @@ export interface BunPressConfig {
    * Self-hosted analytics configuration (using Stacks Analytics / dynamodb-tooling)
    */
   selfHostedAnalytics?: SelfHostedAnalyticsConfig
+
+  /**
+   * Cloud deployment configuration (AWS via ts-cloud)
+   */
+  cloud?: CloudConfig
+}
+
+/**
+ * Cloud deployment configuration
+ */
+export interface CloudConfig {
+  /**
+   * Cloud provider driver
+   * @default 'aws'
+   */
+  driver?: 'aws'
+
+  /**
+   * AWS region for deployment
+   * @default 'us-east-1'
+   */
+  region?: string
+
+  /**
+   * Custom domain for the documentation site
+   * Example: 'docs.example.com'
+   */
+  domain?: string
+
+  /**
+   * Subdomain to use (will be prefixed to the base domain)
+   * Example: 'docs' for 'docs.example.com'
+   */
+  subdomain?: string
+
+  /**
+   * Base domain (used with subdomain option)
+   * Example: 'example.com'
+   */
+  baseDomain?: string
+
+  /**
+   * S3 bucket name (auto-generated if not provided)
+   */
+  bucket?: string
+
+  /**
+   * CloudFront distribution ID (for existing distributions)
+   */
+  distributionId?: string
+
+  /**
+   * Route53 hosted zone ID (for existing hosted zones)
+   */
+  hostedZoneId?: string
+
+  /**
+   * ACM certificate ARN (for existing certificates)
+   * Must be in us-east-1 for CloudFront
+   */
+  certificateArn?: string
+
+  /**
+   * Cache control header for static assets
+   * @default 'public, max-age=31536000, immutable'
+   */
+  cacheControl?: string
+
+  /**
+   * Enable CloudFront cache invalidation after deploy
+   * @default true
+   */
+  invalidateCache?: boolean
+
+  /**
+   * Wait for CloudFront invalidation to complete
+   * @default true
+   */
+  waitForInvalidation?: boolean
+
+  /**
+   * CloudFormation stack name
+   */
+  stackName?: string
+
+  /**
+   * Environment name (production, staging, etc.)
+   * @default 'production'
+   */
+  environment?: string
 }
 
 export type BunPressOptions = Partial<BunPressConfig>

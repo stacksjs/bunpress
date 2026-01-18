@@ -18,6 +18,7 @@ import { newCommand } from './commands/new'
 import { previewCommand } from './commands/preview'
 import { seoCheck } from './commands/seo'
 import { statsCommand } from './commands/stats'
+import { deployCommand } from './commands/deploy'
 import { formatTime, logSuccess, Spinner } from './utils'
 // import { markdown, stx } from '../src/plugin'
 
@@ -648,6 +649,30 @@ cli
   .option('--fix', 'Automatically fix issues (add missing titles/descriptions)', { default: false })
   .action(async (options: CliOption) => {
     await seoCheck(options)
+  })
+
+cli
+  .command('deploy', 'Deploy documentation to AWS using CloudFormation (S3 + CloudFront + Route53)')
+  .option('--region <region>', 'AWS region for S3 bucket', { default: 'us-east-1' })
+  .option('--bucket <bucket>', 'S3 bucket name (auto-generated if not provided)')
+  .option('--domain <domain>', 'Custom domain (e.g., docs.example.com)')
+  .option('--subdomain <subdomain>', 'Subdomain (used with --base-domain)')
+  .option('--base-domain <baseDomain>', 'Base domain (e.g., example.com) - must have Route53 hosted zone')
+  .option('--stack-name <stackName>', 'CloudFormation stack name')
+  .option('--hosted-zone-id <hostedZoneId>', 'Route53 hosted zone ID (auto-detected from domain)')
+  .option('--certificate-arn <certificateArn>', 'ACM certificate ARN (auto-created if not provided)')
+  .option('--dry-run', 'Show configuration without deploying', { default: false })
+  .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
+  .action(async (options: CliOption & {
+    baseDomain?: string
+    stackName?: string
+    hostedZoneId?: string
+    certificateArn?: string
+    dryRun?: boolean
+  }) => {
+    const success = await deployCommand(options)
+    if (!success)
+      process.exit(1)
   })
 
 cli.help()
