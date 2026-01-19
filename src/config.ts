@@ -132,6 +132,104 @@ export const defaultConfig: BunPressConfig = {
       color: var(--bp-c-success-1, #18794e);
     }
 
+    /* Code block backgrounds fix */
+    pre {
+      position: relative;
+      background-color: var(--bp-code-block-bg, var(--bp-c-bg-alt, #f6f6f7));
+      border-radius: 8px;
+      margin: 16px 0;
+      overflow-x: auto;
+    }
+
+    pre code {
+      display: block;
+      padding: 20px 24px;
+      background-color: transparent;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--bp-c-text-1, #3c3c43);
+    }
+
+    /* Shiki code blocks */
+    pre.shiki,
+    pre.shiki code,
+    .shiki {
+      background-color: var(--bp-code-block-bg, var(--bp-c-bg-alt, #f6f6f7)) !important;
+    }
+
+    html.dark pre,
+    html.dark pre.shiki,
+    html.dark .shiki {
+      background-color: var(--bp-code-block-bg, #161618) !important;
+    }
+
+    html.dark pre code {
+      color: var(--bp-c-text-1, rgba(255, 255, 245, 0.86));
+    }
+
+    /* Code groups - tabbed code blocks */
+    .code-group {
+      margin: 16px 0;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--bp-c-divider, #e2e2e3);
+    }
+
+    .code-group-tabs {
+      display: flex;
+      background-color: var(--bp-code-block-bg, var(--bp-c-bg-alt, #f6f6f7));
+      border-bottom: 1px solid var(--bp-c-divider, #e2e2e3);
+      overflow-x: auto;
+    }
+
+    html.dark .code-group-tabs {
+      background-color: var(--bp-code-block-bg, #161618);
+    }
+
+    .code-group-tab {
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--bp-c-text-2, #67676c);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .code-group-tab:hover {
+      color: var(--bp-c-text-1, #3c3c43);
+    }
+
+    .code-group-tab.active {
+      color: var(--bp-c-brand-1, #5672cd);
+      border-bottom-color: var(--bp-c-brand-1, #5672cd);
+    }
+
+    .code-group-panels {
+      background-color: var(--bp-code-block-bg, var(--bp-c-bg-alt, #f6f6f7));
+    }
+
+    html.dark .code-group-panels {
+      background-color: var(--bp-code-block-bg, #161618);
+    }
+
+    .code-group-panel {
+      display: none;
+    }
+
+    .code-group-panel.active {
+      display: block;
+    }
+
+    .code-group-panel pre {
+      margin: 0;
+      border-radius: 0;
+      border: none;
+    }
+
     /* Enhanced Tables */
     .table-responsive {
       overflow-x: auto;
@@ -252,14 +350,19 @@ export const defaultConfig: BunPressConfig = {
       display: inline-block;
     }
 
+    /* Split button group */
+    .copy-page-button-group {
+      display: flex;
+      align-items: stretch;
+    }
+
     .copy-page-button {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 16px;
+      padding: 8px 12px;
       background-color: var(--bp-c-bg-soft, #f6f6f7);
       border: 1px solid var(--bp-c-divider, #e2e2e3);
-      border-radius: 8px;
       color: var(--bp-c-text-1, #3c3c43);
       font-size: 14px;
       font-weight: 500;
@@ -267,9 +370,28 @@ export const defaultConfig: BunPressConfig = {
       transition: all 0.2s ease;
     }
 
+    .copy-page-button.copy-page-main {
+      border-radius: 8px 0 0 8px;
+      border-right: none;
+      padding-right: 12px;
+    }
+
+    .copy-page-button.copy-page-toggle {
+      border-radius: 0 8px 8px 0;
+      padding: 8px 8px;
+      border-left: 1px solid var(--bp-c-divider, #e2e2e3);
+    }
+
     .copy-page-button:hover {
       background-color: var(--bp-c-bg, #ffffff);
+    }
+
+    .copy-page-button-group:hover .copy-page-button {
       border-color: var(--bp-c-brand-1, #5672cd);
+    }
+
+    .copy-page-button-group:hover .copy-page-toggle {
+      border-left-color: var(--bp-c-brand-1, #5672cd);
     }
 
     .copy-page-button svg {
@@ -285,6 +407,24 @@ export const defaultConfig: BunPressConfig = {
 
     .copy-page-dropdown.open .copy-page-button .chevron {
       transform: rotate(180deg);
+    }
+
+    /* Copied state */
+    .copy-page-button.copied {
+      background-color: var(--bp-c-success-soft, rgba(16, 185, 129, 0.14));
+    }
+
+    .copy-page-button.copied .copy-icon {
+      display: none;
+    }
+
+    .copy-page-button.copied .check-icon {
+      display: block !important;
+      color: var(--bp-c-success-1, #18794e);
+    }
+
+    .copy-page-button.copied .button-text {
+      color: var(--bp-c-success-1, #18794e);
     }
 
     .copy-page-menu {
@@ -383,6 +523,38 @@ export const defaultConfig: BunPressConfig = {
 
     /* Dark mode support */
     html.dark .copy-page-menu {
+      background-color: var(--bp-c-bg, #1a1a1a);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Toast notification */
+    .bp-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 20px;
+      background-color: var(--bp-c-bg, #ffffff);
+      border: 1px solid var(--bp-c-divider, #e2e2e3);
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--bp-c-text-1, #3c3c43);
+      z-index: 9999;
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .bp-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    html.dark .bp-toast {
       background-color: var(--bp-c-bg, #1a1a1a);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
@@ -502,6 +674,31 @@ function closeCopyPageDropdown() {
   }
 }
 
+// Direct copy button (left side of split button)
+function copyPageDirect(event) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const markdown = getPageAsMarkdown();
+  const button = event.currentTarget;
+  const textEl = button.querySelector('.button-text');
+
+  navigator.clipboard.writeText(markdown).then(() => {
+    // Show copied state
+    button.classList.add('copied');
+    textEl.textContent = 'Copied!';
+
+    // Reset after delay
+    setTimeout(() => {
+      button.classList.remove('copied');
+      textEl.textContent = 'Copy page';
+    }, 2000);
+  }).catch(err => {
+    console.error('Failed to copy:', err);
+    showToast('Failed to copy. Please try again.');
+  });
+}
+
 // Get the page content as markdown-formatted text for LLMs
 function getPageAsMarkdown() {
   const article = document.querySelector('article.bp-doc');
@@ -616,6 +813,35 @@ function getPageAsMarkdown() {
   return \`# \${title}\\n\\nSource: \${url}\\n\\n\${content}\`;
 }
 
+// Show toast notification
+function showToast(message, duration = 3000) {
+  // Remove existing toast
+  const existingToast = document.querySelector('.bp-toast');
+  if (existingToast) {
+    existingToast.remove();
+  }
+
+  const toast = document.createElement('div');
+  toast.className = 'bp-toast';
+  toast.innerHTML = \`
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px; color: #10b981;">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    </svg>
+    <span>\${message}</span>
+  \`;
+  document.body.appendChild(toast);
+
+  // Trigger animation
+  requestAnimationFrame(() => {
+    toast.classList.add('show');
+  });
+
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
 function copyPageAsMarkdown(event) {
   event.preventDefault();
   event.stopPropagation();
@@ -623,51 +849,110 @@ function copyPageAsMarkdown(event) {
   const markdown = getPageAsMarkdown();
 
   navigator.clipboard.writeText(markdown).then(() => {
+    // Update button to show copied state
     const menuItem = event.currentTarget;
-    menuItem.classList.add('copied');
+    const iconEl = menuItem.querySelector('.icon svg');
     const titleEl = menuItem.querySelector('.title');
-    const originalText = titleEl.innerHTML;
-    titleEl.innerHTML = 'Copied!';
+    const originalIcon = iconEl.outerHTML;
+    const originalTitle = titleEl.textContent;
+
+    // Show checkmark icon
+    iconEl.outerHTML = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: #10b981;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+    titleEl.textContent = 'Copied to clipboard!';
+    menuItem.classList.add('copied');
+
+    // Show toast
+    showToast('Page copied as Markdown');
 
     setTimeout(() => {
+      menuItem.querySelector('.icon').innerHTML = originalIcon;
+      titleEl.textContent = originalTitle;
       menuItem.classList.remove('copied');
-      titleEl.innerHTML = originalText;
       closeCopyPageDropdown();
     }, 1500);
   }).catch(err => {
     console.error('Failed to copy:', err);
+    showToast('Failed to copy. Please try again.');
   });
 }
 
 function viewAsMarkdown(event) {
   event.preventDefault();
   const markdown = getPageAsMarkdown();
-  const blob = new Blob([markdown], { type: 'text/markdown' });
+  const blob = new Blob([markdown], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
   window.open(url, '_blank');
+  closeCopyPageDropdown();
 }
 
 function openInChatGPT(event) {
   event.preventDefault();
+  event.stopPropagation();
+
+  const title = document.querySelector('h1')?.textContent || document.title;
+  const pageUrl = window.location.href;
   const markdown = getPageAsMarkdown();
-  const prompt = encodeURIComponent('Please help me understand this documentation:\\n\\n' + markdown);
-  window.open('https://chat.openai.com/?q=' + prompt, '_blank');
+
+  const prompt = \`Please help me understand this documentation page:
+
+Title: \${title}
+URL: \${pageUrl}
+
+---
+
+\${markdown}\`;
+
+  navigator.clipboard.writeText(prompt).then(() => {
+    showToast('Content copied! Paste it in ChatGPT');
+    closeCopyPageDropdown();
+    setTimeout(() => {
+      window.open('https://chat.openai.com/', '_blank');
+    }, 500);
+  }).catch(err => {
+    console.error('Failed to copy:', err);
+    showToast('Failed to copy. Please try again.');
+  });
 }
 
 function openInClaude(event) {
   event.preventDefault();
+  event.stopPropagation();
+
+  const title = document.querySelector('h1')?.textContent || document.title;
+  const pageUrl = window.location.href;
   const markdown = getPageAsMarkdown();
-  // Claude doesn't have a direct URL scheme, so copy to clipboard and open Claude
-  navigator.clipboard.writeText(markdown).then(() => {
-    window.open('https://claude.ai/new', '_blank');
+
+  const prompt = \`Please help me understand this documentation page:
+
+Title: \${title}
+URL: \${pageUrl}
+
+---
+
+\${markdown}\`;
+
+  navigator.clipboard.writeText(prompt).then(() => {
+    showToast('Content copied! Paste it in Claude');
+    closeCopyPageDropdown();
+    setTimeout(() => {
+      window.open('https://claude.ai/new', '_blank');
+    }, 500);
+  }).catch(err => {
+    console.error('Failed to copy:', err);
+    showToast('Failed to copy. Please try again.');
   });
 }
 
 function openInPerplexity(event) {
   event.preventDefault();
+  event.stopPropagation();
+
   const title = document.querySelector('h1')?.textContent || document.title;
-  const url = window.location.href;
-  const query = encodeURIComponent('Help me understand: ' + title + ' from ' + url);
+  const pageUrl = window.location.href;
+
+  // Perplexity supports URL-based search
+  const query = encodeURIComponent(\`Explain this documentation: "\${title}" \${pageUrl}\`);
+  closeCopyPageDropdown();
   window.open('https://www.perplexity.ai/search?q=' + query, '_blank');
 }
 
