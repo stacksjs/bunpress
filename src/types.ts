@@ -179,10 +179,10 @@ export interface MarkdownPluginConfig {
   meta?: Record<string, string>
 
   /**
-   * Custom marked options
-   * @see https://marked.js.org/using_advanced
+   * Custom ts-md parser options
+   * @see https://github.com/stacksjs/ts-md
    */
-  markedOptions?: any
+  parserOptions?: any
 
   /**
    * Enable or disable preserving directory structure in output

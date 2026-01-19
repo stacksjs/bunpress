@@ -26,6 +26,10 @@ const varsCSS = `/**
 }
 
 /**
+ * Colors: Palette - Light/Dark specific
+ * -------------------------------------------------------------------------- */
+
+/**
  * Colors: Palette
  * -------------------------------------------------------------------------- */
 
@@ -448,16 +452,124 @@ const varsCSS = `/**
 }
 
 /**
- * Icons
+ * Icons - Matches VitePress icons.css exactly
  * -------------------------------------------------------------------------- */
 
 :root {
-  --bp-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' height='20' width='20' stroke='rgba(128,128,128,1)' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2'/%3E%3C/svg%3E");
-  --bp-icon-copied: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' height='20' width='20' stroke='rgba(128,128,128,1)' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m-6 9 2 2 4-4'/%3E%3C/svg%3E");
+  /* clipboard - matches VitePress exactly */
+  --bp-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='rgba(128,128,128,1)' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Crect width='8' height='4' x='8' y='2' rx='1' ry='1'/%3E%3Cpath d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'/%3E%3C/g%3E%3C/svg%3E");
+  /* clipboard-check - matches VitePress exactly */
+  --bp-icon-copied: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='rgba(128,128,128,1)' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Crect width='8' height='4' x='8' y='2' rx='1' ry='1'/%3E%3Cpath d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'/%3E%3Cpath d='m9 14l2 2l4-4'/%3E%3C/g%3E%3C/svg%3E");
   --bp-icon-external: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M0 0h24v24H0V0z' fill='none'/%3E%3Cpath d='M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5H9z'/%3E%3C/svg%3E");
+}
+
+/**
+ * Icon Classes - Matches VitePress .vpi-* icons
+ * -------------------------------------------------------------------------- */
+
+[class^='bpi-'],
+[class*=' bpi-'],
+.bp-icon {
+  width: 1em;
+  height: 1em;
+}
+
+[class^='bpi-'].bg,
+[class*=' bpi-'].bg,
+.bp-icon.bg {
+  background-size: 100% 100%;
+  background-color: transparent;
+}
+
+[class^='bpi-']:not(.bg),
+[class*=' bpi-']:not(.bg),
+.bp-icon:not(.bg) {
+  -webkit-mask: var(--icon) no-repeat;
+  mask: var(--icon) no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  background-color: currentColor;
+  color: inherit;
+}
+
+.bpi-align-left {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M15 12H3m14 6H3M21 6H3'/%3E%3C/svg%3E");
+}
+
+.bpi-arrow-right,
+.bpi-arrow-down,
+.bpi-arrow-left,
+.bpi-arrow-up {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 12h14m-7-7l7 7l-7 7'/%3E%3C/svg%3E");
+}
+
+.bpi-chevron-right,
+.bpi-chevron-down,
+.bpi-chevron-left,
+.bpi-chevron-up {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m9 18l6-6l-6-6'/%3E%3C/svg%3E");
+}
+
+.bpi-chevron-down,
+.bpi-arrow-down {
+  transform: rotate(90deg);
+}
+
+.bpi-chevron-left,
+.bpi-arrow-left {
+  transform: rotate(180deg);
+}
+
+.bpi-chevron-up,
+.bpi-arrow-up {
+  transform: rotate(-90deg);
+}
+
+.bpi-square-pen {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/%3E%3Cpath d='M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.bpi-plus {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 12h14m-7-7v14'/%3E%3C/svg%3E");
+}
+
+.bpi-sun {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='4'/%3E%3Cpath d='M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.bpi-moon {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 3a6 6 0 0 0 9 9a9 9 0 1 1-9-9'/%3E%3C/svg%3E");
+}
+
+.bpi-more-horizontal {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='1'/%3E%3Ccircle cx='19' cy='12' r='1'/%3E%3Ccircle cx='5' cy='12' r='1'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.bpi-languages {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m5 8l6 6m-7 0l6-6l2-3M2 5h12M7 2h1m14 20l-5-10l-5 10m2-4h6'/%3E%3C/svg%3E");
+}
+
+.bpi-heart {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2c-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z'/%3E%3C/svg%3E");
+}
+
+.bpi-search {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.6'%3E%3Cpath d='m21 21l-4.34-4.34'/%3E%3Ccircle cx='11' cy='11' r='8' stroke-width='1.4'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.bpi-layout-list {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Crect width='7' height='7' x='3' y='3' rx='1'/%3E%3Crect width='7' height='7' x='3' y='14' rx='1'/%3E%3Cpath d='M14 4h7m-7 5h7m-7 6h7m-7 5h7'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.bpi-delete {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M10 5a2 2 0 0 0-1.344.519l-6.328 5.74a1 1 0 0 0 0 1.481l6.328 5.741A2 2 0 0 0 10 19h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm2 4l6 6m0-6l-6 6'/%3E%3C/svg%3E");
+}
+
+.bpi-corner-down-left {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M20 4v7a4 4 0 0 1-4 4H4'/%3E%3Cpath d='m9 10l-5 5l5 5'/%3E%3C/g%3E%3C/svg%3E");
 }`
 
-// Base CSS - Matches VitePress base.css
+// Base CSS - Matches VitePress base.css exactly
 const baseCSS = `/**
  * VitePress Theme for BunPress - Base Styles
  * -------------------------------------------------------------------------- */
@@ -599,6 +711,118 @@ textarea {
   padding: 0;
   line-height: inherit;
   color: inherit;
+}
+
+button {
+  padding: 0;
+  font-family: inherit;
+  background-color: transparent;
+  background-image: none;
+}
+
+button:enabled,
+[role='button']:enabled {
+  cursor: pointer;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 1px dotted;
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+button:focus:not(:focus-visible) {
+  outline: none !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+input {
+  background-color: transparent;
+}
+
+input:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+  color: var(--bp-c-text-3);
+}
+
+input::-ms-input-placeholder,
+textarea::-ms-input-placeholder {
+  color: var(--bp-c-text-3);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--bp-c-text-3);
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+textarea {
+  resize: vertical;
+}
+
+select {
+  -webkit-appearance: none;
+}
+
+fieldset {
+  margin: 0;
+  padding: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+li,
+p {
+  overflow-wrap: break-word;
+}
+
+vite-error-overlay {
+  z-index: 9999;
+}
+
+mjx-container {
+  overflow-x: auto;
+}
+
+mjx-container > svg {
+  display: inline-block;
+  margin: auto;
+}
+
+/**
+ * Utility Classes
+ * -------------------------------------------------------------------------- */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  white-space: nowrap;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
 }
 
 /**
@@ -904,6 +1128,8 @@ textarea {
 }
 
 .bp-doc div[class*='language-'] + div[class*='language-'],
+.bp-doc div[class$='-api'] + div[class*='language-'],
+.bp-doc div[class*='language-'] + div[class$='-api'] > div[class*='language-'],
 .bp-doc pre[data-lang] + pre[data-lang] {
   margin-top: -8px;
 }
@@ -975,11 +1201,18 @@ textarea {
   left: 10px;
 }
 
-/* Focus lines with blur effect */
+/* Focus lines with blur effect - matches VitePress exactly */
 .bp-doc [class*='language-'] .has-focused-lines .line:not(.has-focus),
 .bp-doc pre[data-lang] .has-focused-lines .line:not(.has-focus) {
   filter: blur(0.095rem);
   opacity: 0.4;
+  transition: filter 0.35s, opacity 0.35s;
+}
+
+/* VitePress has a second rule that overrides the opacity to 0.7 */
+.bp-doc [class*='language-'] .has-focused-lines .line:not(.has-focus),
+.bp-doc pre[data-lang] .has-focused-lines .line:not(.has-focus) {
+  opacity: 0.7;
   transition: filter 0.35s, opacity 0.35s;
 }
 
@@ -1149,6 +1382,38 @@ textarea {
 .external-link-icon-enabled :is(.bp-doc a[href*='://'], .bp-doc a[target='_blank']):not(:is(.no-icon, svg a, :has(img, svg)))::after {
   content: '';
   color: currentColor;
+}
+
+/**
+ * Component: Team - VPTeamMembers
+ * -------------------------------------------------------------------------- */
+
+.bp-doc .BPTeamMembers {
+  margin-top: 24px;
+}
+
+.bp-doc .BPTeamMembers.small.count-1 .container {
+  margin: 0 !important;
+  max-width: calc((100% - 24px) / 2) !important;
+}
+
+.bp-doc .BPTeamMembers.small.count-2 .container,
+.bp-doc .BPTeamMembers.small.count-3 .container {
+  max-width: 100% !important;
+}
+
+.bp-doc .BPTeamMembers.medium.count-1 .container {
+  margin: 0 !important;
+  max-width: calc((100% - 24px) / 2) !important;
+}
+
+/**
+ * Custom block code group tabs
+ * -------------------------------------------------------------------------- */
+
+.bp-doc .custom-block .bp-code-group .tabs {
+  margin: 0;
+  border-radius: 8px 8px 0 0;
 }`
 
 // Custom Block CSS - Matches VitePress custom-block.css
@@ -1505,7 +1770,7 @@ const customBlockCSS = `/**
   fill: var(--bp-c-caution-1);
 }`
 
-// Code Group CSS - Matches VitePress vp-code-group.css
+// Code Group CSS - Matches VitePress vp-code-group.css exactly
 const codeGroupCSS = `/**
  * VitePress Theme for BunPress - Code Groups
  * -------------------------------------------------------------------------- */
@@ -1534,6 +1799,13 @@ const codeGroupCSS = `/**
     margin-left: 0;
     border-radius: 8px 8px 0 0;
   }
+}
+
+/* Hidden input for tab switching - matches VitePress exactly */
+.bp-code-group .tabs input {
+  position: fixed;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .bp-code-group .tabs label,

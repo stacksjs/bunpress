@@ -182,34 +182,33 @@ export default {
 }
 ```
 
-## Custom Marked Extensions
+## Using ts-md Parser
 
-Extend Marked.js with custom extensions.
+BunPress uses ts-md, a fast native Bun-powered markdown parser.
 
 ```typescript
-import { marked } from 'marked'
+import { parseMarkdown, parseMarkdownWithFrontmatter } from 'ts-md'
 
-// Custom extension for spoilers
-const spoilerExtension = {
-  name: 'spoiler',
-  level: 'inline',
-  start: (src: string) => src.match(/\|\|/)?.index,
-  tokenizer: (src: string) => {
-    const match = src.match(/^\|\|([^|]+)\|\|/)
-    if (match) {
-      return {
-        type: 'spoiler',
-        raw: match[0],
-        text: match[1]
-      }
-    }
-  },
-  renderer: (token: any) => {
-    return `<span class="spoiler">${token.text}</span>`
-  }
-}
+// Parse markdown to HTML
+const html = parseMarkdown('# Hello **World**')
 
-marked.use({ extensions: [spoilerExtension] })
+// Parse with frontmatter
+const result = parseMarkdownWithFrontmatter(`---
+title: My Document
+---
+
+# Content here
+`)
+
+console.log(result.data) // { title: 'My Document' }
+console.log(result.html) // '<h1 id="content-here">Content here</h1>'
+
+// With syntax highlighting callback
+const highlighted = parseMarkdown(content, {
+  gfm: true,
+  breaks: false,
+  highlight: (code, lang) => highlightCode(code, lang)
+})
 ```
 
 ## Build Hooks
