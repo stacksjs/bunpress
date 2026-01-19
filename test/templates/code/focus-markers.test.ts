@@ -321,9 +321,9 @@ describe('Code Block Focus Markers', () => {
         const response = await fetch('http://localhost:8012/test-focus-multiple-blocks')
         const html = await response.text()
 
-        // First block should have focused lines
-        const hasFocusedCount = (html.match(/has-focused-lines/g) || []).length
-        expect(hasFocusedCount).toBe(1)
+        // First block should have focused lines (count only in <pre> tags, not CSS)
+        const preTagMatches = html.match(/<pre[^>]*class="[^"]*has-focused-lines[^"]*"/g) || []
+        expect(preTagMatches.length).toBe(1)
 
         // Should have both languages
         expect(html).toContain('class="language-js"')

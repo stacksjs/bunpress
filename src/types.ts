@@ -182,7 +182,18 @@ export interface MarkdownPluginConfig {
    * Custom ts-md parser options
    * @see https://github.com/stacksjs/ts-md
    */
-  parserOptions?: any
+  parserOptions?: {
+    /** Enable GitHub Flavored Markdown */
+    gfm?: boolean
+    /** Convert line breaks to <br> */
+    breaks?: boolean
+    /** Enable header IDs */
+    headerIds?: boolean
+    /** Prefix for header IDs */
+    headerPrefix?: string
+    /** Enable syntax highlighting */
+    highlight?: (code: string, lang: string) => string
+  }
 
   /**
    * Enable or disable preserving directory structure in output

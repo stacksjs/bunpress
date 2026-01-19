@@ -178,7 +178,7 @@ describe('Custom Containers', () => {
         const response = await fetch('http://localhost:4008/test-container-raw')
         const html = await response.text()
 
-        expect(html).toContain('<div class="vp-raw">')
+        expect(html).toContain('<div class="bp-raw">')
         // Raw containers should still process inline formatting
         expect(html).toContain('This is <strong>raw</strong> content.')
       }

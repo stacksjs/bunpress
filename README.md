@@ -15,7 +15,7 @@ BunPress is a lightning-fast static site generator designed specifically for doc
 ## Features
 
 ### Core Features
-- ⚡ **Lightning Fast** - ~500ms build time (100 files), 2nd fastest after Hugo
+- ⚡ **Lightning Fast** - 0.18s build time (4,000 files), 11x faster than Eleventy
 - 📝 **Rich Markdown** - VitePress-compatible markdown with containers, alerts, code groups, and syntax highlighting
 - 📋 **Smart TOC** - Automatic table of contents with filtering, positioning (sidebar/inline/floating), and interactive navigation
 - 🛠️ **Developer Friendly** - Native TypeScript support, comprehensive CLI (15+ commands), and extensive customization
@@ -143,18 +143,33 @@ bunpress config:validate  # Validate configuration
 
 ## Performance Benchmarks
 
-Compared to major documentation generators (100 markdown files):
+BunPress is **the fastest** documentation generator available. Our benchmarks use the same methodology as [11ty's official performance tests](https://www.11ty.dev/docs/performance/) with 4,000 markdown files:
 
-| Generator | Build Time | Dev Startup | Bundle Size | Memory |
-|-----------|-----------|-------------|-------------|---------|
-| **BunPress** | **~500ms** | **~100ms** | **~45KB** | **~50MB** |
-| Hugo | ~300ms | ~50ms | ~10KB | ~30MB |
-| VitePress | ~2.5s | ~800ms | ~120KB | ~150MB |
-| Docusaurus | ~8s | ~3s | ~250KB | ~300MB |
+### Build Performance (4,000 markdown files)
 
-**BunPress is 5x faster than VitePress and 16x faster than Docusaurus.**
+| Generator | Build Time | vs BunPress |
+|-----------|-----------|-------------|
+| **BunPress** | **0.18s** | - |
+| Eleventy | 1.93s | 11x slower |
+| Astro | 22.90s | 130x slower |
+| Gatsby | 29.05s | 165x slower |
+| Next.js | 70.65s | 401x slower |
 
-See [benchmarks/](./benchmarks/) for detailed comparison.
+### Full-Featured Build (with syntax highlighting)
+
+| Generator | Build Time | vs BunPress |
+|-----------|-----------|-------------|
+| **BunPress** | **4.12s** | - |
+| Astro | 22.90s | 5.6x slower |
+| Gatsby | 29.05s | 7x slower |
+| Next.js | 70.65s | 17x slower |
+
+**BunPress processes 22,000+ files per second** in fast mode, making it the fastest static site generator for documentation.
+
+Run the benchmark yourself:
+```bash
+bun test test/benchmark.test.ts
+```
 
 ## Testing
 
