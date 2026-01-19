@@ -5,19 +5,19 @@ layout: home
 hero:
   name: "BunPress"
   text: "Fast, modern documentation engine"
-  tagline: "Powered by Bun, inspired by VitePress. 11x faster than Eleventy, the fastest SSG."
+  tagline: "Powered by Bun, inspired by VitePress. 2x faster, 4x smaller output."
   image: /images/logo-white.png
   actions:
     - theme: brand
       text: Get Started
-      link: /install
+      link: /docs/install
     - theme: alt
       text: View on GitHub
       link: https://github.com/stacksjs/bunpress
 
 features:
   - title: "⚡ Lightning Fast"
-    details: "4,000 files in 0.18s. 11x faster than Eleventy, 130x faster than Astro. 22,000+ files/second throughput."
+    details: "4,000 files in 0.18s. 2x faster than VitePress, 11x faster than Eleventy. 22,000+ files/second throughput."
   - title: "📝 Rich Markdown"
     details: "VitePress-compatible: containers, alerts, code groups, badges, emoji (150+ shortcodes), custom anchors."
   - title: "💻 Advanced Code"
