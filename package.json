@@ -69,7 +69,8 @@
     "bench:all": "bun run bench"
   },
   "dependencies": {
-    "marked": "^17.0.0"
+    "ts-cloud": "link:ts-cloud",
+    "ts-md": "link:ts-md"
   },
   "devDependencies": {
     "@stacksjs/bumpx": "^0.2.4",
