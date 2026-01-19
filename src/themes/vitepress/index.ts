@@ -3,9 +3,10 @@
  *
  * This theme provides VitePress-compatible styling for BunPress documentation sites.
  * It includes the same color palette, typography, and component styles as VitePress.
+ * Based on VitePress source code for pixel-perfect compatibility.
  */
 
-// CSS Variables
+// CSS Variables - Matches VitePress vars.css exactly
 const varsCSS = `/**
  * VitePress Theme for BunPress
  * Colors: Solid
@@ -130,18 +131,19 @@ const varsCSS = `/**
 
 /**
  * Colors: Text
+ * Note: Using solid colors like VitePress for better consistency
  * -------------------------------------------------------------------------- */
 
 :root {
-  --bp-c-text-1: rgba(60, 60, 67);
-  --bp-c-text-2: rgba(60, 60, 67, 0.78);
-  --bp-c-text-3: rgba(60, 60, 67, 0.56);
+  --bp-c-text-1: #3c3c43;
+  --bp-c-text-2: #67676c;
+  --bp-c-text-3: #929295;
 }
 
 .dark {
-  --bp-c-text-1: rgba(255, 255, 245, 0.86);
-  --bp-c-text-2: rgba(235, 235, 245, 0.6);
-  --bp-c-text-3: rgba(235, 235, 245, 0.38);
+  --bp-c-text-1: #dfdfd6;
+  --bp-c-text-2: #98989f;
+  --bp-c-text-3: #6a6a71;
 }
 
 /**
@@ -204,6 +206,7 @@ const varsCSS = `/**
 :root {
   --bp-font-family-base: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --bp-font-family-mono: ui-monospace, 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+  font-optical-sizing: auto;
 }
 
 /**
@@ -269,10 +272,10 @@ const varsCSS = `/**
   --bp-code-block-bg: var(--bp-c-bg-alt);
   --bp-code-block-divider-color: var(--bp-c-gutter);
 
-  --bp-code-lang-color: var(--bp-c-text-3);
+  --bp-code-lang-color: var(--bp-c-text-2);
 
   --bp-code-line-highlight-color: var(--bp-c-default-soft);
-  --bp-code-line-number-color: var(--bp-c-text-3);
+  --bp-code-line-number-color: var(--bp-c-text-2);
 
   --bp-code-line-diff-add-color: var(--bp-c-success-soft);
   --bp-code-line-diff-add-symbol-color: var(--bp-c-success-1);
@@ -288,6 +291,7 @@ const varsCSS = `/**
   --bp-code-copy-code-hover-border-color: var(--bp-c-divider);
   --bp-code-copy-code-hover-bg: var(--bp-c-bg);
   --bp-code-copy-code-active-text: var(--bp-c-text-2);
+  --bp-code-copy-copied-text-content: 'Copied';
 
   --bp-code-tab-divider: var(--bp-code-block-divider-color);
   --bp-code-tab-text-color: var(--bp-c-text-2);
@@ -441,9 +445,19 @@ const varsCSS = `/**
   --bp-badge-danger-border: transparent;
   --bp-badge-danger-text: var(--bp-c-danger-1);
   --bp-badge-danger-bg: var(--bp-c-danger-soft);
+}
+
+/**
+ * Icons
+ * -------------------------------------------------------------------------- */
+
+:root {
+  --bp-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' height='20' width='20' stroke='rgba(128,128,128,1)' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2'/%3E%3C/svg%3E");
+  --bp-icon-copied: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' height='20' width='20' stroke='rgba(128,128,128,1)' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m-6 9 2 2 4-4'/%3E%3C/svg%3E");
+  --bp-icon-external: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M0 0h24v24H0V0z' fill='none'/%3E%3Cpath d='M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5H9z'/%3E%3C/svg%3E");
 }`
 
-// Base CSS
+// Base CSS - Matches VitePress base.css
 const baseCSS = `/**
  * VitePress Theme for BunPress - Base Styles
  * -------------------------------------------------------------------------- */
@@ -631,6 +645,16 @@ textarea {
   font-size: 18px;
 }
 
+.bp-doc h5 {
+  margin: 16px 0 0;
+  font-size: 16px;
+}
+
+.bp-doc h6 {
+  margin: 16px 0 0;
+  font-size: 14px;
+}
+
 .bp-doc .header-anchor {
   position: absolute;
   top: 0;
@@ -674,6 +698,10 @@ textarea {
   top: 24px;
 }
 
+/**
+ * Paragraph and inline elements
+ * -------------------------------------------------------------------------- */
+
 .bp-doc p,
 .bp-doc summary {
   margin: 16px 0;
@@ -712,6 +740,10 @@ textarea {
 .bp-doc strong {
   font-weight: 600;
 }
+
+/**
+ * Lists
+ * -------------------------------------------------------------------------- */
 
 .bp-doc ul,
 .bp-doc ol {
@@ -752,7 +784,7 @@ textarea {
   margin-top: 0.25rem;
   width: 1rem;
   height: 1rem;
-  accent-color: var(--bp-c-brand-1, #5672cd);
+  accent-color: var(--bp-c-brand-1);
   cursor: default;
 }
 
@@ -760,6 +792,10 @@ textarea {
 .bp-doc .task-list-item:has(input:checked) {
   color: var(--bp-c-text-2);
 }
+
+/**
+ * Table
+ * -------------------------------------------------------------------------- */
 
 .bp-doc table {
   display: block;
@@ -796,13 +832,20 @@ textarea {
   font-size: 14px;
 }
 
+/**
+ * Decorational elements
+ * -------------------------------------------------------------------------- */
+
 .bp-doc hr {
   margin: 16px 0;
   border: none;
   border-top: 1px solid var(--bp-c-divider);
 }
 
-/* Inline code */
+/**
+ * Inline code
+ * -------------------------------------------------------------------------- */
+
 .bp-doc :not(pre, h1, h2, h3, h4, h5, h6) > code {
   font-size: var(--bp-code-font-size);
   color: var(--bp-code-color);
@@ -830,8 +873,12 @@ textarea {
   font-size: 0.9em;
 }
 
-/* Code blocks */
+/**
+ * Code blocks
+ * -------------------------------------------------------------------------- */
+
 .bp-doc div[class*='language-'],
+.bp-doc pre[data-lang],
 .bp-block {
   position: relative;
   margin: 16px -24px;
@@ -842,18 +889,36 @@ textarea {
 
 @media (min-width: 640px) {
   .bp-doc div[class*='language-'],
+  .bp-doc pre[data-lang],
   .bp-block {
     border-radius: 8px;
     margin: 16px 0;
   }
 }
 
+@media (max-width: 639px) {
+  .bp-doc li div[class*='language-'],
+  .bp-doc li pre[data-lang] {
+    border-radius: 8px 0 0 8px;
+  }
+}
+
+.bp-doc div[class*='language-'] + div[class*='language-'],
+.bp-doc pre[data-lang] + pre[data-lang] {
+  margin-top: -8px;
+}
+
 .bp-doc [class*='language-'] pre,
-.bp-doc [class*='language-'] code {
+.bp-doc [class*='language-'] code,
+.bp-doc pre[data-lang],
+.bp-doc pre[data-lang] code {
+  -moz-tab-size: 4;
+  -o-tab-size: 4;
   tab-size: 4;
 }
 
-.bp-doc [class*='language-'] pre {
+.bp-doc [class*='language-'] pre,
+.bp-doc pre[data-lang] {
   position: relative;
   z-index: 1;
   margin: 0;
@@ -863,7 +928,8 @@ textarea {
   text-align: left;
 }
 
-.bp-doc [class*='language-'] code {
+.bp-doc [class*='language-'] code,
+.bp-doc pre[data-lang] code {
   display: block;
   padding: 0 24px;
   width: fit-content;
@@ -874,7 +940,8 @@ textarea {
   transition: color 0.5s;
 }
 
-.bp-doc [class*='language-'] code .highlighted {
+.bp-doc [class*='language-'] code .highlighted,
+.bp-doc pre[data-lang] code .highlighted {
   background-color: var(--bp-code-line-highlight-color);
   transition: background-color 0.5s;
   margin: 0 -24px;
@@ -883,15 +950,18 @@ textarea {
   display: inline-block;
 }
 
-.bp-doc [class*='language-'] code .highlighted.error {
+.bp-doc [class*='language-'] code .highlighted.error,
+.bp-doc pre[data-lang] code .highlighted.error {
   background-color: var(--bp-code-line-error-color);
 }
 
-.bp-doc [class*='language-'] code .highlighted.warning {
+.bp-doc [class*='language-'] code .highlighted.warning,
+.bp-doc pre[data-lang] code .highlighted.warning {
   background-color: var(--bp-code-line-warning-color);
 }
 
-.bp-doc [class*='language-'] code .diff {
+.bp-doc [class*='language-'] code .diff,
+.bp-doc pre[data-lang] code .diff {
   transition: background-color 0.5s;
   margin: 0 -24px;
   padding: 0 24px;
@@ -899,32 +969,52 @@ textarea {
   display: inline-block;
 }
 
-.bp-doc [class*='language-'] code .diff::before {
+.bp-doc [class*='language-'] code .diff::before,
+.bp-doc pre[data-lang] code .diff::before {
   position: absolute;
   left: 10px;
 }
 
-.bp-doc [class*='language-'] code .diff.remove {
+/* Focus lines with blur effect */
+.bp-doc [class*='language-'] .has-focused-lines .line:not(.has-focus),
+.bp-doc pre[data-lang] .has-focused-lines .line:not(.has-focus) {
+  filter: blur(0.095rem);
+  opacity: 0.4;
+  transition: filter 0.35s, opacity 0.35s;
+}
+
+.bp-doc [class*='language-']:hover .has-focused-lines .line:not(.has-focus),
+.bp-doc pre[data-lang]:hover .has-focused-lines .line:not(.has-focus) {
+  filter: blur(0);
+  opacity: 1;
+}
+
+.bp-doc [class*='language-'] code .diff.remove,
+.bp-doc pre[data-lang] code .diff.remove {
   background-color: var(--bp-code-line-diff-remove-color);
   opacity: 0.7;
 }
 
-.bp-doc [class*='language-'] code .diff.remove::before {
+.bp-doc [class*='language-'] code .diff.remove::before,
+.bp-doc pre[data-lang] code .diff.remove::before {
   content: '-';
   color: var(--bp-code-line-diff-remove-symbol-color);
 }
 
-.bp-doc [class*='language-'] code .diff.add {
+.bp-doc [class*='language-'] code .diff.add,
+.bp-doc pre[data-lang] code .diff.add {
   background-color: var(--bp-code-line-diff-add-color);
 }
 
-.bp-doc [class*='language-'] code .diff.add::before {
+.bp-doc [class*='language-'] code .diff.add::before,
+.bp-doc pre[data-lang] code .diff.add::before {
   content: '+';
   color: var(--bp-code-line-diff-add-symbol-color);
 }
 
 /* Line numbers */
-.bp-doc div[class*='language-'].line-numbers-mode {
+.bp-doc div[class*='language-'].line-numbers-mode,
+.bp-doc pre[data-lang].line-numbers-mode {
   padding-left: 32px;
 }
 
@@ -945,8 +1035,75 @@ textarea {
   transition: border-color 0.5s, color 0.5s;
 }
 
+/* Copy button */
+.bp-doc [class*='language-'] > button.copy,
+.bp-doc pre[data-lang] > button.copy {
+  direction: ltr;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  border: 1px solid var(--bp-code-copy-code-border-color);
+  border-radius: 4px;
+  width: 40px;
+  height: 40px;
+  background-color: var(--bp-code-copy-code-bg);
+  opacity: 0;
+  cursor: pointer;
+  background-image: var(--bp-icon-copy);
+  background-position: 50%;
+  background-size: 20px;
+  background-repeat: no-repeat;
+  transition: border-color 0.25s, background-color 0.25s, opacity 0.25s;
+}
+
+.bp-doc [class*='language-']:hover > button.copy,
+.bp-doc [class*='language-'] > button.copy:focus,
+.bp-doc pre[data-lang]:hover > button.copy,
+.bp-doc pre[data-lang] > button.copy:focus {
+  opacity: 1;
+}
+
+.bp-doc [class*='language-'] > button.copy:hover,
+.bp-doc [class*='language-'] > button.copy.copied,
+.bp-doc pre[data-lang] > button.copy:hover,
+.bp-doc pre[data-lang] > button.copy.copied {
+  border-color: var(--bp-code-copy-code-hover-border-color);
+  background-color: var(--bp-code-copy-code-hover-bg);
+}
+
+.bp-doc [class*='language-'] > button.copy.copied,
+.bp-doc pre[data-lang] > button.copy.copied {
+  border-radius: 0 4px 4px 0;
+  background-image: var(--bp-icon-copied);
+}
+
+.bp-doc [class*='language-'] > button.copy.copied::before,
+.bp-doc pre[data-lang] > button.copy.copied::before {
+  position: relative;
+  top: -1px;
+  transform: translateX(calc(-100% - 1px));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid var(--bp-code-copy-code-hover-border-color);
+  border-right: 0;
+  border-radius: 4px 0 0 4px;
+  padding: 0 10px;
+  width: fit-content;
+  height: 40px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--bp-code-copy-code-active-text);
+  background-color: var(--bp-code-copy-code-hover-bg);
+  white-space: nowrap;
+  content: var(--bp-code-copy-copied-text-content);
+}
+
 /* Language label */
-.bp-doc [class*='language-'] > span.lang {
+.bp-doc [class*='language-'] > span.lang,
+.bp-doc pre[data-lang]::before {
   position: absolute;
   top: 2px;
   right: 8px;
@@ -956,9 +1113,45 @@ textarea {
   user-select: none;
   color: var(--bp-code-lang-color);
   transition: color 0.4s, opacity 0.4s;
+}
+
+.bp-doc pre[data-lang]::before {
+  content: attr(data-lang);
+}
+
+.bp-doc [class*='language-']:hover > button.copy + span.lang,
+.bp-doc [class*='language-'] > button.copy:focus + span.lang {
+  opacity: 0;
+}
+
+/**
+ * External links
+ * -------------------------------------------------------------------------- */
+
+:is(.bp-external-link-icon, .bp-doc a[href*='://'], .bp-doc a[target='_blank']):not(:is(.no-icon, svg a, :has(img, svg)))::after {
+  display: inline-block;
+  margin-top: -1px;
+  margin-left: 4px;
+  width: 11px;
+  height: 11px;
+  background: currentColor;
+  color: var(--bp-c-text-3);
+  flex-shrink: 0;
+  --icon: var(--bp-icon-external);
+  -webkit-mask-image: var(--icon);
+  mask-image: var(--icon);
+}
+
+.bp-external-link-icon::after {
+  content: '';
+}
+
+.external-link-icon-enabled :is(.bp-doc a[href*='://'], .bp-doc a[target='_blank']):not(:is(.no-icon, svg a, :has(img, svg)))::after {
+  content: '';
+  color: currentColor;
 }`
 
-// Custom Block CSS
+// Custom Block CSS - Matches VitePress custom-block.css
 const customBlockCSS = `/**
  * VitePress Theme for BunPress - Custom Blocks
  * -------------------------------------------------------------------------- */
@@ -978,10 +1171,78 @@ const customBlockCSS = `/**
   background-color: var(--bp-custom-block-info-bg);
 }
 
+.custom-block.info a,
+.custom-block.info code {
+  color: var(--bp-c-brand-1);
+}
+
+.custom-block.info a:hover,
+.custom-block.info a:hover > code {
+  color: var(--bp-c-brand-2);
+}
+
+.custom-block.info code {
+  background-color: var(--bp-custom-block-info-code-bg);
+}
+
+.custom-block.note {
+  border-color: var(--bp-custom-block-note-border);
+  color: var(--bp-custom-block-note-text);
+  background-color: var(--bp-custom-block-note-bg);
+}
+
+.custom-block.note a,
+.custom-block.note code {
+  color: var(--bp-c-brand-1);
+}
+
+.custom-block.note a:hover,
+.custom-block.note a:hover > code {
+  color: var(--bp-c-brand-2);
+}
+
+.custom-block.note code {
+  background-color: var(--bp-custom-block-note-code-bg);
+}
+
 .custom-block.tip {
   border-color: var(--bp-custom-block-tip-border);
   color: var(--bp-custom-block-tip-text);
   background-color: var(--bp-custom-block-tip-bg);
+}
+
+.custom-block.tip a,
+.custom-block.tip code {
+  color: var(--bp-c-tip-1);
+}
+
+.custom-block.tip a:hover,
+.custom-block.tip a:hover > code {
+  color: var(--bp-c-tip-2);
+}
+
+.custom-block.tip code {
+  background-color: var(--bp-custom-block-tip-code-bg);
+}
+
+.custom-block.important {
+  border-color: var(--bp-custom-block-important-border);
+  color: var(--bp-custom-block-important-text);
+  background-color: var(--bp-custom-block-important-bg);
+}
+
+.custom-block.important a,
+.custom-block.important code {
+  color: var(--bp-c-important-1);
+}
+
+.custom-block.important a:hover,
+.custom-block.important a:hover > code {
+  color: var(--bp-c-important-2);
+}
+
+.custom-block.important code {
+  background-color: var(--bp-custom-block-important-code-bg);
 }
 
 .custom-block.warning {
@@ -990,10 +1251,77 @@ const customBlockCSS = `/**
   background-color: var(--bp-custom-block-warning-bg);
 }
 
+.custom-block.warning a,
+.custom-block.warning code {
+  color: var(--bp-c-warning-1);
+}
+
+.custom-block.warning a:hover,
+.custom-block.warning a:hover > code {
+  color: var(--bp-c-warning-2);
+}
+
+.custom-block.warning code {
+  background-color: var(--bp-custom-block-warning-code-bg);
+}
+
 .custom-block.danger {
   border-color: var(--bp-custom-block-danger-border);
   color: var(--bp-custom-block-danger-text);
   background-color: var(--bp-custom-block-danger-bg);
+}
+
+.custom-block.danger a,
+.custom-block.danger code {
+  color: var(--bp-c-danger-1);
+}
+
+.custom-block.danger a:hover,
+.custom-block.danger a:hover > code {
+  color: var(--bp-c-danger-2);
+}
+
+.custom-block.danger code {
+  background-color: var(--bp-custom-block-danger-code-bg);
+}
+
+.custom-block.caution {
+  border-color: var(--bp-custom-block-caution-border);
+  color: var(--bp-custom-block-caution-text);
+  background-color: var(--bp-custom-block-caution-bg);
+}
+
+.custom-block.caution a,
+.custom-block.caution code {
+  color: var(--bp-c-caution-1);
+}
+
+.custom-block.caution a:hover,
+.custom-block.caution a:hover > code {
+  color: var(--bp-c-caution-2);
+}
+
+.custom-block.caution code {
+  background-color: var(--bp-custom-block-caution-code-bg);
+}
+
+.custom-block.details {
+  border-color: var(--bp-custom-block-details-border);
+  color: var(--bp-custom-block-details-text);
+  background-color: var(--bp-custom-block-details-bg);
+}
+
+.custom-block.details a {
+  color: var(--bp-c-brand-1);
+}
+
+.custom-block.details a:hover,
+.custom-block.details a:hover > code {
+  color: var(--bp-c-brand-2);
+}
+
+.custom-block.details code {
+  background-color: var(--bp-custom-block-details-code-bg);
 }
 
 .custom-block-title {
@@ -1011,6 +1339,10 @@ const customBlockCSS = `/**
   user-select: none;
 }
 
+.custom-block.details summary + p {
+  margin: 8px 0;
+}
+
 .custom-block a {
   color: inherit;
   font-weight: 600;
@@ -1025,6 +1357,38 @@ const customBlockCSS = `/**
 
 .custom-block code {
   font-size: var(--bp-custom-block-code-font-size);
+}
+
+.custom-block.custom-block th,
+.custom-block.custom-block blockquote > p {
+  font-size: var(--bp-custom-block-font-size);
+  color: inherit;
+}
+
+/* Custom blocks in vp-doc context */
+.bp-doc .custom-block {
+  margin: 16px 0;
+}
+
+.bp-doc .custom-block p {
+  margin: 8px 0;
+  line-height: 24px;
+}
+
+.bp-doc .custom-block p:first-child {
+  margin: 0;
+}
+
+.bp-doc .custom-block div[class*='language-'],
+.bp-doc .custom-block pre[data-lang] {
+  margin: 8px 0 !important;
+  border-radius: 8px;
+}
+
+.bp-doc .custom-block div[class*='language-'] code,
+.bp-doc .custom-block pre[data-lang] code {
+  font-weight: 400;
+  background-color: transparent;
 }
 
 /**
@@ -1062,6 +1426,10 @@ const customBlockCSS = `/**
   margin: 8px 0;
 }
 
+.github-alert-content p:first-child {
+  margin-top: 0;
+}
+
 /* Note Alert */
 .github-alert-note {
   border-color: var(--bp-custom-block-note-border);
@@ -1071,6 +1439,10 @@ const customBlockCSS = `/**
 
 .github-alert-note .github-alert-title {
   color: var(--bp-c-brand-1);
+}
+
+.github-alert-note .github-alert-icon {
+  fill: var(--bp-c-brand-1);
 }
 
 /* Tip Alert */
@@ -1084,6 +1456,25 @@ const customBlockCSS = `/**
   color: var(--bp-c-tip-1);
 }
 
+.github-alert-tip .github-alert-icon {
+  fill: var(--bp-c-tip-1);
+}
+
+/* Important Alert */
+.github-alert-important {
+  border-color: var(--bp-custom-block-important-border);
+  color: var(--bp-custom-block-important-text);
+  background-color: var(--bp-custom-block-important-bg);
+}
+
+.github-alert-important .github-alert-title {
+  color: var(--bp-c-important-1);
+}
+
+.github-alert-important .github-alert-icon {
+  fill: var(--bp-c-important-1);
+}
+
 /* Warning Alert */
 .github-alert-warning {
   border-color: var(--bp-custom-block-warning-border);
@@ -1095,6 +1486,10 @@ const customBlockCSS = `/**
   color: var(--bp-c-warning-1);
 }
 
+.github-alert-warning .github-alert-icon {
+  fill: var(--bp-c-warning-1);
+}
+
 /* Caution Alert */
 .github-alert-caution {
   border-color: var(--bp-custom-block-caution-border);
@@ -1104,9 +1499,13 @@ const customBlockCSS = `/**
 
 .github-alert-caution .github-alert-title {
   color: var(--bp-c-caution-1);
+}
+
+.github-alert-caution .github-alert-icon {
+  fill: var(--bp-c-caution-1);
 }`
 
-// Code Group CSS
+// Code Group CSS - Matches VitePress vp-code-group.css
 const codeGroupCSS = `/**
  * VitePress Theme for BunPress - Code Groups
  * -------------------------------------------------------------------------- */
@@ -1185,6 +1584,7 @@ const codeGroupCSS = `/**
 }
 
 .bp-code-group div[class*='language-'],
+.bp-code-group pre[data-lang],
 .code-group-panel,
 .bp-block {
   display: none;
@@ -1194,6 +1594,7 @@ const codeGroupCSS = `/**
 }
 
 .bp-code-group div[class*='language-'].active,
+.bp-code-group pre[data-lang].active,
 .code-group-panel.active,
 .bp-block.active {
   display: block;
@@ -1210,6 +1611,12 @@ const codeGroupCSS = `/**
   border: 1px solid var(--bp-c-divider);
   border-radius: 8px;
   overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .code-group {
+    border: none;
+  }
 }
 
 .code-group-panels {
