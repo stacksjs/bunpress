@@ -736,6 +736,31 @@ textarea {
   margin: 8px 0 0;
 }
 
+/* Task list styles */
+.bp-doc .task-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.bp-doc .task-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.bp-doc .task-list-checkbox {
+  margin-top: 0.25rem;
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--bp-c-brand-1, #5672cd);
+  cursor: default;
+}
+
+.bp-doc .task-list-item input[type="checkbox"]:checked + span,
+.bp-doc .task-list-item:has(input:checked) {
+  color: var(--bp-c-text-2);
+}
+
 .bp-doc table {
   display: block;
   border-collapse: collapse;

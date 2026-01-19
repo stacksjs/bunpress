@@ -181,7 +181,10 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
       const { html, frontmatter } = await markdownToHtml(markdown, docsDir)
 
       // Determine current path for navigation
-      const relativePath = file.replace(docsDir, '').replace(/^\//, '').replace(/\.md$/, '')
+      // Normalize paths to ensure consistent replacement (handle ./docs vs docs)
+      const normalizedFile = file.replace(/^\.\//, '')
+      const normalizedDocsDir = docsDir.replace(/^\.\//, '')
+      const relativePath = normalizedFile.replace(normalizedDocsDir, '').replace(/^\//, '').replace(/\.md$/, '')
       const currentPath = `/${relativePath}`
 
       // Check if this is a home page
@@ -342,36 +345,19 @@ async function generate404Page(outdir: string, bunPressConfig: BunPressConfig): 
  * and fix internal links to point to /docs/ directory
  */
 async function copyHeroToRoot(outdir: string) {
-  const heroPath = join(outdir, 'docs', 'index.html')
+  // With the new flat file structure, index.html is already generated at the root
+  // No copying needed - just verify it exists
   const rootIndexPath = join(outdir, 'index.html')
 
   try {
-    let heroContent = await Bun.file(heroPath).text()
-
-    // Fix internal documentation links to point to /docs/ directory
-    // Match href="/<path>" where path doesn't start with http/https
-    heroContent = heroContent.replace(
-      /href="\/(?!docs\/|http|https)([^"]+)"/g,
-      'href="/docs/$1"'
-    )
-
-    await Bun.write(rootIndexPath, heroContent)
+    const exists = await Bun.file(rootIndexPath).exists()
+    if (!exists) {
+      // If no index.html exists, something went wrong with the build
+      console.error('Warning: No index.html found at root')
+    }
   }
   catch (err) {
-    console.error('Error copying hero page to root:', err)
-    // If hero page doesn't exist, create a simple redirect
-    const redirectHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=/docs/">
-  <title>Redirecting...</title>
-</head>
-<body>
-  <p>Redirecting to <a href="/docs/">documentation</a>...</p>
-</body>
-</html>`
-    await Bun.write(rootIndexPath, redirectHtml)
+    console.error('Error checking root index.html:', err)
   }
 }
 

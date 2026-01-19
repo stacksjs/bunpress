@@ -72,6 +72,77 @@ function escapeHtml(text: string): string {
 }
 
 /**
+ * Restores whitespace between tokens for a single line
+ * Simpler version that only handles horizontal whitespace (no newlines)
+ */
+function restoreWhitespaceForLine(originalLine: string, highlightedHtml: string): string {
+  // Extract all token text content from the HTML
+  const tokenRegex = /<span[^>]*class="token[^"]*"[^>]*>([^<]*)<\/span>/g
+  const tokens: Array<{ text: string; span: string }> = []
+  let match: RegExpExecArray | null
+
+  // eslint-disable-next-line no-cond-assign
+  while ((match = tokenRegex.exec(highlightedHtml)) !== null) {
+    // Decode HTML entities (handle both &#39; and &#039; variants)
+    const content = match[1]
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#0*39;/g, '\'')
+
+    if (content) {
+      tokens.push({ text: content, span: match[0] })
+    }
+  }
+
+  if (tokens.length === 0) {
+    return highlightedHtml
+  }
+
+  // Rebuild HTML with proper whitespace from original
+  let result = ''
+  let originalPos = 0
+
+  // Add leading whitespace from original line
+  const leadingWhitespace = originalLine.match(/^(\s*)/)
+  if (leadingWhitespace && leadingWhitespace[1]) {
+    result += leadingWhitespace[1]
+    originalPos = leadingWhitespace[1].length
+  }
+
+  for (let i = 0; i < tokens.length; i++) {
+    const { text: tokenText, span: tokenSpan } = tokens[i]
+
+    // Find where this token appears in the original line
+    const tokenStart = originalLine.indexOf(tokenText, originalPos)
+
+    if (tokenStart === -1) {
+      // Token not found - just add the span
+      result += tokenSpan
+      continue
+    }
+
+    // Add whitespace between previous token and this one
+    if (tokenStart > originalPos) {
+      const between = originalLine.substring(originalPos, tokenStart)
+      // Only add if it's whitespace (spaces/tabs)
+      if (/^\s+$/.test(between)) {
+        result += between
+      }
+    }
+
+    // Add the token HTML
+    result += tokenSpan
+
+    // Move past this token in the original
+    originalPos = tokenStart + tokenText.length
+  }
+
+  return result
+}
+
+/**
  * Intelligently restores whitespace from original code to highlighted HTML
  * Preserves exact spacing, tabs, and newlines from the original source
  */
@@ -86,13 +157,13 @@ function restoreWhitespaceFromOriginal(originalCode: string, highlightedHtml: st
 
   // eslint-disable-next-line no-cond-assign
   while ((match = tokenRegex.exec(highlightedHtml)) !== null) {
-    // Decode HTML entities
+    // Decode HTML entities (handle both &#39; and &#039; variants)
     const content = match[1]
       .replace(/&amp;/g, '&')
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
       .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, '\'')
+      .replace(/&#0*39;/g, '\'')
 
     if (content) {
       tokens.push(content)
@@ -131,8 +202,18 @@ function restoreWhitespaceFromOriginal(originalCode: string, highlightedHtml: st
 
     // Add any whitespace/characters before this token
     if (tokenStart > originalPos) {
-      const whitespace = originalCode.substring(originalPos, tokenStart)
-      result += whitespace
+      const between = originalCode.substring(originalPos, tokenStart)
+      // Add whitespace (including newlines) - but not duplicate non-whitespace content
+      // Check if between contains any newlines - always preserve those
+      if (/\n/.test(between)) {
+        // Preserve the whitespace structure including newlines
+        result += between
+      }
+      else if (/^\s+$/.test(between)) {
+        // Pure horizontal whitespace (spaces, tabs)
+        result += between
+      }
+      // Skip non-whitespace to avoid duplication
     }
 
     // Add the token HTML
@@ -142,9 +223,17 @@ function restoreWhitespaceFromOriginal(originalCode: string, highlightedHtml: st
     originalPos = tokenStart + tokenText.length
   }
 
-  // Add any trailing content
+  // Add any trailing whitespace (including newlines)
   if (originalPos < originalCode.length) {
-    result += originalCode.substring(originalPos)
+    const trailing = originalCode.substring(originalPos)
+    // Preserve trailing newlines and whitespace
+    if (/^\s+$/.test(trailing) || /\n/.test(trailing)) {
+      // Only add the whitespace portion
+      const whitespaceMatch = trailing.match(/^\s+/)
+      if (whitespaceMatch) {
+        result += whitespaceMatch[0]
+      }
+    }
   }
 
   return result
@@ -166,24 +255,39 @@ export async function highlightCode(code: string, language: string, theme: strin
   }
 
   try {
-    // Use the direct highlight function with theme option
-    const result = await highlightTS(code, normalized, { theme })
+    // Highlight each line separately to preserve line structure
+    const lines = code.split('\n')
+    const highlightedLines = await Promise.all(lines.map(async (line) => {
+      if (!line.trim()) {
+        // Empty line - preserve leading whitespace
+        return `<span class="line">${line}</span>`
+      }
 
-    // Extract just the HTML content
-    let html = result.html
+      const result = await highlightTS(line, normalized, { theme })
 
-    // Remove wrappers
-    html = html.replace(/<div[^>]*class="syntax-wrapper"[^>]*>/g, '')
-    html = html.replace(/<\/div>\s*$/g, '')
-    html = html.replace(/<pre[^>]*>/g, '')
-    html = html.replace(/<\/pre>/g, '')
-    html = html.replace(/<code[^>]*>/g, '')
-    html = html.replace(/<\/code>/g, '')
+      // Extract just the HTML content
+      let html = result.html
 
-    // Restore original whitespace from source code
-    html = restoreWhitespaceFromOriginal(code, html)
+      // Remove wrappers
+      html = html.replace(/<div[^>]*class="syntax-wrapper"[^>]*>/g, '')
+      html = html.replace(/<\/div>\s*$/g, '')
+      html = html.replace(/<pre[^>]*>/g, '')
+      html = html.replace(/<\/pre>/g, '')
+      html = html.replace(/<code[^>]*>/g, '')
+      html = html.replace(/<\/code>/g, '')
 
-    return html.trim()
+      // Restore whitespace between tokens from original line
+      html = restoreWhitespaceForLine(line, html.trim())
+
+      // Wrap in line span if not already wrapped
+      if (!html.startsWith('<span class="line">')) {
+        html = `<span class="line">${html}</span>`
+      }
+
+      return html
+    }))
+
+    return highlightedLines.join('\n')
   }
   catch (error) {
     console.warn(`Failed to highlight code for language "${language}":`, error)

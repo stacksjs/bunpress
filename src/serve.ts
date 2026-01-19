@@ -28,19 +28,8 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
   const sectionsHtml = await Promise.all(sidebarSections.map(async (section) => {
     const itemsHtml = section.items
       ? section.items.map((item) => {
-          // Prepend /docs to internal links for static build
-          // Skip if already has /docs or is external (http/https)
-          let link = item.link
-          if (link && !link.startsWith('http') && !link.startsWith('/docs/')) {
-            // For root path, keep as /docs/
-            if (link === '/') {
-              link = '/docs/'
-            }
-            // For other paths, prepend /docs
-            else if (link.startsWith('/')) {
-              link = `/docs${link}`
-            }
-          }
+          // Use the link as-is (no /docs/ prefix needed)
+          const link = item.link || '/'
 
           const isActive = link === currentPath || item.link === currentPath
           const activeStyle = isActive ? 'color: var(--bp-c-brand-1); font-weight: 500;' : ''
@@ -141,17 +130,9 @@ function generateNav(config: BunPressConfig): string {
     return ''
   }
 
-  // Helper function to fix nav links
+  // Helper function to normalize nav links (no /docs/ prefix needed)
   const fixNavLink = (link: string | undefined): string => {
-    if (!link || link.startsWith('http') || link.startsWith('/docs/'))
-      return link || ''
-
-    if (link === '/')
-      return '/docs/'
-    else if (link.startsWith('/'))
-      return `/docs${link}`
-
-    return link
+    return link || '/'
   }
 
   const links = config.nav.map((item) => {
@@ -1271,7 +1252,13 @@ function parseCodeFenceInfo(infoString: string): {
  */
 async function processCodeBlock(lines: string[], startIndex: number): Promise<{ html: string, endIndex: number }> {
   const firstLine = lines[startIndex]
-  const infoString = firstLine.substring(3).trim() // Remove ```
+
+  // Count the number of backticks in the opening fence (supports 3, 4, 5+ backticks)
+  const backtickMatch = firstLine.match(/^(`{3,})/)
+  const fenceLength = backtickMatch ? backtickMatch[1].length : 3
+  const closingFence = '`'.repeat(fenceLength)
+
+  const infoString = firstLine.substring(fenceLength).trim() // Remove opening backticks
 
   // Parse info string
   const { lang, highlights, showLineNumbers } = parseCodeFenceInfo(infoString)
@@ -1280,8 +1267,14 @@ async function processCodeBlock(lines: string[], startIndex: number): Promise<{ 
   const codeLines: string[] = []
   let endIndex = startIndex + 1
 
-  while (endIndex < lines.length && !lines[endIndex].startsWith('```')) {
-    codeLines.push(lines[endIndex])
+  // Only end at a fence with the same or more backticks
+  while (endIndex < lines.length) {
+    const line = lines[endIndex]
+    // Check if this line is a closing fence (same length or more backticks, nothing else)
+    if (line.match(new RegExp(`^\`{${fenceLength},}\\s*$`))) {
+      break
+    }
+    codeLines.push(line)
     endIndex++
   }
 
@@ -1445,7 +1438,8 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
   const html: string[] = []
   let inCodeBlock = false
   let inList = false
-  let inContainer = false
+  let listType: 'ul' | 'ol' = 'ul'
+  let containerDepth = 0
 
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i]
@@ -1455,15 +1449,16 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
       continue
     }
 
-    // Skip lines inside containers, alerts, and code groups (already processed)
+    // Track container depth for nested divs in alerts, containers, and code groups
     if (line.includes('<div class="custom-block') || line.includes('<details class="custom-block') || line.includes('<div class="github-alert') || line.includes('<div class="code-group')) {
-      inContainer = true
+      containerDepth = 1
     }
-    if (inContainer) {
+    if (containerDepth > 0) {
       html.push(line)
-      if (line.includes('</div>') || line.includes('</details>')) {
-        inContainer = false
-      }
+      // Count opening and closing tags to handle nesting
+      const openTags = (line.match(/<div[^>]*>/g) || []).length + (line.match(/<details[^>]*>/g) || []).length
+      const closeTags = (line.match(/<\/div>/g) || []).length + (line.match(/<\/details>/g) || []).length
+      containerDepth += openTags - closeTags
       continue
     }
 
@@ -1482,7 +1477,7 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
     // Headings (check from longest to shortest to avoid conflicts)
     if (line.startsWith('###### ')) {
       if (inList) {
-        html.push('</ul>')
+        html.push(listType === 'ol' ? '</ol>' : '</ul>')
         inList = false
       }
       html.push(`<h6>${processInlineFormatting(line.substring(7))}</h6>`)
@@ -1490,7 +1485,7 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
     }
     if (line.startsWith('##### ')) {
       if (inList) {
-        html.push('</ul>')
+        html.push(listType === 'ol' ? '</ol>' : '</ul>')
         inList = false
       }
       html.push(`<h5>${processInlineFormatting(line.substring(6))}</h5>`)
@@ -1498,7 +1493,7 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
     }
     if (line.startsWith('#### ')) {
       if (inList) {
-        html.push('</ul>')
+        html.push(listType === 'ol' ? '</ol>' : '</ul>')
         inList = false
       }
       html.push(`<h4>${processInlineFormatting(line.substring(5))}</h4>`)
@@ -1506,7 +1501,7 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
     }
     if (line.startsWith('### ')) {
       if (inList) {
-        html.push('</ul>')
+        html.push(listType === 'ol' ? '</ol>' : '</ul>')
         inList = false
       }
       html.push(`<h3>${processInlineFormatting(line.substring(4))}</h3>`)
@@ -1514,7 +1509,7 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
     }
     if (line.startsWith('## ')) {
       if (inList) {
-        html.push('</ul>')
+        html.push(listType === 'ol' ? '</ol>' : '</ul>')
         inList = false
       }
       html.push(`<h2>${processInlineFormatting(line.substring(3))}</h2>`)
@@ -1522,26 +1517,54 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
     }
     if (line.startsWith('# ')) {
       if (inList) {
-        html.push('</ul>')
+        html.push(listType === 'ol' ? '</ol>' : '</ul>')
         inList = false
       }
       html.push(`<h1>${processInlineFormatting(line.substring(2))}</h1>`)
       continue
     }
 
-    // Lists
+    // Task lists (- [ ] or - [x])
+    if (line.match(/^\s*[-*]\s+\[([ xX])\]\s+/)) {
+      if (!inList) {
+        html.push('<ul class="task-list">')
+        inList = true
+        listType = 'ul'
+      }
+      const isChecked = line.match(/\[[xX]\]/)
+      const checkbox = isChecked
+        ? '<input type="checkbox" checked disabled class="task-list-checkbox">'
+        : '<input type="checkbox" disabled class="task-list-checkbox">'
+      const content = line.replace(/^\s*[-*]\s+\[([ xX])\]\s+/, '')
+      html.push(`<li class="task-list-item">${checkbox} ${processInlineFormatting(content)}</li>`)
+      continue
+    }
+
+    // Unordered lists (- or *)
     if (line.match(/^\s*[-*]\s+/)) {
       if (!inList) {
         html.push('<ul>')
         inList = true
+        listType = 'ul'
       }
       html.push(`<li>${processInlineFormatting(line.replace(/^\s*[-*]\s+/, ''))}</li>`)
       continue
     }
 
+    // Ordered lists (1. 2. 3.)
+    if (line.match(/^\s*\d+\.\s+/)) {
+      if (!inList) {
+        html.push('<ol>')
+        inList = true
+        listType = 'ol'
+      }
+      html.push(`<li>${processInlineFormatting(line.replace(/^\s*\d+\.\s+/, ''))}</li>`)
+      continue
+    }
+
     // Close list if we're in one and hit a non-list line
     if (inList && line.trim() !== '') {
-      html.push('</ul>')
+      html.push(listType === 'ol' ? '</ol>' : '</ul>')
       inList = false
     }
 
@@ -1637,7 +1660,7 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
 
   // Close list if still open
   if (inList) {
-    html.push('</ul>')
+    html.push(listType === 'ol' ? '</ol>' : '</ul>')
   }
 
   let finalHtml = html.join('\n')

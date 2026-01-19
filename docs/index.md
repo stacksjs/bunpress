@@ -10,7 +10,7 @@ hero:
   actions:
     - theme: brand
       text: Get Started
-      link: /docs/install
+      link: /install
     - theme: alt
       text: View on GitHub
       link: https://github.com/stacksjs/bunpress
