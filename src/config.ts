@@ -690,8 +690,102 @@ export const defaultConfig: BunPressConfig = {
       background-color: var(--bp-c-bg, #1a1a1a);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
+
+    /* Theme Toggle Button */
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #6b7280;
+      transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+    }
+
+    .theme-toggle:hover {
+      color: #3c3c43;
+      background-color: #f6f6f7;
+      border-color: #e2e2e3;
+    }
+
+    html.dark .theme-toggle {
+      color: #9ca3af;
+    }
+
+    html.dark .theme-toggle:hover {
+      color: #e6edf3;
+      background-color: #2e2e32;
+      border-color: #3c3f44;
+    }
+
+    .theme-toggle svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Show sun icon in dark mode, moon icon in light mode */
+    .theme-toggle .sun-icon {
+      display: none;
+    }
+
+    .theme-toggle .moon-icon {
+      display: block;
+    }
+
+    html.dark .theme-toggle .sun-icon {
+      display: block;
+    }
+
+    html.dark .theme-toggle .moon-icon {
+      display: none;
+    }
     `,
     scripts: [`
+// Theme toggle functionality
+function getPreferredTheme() {
+  // Check localStorage first
+  const stored = localStorage.getItem('bunpress-theme');
+  if (stored) {
+    return stored;
+  }
+  // Fall back to system preference
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function setTheme(theme) {
+  if (theme === 'dark') {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+  localStorage.setItem('bunpress-theme', theme);
+}
+
+function toggleTheme() {
+  const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  setTheme(newTheme);
+}
+
+// Initialize theme on page load
+(function() {
+  const theme = getPreferredTheme();
+  setTheme(theme);
+
+  // Listen for system theme changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    // Only auto-switch if user hasn't manually set a preference
+    if (!localStorage.getItem('bunpress-theme')) {
+      setTheme(e.matches ? 'dark' : 'light');
+    }
+  });
+})();
+
 function switchCodeTab(groupId, panelIndex) {
   const group = document.getElementById(groupId);
   if (!group) return;
