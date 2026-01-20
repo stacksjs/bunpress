@@ -132,39 +132,42 @@ export const defaultConfig: BunPressConfig = {
       color: var(--bp-c-success-1, #18794e);
     }
 
-    /* Code block backgrounds fix */
-    pre {
+    /* Code block backgrounds fix - using !important to override any inline styles */
+    pre,
+    pre[data-lang],
+    article pre,
+    .bp-doc pre {
       position: relative;
-      background-color: var(--bp-code-block-bg, var(--bp-c-bg-alt, #f6f6f7));
+      background-color: #f6f6f7 !important;
       border-radius: 8px;
       margin: 16px 0;
       overflow-x: auto;
     }
 
-    pre code {
+    pre code,
+    pre[data-lang] code,
+    article pre code,
+    .bp-doc pre code {
       display: block;
       padding: 20px 24px;
-      background-color: transparent;
+      background-color: transparent !important;
+      background: transparent !important;
       font-size: 14px;
       line-height: 1.7;
-      color: var(--bp-c-text-1, #3c3c43);
+      color: #24292f;
     }
 
-    /* Shiki code blocks */
-    pre.shiki,
-    pre.shiki code,
-    .shiki {
-      background-color: var(--bp-code-block-bg, var(--bp-c-bg-alt, #f6f6f7)) !important;
-    }
-
+    /* Dark mode code blocks */
     html.dark pre,
-    html.dark pre.shiki,
-    html.dark .shiki {
-      background-color: var(--bp-code-block-bg, #161618) !important;
+    html.dark pre[data-lang],
+    html.dark article pre,
+    html.dark .bp-doc pre {
+      background-color: #161618 !important;
     }
 
-    html.dark pre code {
-      color: var(--bp-c-text-1, rgba(255, 255, 245, 0.86));
+    html.dark pre code,
+    html.dark pre[data-lang] code {
+      color: #e6edf3;
     }
 
     /* Code groups - tabbed code blocks */
@@ -172,25 +175,32 @@ export const defaultConfig: BunPressConfig = {
       margin: 16px 0;
       border-radius: 8px;
       overflow: hidden;
-      border: 1px solid var(--bp-c-divider, #e2e2e3);
+      border: 1px solid #e2e2e3;
+      background-color: #f6f6f7 !important;
+    }
+
+    html.dark .code-group {
+      border-color: #3c3f44;
+      background-color: #161618 !important;
     }
 
     .code-group-tabs {
       display: flex;
-      background-color: var(--bp-code-block-bg, var(--bp-c-bg-alt, #f6f6f7));
-      border-bottom: 1px solid var(--bp-c-divider, #e2e2e3);
+      background-color: #f6f6f7 !important;
+      border-bottom: 1px solid #e2e2e3;
       overflow-x: auto;
     }
 
     html.dark .code-group-tabs {
-      background-color: var(--bp-code-block-bg, #161618);
+      background-color: #161618 !important;
+      border-bottom-color: #3c3f44;
     }
 
     .code-group-tab {
       padding: 12px 16px;
       font-size: 14px;
       font-weight: 500;
-      color: var(--bp-c-text-2, #67676c);
+      color: #67676c;
       background: transparent;
       border: none;
       border-bottom: 2px solid transparent;
@@ -200,20 +210,33 @@ export const defaultConfig: BunPressConfig = {
     }
 
     .code-group-tab:hover {
-      color: var(--bp-c-text-1, #3c3c43);
+      color: #3c3c43;
     }
 
     .code-group-tab.active {
-      color: var(--bp-c-brand-1, #5672cd);
-      border-bottom-color: var(--bp-c-brand-1, #5672cd);
+      color: #3451b2;
+      border-bottom-color: #3451b2;
+    }
+
+    html.dark .code-group-tab {
+      color: #9ca3af;
+    }
+
+    html.dark .code-group-tab:hover {
+      color: #e6edf3;
+    }
+
+    html.dark .code-group-tab.active {
+      color: #a8b1ff;
+      border-bottom-color: #a8b1ff;
     }
 
     .code-group-panels {
-      background-color: var(--bp-code-block-bg, var(--bp-c-bg-alt, #f6f6f7));
+      background-color: #f6f6f7 !important;
     }
 
     html.dark .code-group-panels {
-      background-color: var(--bp-code-block-bg, #161618);
+      background-color: #161618 !important;
     }
 
     .code-group-panel {
@@ -224,10 +247,119 @@ export const defaultConfig: BunPressConfig = {
       display: block;
     }
 
-    .code-group-panel pre {
-      margin: 0;
-      border-radius: 0;
-      border: none;
+    .code-group-panel pre,
+    .code-group pre {
+      margin: 0 !important;
+      border-radius: 0 !important;
+      border: none !important;
+      background-color: #f6f6f7 !important;
+    }
+
+    html.dark .code-group-panel pre,
+    html.dark .code-group pre {
+      background-color: #161618 !important;
+    }
+
+    /* Language label positioning */
+    pre[data-lang]::before {
+      content: attr(data-lang);
+      position: absolute;
+      top: 8px;
+      right: 48px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #9ca3af;
+      text-transform: lowercase;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Adjust copy button position to not overlap language label */
+    pre .copy-code-button {
+      top: 8px;
+      right: 8px;
+    }
+
+    /* Heading spacing - add margin below headings */
+    article h1,
+    article h2,
+    article h3,
+    article h4,
+    article h5,
+    article h6,
+    .bp-doc h1,
+    .bp-doc h2,
+    .bp-doc h3,
+    .bp-doc h4,
+    .bp-doc h5,
+    .bp-doc h6 {
+      margin-bottom: 16px;
+    }
+
+    article h2,
+    .bp-doc h2 {
+      margin-top: 48px;
+      margin-bottom: 24px;
+    }
+
+    article h3,
+    .bp-doc h3 {
+      margin-top: 32px;
+      margin-bottom: 16px;
+    }
+
+    article h4,
+    .bp-doc h4 {
+      margin-top: 24px;
+      margin-bottom: 12px;
+    }
+
+    /* List styling with proper indentation */
+    article ul,
+    article ol,
+    .bp-doc ul,
+    .bp-doc ol {
+      padding-left: 1.5rem;
+      margin: 16px 0;
+    }
+
+    article ul,
+    .bp-doc ul {
+      list-style-type: disc;
+    }
+
+    article ol,
+    .bp-doc ol {
+      list-style-type: decimal;
+    }
+
+    article li,
+    .bp-doc li {
+      margin: 8px 0;
+      line-height: 1.7;
+    }
+
+    /* Nested lists */
+    article ul ul,
+    article ol ul,
+    article ul ol,
+    article ol ol,
+    .bp-doc ul ul,
+    .bp-doc ol ul,
+    .bp-doc ul ol,
+    .bp-doc ol ol {
+      margin: 8px 0;
+      padding-left: 1.5rem;
+    }
+
+    article ul ul,
+    .bp-doc ul ul {
+      list-style-type: circle;
+    }
+
+    article ul ul ul,
+    .bp-doc ul ul ul {
+      list-style-type: square;
     }
 
     /* Enhanced Tables */
@@ -585,6 +717,53 @@ function switchCodeTab(groupId, panelIndex) {
   });
 }
 
+// Fallback copy function for browsers that don't support clipboard API
+function fallbackCopyToClipboard(text) {
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.left = '-9999px';
+  textArea.style.top = '-9999px';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    return true;
+  } catch (err) {
+    document.body.removeChild(textArea);
+    return false;
+  }
+}
+
+// Copy to clipboard with fallback
+function copyToClipboard(text) {
+  return new Promise((resolve, reject) => {
+    // Try modern clipboard API first
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text)
+        .then(resolve)
+        .catch(() => {
+          // Fallback to execCommand
+          if (fallbackCopyToClipboard(text)) {
+            resolve();
+          } else {
+            reject(new Error('Copy failed'));
+          }
+        });
+    } else {
+      // Use fallback directly
+      if (fallbackCopyToClipboard(text)) {
+        resolve();
+      } else {
+        reject(new Error('Copy failed'));
+      }
+    }
+  });
+}
+
 function copyCode(button) {
   const pre = button.closest('pre');
   if (!pre) return;
@@ -595,8 +774,8 @@ function copyCode(button) {
   // Get text content from code block
   const text = code.textContent || '';
 
-  // Copy to clipboard
-  navigator.clipboard.writeText(text).then(() => {
+  // Copy to clipboard using fallback-enabled function
+  copyToClipboard(text).then(() => {
     // Show copied state
     button.classList.add('copied');
 
@@ -683,7 +862,7 @@ function copyPageDirect(event) {
   const button = event.currentTarget;
   const textEl = button.querySelector('.button-text');
 
-  navigator.clipboard.writeText(markdown).then(() => {
+  copyToClipboard(markdown).then(() => {
     // Show copied state
     button.classList.add('copied');
     textEl.textContent = 'Copied!';
@@ -848,7 +1027,7 @@ function copyPageAsMarkdown(event) {
 
   const markdown = getPageAsMarkdown();
 
-  navigator.clipboard.writeText(markdown).then(() => {
+  copyToClipboard(markdown).then(() => {
     // Update button to show copied state
     const menuItem = event.currentTarget;
     const iconEl = menuItem.querySelector('.icon svg');
@@ -902,7 +1081,7 @@ URL: \${pageUrl}
 
 \${markdown}\`;
 
-  navigator.clipboard.writeText(prompt).then(() => {
+  copyToClipboard(prompt).then(() => {
     showToast('Content copied! Paste it in ChatGPT');
     closeCopyPageDropdown();
     setTimeout(() => {
@@ -931,7 +1110,7 @@ URL: \${pageUrl}
 
 \${markdown}\`;
 
-  navigator.clipboard.writeText(prompt).then(() => {
+  copyToClipboard(prompt).then(() => {
     showToast('Content copied! Paste it in Claude');
     closeCopyPageDropdown();
     setTimeout(() => {
