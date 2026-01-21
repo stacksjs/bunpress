@@ -17,7 +17,7 @@ const config: BunPressOptions = {
   // SEO Configuration
   sitemap: {
     enabled: true,
-    baseUrl: 'https://bunpress.stacksjs.com',
+    baseUrl: 'https://bunpress.org',
   },
 
   robots: {
@@ -28,12 +28,18 @@ const config: BunPressOptions = {
   cloud: {
     driver: 'aws',
     region: 'us-east-1',
-    subdomain: 'bunpress',
-    baseDomain: 'stacksjs.com',
-    // bucket, hostedZoneId, distributionId, and certificateArn are auto-inferred
+    domain: 'bunpress.org',
+    // bucket, distributionId, and certificateArn are auto-inferred
     invalidateCache: true,
     waitForInvalidation: false,
     cacheControl: 'max-age=31536000, public',
+
+    // Use Porkbun for DNS management
+    // API credentials loaded from environment variables:
+    // PORKBUN_API_KEY and PORKBUN_SECRET_KEY
+    dnsProvider: {
+      provider: 'porkbun',
+    },
   },
 }
 

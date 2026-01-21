@@ -15,6 +15,10 @@ const result = await Bun.build({
   minify: true,
   splitting: true,
   target: 'bun',
+  external: [
+    'ts-cloud',
+    'ts-md',
+  ],
 })
 
 if (!result.success) {

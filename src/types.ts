@@ -106,6 +106,7 @@ export interface CloudConfig {
 
   /**
    * Route53 hosted zone ID (for existing hosted zones)
+   * Not required when using an external DNS provider
    */
   hostedZoneId?: string
 
@@ -143,6 +144,41 @@ export interface CloudConfig {
    * @default 'production'
    */
   environment?: string
+
+  /**
+   * DNS provider configuration for external DNS (not Route53)
+   * Supports: 'porkbun', 'godaddy'
+   * When specified, DNS records are managed by the external provider instead of Route53
+   */
+  dnsProvider?: DnsProviderOptions
+}
+
+/**
+ * DNS provider configuration options
+ */
+export interface DnsProviderOptions {
+  /**
+   * DNS provider type
+   */
+  provider: 'porkbun' | 'godaddy' | 'route53'
+
+  /**
+   * API key for Porkbun or GoDaddy
+   * Can also be set via PORKBUN_API_KEY or GODADDY_API_KEY environment variables
+   */
+  apiKey?: string
+
+  /**
+   * Secret key for Porkbun or API secret for GoDaddy
+   * Can also be set via PORKBUN_SECRET_KEY or GODADDY_API_SECRET environment variables
+   */
+  secretKey?: string
+
+  /**
+   * GoDaddy environment (production or ote/test)
+   * @default 'production'
+   */
+  environment?: 'production' | 'ote'
 }
 
 export type BunPressOptions = Partial<BunPressConfig>
