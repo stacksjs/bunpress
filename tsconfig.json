@@ -24,6 +24,6 @@
   "exclude": [
     "node_modules",
     "dist",
-    "buddy-bot.config.ts"
+    ".config/buddy-bot.ts"
   ]
 }
