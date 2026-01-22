@@ -192,7 +192,7 @@ function generateOpenGraphTags(
   const cleanPath = currentPath === '/index' ? '/' : currentPath
   const url = `${cleanBaseUrl}${cleanPath}`
 
-  const siteName = config.markdown?.title || title
+  const siteName = config.title || config.markdown?.title || title
   const ogImage = config.markdown?.meta?.['og:image'] || config.markdown?.meta?.ogImage
 
   const tags = [
@@ -262,7 +262,7 @@ function generateStructuredData(
     const websiteSchema = {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
-      'name': config.markdown?.title || title,
+      'name': config.title || config.markdown?.title || title,
       'description': description,
       'url': cleanBaseUrl,
     }
@@ -309,8 +309,9 @@ function generateStructuredData(
  * Wrap content in BunPress documentation layout
  */
 export async function wrapInLayout(content: string, config: BunPressConfig, currentPath: string, isHome: boolean = false): Promise<string> {
-  const title = config.markdown?.title || 'BunPress Documentation'
-  const description = config.markdown?.meta?.description || 'Documentation built with BunPress'
+  // Support both top-level config (VitePress-style) and markdown.title format
+  const title = config.title || config.themeConfig?.siteTitle || config.markdown?.title || 'BunPress Documentation'
+  const description = config.description || config.markdown?.meta?.description || 'Documentation built with BunPress'
 
   // Get theme CSS (defaults to 'vitepress' theme)
   const themeName = config.theme || 'vitepress'

@@ -1,3 +1,54 @@
-<nav class="VPSidebar" style="position: fixed; top: var(--bp-nav-height, 64px); bottom: 0; width: var(--bp-sidebar-width, 272px); background-color: var(--bp-sidebar-bg-color, var(--bp-c-bg-alt)); border-right: 1px solid var(--bp-c-divider); overflow-y: auto; padding: 24px 0; left: max(0px, calc((100vw - var(--bp-layout-max-width, 1440px)) / 2)); z-index: var(--bp-z-index-sidebar, 25);">
-  {{ sections }}
+<nav class="VPSidebar">
+  <div class="sidebar-content">
+    {{ sections }}
+  </div>
 </nav>
+
+<style>
+.VPSidebar {
+  position: fixed;
+  top: var(--bp-nav-height, 64px);
+  bottom: 0;
+  left: 0;
+  width: var(--bp-sidebar-width, 272px);
+  background-color: var(--bp-sidebar-bg-color, var(--bp-c-bg-alt));
+  border-right: 1px solid var(--bp-c-divider);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px 0 24px 0;
+  z-index: var(--bp-z-index-sidebar, 25);
+}
+
+.sidebar-content {
+  width: var(--bp-sidebar-width, 272px);
+  margin-left: auto;
+}
+
+/* At 960px+ (tablet), position sidebar normally */
+@media (min-width: 960px) {
+  .VPSidebar {
+    left: 0;
+    width: var(--bp-sidebar-width, 272px);
+  }
+
+  .sidebar-content {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+/* At 1440px+ (ultra-wide), extend sidebar to fill left margin */
+@media (min-width: 1440px) {
+  .VPSidebar {
+    /* Extend width to include left margin area */
+    width: calc((100vw - var(--bp-layout-max-width, 1440px)) / 2 + var(--bp-sidebar-width, 272px));
+    /* Padding pushes content to the right position */
+    padding-left: calc((100vw - var(--bp-layout-max-width, 1440px)) / 2);
+  }
+
+  .sidebar-content {
+    width: var(--bp-sidebar-width, 272px);
+    margin-left: 0;
+  }
+}
+</style>

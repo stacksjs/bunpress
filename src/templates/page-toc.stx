@@ -1,13 +1,45 @@
-<aside class="VPDocAside" style="position: fixed; top: var(--bp-nav-height, 64px); bottom: 0; width: 224px; overflow-y: auto; padding: 32px 16px 32px 16px; display: none; right: max(32px, calc((100vw - var(--bp-layout-max-width, 1440px)) / 2 + 32px)); background-color: var(--bp-c-bg);">
-  <div class="VPDocAsideOutline" style="font-size: 14px;">
-    <p style="font-weight: 600; color: var(--bp-c-text-1); margin-bottom: 16px;">On this page</p>
+<aside class="VPDocAside">
+  <div class="VPDocAsideOutline">
+    <p class="outline-title">On this page</p>
     <nav class="page-toc">
+      <div class="outline-marker"></div>
       {{ items }}
     </nav>
   </div>
 </aside>
 
 <style>
+.VPDocAside {
+  position: fixed;
+  top: var(--bp-nav-height, 64px);
+  bottom: 0;
+  width: 224px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 32px 16px 32px 16px;
+  display: none;
+  right: max(32px, calc((100vw - var(--bp-layout-max-width, 1440px)) / 2 + 32px));
+  background-color: var(--bp-c-bg);
+  scrollbar-width: none;
+}
+
+.VPDocAside::-webkit-scrollbar {
+  display: none;
+}
+
+.VPDocAsideOutline {
+  font-size: 14px;
+}
+
+.outline-title {
+  font-weight: 600;
+  color: var(--bp-c-text-1);
+  margin-bottom: 16px;
+  font-size: 13px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
 /* Show aside on xl screens and adjust main content */
 @media (min-width: 1280px) {
   .VPDocAside {
@@ -19,25 +51,47 @@
   }
 }
 
+.page-toc {
+  position: relative;
+}
+
+/* Animated marker indicator like VitePress */
+.outline-marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  opacity: 0;
+  width: 2px;
+  border-radius: 2px;
+  height: 18px;
+  background-color: var(--bp-c-brand-1);
+  transition:
+    top 0.25s cubic-bezier(0, 1, 0.5, 1),
+    opacity 0.25s,
+    background-color 0.5s;
+}
+
 .page-toc a {
+  position: relative;
   display: block;
   padding: 4px 0 4px 16px;
   color: var(--bp-c-text-2);
   text-decoration: none;
   border-left: 1px solid var(--bp-c-divider);
-  transition: all 0.25s ease-in-out;
+  transition: color 0.25s;
   font-size: 13px;
   line-height: 20px;
 }
 
 .page-toc a:hover {
-  color: var(--bp-c-brand-1);
+  color: var(--bp-c-text-1);
 }
 
 .page-toc a.active {
-  color: var(--bp-c-brand-1);
-  border-left-color: var(--bp-c-brand-1);
+  color: var(--bp-c-text-1);
   font-weight: 500;
+  border-left-color: transparent;
 }
 
 .page-toc a.level-3 {
@@ -58,35 +112,103 @@
 </style>
 
 <script>
-// Track active heading based on scroll position
+// VitePress-style scrollspy with animated marker
 function initPageTOC() {
+  const tocContainer = document.querySelector('.page-toc');
+  const marker = document.querySelector('.outline-marker');
   const tocLinks = document.querySelectorAll('.page-toc a');
   const headings = Array.from(document.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]'));
+  const scrollContainer = document.querySelector('.VPContent');
 
-  if (!tocLinks.length || !headings.length) return;
+  if (!tocLinks.length || !headings.length || !scrollContainer || !marker) return;
 
-  function updateActiveTOC() {
-    const scrollY = window.scrollY + 100; // Offset for better UX
+  // Get scroll offset (nav height)
+  function getScrollOffset() {
+    return 100; // Account for nav + some padding
+  }
 
-    // Find the current heading
-    let currentHeading = null;
-    for (let i = headings.length - 1; i >= 0; i--) {
-      if (headings[i].offsetTop <= scrollY) {
-        currentHeading = headings[i];
+  // Throttle and debounce utility
+  function throttleAndDebounce(fn, delay) {
+    let timeoutId;
+    let called = false;
+
+    return function() {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (!called) {
+        fn();
+        called = true;
+        setTimeout(() => { called = false; }, delay);
+      } else {
+        timeoutId = setTimeout(fn, delay);
+      }
+    };
+  }
+
+  // Activate a TOC link by hash
+  function activateLink(hash) {
+    // Remove previous active class
+    tocLinks.forEach(link => link.classList.remove('active'));
+
+    if (hash) {
+      // Find and activate new link
+      const activeLink = tocContainer.querySelector('a[href="' + decodeURIComponent(hash) + '"]');
+
+      if (activeLink) {
+        activeLink.classList.add('active');
+
+        // Position the marker at the active link
+        const linkRect = activeLink.getBoundingClientRect();
+        const containerRect = tocContainer.getBoundingClientRect();
+        const top = linkRect.top - containerRect.top;
+
+        marker.style.top = top + 'px';
+        marker.style.opacity = '1';
+      } else {
+        marker.style.opacity = '0';
+      }
+    } else {
+      marker.style.opacity = '0';
+    }
+  }
+
+  // Set active link based on scroll position
+  function setActiveLink() {
+    const scrollY = scrollContainer.scrollTop;
+    const scrollOffset = getScrollOffset();
+
+    // Get heading positions relative to scroll container
+    const headingPositions = headings.map(heading => {
+      // Get the element's position relative to the scroll container
+      const rect = heading.getBoundingClientRect();
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const top = rect.top - containerRect.top + scrollY;
+
+      return {
+        id: heading.id,
+        top: top
+      };
+    }).filter(h => !isNaN(h.top)).sort((a, b) => a.top - b.top);
+
+    // Find the last heading that's above the current scroll position
+    let activeId = null;
+    for (const { id, top } of headingPositions) {
+      if (top > scrollY + scrollOffset + 4) {
         break;
       }
+      activeId = id;
     }
 
-    // Update active states
-    tocLinks.forEach(link => {
-      const href = link.getAttribute('href');
-      if (currentHeading && href === `#${currentHeading.id}`) {
-        link.classList.add('active');
-      } else {
-        link.classList.remove('active');
-      }
-    });
+    // If no heading found and we're at the top, use the first one
+    if (!activeId && headingPositions.length > 0 && scrollY < headingPositions[0].top) {
+      activeId = headingPositions[0].id;
+    }
+
+    // Activate the link
+    activateLink(activeId ? '#' + activeId : null);
   }
+
+  // Throttled scroll handler
+  const onScroll = throttleAndDebounce(setActiveLink, 100);
 
   // Smooth scroll to anchor
   tocLinks.forEach(link => {
@@ -95,25 +217,45 @@ function initPageTOC() {
       const targetId = link.getAttribute('href').substring(1);
       const targetElement = document.getElementById(targetId);
       if (targetElement) {
-        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Calculate target position
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const targetRect = targetElement.getBoundingClientRect();
+        const scrollTo = targetRect.top - containerRect.top + scrollContainer.scrollTop - 80;
+
+        scrollContainer.scrollTo({
+          top: scrollTo,
+          behavior: 'smooth'
+        });
+
+        // Update URL without page reload
+        history.pushState(null, '', '#' + targetId);
       }
     });
   });
 
-  // Listen to scroll events
-  let ticking = false;
-  window.addEventListener('scroll', () => {
-    if (!ticking) {
-      window.requestAnimationFrame(() => {
-        updateActiveTOC();
-        ticking = false;
-      });
-      ticking = true;
-    }
-  });
+  // Listen to scroll events on the actual scrolling container
+  scrollContainer.addEventListener('scroll', onScroll);
+
+  // Handle URL hash on page load
+  if (window.location.hash) {
+    setTimeout(() => {
+      const targetId = window.location.hash.substring(1);
+      const targetElement = document.getElementById(targetId);
+      if (targetElement) {
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const targetRect = targetElement.getBoundingClientRect();
+        const scrollTo = targetRect.top - containerRect.top + scrollContainer.scrollTop - 80;
+
+        scrollContainer.scrollTo({
+          top: scrollTo,
+          behavior: 'smooth'
+        });
+      }
+    }, 100);
+  }
 
   // Initial update
-  updateActiveTOC();
+  requestAnimationFrame(setActiveLink);
 }
 
 // Initialize when DOM is ready

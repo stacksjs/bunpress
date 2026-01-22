@@ -85,8 +85,8 @@ export async function generateRssFeed(
     return
   }
 
-  const feedTitle = rssConfig.title || config.markdown?.title || 'Documentation Feed'
-  const feedDescription = rssConfig.description || config.markdown?.meta?.description || 'Documentation updates'
+  const feedTitle = rssConfig.title || config.title || config.markdown?.title || 'Documentation Feed'
+  const feedDescription = rssConfig.description || config.description || config.markdown?.meta?.description || 'Documentation updates'
   const feedAuthor = rssConfig.author || 'Documentation Team'
   const feedEmail = rssConfig.email || ''
   const feedLanguage = rssConfig.language || 'en-us'
