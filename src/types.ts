@@ -50,7 +50,13 @@ export interface BunPressConfig {
   fathom?: FathomConfig
 
   /**
-   * Self-hosted analytics configuration (using Stacks Analytics / dynamodb-tooling)
+   * Analytics configuration (using ts-analytics / dynamodb-tooling)
+   * A privacy-focused, cookie-free analytics solution you can run on your own infrastructure.
+   */
+  analytics?: AnalyticsConfig
+
+  /**
+   * @deprecated Use analytics instead
    */
   selfHostedAnalytics?: SelfHostedAnalyticsConfig
 
@@ -1107,12 +1113,12 @@ export interface FathomConfig {
 }
 
 /**
- * Self-hosted analytics configuration (using Stacks Analytics / dynamodb-tooling)
+ * Analytics configuration (using ts-analytics / dynamodb-tooling)
  * A privacy-focused, cookie-free analytics solution you can run on your own infrastructure.
  */
-export interface SelfHostedAnalyticsConfig {
+export interface AnalyticsConfig {
   /**
-   * Enable self-hosted analytics
+   * Enable analytics
    * @default false
    */
   enabled?: boolean
@@ -1125,8 +1131,8 @@ export interface SelfHostedAnalyticsConfig {
 
   /**
    * API endpoint URL for collecting analytics data
+   * Optional - if not provided, will use window.ANALYTICS_API_ENDPOINT or default to '/api/analytics'
    * Example: 'https://api.example.com/analytics'
-   * Required if enabled is true
    */
   apiEndpoint?: string
 
@@ -1148,3 +1154,8 @@ export interface SelfHostedAnalyticsConfig {
    */
   trackOutboundLinks?: boolean
 }
+
+/**
+ * @deprecated Use AnalyticsConfig instead
+ */
+export type SelfHostedAnalyticsConfig = AnalyticsConfig

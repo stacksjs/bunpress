@@ -12,18 +12,30 @@ import { buildTocHierarchy, defaultTocConfig, extractHeadings, filterHeadings, g
 
 /**
  * Generate sidebar HTML from BunPress config
+ * Supports both VitePress-style (themeConfig.sidebar) and legacy (markdown.sidebar) formats
  */
 async function generateSidebar(config: BunPressConfig, currentPath: string): Promise<string> {
-  if (!config.markdown?.sidebar) {
+  // Support both VitePress-style themeConfig.sidebar and legacy markdown.sidebar
+  const sidebarConfig = config.themeConfig?.sidebar || config.markdown?.sidebar
+
+  if (!sidebarConfig) {
     return ''
   }
 
-  // Get sidebar for current path or default '/' sidebar
-  const pathKey = Object.keys(config.markdown.sidebar).find(key =>
-    currentPath.startsWith(key),
-  ) || '/'
+  let sidebarSections: any[] = []
 
-  const sidebarSections = config.markdown.sidebar[pathKey] || []
+  // Handle different sidebar formats
+  if (Array.isArray(sidebarConfig)) {
+    // VitePress-style: array of sections directly
+    sidebarSections = sidebarConfig
+  }
+  else if (typeof sidebarConfig === 'object') {
+    // Path-based sidebar: { '/': [...], '/guide/': [...] }
+    const pathKey = Object.keys(sidebarConfig).find(key =>
+      currentPath.startsWith(key),
+    ) || '/'
+    sidebarSections = sidebarConfig[pathKey] || []
+  }
 
   const sectionsHtml = await Promise.all(sidebarSections.map(async (section) => {
     const itemsHtml = section.items
@@ -124,9 +136,13 @@ function addHeadingIds(html: string): string {
 
 /**
  * Generate navigation HTML from BunPress config
+ * Supports both VitePress-style (themeConfig.nav) and legacy (nav) formats
  */
 function generateNav(config: BunPressConfig): string {
-  if (!config.nav || config.nav.length === 0) {
+  // Support both VitePress-style themeConfig.nav and legacy nav
+  const navConfig = config.themeConfig?.nav || config.nav
+
+  if (!navConfig || navConfig.length === 0) {
     return ''
   }
 
@@ -135,7 +151,7 @@ function generateNav(config: BunPressConfig): string {
     return link || '/'
   }
 
-  const links = config.nav.map((item) => {
+  const links = navConfig.map((item) => {
     // Handle items with sub-items (dropdown)
     if (item.items && item.items.length > 0) {
       return `<div class="relative group">
@@ -335,11 +351,11 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
 
   // Generate analytics scripts
   const fathomScript = generateFathomScript(config)
-  const selfHostedScript = generateSelfHostedAnalyticsScript(config)
+  const analyticsScript = generateAnalyticsScript(config)
 
   // Combine custom scripts with analytics and structured data
   const customScripts = config.markdown?.scripts?.map(script => `<script>${script}</script>`).join('\n') || ''
-  const scripts = [structuredData, fathomScript, selfHostedScript, customScripts].filter(Boolean).join('\n')
+  const scripts = [structuredData, fathomScript, analyticsScript, customScripts].filter(Boolean).join('\n')
 
   // Home layout - no sidebar, no navigation, clean hero layout
   if (isHome) {
@@ -401,43 +417,88 @@ function generateFathomScript(config: BunPressConfig): string {
 }
 
 /**
- * Generate Self-Hosted Analytics tracking script
+ * Generate Analytics tracking script
  * Privacy-focused, cookie-free analytics you can run on your own infrastructure
+ *
+ * Features:
+ * - Uses sendBeacon for reliable tracking (with XHR fallback)
+ * - Persists session ID in sessionStorage across page loads
+ * - Proper error handling with optional debug mode
+ * - Tracks page views, custom events, and outbound links
  */
-function generateSelfHostedAnalyticsScript(config: BunPressConfig): string {
-  const analytics = config.selfHostedAnalytics
-  if (!analytics?.enabled || !analytics?.siteId || !analytics?.apiEndpoint) {
+function generateAnalyticsScript(config: BunPressConfig): string {
+  // Support both new `analytics` and deprecated `selfHostedAnalytics`
+  const analytics = config.analytics || config.selfHostedAnalytics
+  if (!analytics?.enabled || !analytics?.siteId) {
     return ''
   }
 
   const siteId = escapeAttr(analytics.siteId)
-  const apiEndpoint = escapeAttr(analytics.apiEndpoint)
-  const honorDnt = analytics.honorDNT ? `if(n.doNotTrack==="1")return;` : ''
-  const hashTracking = analytics.trackHashChanges ? `w.addEventListener('hashchange',pv);` : ''
+  // apiEndpoint is now optional - script will fallback to window.ANALYTICS_API_ENDPOINT or '/api/analytics'
+  const apiEndpoint = analytics.apiEndpoint ? escapeAttr(analytics.apiEndpoint) : ''
+  const honorDnt = analytics.honorDNT ? `var dnt=n.doNotTrack||w.doNotTrack||n.msDoNotTrack;if(dnt==="1"||dnt==="yes"||dnt===true){l('DNT enabled, skipping');return;}` : ''
+  const hashTracking = analytics.trackHashChanges ? `w.addEventListener('hashchange',function(){pv();});` : ''
   const outboundTracking = analytics.trackOutboundLinks
-    ? `d.addEventListener('click',function(e){var a=e.target.closest('a');if(a&&a.hostname!==location.hostname){t('outbound',{url:a.href});}});`
+    ? `d.addEventListener('click',function(e){try{var a=e.target.closest('a');if(a&&a.hostname&&a.hostname!==location.hostname){t('outbound',{url:a.href,text:(a.textContent||'').slice(0,100)});}}catch(err){l('Outbound error',err);}});`
     : ''
 
-  return `<!-- Self-Hosted Analytics -->
-<script data-site="${siteId}" data-api="${apiEndpoint}" defer>
+  const dataApiAttr = apiEndpoint ? ` data-api="${apiEndpoint}"` : ''
+
+  return `<!-- ts-analytics: privacy-first analytics -->
+<script data-site="${siteId}"${dataApiAttr} defer>
 (function(){
 'use strict';
-var d=document,w=window,n=navigator,s=d.currentScript;
-var site=s.dataset.site,api=s.dataset.api;
+var d=document,w=window,n=navigator,ss=w.sessionStorage,s=d.currentScript;
+var site=s.dataset.site,api=s.dataset.api||w.ANALYTICS_API_ENDPOINT||'/api/analytics';
+var debug=w.ANALYTICS_DEBUG||false;
+function l(){if(debug&&w.console)console.log.apply(console,['[Analytics]'].concat([].slice.call(arguments)));}
+try{
 ${honorDnt}
-var q=[],sid=Math.random().toString(36).slice(2);
-function t(e,p){
-var x=new XMLHttpRequest();
-x.open('POST',api+'/collect',true);
-x.setRequestHeader('Content-Type','application/json');
-x.send(JSON.stringify({s:site,sid:sid,e:e,p:p||{},u:location.href,r:d.referrer,t:d.title,sw:screen.width,sh:screen.height}));
+var SK='_tsa_sid',VK='_tsa_vid';
+var sid=ss.getItem(SK);
+if(!sid){sid=Math.random().toString(36).slice(2)+Date.now().toString(36);ss.setItem(SK,sid);l('New session',sid);}
+var vid=null;try{vid=localStorage.getItem(VK);if(!vid){vid=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);localStorage.setItem(VK,vid);}}catch(e){}
+function send(url,data){
+var payload=JSON.stringify(data);
+l('Sending to',url,data.e);
+var sent=false;
+if(n.sendBeacon){
+try{sent=n.sendBeacon(url,payload);if(sent){l('Sent via beacon',data.e);return true;}}catch(e){l('Beacon failed',e);}
 }
-function pv(){t('pageview');}
+if(!sent){
+try{
+var x=new XMLHttpRequest();
+x.open('POST',url,true);
+x.setRequestHeader('Content-Type','application/json');
+x.onload=function(){l('XHR complete',x.status);};
+x.onerror=function(){l('XHR error');};
+x.send(payload);
+l('Sent via XHR',data.e);
+return true;
+}catch(e){l('XHR failed',e);}
+}
+return sent;
+}
+function t(e,p){
+try{
+var data={s:site,sid:sid,e:e,p:p||{},u:location.href,r:d.referrer||'',t:d.title||'',sw:screen.width,sh:screen.height,ts:Date.now()};
+if(vid)data.vid=vid;
+send(api+'/collect',data);
+}catch(err){l('Track error',err);}
+}
+var pvSent={};function pv(){var p=location.pathname;if(pvSent[p]&&Date.now()-pvSent[p]<1000)return;pvSent[p]=Date.now();l('Pageview',p);t('pageview',{path:p});}
 ${hashTracking}
 ${outboundTracking}
-if(d.readyState==='complete')pv();
-else w.addEventListener('load',pv);
-w.bunpressAnalytics={track:function(n,v){t('event',{name:n,value:v});}};
+var hp=history.pushState;if(hp){history.pushState=function(){hp.apply(history,arguments);pv();};}
+var hr=history.replaceState;if(hr){history.replaceState=function(){hr.apply(history,arguments);};}
+w.addEventListener('popstate',pv);
+l('readyState:',d.readyState);
+if(d.readyState==='complete'||d.readyState==='interactive'){setTimeout(pv,0);}else{w.addEventListener('load',pv);d.addEventListener('DOMContentLoaded',pv);}
+w.addEventListener('visibilitychange',function(){if(d.visibilityState==='hidden'){t('session_end',{duration:Date.now()-(ss.getItem('_tsa_start')||Date.now())});}});
+ss.setItem('_tsa_start',Date.now());
+w.bunpressAnalytics={track:function(name,props){t('event',{name:name,properties:props});},debug:function(v){debug=v!==false;w.ANALYTICS_DEBUG=debug;}};
+l('Initialized',site);
+}catch(err){if(w.console)console.error('[Analytics] Init error:',err);}
 })();
 </script>`
 }
