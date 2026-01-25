@@ -3,11 +3,13 @@
  *
  * This module exports all available themes for BunPress.
  * The default theme is 'vitepress' which provides VitePress-compatible styling.
+ * The 'bun' theme provides Bun-inspired styling with warm orange accents.
  */
 
 import vitePressTheme, { getVitePressThemeCSS } from './vitepress'
+import bunTheme, { getBunThemeCSS } from './bun'
 
-export type ThemeName = 'vitepress'
+export type ThemeName = 'vitepress' | 'bun'
 
 export interface Theme {
   name: string
@@ -19,6 +21,7 @@ export interface Theme {
  */
 export const themes: Record<ThemeName, Theme> = {
   vitepress: vitePressTheme,
+  bun: bunTheme,
 }
 
 /**
@@ -38,5 +41,5 @@ export function getThemeCSS(themeName: ThemeName = 'vitepress'): string {
  */
 export const defaultTheme: ThemeName = 'vitepress'
 
-export { getVitePressThemeCSS, vitePressTheme }
+export { getVitePressThemeCSS, vitePressTheme, getBunThemeCSS, bunTheme }
 export default themes

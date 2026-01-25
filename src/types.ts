@@ -17,7 +17,7 @@ export interface BunPressConfig {
    * Theme to use for the documentation site
    * @default 'vitepress'
    */
-  theme?: 'vitepress'
+  theme?: 'vitepress' | 'bun'
 
   /**
    * Configuration for the markdown-to-html plugin
