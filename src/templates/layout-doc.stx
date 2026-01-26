@@ -6,7 +6,6 @@
   <title>{{ title }}</title>
   <meta name="description" content="{{ description }}">
   {{ meta }}
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     /* VitePress Theme CSS */
     {{ customCSS }}
