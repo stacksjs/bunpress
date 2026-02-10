@@ -15,7 +15,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Bun
+      - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
       - name: Use cached node_modules
@@ -29,18 +29,13 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
-      - name: Publish to npm
-        run: bun publish --access public
+      - name: Publish
+        run: pantry npm:publish --access public
         env:
-          BUN_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Create GitHub release
-        run: bunx changelogithub
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-
-      - name: Attach Binaries
-        uses: softprops/action-gh-release@v2
+      - name: Create GitHub Release
+        uses: stacksjs/action-releaser@v1.2.6
         with:
           files: |
             bin/bunpress-linux-x64
