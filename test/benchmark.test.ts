@@ -27,7 +27,10 @@
  * - Fast mode: Simple markdown to HTML (comparable to Eleventy)
  */
 
-import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, it, setDefaultTimeout } from 'bun:test'
+
+// Benchmark tests need longer timeouts (generating and processing 4000 files)
+setDefaultTimeout(60_000)
 import { mkdir, rm, writeFile, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import { YAML, Glob } from 'bun'
