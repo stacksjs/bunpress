@@ -1302,7 +1302,6 @@ if (typeof document !== 'undefined') {
 }
 
 // Load and export the resolved configuration
-// eslint-disable-next-line antfu/no-top-level-await
 export const config: BunPressConfig = await loadConfig({
   name: 'bunpress',
   alias: 'docs',

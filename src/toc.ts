@@ -68,11 +68,9 @@ export function extractHeadings(content: string): TocHeading[] {
   const existingSlugs = new Set<string>()
 
   // Match all headings (h1-h6)
-  // eslint-disable-next-line regexp/no-super-linear-backtracking
   const headingRegex = /^(#{1,6})\s+(.+)$/gm
   let match
 
-  // eslint-disable-next-line no-cond-assign
   while ((match = headingRegex.exec(content)) !== null) {
     const level = match[1].length
     const text = match[2].trim()

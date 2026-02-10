@@ -81,7 +81,6 @@ function restoreWhitespaceForLine(originalLine: string, highlightedHtml: string)
   const tokens: Array<{ text: string; span: string }> = []
   let match: RegExpExecArray | null
 
-  // eslint-disable-next-line no-cond-assign
   while ((match = tokenRegex.exec(highlightedHtml)) !== null) {
     // Decode HTML entities (handle both &#39; and &#039; variants)
     const content = match[1]
@@ -155,7 +154,6 @@ function restoreWhitespaceFromOriginal(originalCode: string, highlightedHtml: st
   const tokens: string[] = []
   let match: RegExpExecArray | null
 
-  // eslint-disable-next-line no-cond-assign
   while ((match = tokenRegex.exec(highlightedHtml)) !== null) {
     // Decode HTML entities (handle both &#39; and &#039; variants)
     const content = match[1]
@@ -182,7 +180,6 @@ function restoreWhitespaceFromOriginal(originalCode: string, highlightedHtml: st
   // Extract token spans (with their full HTML) for reconstruction
   const tokenSpans: string[] = []
   const tokenSpanRegex = /<span[^>]*class="token[^"]*"[^>]*>[^<]*<\/span>/g
-  // eslint-disable-next-line no-cond-assign
   while ((match = tokenSpanRegex.exec(highlightedHtml)) !== null) {
     tokenSpans.push(match[0])
   }
