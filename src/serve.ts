@@ -1,4 +1,4 @@
-import type { BunPressConfig } from './types'
+import type { BunPressConfig, NavItem, SidebarItem } from './types'
 import { Glob, YAML } from 'bun'
 import { stat } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -38,7 +38,7 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
 
   const sectionsHtml = await Promise.all(sidebarSections.map(async (section) => {
     const itemsHtml = section.items
-      ? section.items.map((item) => {
+      ? section.items.map((item: SidebarItem) => {
           // Use the link as-is (no /docs/ prefix needed)
           const link = item.link || '/'
 

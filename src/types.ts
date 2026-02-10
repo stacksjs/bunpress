@@ -2,6 +2,25 @@ export interface BunPressConfig {
   verbose: boolean
 
   /**
+   * Site title
+   */
+  title?: string
+
+  /**
+   * Site description
+   */
+  description?: string
+
+  /**
+   * Theme configuration (VitePress-style)
+   */
+  themeConfig?: ThemeConfig & {
+    sidebar?: SidebarItem[] | Record<string, SidebarItem[]>
+    nav?: NavItem[]
+    siteTitle?: string
+  }
+
+  /**
    * Source directory containing markdown files
    * @default './docs'
    */
