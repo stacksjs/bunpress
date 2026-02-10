@@ -1,3 +1,74 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.0...v0.1.1)
+
+### 🐛 Bug Fixes
+
+- remove duplicated toc ([ca5d37c](https://github.com/stacksjs/bunpress/commit/ca5d37c)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+
+### 🧹 Chores
+
+- release v0.1.1 ([18fe9ec](https://github.com/stacksjs/bunpress/commit/18fe9ec)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([077637d](https://github.com/stacksjs/bunpress/commit/077637d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([236df6c](https://github.com/stacksjs/bunpress/commit/236df6c)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([8a6d50e](https://github.com/stacksjs/bunpress/commit/8a6d50e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([5716e08](https://github.com/stacksjs/bunpress/commit/5716e08)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([2b730a7](https://github.com/stacksjs/bunpress/commit/2b730a7)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([8076014](https://github.com/stacksjs/bunpress/commit/8076014)) _(by chrisbreuer <chrisbreuer93@gmail.com>)_
+- wip ([0dd167e](https://github.com/stacksjs/bunpress/commit/0dd167e)) _(by chrisbreuer <chrisbreuer93@gmail.com>)_
+- wip ([562d7a5](https://github.com/stacksjs/bunpress/commit/562d7a5)) _(by chrisbreuer <chrisbreuer93@gmail.com>)_
+- **deps**: update actions/cache action to v5 (#34) ([0a359ac](https://github.com/stacksjs/bunpress/commit/0a359ac)) _(by [renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot]))_ ([#34](https://github.com/stacksjs/bunpress/issues/34), [#34](https://github.com/stacksjs/bunpress/issues/34))
+- **deps**: update actions/cache action to v5.0.3 (#37) ([2c88066](https://github.com/stacksjs/bunpress/commit/2c88066)) _(by [renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot]))_ ([#37](https://github.com/stacksjs/bunpress/issues/37), [#37](https://github.com/stacksjs/bunpress/issues/37))
+- **deps**: update actions/checkout action to v6 (#30) ([ef5d753](https://github.com/stacksjs/bunpress/commit/ef5d753)) _(by [renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot]))_ ([#30](https://github.com/stacksjs/bunpress/issues/30), [#30](https://github.com/stacksjs/bunpress/issues/30))
+- **deps**: update all non-major dependencies (#28) ([30f55b1](https://github.com/stacksjs/bunpress/commit/30f55b1)) _(by [renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot]))_ ([#28](https://github.com/stacksjs/bunpress/issues/28), [#28](https://github.com/stacksjs/bunpress/issues/28))
+- **deps**: update dependency actions/cache to v5.0.2 (#35) ([bdaa73e](https://github.com/stacksjs/bunpress/commit/bdaa73e)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#35](https://github.com/stacksjs/bunpress/issues/35), [#35](https://github.com/stacksjs/bunpress/issues/35))
+- **deps**: update dependency actions/checkout to v6.0.1 (#36) ([2d95197](https://github.com/stacksjs/bunpress/commit/2d95197)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#36](https://github.com/stacksjs/bunpress/issues/36), [#36](https://github.com/stacksjs/bunpress/issues/36))
+- wip ([15a67fd](https://github.com/stacksjs/bunpress/commit/15a67fd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([d170104](https://github.com/stacksjs/bunpress/commit/d170104)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([948bef8](https://github.com/stacksjs/bunpress/commit/948bef8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([7b1491b](https://github.com/stacksjs/bunpress/commit/7b1491b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([797928f](https://github.com/stacksjs/bunpress/commit/797928f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([e60c502](https://github.com/stacksjs/bunpress/commit/e60c502)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([b030902](https://github.com/stacksjs/bunpress/commit/b030902)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([b957d19](https://github.com/stacksjs/bunpress/commit/b957d19)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([7c04f57](https://github.com/stacksjs/bunpress/commit/7c04f57)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([131654d](https://github.com/stacksjs/bunpress/commit/131654d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([ad1d9e3](https://github.com/stacksjs/bunpress/commit/ad1d9e3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([753b9a7](https://github.com/stacksjs/bunpress/commit/753b9a7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([9a07c3d](https://github.com/stacksjs/bunpress/commit/9a07c3d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([b2ce9e1](https://github.com/stacksjs/bunpress/commit/b2ce9e1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([d09d72b](https://github.com/stacksjs/bunpress/commit/d09d72b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([2d5285f](https://github.com/stacksjs/bunpress/commit/2d5285f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([29aa8f6](https://github.com/stacksjs/bunpress/commit/29aa8f6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([ed0304a](https://github.com/stacksjs/bunpress/commit/ed0304a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([bd6614f](https://github.com/stacksjs/bunpress/commit/bd6614f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([ba9ec5e](https://github.com/stacksjs/bunpress/commit/ba9ec5e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([f016e0f](https://github.com/stacksjs/bunpress/commit/f016e0f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([9cc564e](https://github.com/stacksjs/bunpress/commit/9cc564e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([70bd2d9](https://github.com/stacksjs/bunpress/commit/70bd2d9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: update all non-major dependencies (#23) ([ac6b771](https://github.com/stacksjs/bunpress/commit/ac6b771)) _(by [renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot]))_ ([#23](https://github.com/stacksjs/bunpress/issues/23), [#23](https://github.com/stacksjs/bunpress/issues/23))
+- **deps**: update actions/checkout action to v5 (#7) ([941217e](https://github.com/stacksjs/bunpress/commit/941217e)) _(by [renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot]))_ ([#7](https://github.com/stacksjs/bunpress/issues/7), [#7](https://github.com/stacksjs/bunpress/issues/7))
+- **deps**: update dependency marked to v17 (#26) ([947b7d2](https://github.com/stacksjs/bunpress/commit/947b7d2)) _(by [renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot]))_ ([#26](https://github.com/stacksjs/bunpress/issues/26), [#26](https://github.com/stacksjs/bunpress/issues/26))
+- wip ([82dff3c](https://github.com/stacksjs/bunpress/commit/82dff3c)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([023745b](https://github.com/stacksjs/bunpress/commit/023745b)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- fix docs ([0675a90](https://github.com/stacksjs/bunpress/commit/0675a90)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([5597e06](https://github.com/stacksjs/bunpress/commit/5597e06)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([7cf4b6e](https://github.com/stacksjs/bunpress/commit/7cf4b6e)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- update deploy ([44e86d1](https://github.com/stacksjs/bunpress/commit/44e86d1)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([06c6a03](https://github.com/stacksjs/bunpress/commit/06c6a03)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([5c1cd3c](https://github.com/stacksjs/bunpress/commit/5c1cd3c)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- benchmarks ([dc11a9c](https://github.com/stacksjs/bunpress/commit/dc11a9c)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([66b7888](https://github.com/stacksjs/bunpress/commit/66b7888)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- add seo and sitemaps ([1563be7](https://github.com/stacksjs/bunpress/commit/1563be7)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- add Fathom support ([5bd2e1b](https://github.com/stacksjs/bunpress/commit/5bd2e1b)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- wip ([b90d2c7](https://github.com/stacksjs/bunpress/commit/b90d2c7)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+
+### Contributors
+
+- _Adelino Ngomacha <adelinob335@gmail.com>_
+- _Chris <chrisbreuer93@gmail.com>_
+- _[renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot])_
+- _chrisbreuer <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.0.5...v0.1.0)
 
 ### 🚀 Features
