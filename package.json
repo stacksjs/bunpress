@@ -71,10 +71,10 @@
     "bench:all": "bun run bench"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.1.6",
-    "@stacksjs/ts-cloud-aws-types": "^0.1.6",
-    "@stacksjs/ts-cloud-core": "^0.1.6",
-    "@stacksjs/ts-cloud-types": "^0.1.6",
+    "@stacksjs/ts-cloud": "^0.1.7",
+    "@stacksjs/ts-cloud-aws-types": "^0.1.7",
+    "@stacksjs/ts-cloud-core": "^0.1.7",
+    "@stacksjs/ts-cloud-types": "^0.1.7",
     "@stacksjs/ts-md": "^0.1.1"
   },
   "devDependencies": {

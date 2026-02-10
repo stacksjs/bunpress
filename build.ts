@@ -16,8 +16,11 @@ const result = await Bun.build({
   splitting: true,
   target: 'bun',
   external: [
-    'ts-cloud',
-    'ts-md',
+    '@stacksjs/ts-cloud',
+    '@stacksjs/ts-cloud-aws-types',
+    '@stacksjs/ts-cloud-core',
+    '@stacksjs/ts-cloud-types',
+    '@stacksjs/ts-md',
   ],
 })
 
