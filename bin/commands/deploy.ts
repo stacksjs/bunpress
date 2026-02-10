@@ -16,7 +16,7 @@ import {
   type StaticSiteConfig,
   type ExternalDnsStaticSiteConfig,
   type DnsProviderConfig,
-} from 'ts-cloud'
+} from '@stacksjs/ts-cloud'
 
 interface DeployOptions {
   region?: string
