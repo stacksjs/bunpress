@@ -72,7 +72,7 @@
   },
   "dependencies": {
     "@stacksjs/ts-md": "^0.1.1",
-    "buddy-bot": "^0.9.14"
+    "buddy-bot": "^0.9.16"
   },
   "optionalDependencies": {
     "@stacksjs/ts-cloud": "^0.1.7",
