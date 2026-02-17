@@ -15,16 +15,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: Setup Pantry
-        uses: home-lang/pantry-setup@v1
+      - name: Use cached node_modules
+        uses: actions/cache@v5.0.3
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            node-modules-
 
       - name: Install Dependencies
         run: bun install
