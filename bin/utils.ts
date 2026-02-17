@@ -93,7 +93,7 @@ export class Spinner {
   private frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
   private index = 0
   private interval: Timer | null = null
-  private text: string
+  text: string
 
   constructor(text: string) {
     this.text = text

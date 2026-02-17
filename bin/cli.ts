@@ -18,7 +18,8 @@ import { newCommand } from './commands/new'
 import { previewCommand } from './commands/preview'
 import { seoCheck } from './commands/seo'
 import { statsCommand } from './commands/stats'
-import { deployCommand } from './commands/deploy'
+// Lazy-loaded to avoid failing when @stacksjs/ts-cloud is not available
+// import { deployCommand } from './commands/deploy'
 import { formatTime, logSuccess, Spinner } from './utils'
 // import { markdown, stx } from '../src/plugin'
 
@@ -656,6 +657,7 @@ cli
     certificateArn?: string
     dryRun?: boolean
   }) => {
+    const { deployCommand } = await import('./commands/deploy')
     const success = await deployCommand(options)
     if (!success)
       process.exit(1)

@@ -1,4 +1,4 @@
-import type { BunPressConfig } from './types'
+import type { BunPressConfig, NavItem, SidebarItem } from './types'
 import { Glob, YAML } from 'bun'
 import { stat } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -38,7 +38,7 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
 
   const sectionsHtml = await Promise.all(sidebarSections.map(async (section) => {
     const itemsHtml = section.items
-      ? section.items.map((item) => {
+      ? section.items.map((item: SidebarItem) => {
           // Use the link as-is (no /docs/ prefix needed)
           const link = item.link || '/'
 
@@ -1711,6 +1711,19 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
       continue
     }
 
+    // Standalone images - handle as block-level elements (not wrapped in <p>)
+    const standaloneImageMatch = line.trim().match(/^!\[([^\]]*)\]\(\s*([^\s")]+)(?:\s+"([^"]+)")?\)$/)
+    if (standaloneImageMatch) {
+      const [, alt, src, caption] = standaloneImageMatch
+      if (caption) {
+        html.push(`<figure class="image-figure"><img src="${src}" alt="${alt}"><figcaption>${caption}</figcaption></figure>`)
+      }
+      else {
+        html.push(`<img src="${src}" alt="${alt}">`)
+      }
+      continue
+    }
+
     // Regular paragraphs
     // Apply inline formatting: bold, italic, code, links, etc.
     line = processInlineFormatting(line)
@@ -1748,6 +1761,7 @@ export async function startServer(options: {
   port?: number
   root?: string
   watch?: boolean
+  quiet?: boolean
   config?: BunPressConfig
 } = {}): Promise<{ server: any, url: string, stop: () => void }> {
   const bunPressConfig = options.config || config as BunPressConfig
@@ -1824,8 +1838,10 @@ export async function startServer(options: {
   const url = `http://localhost:${server.port}`
   const stop = () => server.stop()
 
-  console.log(`\n📚 BunPress documentation server running at ${url}`)
-  console.log('Press Ctrl+C to stop\n')
+  if (!options.quiet) {
+    console.log(`\n📚 BunPress documentation server running at ${url}`)
+    console.log('Press Ctrl+C to stop\n')
+  }
 
   return { server, url, stop }
 }

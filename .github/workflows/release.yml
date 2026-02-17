@@ -4,10 +4,14 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
 
 jobs:
   npm:
-    name: npm
     runs-on: ubuntu-latest
 
     steps:
@@ -35,7 +39,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub Release
-        uses: stacksjs/action-releaser@v1.2.6
+        uses: stacksjs/action-releaser@v1.2.9
         with:
           files: |
             bin/bunpress-linux-x64

@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/bunpress",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Modern documentation engine. Powered by Bun.",
   "author": "Chris Breuer <chris@stacksjs.org>",
   "license": "MIT",
@@ -50,7 +50,7 @@
     "compile:darwin-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-arm64 --outfile bin/bunpress-darwin-arm64",
     "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
     "prepublishOnly": "bun --bun run build && bun run compile:all",
-    "test": "bun test --reporter=verbose",
+    "test": "bun test",
     "test:quick": "bun test --timeout=10000",
     "test:full": "bun test --timeout=60000 --no-bail",
     "lint": "bunx --bun pickier lint . --config pickier.config.ts --max-warnings 9999",
@@ -71,8 +71,14 @@
     "bench:all": "bun run bench"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.1.3",
-    "@stacksjs/ts-md": "^0.1.1"
+    "@stacksjs/ts-md": "^0.1.1",
+    "buddy-bot": "^0.9.16"
+  },
+  "optionalDependencies": {
+    "@stacksjs/ts-cloud": "^0.1.7",
+    "@stacksjs/ts-cloud-aws-types": "^0.1.7",
+    "@stacksjs/ts-cloud-core": "^0.1.7",
+    "@stacksjs/ts-cloud-types": "^0.1.7"
   },
   "devDependencies": {
     "@stacksjs/bumpx": "^0.2.4",
