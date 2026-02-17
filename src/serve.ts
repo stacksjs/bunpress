@@ -1711,6 +1711,19 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
       continue
     }
 
+    // Standalone images - handle as block-level elements (not wrapped in <p>)
+    const standaloneImageMatch = line.trim().match(/^!\[([^\]]*)\]\(\s*([^\s")]+)(?:\s+"([^"]+)")?\)$/)
+    if (standaloneImageMatch) {
+      const [, alt, src, caption] = standaloneImageMatch
+      if (caption) {
+        html.push(`<figure class="image-figure"><img src="${src}" alt="${alt}"><figcaption>${caption}</figcaption></figure>`)
+      }
+      else {
+        html.push(`<img src="${src}" alt="${alt}">`)
+      }
+      continue
+    }
+
     // Regular paragraphs
     // Apply inline formatting: bold, italic, code, links, etc.
     line = processInlineFormatting(line)
