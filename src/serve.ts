@@ -1748,6 +1748,7 @@ export async function startServer(options: {
   port?: number
   root?: string
   watch?: boolean
+  quiet?: boolean
   config?: BunPressConfig
 } = {}): Promise<{ server: any, url: string, stop: () => void }> {
   const bunPressConfig = options.config || config as BunPressConfig
@@ -1824,8 +1825,10 @@ export async function startServer(options: {
   const url = `http://localhost:${server.port}`
   const stop = () => server.stop()
 
-  console.log(`\n📚 BunPress documentation server running at ${url}`)
-  console.log('Press Ctrl+C to stop\n')
+  if (!options.quiet) {
+    console.log(`\n📚 BunPress documentation server running at ${url}`)
+    console.log('Press Ctrl+C to stop\n')
+  }
 
   return { server, url, stop }
 }
