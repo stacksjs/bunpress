@@ -73,4 +73,3 @@ bun run bench:all
 ## Results
 
 See individual benchmark files for detailed results and analysis.
-See [COMPARISON.md](./COMPARISON.md) for competitive analysis against other documentation generators.

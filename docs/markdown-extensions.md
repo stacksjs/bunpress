@@ -87,7 +87,7 @@ This feature is :fire:!
 - `:thumbsup:` → 👍
 - `:rocket:` → 🚀
 - `:star:` → ⭐
-- `:smile:` → 😊
+- `:smile:` → 😄
 - `:tada:` → 🎉
 - `:warning:` → ⚠️
 - `:check:` → ✅
@@ -95,49 +95,9 @@ This feature is :fire:!
 
 And many more! BunPress uses the comprehensive emoji shortcode database.
 
-## Math Equations
-
-BunPress supports both inline and block math equations using LaTeX syntax.
-
-### Inline Math
-
-```markdown
-The Pythagorean theorem: $a^2 + b^2 = c^2$
-```
-
-The Pythagorean theorem: $a^2 + b^2 = c^2$
-
-### Block Math
-
-```markdown
-$$
-\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
-$$
-```
-
-$$
-\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
-$$
-
-### Mixed Equations
-
-```markdown
-When $a \ne 0$, there are two solutions to $ax^2 + bx + c = 0$:
-
-$$
-x = {-b \pm \sqrt{b^2-4ac} \over 2a}
-$$
-```
-
-When $a \ne 0$, there are two solutions to $ax^2 + bx + c = 0$:
-
-$$
-x = {-b \pm \sqrt{b^2-4ac} \over 2a}
-$$
-
 ## Syntax Highlighting
 
-BunPress provides advanced syntax highlighting powered by Shiki, supporting multiple languages with beautiful themes and interactive features.
+BunPress provides advanced syntax highlighting powered by `ts-syntax-highlighter`, supporting multiple languages with beautiful themes and interactive features.
 
 ### Basic Syntax Highlighting
 
@@ -641,14 +601,26 @@ Your authentication content here...
 
 ## Configuration
 
-The syntax highlighting features are enabled by default and require no additional configuration. However, you can customize the behavior through your `bunpress.config.ts`:
+All markdown features are enabled by default. You can toggle individual features through your `bunpress.config.ts`:
 
 ```typescript
 export default {
   markdown: {
-    // Custom marked options for advanced configuration
-    markedOptions: {
-      // Configure marked extensions
+    features: {
+      containers: true,       // Custom containers (::: info, ::: tip, etc.)
+      githubAlerts: true,      // GitHub-flavored alerts (> [!NOTE], etc.)
+      codeBlocks: true,        // Code block enhancements (highlighting, diffs, focus)
+      codeGroups: true,        // Tabbed code groups
+      codeImports: true,       // Code imports from files (<<< @/filepath)
+      emoji: true,             // Emoji shortcodes (:tada:, :rocket:, etc.)
+      badges: true,            // Inline badges (<Badge type="tip" text="v2.0" />)
+      includes: true,          // Markdown file inclusion
+      inlineToc: true,         // [[toc]] macro
+      customAnchors: true,     // Custom header anchors ({#custom-id})
+      inlineFormatting: true,  // ==mark==, ^sup^, ~sub~
+      externalLinks: true,     // External link enhancements
+      imageLazyLoading: true,  // Image lazy loading
+      tables: true,            // Enhanced tables
     }
   }
 }
@@ -668,15 +640,13 @@ BunPress supports syntax highlighting for the following languages out of the box
 
 ### Theme Support
 
-The syntax highlighting uses Shiki with the following built-in themes:
+The syntax highlighting uses `ts-syntax-highlighter` with the following built-in theme:
 
-- `light-plus` (default)
-- `dark-plus`
-- Additional themes can be configured by modifying the plugin setup
+- `github-light` (default)
 
 ### Performance Notes
 
-- Shiki highlighter is initialized once at build start for optimal performance
+- Highlighter is initialized once at server start for optimal performance
 - Code blocks are cached to avoid re-processing identical content
 - Large code blocks are handled efficiently with proper HTML structure
 

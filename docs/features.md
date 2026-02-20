@@ -84,7 +84,7 @@ Modern alert syntax for attention-grabbing callouts:
 
 #### Syntax Highlighting
 
-Powered by Shiki with support for 40+ languages:
+Powered by `ts-syntax-highlighter` with support for multiple languages:
 
 ```typescript
 // Full TypeScript support with type inference

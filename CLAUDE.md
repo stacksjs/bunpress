@@ -12,7 +12,7 @@ BunPress is a lightning-fast static site generator designed specifically for doc
 - **Build System:** Bun's native build system with `bun-plugin-dtsx` for type generation
 - **CLI Framework:** `@stacksjs/clapp`
 - **CSS Utilities:** `@stacksjs/headwind` - Will replace UnoCSS for utility-first CSS styling
-- **Markdown Processing:** Previously used marked.js and shiki (now commented out in plugin.ts)
+- **Markdown Processing:** `Bun.markdown` (built-in Zig-based GFM parser) with `ts-syntax-highlighter` for code highlighting
 
 ## Common Development Commands
 
@@ -148,13 +148,9 @@ bun run fresh
    - Exports async `config` object that merges defaults with user config
    - Contains extensive default CSS for layouts (home, doc, page), code groups, custom containers, and alerts
 
-3. **plugin.ts** - Markdown-to-HTML transformation (CURRENTLY COMMENTED OUT)
-   - Contains markdown() and stx() Bun plugins
-   - Uses marked.js with extensions: marked-alert, marked-emoji, marked-highlight
-   - Integrates shiki for syntax highlighting with theme management
-   - Processes frontmatter, generates HTML with layouts (home/doc/page)
-   - Creates navbar, sidebar, TOC, and search functionality
-   - Handles template rendering and asset generation
+3. **plugin.ts** - Legacy Bun plugin (COMMENTED OUT, superseded by serve.ts)
+   - Previously used marked.js and shiki for markdown-to-HTML
+   - No longer active — all markdown processing now handled by `serve.ts`
 
 4. **toc.ts** - Table of Contents generation
    - `generateSlug()` - Creates URL-safe slugs from headings
@@ -169,8 +165,25 @@ bun run fresh
 
 5. **index.ts** - Public API exports
 
-6. **serve.ts** - Development server (INCOMPLETE)
-   - Contains partial implementation of dev server using `@stacksjs/stx`
+6. **serve.ts** - Development server and markdown processing (MAIN PIPELINE)
+   - Full-featured dev server with `Bun.serve()`
+   - `markdownToHtml()` — the main markdown-to-HTML pipeline using `Bun.markdown.html()` with pre/post-processing
+   - Pre-processors: frontmatter, includes, code imports, code groups, GitHub alerts, containers, emoji, badges, custom anchors, code block extraction
+   - Post-processors: custom inline formatting, table enhancements, heading IDs, TOC injection, external links, image lazy loading
+   - `wrapInLayout()` — wraps content in home/doc/page layout templates
+   - `processCodeBlock()` — syntax highlighting with line numbers, highlighting, diffs, focus, errors/warnings
+   - `startServer()` / `serveCLI()` — serve markdown files with hot reload
+   - Feature toggles via `config.markdown.features` (MarkdownFeaturesConfig)
+
+7. **highlighter.ts** - Syntax highlighting via `ts-syntax-highlighter`
+   - Singleton highlighter instance with theme support
+   - Language aliases (js→javascript, ts→typescript, etc.)
+   - `highlightCode()` — async per-line highlighting with whitespace restoration
+
+8. **template-loader.ts** - STX template rendering
+   - Loads `.stx` template files from `src/templates/`
+   - `render()` — substitutes `{{ key }}` placeholders with data
+   - Template caching for performance
 
 ### CSS Utilities: Headwind
 
@@ -295,26 +308,34 @@ Simple build script that:
 
 ### Test Structure (test/)
 
-- Comprehensive test suites for features:
-  - `table-of-contents.test.ts` - TOC generation and filtering
+- 325 tests across 23 files:
+  - `bunpress.test.ts` - Core integration tests
   - `syntax-highlighting.test.ts` - Code highlighting
-  - `markdown-extensions.test.ts` - Custom markdown syntax
-  - `sitemap.test.ts` - SEO/sitemap generation
-  - `theme-config.test.ts` - Theming system
-  - `e2e.test.ts` - End-to-end scenarios
-  - `i18n.test.ts` - Internationalization
-  - `use-cases/` - Real-world usage examples
-  - `blocks/` - Component tests
+  - `cli-commands.test.ts` - CLI command tests
+  - `llm-command.test.ts` - LLM markdown generation
+  - `fathom-analytics.test.ts` - Analytics integration
+  - `benchmark.test.ts` - Performance benchmarks
+  - `templates/alerts/github-alerts.test.ts` - GitHub-flavored alerts
+  - `templates/code/` - Code block features (line-highlighting, line-numbers, code-groups, code-imports, diff-markers, focus-markers, error-warning-markers)
+  - `templates/containers/containers.test.ts` - Custom containers
+  - `templates/content/` - Content features (badges, emoji, custom-header-anchors, inline-toc)
+  - `templates/include/markdown-include.test.ts` - File inclusion
+  - `templates/inline/inline-formatting.test.ts` - Inline formatting (mark, sup, sub)
+  - `templates/links/external-links.test.ts` - External link enhancements
+  - `templates/table/table-enhancements.test.ts` - Table styling and alignment
 
 ## Important Implementation Details
 
-### Plugin System (Currently Disabled)
+### Markdown Processing Pipeline
 
-The main markdown() and stx() plugins in `src/plugin.ts` are commented out throughout the codebase. This is likely work-in-progress. When working with these:
-- The plugins transform .md and .stx files to HTML during build
-- Shiki highlighter is singleton-based to avoid performance issues
-- Template system uses `{{content}}`, `{{title}}`, etc. placeholders
-- Supports three layouts: home (landing page), doc (documentation), page (plain)
+The markdown pipeline is implemented in `src/serve.ts` using `Bun.markdown.html()` (Zig-based GFM parser):
+- **Pre-processing**: Custom features (containers, alerts, code blocks, emoji, badges) are processed before passing to Bun.markdown
+- **Code blocks**: Extracted and replaced with placeholders before Bun.markdown, restored after
+- **Post-processing**: Tables, headings, external links, images are enhanced after HTML conversion
+- **Feature toggles**: All features can be disabled via `config.markdown.features` (MarkdownFeaturesConfig)
+- Template system uses `{{content}}`, `{{title}}`, etc. placeholders in `.stx` files
+- Supports three layouts: home (landing page), doc (documentation with sidebar/TOC), page (plain with nav)
+- Legacy `src/plugin.ts` (marked.js + shiki) is commented out and no longer used
 
 ### Configuration Loading
 
@@ -381,18 +402,14 @@ Commit-msg hook validates commit messages with `@stacksjs/gitlint`
 ## Key Dependencies
 
 - **@stacksjs/clapp** - CLI framework
-- **@stacksjs/headwind** - Utility-first CSS framework (replacing UnoCSS)
+- **@stacksjs/headwind** - Utility-first CSS framework
 - **@stacksjs/eslint-config** - ESLint configuration
 - **bunfig** - Configuration loading
 - **bun-plugin-dtsx** - TypeScript declaration generation
-- **marked** - Markdown parser (commented out)
-- **shiki** - Syntax highlighter (commented out)
-- **@unocss/core** - Previous CSS utility solution (being phased out in favor of Headwind)
+- **ts-syntax-highlighter** - Code syntax highlighting
+- **Bun.markdown** - Built-in markdown parser (no npm dependency)
 
 ## Known Issues / Work in Progress
 
-- `src/plugin.ts` is entirely commented out - markdown transformation not active
-- `src/serve.ts` is incomplete
-- Some template files are deleted (git status shows deleted .stx files in src/templates/)
-- The main build system in `bin/cli.ts` has plugins disabled (lines 103)
-- **CSS Migration:** Transitioning from UnoCSS to Headwind - UnoCSS references still exist in tests and commented code
+- `src/plugin.ts` is entirely commented out — superseded by `src/serve.ts` pipeline
+- The main build system in `bin/cli.ts` has plugins disabled (line 103) — `bun bin/cli.ts dev` uses serve.ts directly

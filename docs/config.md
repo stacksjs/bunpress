@@ -41,7 +41,7 @@ export default {
 | `css` | `string` | See below | Custom CSS to be included in the head of the document |
 | `scripts` | `string[]` | `[]` | List of script URLs to be included at the end of the body |
 | `template` | `string` | `undefined` | Custom HTML template with `{{content}}` placeholder |
-| `markedOptions` | `object` | `{}` | Custom options for the Marked Markdown parser |
+| `features` | `MarkdownFeaturesConfig` | All enabled | Toggle individual markdown features (containers, emoji, badges, etc.) |
 | `preserveDirectoryStructure` | `boolean` | `true` | Whether to preserve the directory structure in the output |
 | `nav` | `NavItem[]` | `undefined` | Navigation bar configuration |
 | `sidebar` | `Record<string, SidebarItem[]>` | `undefined` | Sidebar navigation configuration |

@@ -34,7 +34,7 @@ Complete documentation for BunPress - a lightning-fast static site generator pow
 
 ### Phase 1-2: Foundation
 - Basic markdown processing
-- Syntax highlighting with Shiki
+- Syntax highlighting with ts-syntax-highlighter
 - Copy-to-clipboard functionality
 - Line numbers and line highlighting
 

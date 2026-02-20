@@ -1,6 +1,6 @@
 # Syntax Highlighting
 
-BunPress provides beautiful syntax highlighting for code blocks powered by Shiki. This guide covers configuration and customization options.
+BunPress provides beautiful syntax highlighting for code blocks powered by `ts-syntax-highlighter`. This guide covers configuration and customization options.
 
 ## Basic Usage
 

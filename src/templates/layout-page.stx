@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }}</title>
+  <meta name="description" content="{{ description }}">
+  {{ meta }}
+  <style>
+    /* VitePress Theme CSS */
+    {{ customCSS }}
+  </style>
+</head>
+<body>
+  <div class="Layout">
+    <!-- VPNav - Header -->
+    <header class="VPNav" style="position: fixed; top: 0; left: 0; right: 0; height: var(--bp-nav-height, 64px); background-color: var(--bp-nav-bg-color, var(--bp-c-bg)); border-bottom: 1px solid var(--bp-c-divider); z-index: var(--bp-z-index-nav, 30);">
+      <div style="max-width: var(--bp-layout-max-width, 1440px); margin: 0 auto; width: 100%; height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
+        <div style="display: flex; align-items: center; gap: 24px; flex: 1; min-width: 0;">
+          <a href="/" class="VPNavBarTitle" style="font-size: 16px; font-weight: 600; color: var(--bp-c-text-1); white-space: nowrap; text-decoration: none;">{{ title }}</a>
+        </div>
+        <div style="display: flex; align-items: center; gap: 24px;">
+          {{ nav }}
+        </div>
+      </div>
+    </header>
+
+    <!-- VPContent - Full-width content without sidebar -->
+    <main class="VPContent" style="padding-top: var(--bp-nav-height, 64px);">
+      <div class="VPPage" style="padding: 48px 24px; max-width: 768px; margin: 0 auto;">
+        <article class="bp-doc">
+          {{ content }}
+        </article>
+      </div>
+    </main>
+  </div>
+
+  {{ scripts }}
+</body>
+</html>

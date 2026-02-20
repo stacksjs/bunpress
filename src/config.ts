@@ -5,7 +5,7 @@ import { loadConfig } from 'bunfig'
 export const defaultConfig: BunPressConfig = {
   // Directory configuration
   docsDir: './docs',
-  outDir: './docs',
+  outDir: './dist',
 
   // Theme configuration - defaults to 'vitepress' for VitePress-compatible styling
   theme: 'vitepress',

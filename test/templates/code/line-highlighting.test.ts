@@ -20,12 +20,11 @@ describe('Code Block Line Highlighting', () => {
         // Should have language class
         expect(html).toContain('class="language-js"')
 
-        // Line 2 should be highlighted
-        expect(html).toContain('const') // Highlighting not implemented, just check code renders
+        // Should have exactly 1 highlighted line
+        const highlightedCount = (html.match(/<span[^>]*\bhighlighted\b/g) || []).length
+        expect(highlightedCount).toBe(1)
 
         // Should contain the code content
-        expect(html).toContain('const')
-        expect(html).toContain('const')
         expect(html).toContain('const')
       }
       finally {
@@ -48,9 +47,9 @@ describe('Code Block Line Highlighting', () => {
         const response = await fetch('http://localhost:6002/test-highlight-multiple')
         const html = await response.text()
 
-        // Count highlighted spans - should have exactly 2
-        // Highlighting not yet implemented - just check code renders
-        expect(html).toContain('const')
+        // Should have exactly 2 highlighted lines
+        const highlightedCount = (html.match(/<span[^>]*\bhighlighted\b/g) || []).length
+        expect(highlightedCount).toBe(2)
 
         // Should have language class
         expect(html).toContain('class="language-js"')
@@ -76,8 +75,8 @@ describe('Code Block Line Highlighting', () => {
         const html = await response.text()
 
         // Should highlight 3 lines (2, 3, 4)
-        // Highlighting not yet implemented - just check code renders
-        expect(html).toContain('const')
+        const highlightedCount = (html.match(/<span[^>]*\bhighlighted\b/g) || []).length
+        expect(highlightedCount).toBe(3)
       }
       finally {
         stop()
@@ -100,8 +99,8 @@ describe('Code Block Line Highlighting', () => {
         const html = await response.text()
 
         // Should highlight 5 lines (1, 3, 4, 5, 7)
-        // Highlighting not yet implemented - just check code renders
-        expect(html).toContain('const')
+        const highlightedCount = (html.match(/<span[^>]*\bhighlighted\b/g) || []).length
+        expect(highlightedCount).toBe(5)
       }
       finally {
         stop()
@@ -126,9 +125,12 @@ describe('Code Block Line Highlighting', () => {
         // Should have language class
         expect(html).toContain('class="language-js"')
 
+        // Extract <pre> block to avoid matching CSS
+        const preMatch = html.match(/<pre[^>]*>[\s\S]*?<\/pre>/)
+        expect(preMatch).not.toBeNull()
+
         // Should NOT have any highlighted lines
-        // highlighted class not implemented - just verify code renders
-        expect(html).toContain('const')
+        expect(preMatch![0]).not.toMatch(/<span[^>]*\bhighlighted\b/)
 
         // Should still contain code
         expect(html).toContain('const')
@@ -154,7 +156,7 @@ describe('Code Block Line Highlighting', () => {
         const html = await response.text()
 
         expect(html).toContain('class="language-ts"')
-        expect(html).toContain('interface') // Highlighting not implemented, just check code renders
+        expect(html).toContain('highlighted')
         expect(html).toContain('User')
       }
       finally {
@@ -176,7 +178,7 @@ describe('Code Block Line Highlighting', () => {
         const html = await response.text()
 
         expect(html).toContain('class="language-python"')
-        expect(html).toContain('const') // Highlighting not implemented, just check code renders
+        expect(html).toContain('highlighted')
       }
       finally {
         stop()
@@ -246,9 +248,9 @@ describe('Code Block Line Highlighting', () => {
         const response = await fetch('http://localhost:6010/test-highlight-beyond')
         const html = await response.text()
 
-        // Should only highlight existing lines (2 lines)
-        // Highlighting not yet implemented - just check code renders
-        expect(html).toContain('const')
+        // Should highlight only existing lines (2 lines)
+        const highlightedCount = (html.match(/<span[^>]*\bhighlighted\b/g) || []).length
+        expect(highlightedCount).toBe(2)
       }
       finally {
         stop()
@@ -275,8 +277,8 @@ describe('Code Block Line Highlighting', () => {
         expect(html).toContain('class="language-ts"')
 
         // Should have 2 highlighted lines total (one in each block)
-        // Highlighting not yet implemented - just check code renders
-        expect(html).toContain('const')
+        const highlightedCount = (html.match(/<span[^>]*\bhighlighted\b/g) || []).length
+        expect(highlightedCount).toBe(2)
       }
       finally {
         stop()

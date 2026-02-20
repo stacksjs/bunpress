@@ -322,7 +322,7 @@ function generateStructuredData(
 /**
  * Wrap content in BunPress documentation layout
  */
-export async function wrapInLayout(content: string, config: BunPressConfig, currentPath: string, isHome: boolean = false): Promise<string> {
+export async function wrapInLayout(content: string, config: BunPressConfig, currentPath: string, layout: string = 'doc'): Promise<string> {
   // Support both top-level config (VitePress-style) and markdown.title format
   const title = config.title || config.themeConfig?.siteTitle || config.markdown?.title || 'BunPress Documentation'
   const description = config.description || config.markdown?.meta?.description || 'Documentation built with BunPress'
@@ -356,7 +356,7 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   const scripts = [structuredData, fathomScript, analyticsScript, customScripts].filter(Boolean).join('\n')
 
   // Home layout - no sidebar, no navigation, clean hero layout
-  if (isHome) {
+  if (layout === 'home') {
     return await render('layout-home', {
       title,
       description,
@@ -367,7 +367,20 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
     })
   }
 
-  // Documentation layout - with sidebar
+  // Page layout - nav bar, full-width content, no sidebar, no TOC
+  if (layout === 'page') {
+    return await render('layout-page', {
+      title,
+      description,
+      meta: allMeta,
+      customCSS,
+      nav: generateNav(config),
+      content,
+      scripts,
+    })
+  }
+
+  // Documentation layout (default) - with sidebar and TOC
   // Add IDs to headings and generate page TOC
   const contentWithIds = addHeadingIds(content)
   const pageTOC = await generatePageTOC(contentWithIds)
@@ -517,15 +530,17 @@ function escapeAttr(str: string): string {
  * Parse YAML frontmatter from markdown using Bun's native YAML parser
  */
 function parseFrontmatter(markdown: string): { frontmatter: any, content: string } {
+  // Normalize CRLF to LF for cross-platform compatibility
+  const normalized = markdown.replace(/\r\n/g, '\n')
   const frontmatterRegex = /^---\n([\s\S]*?)\n---\n?/
-  const match = markdown.match(frontmatterRegex)
+  const match = normalized.match(frontmatterRegex)
 
   if (!match) {
-    return { frontmatter: {}, content: markdown }
+    return { frontmatter: {}, content: normalized }
   }
 
   const frontmatterText = match[1]
-  const content = markdown.slice(match[0].length)
+  const content = normalized.slice(match[0].length)
 
   try {
     // Use Bun's native YAML parser
@@ -683,7 +698,7 @@ function processEmoji(content: string): string {
     'blue_heart': '💙',
     'green_heart': '💚',
     'yellow_heart': '💛',
-    'purple_heart': '�purple',
+    'purple_heart': '💜',
     'broken_heart': '💔',
     'sparkling_heart': '💖',
     'star': '⭐',
@@ -701,6 +716,7 @@ function processEmoji(content: string): string {
     'loudspeaker': '📢',
     'warning': '⚠️',
     'white_check_mark': '✅',
+    'check': '✅',
     'x': '❌',
     'heavy_check_mark': '✔️',
     'heavy_multiplication_x': '✖️',
@@ -886,7 +902,8 @@ function processExternalLinksHtml(html: string): string {
  */
 function addExternalLinkIcons(html: string): string {
   // Find </a> tags that belong to external links (those with target="_blank")
-  return html.replace(/<a\s+href="([^"]+)"\s+target="_blank"[^>]*>([^<]+)<\/a>/g, (match, _url, _text) => {
+  // Use [\s\S]+? to also match links containing HTML (e.g. <code>, <strong>)
+  return html.replace(/<a\s+href="([^"]+)"\s+target="_blank"[^>]*>[\s\S]+?<\/a>/g, (match, _url) => {
     // Don't add icon if it already has one
     if (match.includes('external-link-icon'))
       return match
@@ -1603,29 +1620,58 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
     }
   }
 
+  // Resolve feature toggles from config (all default to true)
+  const features = (config as BunPressConfig).markdown?.features
+  const featureEnabled = (key: keyof import('./types').MarkdownFeaturesConfig): boolean => {
+    if (!features) return true
+    const val = features[key]
+    // boolean or object config — treat object as enabled
+    return val === undefined || val === true || (typeof val === 'object' && val !== null)
+  }
+
   // Process markdown includes first (before everything else)
-  let processedContent = await processMarkdownIncludes(content, rootDir)
+  let processedContent = featureEnabled('includes')
+    ? await processMarkdownIncludes(content, rootDir)
+    : content
 
   // Extract TOC data early (before any processing that modifies headings)
-  const { content: contentWithTocPlaceholder, tocHtml } = extractTocData(processedContent, frontmatter.toc)
+  const { content: contentWithTocPlaceholder, tocHtml } = featureEnabled('inlineToc')
+    ? extractTocData(processedContent, frontmatter.toc)
+    : { content: processedContent, tocHtml: '' }
 
   // Process in order: code imports, code groups, GitHub alerts, containers, emoji, badges
   // NOTE: Links and images are processed AFTER HTML conversion to avoid conflicts
-  processedContent = await processCodeImports(contentWithTocPlaceholder, rootDir)
-  processedContent = await processCodeGroups(processedContent)
-  processedContent = await processGitHubAlerts(processedContent)
-  processedContent = await processContainers(processedContent)
-  processedContent = processEmoji(processedContent)
-  processedContent = processBadges(processedContent)
+  processedContent = featureEnabled('codeImports')
+    ? await processCodeImports(contentWithTocPlaceholder, rootDir)
+    : contentWithTocPlaceholder
+  processedContent = featureEnabled('codeGroups')
+    ? await processCodeGroups(processedContent)
+    : processedContent
+  processedContent = featureEnabled('githubAlerts')
+    ? await processGitHubAlerts(processedContent)
+    : processedContent
+  processedContent = featureEnabled('containers')
+    ? await processContainers(processedContent)
+    : processedContent
+  processedContent = featureEnabled('emoji')
+    ? processEmoji(processedContent)
+    : processedContent
+  processedContent = featureEnabled('badges')
+    ? processBadges(processedContent)
+    : processedContent
 
   // Pre-process custom header anchors ({#custom-id})
-  const { content: contentWithoutAnchors, customAnchors } = preprocessCustomAnchors(processedContent)
+  const { content: contentWithoutAnchors, customAnchors } = featureEnabled('customAnchors')
+    ? preprocessCustomAnchors(processedContent)
+    : { content: processedContent, customAnchors: new Map<string, string>() }
   processedContent = contentWithoutAnchors
 
   // Extract and process code blocks with syntax highlighting
   // Replace with placeholders so Bun.markdown doesn't interfere
   const codeBlockMap = new Map<string, string>()
-  processedContent = await extractAndProcessCodeBlocks(processedContent, codeBlockMap)
+  processedContent = featureEnabled('codeBlocks')
+    ? await extractAndProcessCodeBlocks(processedContent, codeBlockMap)
+    : processedContent
 
   // Use Bun's built-in markdown parser for core markdown-to-HTML conversion
   // See: https://bun.com/docs/runtime/markdown
@@ -1645,10 +1691,14 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
   }
 
   // Post-process custom inline formatting (==mark==, ^sup^, ~sub~)
-  finalHtml = postProcessCustomInline(finalHtml)
+  if (featureEnabled('inlineFormatting')) {
+    finalHtml = postProcessCustomInline(finalHtml)
+  }
 
   // Post-process tables to add enhanced classes and responsive wrapper
-  finalHtml = postProcessTables(finalHtml)
+  if (featureEnabled('tables')) {
+    finalHtml = postProcessTables(finalHtml)
+  }
 
   // Post-process headings to add IDs (custom anchors or auto-generated)
   finalHtml = postProcessHeadings(finalHtml, customAnchors)
@@ -1659,9 +1709,13 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
   }
 
   // Process external links and images in the final HTML
-  finalHtml = processExternalLinksHtml(finalHtml)
-  finalHtml = addExternalLinkIcons(finalHtml)
-  finalHtml = processImagesHtml(finalHtml)
+  if (featureEnabled('externalLinks')) {
+    finalHtml = processExternalLinksHtml(finalHtml)
+    finalHtml = addExternalLinkIcons(finalHtml)
+  }
+  if (featureEnabled('imageLazyLoading')) {
+    finalHtml = processImagesHtml(finalHtml)
+  }
 
   return {
     html: finalHtml,
@@ -1724,8 +1778,8 @@ export async function startServer(options: {
         if (await mdFile.exists()) {
           const markdown = await mdFile.text()
           const { html, frontmatter } = await markdownToHtml(markdown, root)
-          const isHome = frontmatter.layout === 'home'
-          const wrappedHtml = await wrapInLayout(html, bunPressConfig, path, isHome)
+          const layout = frontmatter.layout || 'doc'
+          const wrappedHtml = await wrapInLayout(html, bunPressConfig, path, layout)
           return new Response(wrappedHtml, {
             headers: { 'Content-Type': 'text/html; charset=utf-8' },
           })
