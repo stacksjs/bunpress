@@ -6,7 +6,9 @@ BunPress is a powerful static site generator with extensive markdown processing 
 
 ### Lightning-Fast Performance
 
-Built on Bun runtime for exceptional speed:
+Built on Bun runtime with its native Zig-based markdown parser:
+
+- **6.2x faster markdown parsing** than VitePress on real-world documents
 - **Fastest builds**: 11x faster than Eleventy, 130x faster than Astro (4,000 files in 0.18s)
 - **22,000+ files/second**: Industry-leading throughput for markdown processing
 - **Hot module replacement**: See changes instantly during development
@@ -18,6 +20,7 @@ Built on Bun runtime for exceptional speed:
 #### Standard Markdown Support
 
 Full CommonMark and GitHub-Flavored Markdown support:
+
 - Headings, paragraphs, lists
 - Tables, blockquotes, horizontal rules
 - Links, images, inline code
@@ -71,6 +74,7 @@ Modern alert syntax for attention-grabbing callouts:
 ```
 
 **Key Differences from Containers:**
+
 - More semantic HTML structure
 - Distinctive icon indicators
 - GitHub-compatible syntax
@@ -133,6 +137,7 @@ export const config = {
 #### Copy-to-Clipboard
 
 Every code block includes a copy button with visual feedback:
+
 - Hover to reveal copy button
 - Click to copy entire code block
 - Visual confirmation on successful copy
@@ -164,6 +169,7 @@ print(greeting)
 ````
 
 **Features:**
+
 - Tab navigation between code samples
 - Independent syntax highlighting per tab
 - Compatible with line numbers and highlighting
@@ -206,6 +212,7 @@ app.use(express.json())
 ```
 
 **Benefits:**
+
 - Always up-to-date code examples
 - Single source of truth for documentation
 - Reduced documentation maintenance
@@ -225,11 +232,13 @@ Reuse markdown content across multiple pages.
 #### Partial Inclusion
 
 **Line Ranges:**
+
 ```markdown
 <!--@include: ./guide.md{1-50}-->
 ```
 
 **Named Regions:**
+
 ```markdown
 <!--@include: ./docs/auth.md{#overview}-->
 ```
@@ -245,6 +254,7 @@ Content here...
 ```
 
 **Advanced Features:**
+
 - Recursive includes (included files can include others)
 - Circular reference protection
 - Full markdown processing of included content
@@ -252,6 +262,7 @@ Content here...
 - Graceful error handling
 
 **Use Cases:**
+
 - Shared content across documentation
 - Modular documentation structure
 - Version-specific content management
@@ -272,6 +283,7 @@ This feature is :fire:!
 Renders as: I ❤️ BunPress! 🚀
 
 **Popular Shortcodes:**
+
 - `:heart:` → ❤️
 - `:fire:` → 🔥
 - `:rocket:` → 🚀
@@ -294,12 +306,14 @@ Available in <Badge type="tip" text="v2.0+" />
 ```
 
 **Badge Types:**
+
 - `tip` - Green for new features and recommendations
 - `warning` - Yellow for deprecations and cautions
 - `danger` - Red for breaking changes and critical warnings
 - `info` - Blue for general information
 
 **Use Cases:**
+
 - Version indicators
 - Feature status (beta, stable, deprecated)
 - Breaking change warnings
@@ -316,6 +330,7 @@ Automatic TOC generation from headings:
 ```
 
 **Features:**
+
 - Automatic slug generation
 - Nested hierarchy support
 - Configurable depth levels (h1-h6)
@@ -324,6 +339,7 @@ Automatic TOC generation from headings:
 - Exclude specific headings with `<!-- toc-ignore -->`
 
 **Positions:**
+
 - **Sidebar**: Floating navigation panel
 - **Inline**: Embedded in page content
 - **Floating**: Fixed position overlay
@@ -331,6 +347,7 @@ Automatic TOC generation from headings:
 #### Search
 
 Full-text search across all documentation:
+
 - Fast client-side search
 - Keyboard shortcuts
 - Result highlighting
@@ -358,6 +375,7 @@ layout: doc
 ```
 
 **Supported Fields:**
+
 - `title`: Page title
 - `description`: Meta description for SEO
 - `layout`: Page layout (home, doc, page)
@@ -408,6 +426,7 @@ bun dev
 ```
 
 **Features:**
+
 - Instant hot module replacement
 - Error overlay
 - Source maps
@@ -423,6 +442,7 @@ bun run build
 ```
 
 **Optimization:**
+
 - Code minification
 - Asset optimization
 - Code splitting
@@ -432,6 +452,7 @@ bun run build
 #### TypeScript Support
 
 Full TypeScript support throughout:
+
 - Type-safe configuration
 - Typed plugins and themes
 - IntelliSense support
@@ -477,6 +498,7 @@ export default {
 #### Theme Customization
 
 Full control over appearance:
+
 - Custom CSS
 - Theme overrides
 - Component replacement
@@ -521,6 +543,7 @@ function greet(name) {
 ````
 
 **Output:**
+
 - Lines with `// [!code ++]` show green background with `+` indicator
 - Lines with `// [!code --]` show red background with `-` indicator
 
@@ -540,6 +563,7 @@ function setup() {
 ````
 
 **Output:**
+
 - Focused lines highlighted with blue background
 - Non-focused lines dimmed with blur effect
 - Hover to reveal dimmed content
@@ -559,6 +583,7 @@ function process(data) {
 ````
 
 **Output:**
+
 - Error lines: Red background with ✕ icon
 - Warning lines: Yellow background with ⚠ icon
 
@@ -573,6 +598,7 @@ function process(data) {
 ```
 
 **Features:**
+
 - Left align: `:---`
 - Center align: `:---:`
 - Right align: `---:`
@@ -595,6 +621,7 @@ function process(data) {
 ```
 
 **Output:**
+
 ```html
 <figure class="image-figure">
   <img src="./image.png" alt="Alt text" loading="lazy" decoding="async">
@@ -603,6 +630,7 @@ function process(data) {
 ```
 
 **Features:**
+
 - Semantic HTML with `<figure>` and `<figcaption>`
 - Automatic lazy loading
 - Async decoding for performance
@@ -611,6 +639,7 @@ function process(data) {
 #### Lazy Loading
 
 All images automatically get:
+
 - `loading="lazy"` attribute
 - `decoding="async"` attribute
 - Preserved alt text for accessibility
@@ -668,6 +697,7 @@ See [CLI Reference](/cli) for complete documentation.
 ### XML Sitemap
 
 Automatic sitemap.xml generation with:
+
 - Last modification dates
 - Change frequency configuration
 - Priority settings per path
@@ -692,6 +722,7 @@ export default {
 ### Robots.txt
 
 Configurable robots.txt with:
+
 - Multi-agent rules
 - Allow/disallow patterns
 - Crawl-delay directives
@@ -700,6 +731,7 @@ Configurable robots.txt with:
 ### Meta Tags
 
 Automatically generated for every page:
+
 - Title and description
 - Open Graph tags for social sharing
 - Twitter Card tags
@@ -709,6 +741,7 @@ Automatically generated for every page:
 ### Open Graph Tags
 
 Rich social media previews:
+
 - `og:type` - Content type
 - `og:url` - Page URL
 - `og:title` - Page title
@@ -719,6 +752,7 @@ Rich social media previews:
 ### Twitter Cards
 
 Enhanced Twitter previews:
+
 - `twitter:card` - Card type (summary_large_image)
 - `twitter:title` - Tweet title
 - `twitter:description` - Tweet description
@@ -729,6 +763,7 @@ Enhanced Twitter previews:
 Three schema types automatically generated:
 
 **TechArticle Schema:**
+
 ```json
 {
   "@context": "https://schema.org",
@@ -741,6 +776,7 @@ Three schema types automatically generated:
 ```
 
 **Breadcrumb Schema:**
+
 ```json
 {
   "@context": "https://schema.org",
@@ -750,6 +786,7 @@ Three schema types automatically generated:
 ```
 
 **WebSite Schema:**
+
 ```json
 {
   "@context": "https://schema.org",
@@ -762,6 +799,7 @@ Three schema types automatically generated:
 ### RSS Feeds
 
 Generate RSS feeds for blog-style documentation:
+
 - Date-based sorting
 - Configurable max items
 - Full content or excerpts
@@ -777,6 +815,7 @@ bunpress seo:check
 ```
 
 **Checks:**
+
 - ✓ All pages have titles (10-60 characters)
 - ✓ All pages have descriptions (50-160 characters)
 - ✓ No duplicate titles
@@ -784,6 +823,7 @@ bunpress seo:check
 - ✓ All images have alt text
 
 **Auto-fix:**
+
 ```bash
 bunpress seo:check --fix
 ```
@@ -816,6 +856,7 @@ export default {
 ```
 
 **Features:**
+
 - No cookies
 - GDPR/CCPA compliant
 - Do Not Track support
@@ -849,6 +890,7 @@ export default {
 ```
 
 **Common Environment Variables:**
+
 - `NODE_ENV` - Environment mode (development/production)
 - `SITE_TITLE` - Site title
 - `SITE_DESCRIPTION` - Site description
@@ -987,6 +1029,7 @@ export default {
 ```
 
 **Features:**
+
 - Multiple language support
 - Automatic locale detection
 - Translation file management
@@ -999,38 +1042,77 @@ export default {
 
 ## Performance Metrics
 
-Real benchmark data using [11ty's methodology](https://www.11ty.dev/docs/performance/) with 4,000 markdown files:
+### Markdown Engine Benchmarks
 
-### Build Time Benchmark
+BunPress uses Bun's built-in Zig-based markdown parser, which dominates all JavaScript-based alternatives. All engines configured with equivalent GFM features (tables, strikethrough, task lists, autolinks). Tested on Apple M3 Pro, 18GB RAM, Bun 1.3.10, using [mitata](https://github.com/evanwashere/mitata).
+
+> **Fairness note:** These results are conservative. Real VitePress adds Shiki syntax highlighting + Vue plugins on top of markdown-it. Real Astro adds Shiki on top of remark/rehype. commonmark.js does not support GFM, so it processes fewer features and appears artificially fast.
+
+#### Real-World Doc Page (~3KB markdown)
+
+| Engine | Avg Time | vs BunPress |
+|--------|---------|-------------|
+| **BunPress** | **28.60 µs** | - |
+| commonmark (no GFM) | 101.47 µs | 3.5x slower |
+| Eleventy | 124.67 µs | 4.4x slower |
+| VitePress | 178.68 µs | 6.2x slower |
+| showdown | 791.29 µs | 28x slower |
+| marked | 841.17 µs | 29x slower |
+| micromark | 2.03 ms | 71x slower |
+| Astro | 2.56 ms | 90x slower |
+
+#### Large Document Stress Test (~33KB markdown)
+
+| Engine | Avg Time | vs BunPress |
+|--------|---------|-------------|
+| **BunPress** | **204.97 µs** | - |
+| commonmark (no GFM) | 1.01 ms | 4.9x slower |
+| Eleventy | 1.07 ms | 5.2x slower |
+| VitePress | 1.40 ms | 6.8x slower |
+| showdown | 12.76 ms | 62x slower |
+| micromark | 21.61 ms | 105x slower |
+| Astro | 26.56 ms | 130x slower |
+| marked | 47.41 ms | 231x slower |
+
+#### Throughput: 100 Mixed Documents
+
+| Engine | Avg Time | vs BunPress |
+|--------|---------|-------------|
+| **BunPress** | **827.40 µs** | - |
+| commonmark (no GFM) | 3.45 ms | 4.2x slower |
+| Eleventy | 3.80 ms | 4.6x slower |
+| VitePress | 4.85 ms | 5.9x slower |
+| marked | 17.43 ms | 21x slower |
+| showdown | 25.29 ms | 31x slower |
+| micromark | 72.79 ms | 88x slower |
+| Astro | 84.95 ms | 103x slower |
+
+### Build Performance (4,000 markdown files)
+
+Using the same methodology as [11ty's official performance tests](https://www.11ty.dev/docs/performance/):
 
 #### Fast Mode (Simple Markdown to HTML)
-
-Comparable to Eleventy's approach - pure markdown processing without syntax highlighting:
 
 | Generator | Build Time | Files/Second | vs BunPress |
 |-----------|-----------|--------------|-------------|
 | **BunPress** | **0.18s** | **22,714** | - |
 | Eleventy | 1.93s | 2,073 | 11x slower |
-| VitePress | 8.5s | 471 | 47x slower |
+| VitePress | 8.50s | 471 | 47x slower |
 | Astro | 22.90s | 175 | 130x slower |
 | Gatsby | 29.05s | 138 | 165x slower |
 | Next.js | 70.65s | 57 | 401x slower |
 
-#### Full Mode (With Syntax Highlighting, Templates, TOC)
+#### Full-Featured Build (with syntax highlighting, templates, TOC)
 
-Complete feature set comparable to VitePress/Astro:
+| Generator | Build Time | vs BunPress |
+|-----------|-----------|-------------|
+| **BunPress** | **4.12s** | - |
+| VitePress | 8.50s | 2x slower |
+| Astro | 22.90s | 5.6x slower |
+| Gatsby | 29.05s | 7x slower |
+| Next.js | 70.65s | 17x slower |
 
-| Generator | Build Time | Files/Second | vs BunPress |
-|-----------|-----------|--------------|-------------|
-| **BunPress** | **4.12s** | **972** | - |
-| VitePress | 8.5s | 471 | 2x slower |
-| Astro | 22.90s | 175 | 5.6x slower |
-| Gatsby | 29.05s | 138 | 7x slower |
-| Next.js | 70.65s | 57 | 17x slower |
-
-### Output File Size Benchmark
-
-Comparison of typical documentation page output sizes (includes HTML, CSS, and JavaScript):
+### Output File Size
 
 | Framework | Size (KB) | vs BunPress | Savings |
 |-----------|-----------|-------------|---------|
@@ -1040,26 +1122,22 @@ Comparison of typical documentation page output sizes (includes HTML, CSS, and J
 | Docusaurus | 220 | 4.9x larger | 80% |
 | Next.js | 250 | 5.6x larger | 82% |
 
-**Why BunPress output is smaller:**
-- Minimal JavaScript (CSS-first interactivity)
-- No framework runtime (no Vue, React, or Svelte)
-- Optimized inline styles
-- Server-rendered, no hydration needed
-
 ### Summary
 
 **BunPress is:**
-- **11x faster than Eleventy** in comparable mode
-- **2x faster than VitePress** with full features
-- **5.6x faster than Astro** with full features
-- **17x faster than Next.js** in all modes
+
+- **6.2x faster markdown parsing** than VitePress on real-world documents
+- **4.4x faster** than Eleventy, **90x faster** than Astro on real-world docs
+- **231x faster** than marked on large documents
+- **11x faster builds** than Eleventy (4,000 files)
 - **4x smaller output** than VitePress
 - The **fastest** documentation generator available
+- Results are conservative: real VitePress/Astro add Shiki + extra plugins (even slower)
 
-Run the benchmark yourself:
+Run the benchmarks yourself:
 
 ```bash
-bun test test/benchmark.test.ts
+cd benchmark && bun install && bun run bench
 ```
 
 ## Feature Comparison
@@ -1096,8 +1174,10 @@ bun test test/benchmark.test.ts
 
 ## Performance Benchmarks
 
+- **Markdown parsing**: 6.2x faster than VitePress, 4.4x faster than Eleventy, 90x faster than Astro
 - **Build speed**: 11x faster than Eleventy, 130x faster than Astro
 - **Throughput**: 22,000+ markdown files per second
+- **Large documents**: 6.8x faster than VitePress, 231x faster than marked on 33KB files
 - **Page load**: Sub-second initial load
 - **Hot reload**: < 100ms update time
 - **Search**: Instant client-side results

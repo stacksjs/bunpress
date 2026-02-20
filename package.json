@@ -64,11 +64,7 @@
     "build:docs": "bun bin/cli.ts build --outdir ./dist",
     "preview:docs": "bun bin/cli.ts preview --outdir ./dist",
     "typecheck": "bun --bun tsc --noEmit",
-    "bench": "bun run bench:build && bun run bench:server && bun run bench:features",
-    "bench:build": "bun benchmarks/build-performance.bench.ts",
-    "bench:server": "bun benchmarks/dev-server.bench.ts",
-    "bench:features": "bun benchmarks/features-comparison.bench.ts",
-    "bench:all": "bun run bench"
+    "bench": "cd benchmark && bun run bench:all"
   },
   "dependencies": {
     "@stacksjs/ts-md": "^0.1.1",
@@ -90,7 +86,6 @@
     "bun-plugin-dtsx": "0.21.17",
     "bun-types": "^1.3.9",
     "bunfig": "^0.15.6",
-    "mitata": "^1.0.34",
     "ts-syntax-highlighter": "^0.2.1",
     "typescript": "^5.9.3"
   },

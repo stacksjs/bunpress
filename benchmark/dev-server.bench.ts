@@ -9,7 +9,7 @@ import { cleanupFiles, formatDuration, generateMarkdownFiles, measureMemory } fr
  * and request response times
  */
 
-const FIXTURES_DIR = './benchmarks/fixtures/dev-server'
+const FIXTURES_DIR = './benchmark/fixtures/dev-server'
 const TEST_PORT = 9000
 
 async function setupDevServer(fileCount: number = 50) {
@@ -190,7 +190,7 @@ group('Memory under load', () => {
   })
 })
 
-console.log('\n⚡ BunPress Dev Server Performance Benchmarks\n')
+console.log('\n--- BunPress Dev Server Performance Benchmarks ---\n')
 console.log('Testing server startup, request handling, and memory usage\n')
 console.log('Environment:')
 console.log(`  Bun: ${Bun.version}`)
@@ -203,4 +203,4 @@ await run({
 // Cleanup
 await cleanupFiles(FIXTURES_DIR)
 
-console.log('\n✅ Server benchmarks complete!\n')
+console.log('\nServer benchmarks complete!\n')

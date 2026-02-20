@@ -10,7 +10,7 @@ import { cleanupFiles, formatDuration, generateMarkdownFiles } from './utils'
  * syntax highlighting, markdown parsing, etc.
  */
 
-const FIXTURES_DIR = './benchmarks/fixtures/features'
+const FIXTURES_DIR = './benchmark/fixtures/features'
 
 group('Table of Contents', () => {
   const sampleMarkdown = `
@@ -317,7 +317,7 @@ group('File generation', () => {
   })
 })
 
-console.log('\n🎯 BunPress Features Performance Benchmarks\n')
+console.log('\n--- BunPress Features Performance Benchmarks ---\n')
 console.log('Testing individual feature performance\n')
 console.log('Environment:')
 console.log(`  Bun: ${Bun.version}`)
@@ -329,4 +329,4 @@ await run({
 
 await cleanupFiles(FIXTURES_DIR)
 
-console.log('\n✅ Feature benchmarks complete!\n')
+console.log('\nFeature benchmarks complete!\n')

@@ -7,7 +7,7 @@ import { config } from './config'
 import { getSyntaxHighlightingStyles, highlightCode } from './highlighter'
 import { clearTemplateCache, render } from './template-loader'
 import { getThemeCSS } from './themes'
-import { buildTocHierarchy, defaultTocConfig, extractHeadings, filterHeadings, generateInlineTocHtml } from './toc'
+import { buildTocHierarchy, defaultTocConfig, extractHeadings, filterHeadings, generateInlineTocHtml, generateSlug } from './toc'
 
 /**
  * Generate sidebar HTML from BunPress config
@@ -1461,7 +1461,136 @@ async function processCodeBlock(lines: string[], startIndex: number): Promise<{ 
 }
 
 /**
- * Simple markdown to HTML converter (placeholder until full markdown plugin is enabled)
+ * Pre-process headings to extract custom anchor syntax ({#custom-id})
+ * Returns the processed content with {#id} removed and a map of heading text to custom ID
+ */
+function preprocessCustomAnchors(content: string): { content: string, customAnchors: Map<string, string> } {
+  const customAnchors = new Map<string, string>()
+
+  const processed = content.replace(/^(#{1,6})\s+(.*?)\s*\{#([\w-]+)\}\s*$/gm, (_match, hashes, text, id) => {
+    // Clean markdown formatting from key so it matches the plain text extracted from HTML
+    const cleanKey = text.trim()
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/\*\*(.+?)\*\*/g, '$1')
+      .replace(/__(.+?)__/g, '$1')
+      .replace(/\*(.+?)\*/g, '$1')
+      .replace(/_(.+?)_/g, '$1')
+      .replace(/~~(.+?)~~/g, '$1')
+      .trim()
+    customAnchors.set(cleanKey, id)
+    return `${hashes} ${text.trim()}`
+  })
+
+  return { content: processed, customAnchors }
+}
+
+/**
+ * Extract fenced code blocks, process them with syntax highlighting,
+ * and replace with HTML comment placeholders for Bun.markdown
+ */
+async function extractAndProcessCodeBlocks(content: string, codeBlockMap: Map<string, string>): Promise<string> {
+  const lines = content.split('\n')
+  const result: string[] = []
+  let i = 0
+  let placeholderIndex = 0
+
+  while (i < lines.length) {
+    const line = lines[i]
+
+    // Check for code block start (3+ backticks at start of line)
+    if (line.match(/^`{3,}/)) {
+      const { html, endIndex } = await processCodeBlock(lines, i)
+      const placeholder = `<!--BUNPRESS_CODE_${placeholderIndex++}-->`
+      codeBlockMap.set(placeholder, html)
+      // Surround with blank lines so Bun.markdown treats it as block-level HTML
+      result.push('')
+      result.push(placeholder)
+      result.push('')
+      i = endIndex + 1
+    }
+    else {
+      result.push(line)
+      i++
+    }
+  }
+
+  return result.join('\n')
+}
+
+/**
+ * Post-process custom inline formatting that Bun.markdown doesn't handle
+ */
+function postProcessCustomInline(html: string): string {
+  // Mark/highlight ==text==
+  html = html.replace(/==(.+?)==/g, '<mark>$1</mark>')
+  // Superscript ^text^
+  html = html.replace(/\^(.+?)\^/g, '<sup>$1</sup>')
+  // Subscript ~text~ (single tilde, not double like strikethrough)
+  html = html.replace(/(?<!~)~(?!~)(.+?)(?<!~)~(?!~)/g, '<sub>$1</sub>')
+
+  return html
+}
+
+/**
+ * Post-process tables to add BunPress-specific enhanced classes and responsive wrapper
+ */
+function postProcessTables(html: string): string {
+  // Wrap <table> in responsive div and add enhanced class
+  html = html.replace(/<table>/g, '<div class="table-responsive">\n<table class="enhanced-table">')
+  html = html.replace(/<\/table>/g, '</table>\n</div>')
+
+  // Convert align attributes to inline styles (Bun.markdown uses align="..." on th/td)
+  html = html.replace(/<(th|td) align="(left|center|right)">/g, (_match: string, tag: string, align: string) => {
+    return `<${tag} style="text-align: ${align}">`
+  })
+
+  // Add default left alignment to cells without alignment
+  html = html.replace(/<(th|td)>/g, (_match: string, tag: string) => {
+    return `<${tag} style="text-align: left">`
+  })
+
+  return html
+}
+
+/**
+ * Post-process headings to add ID attributes
+ * Uses custom anchors where available, auto-generates slugs otherwise
+ */
+function postProcessHeadings(html: string, customAnchors: Map<string, string>): string {
+  const usedSlugs = new Set<string>()
+
+  return html.replace(/<h([1-6])([^>]*)>([\s\S]*?)<\/h\1>/g, (match, level, attrs, content) => {
+    // Skip if already has an id
+    if (attrs.includes(' id=')) return match
+
+    // Get plain text content (strip HTML tags) for ID generation
+    const plainText = content.replace(/<[^>]+>/g, '').trim()
+
+    // Check for custom anchor
+    let id = customAnchors.get(plainText)
+
+    if (!id) {
+      // Auto-generate slug from text
+      id = generateSlug(plainText)
+    }
+
+    // Handle duplicate slugs
+    if (usedSlugs.has(id)) {
+      let counter = 1
+      while (usedSlugs.has(`${id}-${counter}`)) {
+        counter++
+      }
+      id = `${id}-${counter}`
+    }
+    usedSlugs.add(id)
+
+    return `<h${level} id="${id}"${attrs}>${content}</h${level}>`
+  })
+}
+
+/**
+ * Convert markdown to HTML using Bun's built-in markdown parser
+ * See: https://bun.com/docs/runtime/markdown
  */
 export async function markdownToHtml(markdown: string, rootDir: string = './docs'): Promise<{ html: string, frontmatter: any }> {
   // Parse frontmatter
@@ -1492,251 +1621,40 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
   processedContent = processEmoji(processedContent)
   processedContent = processBadges(processedContent)
 
-  // Very basic markdown conversion - will be replaced with full plugin
-  // Split into lines for better processing
-  const lines = processedContent.split('\n')
-  const html: string[] = []
-  let inCodeBlock = false
-  let inList = false
-  let listType: 'ul' | 'ol' = 'ul'
-  let containerDepth = 0
+  // Pre-process custom header anchors ({#custom-id})
+  const { content: contentWithoutAnchors, customAnchors } = preprocessCustomAnchors(processedContent)
+  processedContent = contentWithoutAnchors
 
-  for (let i = 0; i < lines.length; i++) {
-    let line = lines[i]
+  // Extract and process code blocks with syntax highlighting
+  // Replace with placeholders so Bun.markdown doesn't interfere
+  const codeBlockMap = new Map<string, string>()
+  processedContent = await extractAndProcessCodeBlocks(processedContent, codeBlockMap)
 
-    // Skip container markers (already processed)
-    if (line.trim().startsWith(':::')) {
-      continue
-    }
+  // Use Bun's built-in markdown parser for core markdown-to-HTML conversion
+  // See: https://bun.com/docs/runtime/markdown
+  // @ts-expect-error - Bun.markdown is available at runtime but types not yet in bun-types
+  let finalHtml = Bun.markdown.html(processedContent, {
+    tables: true,
+    strikethrough: true,
+    tasklists: true,
+    autolinks: true,
+  })
 
-    // Track container depth for nested divs in alerts, containers, and code groups
-    if (line.includes('<div class="custom-block') || line.includes('<details class="custom-block') || line.includes('<div class="github-alert') || line.includes('<div class="code-group')) {
-      containerDepth = 1
-    }
-    if (containerDepth > 0) {
-      html.push(line)
-      // Count opening and closing tags to handle nesting
-      const openTags = (line.match(/<div[^>]*>/g) || []).length + (line.match(/<details[^>]*>/g) || []).length
-      const closeTags = (line.match(/<\/div>/g) || []).length + (line.match(/<\/details>/g) || []).length
-      containerDepth += openTags - closeTags
-      continue
-    }
-
-    // Code blocks
-    if (line.startsWith('```')) {
-      if (!inCodeBlock) {
-        // Process the entire code block
-        const { html: codeHtml, endIndex } = await processCodeBlock(lines, i)
-        html.push(codeHtml)
-        i = endIndex // Skip to end of code block
-        inCodeBlock = false
-      }
-      continue
-    }
-
-    // Headings (check from longest to shortest to avoid conflicts)
-    if (line.startsWith('###### ')) {
-      if (inList) {
-        html.push(listType === 'ol' ? '</ol>' : '</ul>')
-        inList = false
-      }
-      html.push(`<h6>${processInlineFormatting(line.substring(7))}</h6>`)
-      continue
-    }
-    if (line.startsWith('##### ')) {
-      if (inList) {
-        html.push(listType === 'ol' ? '</ol>' : '</ul>')
-        inList = false
-      }
-      html.push(`<h5>${processInlineFormatting(line.substring(6))}</h5>`)
-      continue
-    }
-    if (line.startsWith('#### ')) {
-      if (inList) {
-        html.push(listType === 'ol' ? '</ol>' : '</ul>')
-        inList = false
-      }
-      html.push(`<h4>${processInlineFormatting(line.substring(5))}</h4>`)
-      continue
-    }
-    if (line.startsWith('### ')) {
-      if (inList) {
-        html.push(listType === 'ol' ? '</ol>' : '</ul>')
-        inList = false
-      }
-      html.push(`<h3>${processInlineFormatting(line.substring(4))}</h3>`)
-      continue
-    }
-    if (line.startsWith('## ')) {
-      if (inList) {
-        html.push(listType === 'ol' ? '</ol>' : '</ul>')
-        inList = false
-      }
-      html.push(`<h2>${processInlineFormatting(line.substring(3))}</h2>`)
-      continue
-    }
-    if (line.startsWith('# ')) {
-      if (inList) {
-        html.push(listType === 'ol' ? '</ol>' : '</ul>')
-        inList = false
-      }
-      html.push(`<h1>${processInlineFormatting(line.substring(2))}</h1>`)
-      continue
-    }
-
-    // Task lists (- [ ] or - [x])
-    if (line.match(/^\s*[-*]\s+\[([ xX])\]\s+/)) {
-      if (!inList) {
-        html.push('<ul class="task-list">')
-        inList = true
-        listType = 'ul'
-      }
-      const isChecked = line.match(/\[[xX]\]/)
-      const checkbox = isChecked
-        ? '<input type="checkbox" checked disabled class="task-list-checkbox">'
-        : '<input type="checkbox" disabled class="task-list-checkbox">'
-      const content = line.replace(/^\s*[-*]\s+\[([ xX])\]\s+/, '')
-      html.push(`<li class="task-list-item">${checkbox} ${processInlineFormatting(content)}</li>`)
-      continue
-    }
-
-    // Unordered lists (- or *)
-    if (line.match(/^\s*[-*]\s+/)) {
-      if (!inList) {
-        html.push('<ul>')
-        inList = true
-        listType = 'ul'
-      }
-      html.push(`<li>${processInlineFormatting(line.replace(/^\s*[-*]\s+/, ''))}</li>`)
-      continue
-    }
-
-    // Ordered lists (1. 2. 3.)
-    if (line.match(/^\s*\d+\.\s+/)) {
-      if (!inList) {
-        html.push('<ol>')
-        inList = true
-        listType = 'ol'
-      }
-      html.push(`<li>${processInlineFormatting(line.replace(/^\s*\d+\.\s+/, ''))}</li>`)
-      continue
-    }
-
-    // Close list if we're in one and hit a non-list line
-    if (inList && line.trim() !== '') {
-      html.push(listType === 'ol' ? '</ol>' : '</ul>')
-      inList = false
-    }
-
-    // Tables - detect start of table
-    if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
-      const tableRows: string[] = []
-      let tableIndex = i
-
-      // Collect all table rows
-      while (tableIndex < lines.length && lines[tableIndex].trim().startsWith('|')) {
-        tableRows.push(lines[tableIndex].trim())
-        tableIndex++
-      }
-
-      if (tableRows.length >= 2) {
-        // Process table
-        const processCell = (cell: string) => {
-          // Apply inline formatting
-          return processInlineFormatting(cell.trim())
-        }
-
-        // Parse alignment from separator row (index 1)
-        const separatorCells = tableRows[1].split('|').filter(cell => cell.trim())
-        const alignments = separatorCells.map((cell) => {
-          const trimmed = cell.trim()
-          if (trimmed.startsWith(':') && trimmed.endsWith(':')) {
-            return 'center'
-          }
-          else if (trimmed.endsWith(':')) {
-            return 'right'
-          }
-          else {
-            return 'left'
-          }
-        })
-
-        // Add responsive wrapper
-        html.push('<div class="table-responsive">')
-        html.push('<table class="enhanced-table">')
-
-        // Header row
-        const headerCells = tableRows[0].split('|').filter(cell => cell.trim())
-        html.push('  <thead>')
-        html.push('    <tr>')
-        headerCells.forEach((cell, index) => {
-          const align = alignments[index] || 'left'
-          html.push(`      <th style="text-align: ${align}">${processCell(cell)}</th>`)
-        })
-        html.push('    </tr>')
-        html.push('  </thead>')
-
-        // Body rows (skip separator row at index 1)
-        if (tableRows.length > 2) {
-          html.push('  <tbody>')
-          for (let j = 2; j < tableRows.length; j++) {
-            const cells = tableRows[j].split('|').filter(cell => cell.trim())
-            html.push('    <tr>')
-            cells.forEach((cell, index) => {
-              const align = alignments[index] || 'left'
-              html.push(`      <td style="text-align: ${align}">${processCell(cell)}</td>`)
-            })
-            html.push('    </tr>')
-          }
-          html.push('  </tbody>')
-        }
-
-        html.push('</table>')
-        html.push('</div>')
-
-        // Skip the lines we just processed
-        i = tableIndex - 1
-        continue
-      }
-    }
-
-    // Empty lines
-    if (line.trim() === '') {
-      continue
-    }
-
-    // HTML comments (including TOC placeholder) - pass through as-is
-    if (line.trim().startsWith('<!--') && line.trim().endsWith('-->')) {
-      html.push(line)
-      continue
-    }
-
-    // Standalone images - handle as block-level elements (not wrapped in <p>)
-    const standaloneImageMatch = line.trim().match(/^!\[([^\]]*)\]\(\s*([^\s")]+)(?:\s+"([^"]+)")?\)$/)
-    if (standaloneImageMatch) {
-      const [, alt, src, caption] = standaloneImageMatch
-      if (caption) {
-        html.push(`<figure class="image-figure"><img src="${src}" alt="${alt}"><figcaption>${caption}</figcaption></figure>`)
-      }
-      else {
-        html.push(`<img src="${src}" alt="${alt}">`)
-      }
-      continue
-    }
-
-    // Regular paragraphs
-    // Apply inline formatting: bold, italic, code, links, etc.
-    line = processInlineFormatting(line)
-
-    html.push(`<p>${line}</p>`)
+  // Restore code block placeholders with actual highlighted HTML
+  for (const [placeholder, codeHtml] of codeBlockMap) {
+    // Handle case where placeholder might get wrapped in <p> tags
+    finalHtml = finalHtml.replace(`<p>${placeholder}</p>`, codeHtml)
+    finalHtml = finalHtml.replace(placeholder, codeHtml)
   }
 
-  // Close list if still open
-  if (inList) {
-    html.push(listType === 'ol' ? '</ol>' : '</ul>')
-  }
+  // Post-process custom inline formatting (==mark==, ^sup^, ~sub~)
+  finalHtml = postProcessCustomInline(finalHtml)
 
-  let finalHtml = html.join('\n')
+  // Post-process tables to add enhanced classes and responsive wrapper
+  finalHtml = postProcessTables(finalHtml)
+
+  // Post-process headings to add IDs (custom anchors or auto-generated)
+  finalHtml = postProcessHeadings(finalHtml, customAnchors)
 
   // Inject TOC HTML if it was extracted
   if (tocHtml) {

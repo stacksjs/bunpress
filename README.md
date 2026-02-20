@@ -15,17 +15,20 @@ BunPress is a lightning-fast static site generator designed specifically for doc
 ## Features
 
 ### Core Features
+
 - ⚡ **Lightning Fast** - 0.18s build time (4,000 files), 11x faster than Eleventy
 - 📝 **Rich Markdown** - VitePress-compatible markdown with containers, alerts, code groups, and syntax highlighting
 - 📋 **Smart TOC** - Automatic table of contents with filtering, positioning (sidebar/inline/floating), and interactive navigation
 - 🛠️ **Developer Friendly** - Native TypeScript support, comprehensive CLI (15+ commands), and extensive customization
 
 ### SEO & Analytics
+
 - 🔍 **Complete SEO** - Auto-generated sitemap.xml, robots.txt, Open Graph tags, and JSON-LD structured data
 - 📊 **Fathom Analytics** - Privacy-focused analytics with GDPR/CCPA compliance and DNT support
 - 🔎 **SEO Validation** - Built-in SEO checker with auto-fix mode for common issues
 
 ### Markdown Extensions (VitePress-Compatible)
+
 - ✅ Custom containers (info, tip, warning, danger, details, raw)
 - ✅ GitHub-flavored alerts (note, tip, important, warning, caution)
 - ✅ Code features (line highlighting, line numbers, focus, diffs, errors/warnings, groups)
@@ -35,6 +38,7 @@ BunPress is a lightning-fast static site generator designed specifically for doc
 - ✅ Custom header anchors and inline TOC
 
 ### Developer Experience
+
 - 🚀 **Fast Dev Server** - ~100ms startup, hot reload, and instant feedback
 - 📦 **Small Bundles** - ~45KB per page (HTML + JS + CSS)
 - 💚 **Low Memory** - ~50MB dev server, ~250MB peak for 1000 files
@@ -143,14 +147,75 @@ bunpress config:validate  # Validate configuration
 
 ## Performance Benchmarks
 
-BunPress is **the fastest** documentation generator available. Our benchmarks use the same methodology as [11ty's official performance tests](https://www.11ty.dev/docs/performance/) with 4,000 markdown files:
+BunPress is **the fastest** documentation generator available, powered by Bun's built-in Zig-based markdown parser.
+
+### Markdown Engine Benchmarks
+
+Real benchmark results comparing BunPress against documentation frameworks and popular markdown engines. All engines configured with equivalent GFM features (tables, strikethrough, task lists, autolinks). Tested on Apple M3 Pro, 18GB RAM, Bun 1.3.10.
+
+> **Fairness note:** These results are conservative. Real VitePress adds Shiki syntax highlighting + Vue plugins on top of markdown-it. Real Astro adds Shiki on top of remark/rehype. commonmark.js does not support GFM, so it processes fewer features and appears artificially fast.
+
+#### Simple Markdown (paragraph + inline formatting)
+
+| Engine | Avg Time | vs BunPress |
+|--------|---------|-------------|
+| **BunPress** | **2.09 µs** | - |
+| commonmark (no GFM) | 3.91 µs | 1.9x slower |
+| Eleventy | 4.93 µs | 2.4x slower |
+| VitePress | 7.87 µs | 3.8x slower |
+| marked | 29.67 µs | 14x slower |
+| showdown | 32.48 µs | 16x slower |
+| micromark | 120.10 µs | 57x slower |
+| Astro | 126.36 µs | 60x slower |
+
+#### Real-World Doc Page (~3KB markdown)
+
+| Engine | Avg Time | vs BunPress |
+|--------|---------|-------------|
+| **BunPress** | **28.60 µs** | - |
+| commonmark (no GFM) | 101.47 µs | 3.5x slower |
+| Eleventy | 124.67 µs | 4.4x slower |
+| VitePress | 178.68 µs | 6.2x slower |
+| showdown | 791.29 µs | 28x slower |
+| marked | 841.17 µs | 29x slower |
+| micromark | 2.03 ms | 71x slower |
+| Astro | 2.56 ms | 90x slower |
+
+#### Large Document Stress Test (~33KB markdown)
+
+| Engine | Avg Time | vs BunPress |
+|--------|---------|-------------|
+| **BunPress** | **204.97 µs** | - |
+| commonmark (no GFM) | 1.01 ms | 4.9x slower |
+| Eleventy | 1.07 ms | 5.2x slower |
+| VitePress | 1.40 ms | 6.8x slower |
+| showdown | 12.76 ms | 62x slower |
+| micromark | 21.61 ms | 105x slower |
+| Astro | 26.56 ms | 130x slower |
+| marked | 47.41 ms | 231x slower |
+
+#### Throughput: 100 Mixed Documents
+
+| Engine | Avg Time | vs BunPress |
+|--------|---------|-------------|
+| **BunPress** | **827.40 µs** | - |
+| commonmark (no GFM) | 3.45 ms | 4.2x slower |
+| Eleventy | 3.80 ms | 4.6x slower |
+| VitePress | 4.85 ms | 5.9x slower |
+| marked | 17.43 ms | 21x slower |
+| showdown | 25.29 ms | 31x slower |
+| micromark | 72.79 ms | 88x slower |
+| Astro | 84.95 ms | 103x slower |
 
 ### Build Performance (4,000 markdown files)
+
+Using the same methodology as [11ty's official performance tests](https://www.11ty.dev/docs/performance/):
 
 | Generator | Build Time | vs BunPress |
 |-----------|-----------|-------------|
 | **BunPress** | **0.18s** | - |
 | Eleventy | 1.93s | 11x slower |
+| VitePress | 8.50s | 47x slower |
 | Astro | 22.90s | 130x slower |
 | Gatsby | 29.05s | 165x slower |
 | Next.js | 70.65s | 401x slower |
@@ -160,15 +225,15 @@ BunPress is **the fastest** documentation generator available. Our benchmarks us
 | Generator | Build Time | vs BunPress |
 |-----------|-----------|-------------|
 | **BunPress** | **4.12s** | - |
+| VitePress | 8.50s | 2x slower |
 | Astro | 22.90s | 5.6x slower |
 | Gatsby | 29.05s | 7x slower |
 | Next.js | 70.65s | 17x slower |
 
-**BunPress processes 22,000+ files per second** in fast mode, making it the fastest static site generator for documentation.
+Run the benchmarks yourself:
 
-Run the benchmark yourself:
 ```bash
-bun test test/benchmark.test.ts
+cd benchmark && bun install && bun run bench
 ```
 
 ## Testing

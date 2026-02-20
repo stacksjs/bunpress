@@ -1,0 +1,31 @@
+{
+  "name": "bunpress-benchmark",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "bench": "bun run index.ts",
+    "bench:markdown": "bun run index.ts",
+    "bench:build": "bun run build-performance.bench.ts",
+    "bench:server": "bun run dev-server.bench.ts",
+    "bench:features": "bun run features-comparison.bench.ts",
+    "bench:all": "bun run bench:markdown && bun run bench:build && bun run bench:server && bun run bench:features"
+  },
+  "devDependencies": {
+    "commonmark": "^0.31.2",
+    "marked": "^17.0.0",
+    "markdown-it": "^14.1.0",
+    "micromark": "^4.0.2",
+    "micromark-extension-gfm": "^3.0.0",
+    "showdown": "^2.1.0",
+    "unified": "^11.0.5",
+    "remark-parse": "^11.0.0",
+    "remark-gfm": "^4.0.0",
+    "remark-rehype": "^11.1.1",
+    "rehype-stringify": "^10.0.1",
+    "mitata": "^1.0.34",
+    "@types/commonmark": "^0.27.9",
+    "@types/markdown-it": "^14.1.2",
+    "@types/showdown": "^2.0.6",
+    "markdown-it-task-lists": "^2.1.1"
+  }
+}

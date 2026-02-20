@@ -9,8 +9,8 @@ import { cleanupFiles, countFiles, formatBytes, formatDuration, generateMarkdown
  * and measures memory usage
  */
 
-const FIXTURES_DIR = './benchmarks/fixtures'
-const OUTPUT_DIR = './benchmarks/output'
+const FIXTURES_DIR = './benchmark/fixtures'
+const OUTPUT_DIR = './benchmark/output'
 
 // Benchmark configuration
 const FILE_COUNTS = [10, 50, 100, 500]
@@ -206,7 +206,7 @@ group('Bundle size', () => {
   })
 })
 
-console.log('\n🔥 BunPress Build Performance Benchmarks\n')
+console.log('\n--- BunPress Build Performance Benchmarks ---\n')
 console.log('Testing build times, memory usage, and bundle sizes\n')
 console.log('Environment:')
 console.log(`  Bun: ${Bun.version}`)
@@ -221,4 +221,4 @@ await run({
 await cleanupFiles(FIXTURES_DIR)
 await cleanupFiles(OUTPUT_DIR)
 
-console.log('\n✅ Benchmarks complete!\n')
+console.log('\nBenchmarks complete!\n')
