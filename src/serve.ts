@@ -897,17 +897,14 @@ function addExternalLinkIcons(html: string): string {
 }
 
 /**
- * Process images in HTML to add lazy loading
+ * Post-process images in HTML to add lazy loading
  */
 function processImagesHtml(html: string): string {
-  // Match img tags without loading attribute
-  // Fixed: use [^>]+ to avoid backtracking with \s+
+  // Add lazy loading to img tags without loading attribute
   return html.replace(/<img([^>]+)>/g, (match, attrs) => {
-    // Skip if already has loading attribute
     if (attrs.includes('loading='))
       return match
 
-    // Add loading="lazy" and decoding="async"
     return `<img ${attrs} loading="lazy" decoding="async">`
   })
 }

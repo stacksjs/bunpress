@@ -17,17 +17,17 @@ describe('Code Block Focus Markers', () => {
         const response = await fetch('http://localhost:8001/test-focus-single')
         const html = await response.text()
 
-        // Should have has-focused-lines class
-        expect(html).toContain('const') // Focus mode not implemented, just check code renders
+        // Should have has-focused-lines class on <pre>
+        expect(html).toContain('has-focused-lines')
 
-        // Should have focused class
-        expect(html).toContain('const') // Focus not implemented, just check code renders
+        // Should have focused class on the focused line
+        expect(html).toContain('focused')
 
-        // Should have dimmed classes for non-focused lines
-        expect(html).toContain('const') // Dimmed not implemented, just check code renders
+        // Should have dimmed class on non-focused lines
+        expect(html).toContain('dimmed')
 
         // Should not display the marker comment
-        // Markers are properly removed during processing
+        expect(html).not.toContain('[!code focus]')
 
         // Should contain the code content
         expect(html).toContain('const')
@@ -51,12 +51,12 @@ describe('Code Block Focus Markers', () => {
         const html = await response.text()
 
         // Should have 2 focused lines
-        // Focus markers not yet implemented - just check code renders
-        expect(html).toContain('const')
+        const focusedCount = (html.match(/<span[^>]*\bfocused\b/g) || []).length
+        expect(focusedCount).toBe(2)
 
         // Should have 2 dimmed lines
-        // Dimmed lines not yet implemented - just check code renders
-        expect(html).toContain('const')
+        const dimmedCount = (html.match(/<span[^>]*\bdimmed\b/g) || []).length
+        expect(dimmedCount).toBe(2)
       }
       finally {
         stop()
@@ -78,15 +78,20 @@ describe('Code Block Focus Markers', () => {
         const response = await fetch('http://localhost:8003/test-no-focus')
         const html = await response.text()
 
-        // Should NOT have has-focused-lines class
-        // has-focused-lines not implemented - just verify code renders
-        expect(html).toContain('const')
+        // Extract just the <pre> block to avoid matching CSS rules
+        const preMatch = html.match(/<pre[^>]*>[\s\S]*?<\/pre>/)
+        expect(preMatch).not.toBeNull()
+        const preBlock = preMatch![0]
 
-        // Should NOT have focused or dimmed classes
-        // focused class not implemented
-        expect(html).toContain('const')
-        // dimmed class not implemented
-        expect(html).toContain('const')
+        // Should NOT have has-focused-lines class on the <pre> tag
+        expect(preBlock).not.toContain('has-focused-lines')
+
+        // Should NOT have focused or dimmed classes on code lines
+        expect(preBlock).not.toMatch(/<span[^>]*\bfocused\b/)
+        expect(preBlock).not.toMatch(/<span[^>]*\bdimmed\b/)
+
+        // Should contain the code
+        expect(preBlock).toContain('const')
       }
       finally {
         stop()
@@ -109,10 +114,10 @@ describe('Code Block Focus Markers', () => {
         const html = await response.text()
 
         // Line 2 should have both focused and highlighted classes
-        expect(html).toContain('const') // Combined classes not implemented
+        expect(html).toMatch(/<span[^>]*\bfocused\b[^>]*\bhighlighted\b|<span[^>]*\bhighlighted\b[^>]*\bfocused\b/)
 
         // Should have dimmed lines
-        expect(html).toContain('const') // Dimmed not implemented, just check code renders
+        expect(html).toContain('dimmed')
       }
       finally {
         stop()
@@ -133,10 +138,11 @@ describe('Code Block Focus Markers', () => {
         const html = await response.text()
 
         // Line 2 should have both highlighted and focused
-        expect(html).toContain('const') // Combined classes not implemented
+        expect(html).toContain('focused')
+        expect(html).toContain('highlighted')
 
-        // Line 3 should only have highlighted and dimmed
-        expect(html).toContain('const') // Combined classes not implemented
+        // Line 3 should have highlighted and dimmed (highlighted but not focused)
+        expect(html).toContain('dimmed')
       }
       finally {
         stop()
@@ -158,15 +164,16 @@ describe('Code Block Focus Markers', () => {
         const response = await fetch('http://localhost:8006/test-focus-line-numbers')
         const html = await response.text()
 
-        // Should have both classes
-        expect(html).toContain('const') // Line numbers and focus not implemented
+        // Should have both line-numbers-mode and has-focused-lines
+        expect(html).toContain('line-numbers-mode')
+        expect(html).toContain('has-focused-lines')
 
-        // Line numbers not implemented - just check code renders
-        expect(html).toContain('const')
+        // Should have focused and dimmed classes
+        expect(html).toContain('focused')
+        expect(html).toContain('dimmed')
 
-        // Should have focused and dimmed
-        expect(html).toContain('const') // Focus not implemented, just check code renders
-        expect(html).toContain('const') // Dimmed not implemented, just check code renders
+        // Should have line numbers
+        expect(html).toContain('line-number')
       }
       finally {
         stop()
@@ -189,9 +196,10 @@ describe('Code Block Focus Markers', () => {
         const html = await response.text()
 
         expect(html).toContain('class="language-ts"')
-        expect(html).toContain('const') // Focus mode not implemented, just check code renders
-        expect(html).toContain('const') // Focus not implemented, just check code renders
-        // Markers are properly removed during processing
+        expect(html).toContain('focused')
+        expect(html).toContain('dimmed')
+        // Marker should be removed
+        expect(html).not.toContain('[!code focus]')
       }
       finally {
         stop()
@@ -212,11 +220,9 @@ describe('Code Block Focus Markers', () => {
         const html = await response.text()
 
         expect(html).toContain('class="language-python"')
-        expect(html).toContain('const') // Focus mode not implemented, just check code renders
-
-        // VitePress uses // for markers regardless of language
-        // Should not display the marker comment
-        // Markers are properly removed during processing
+        expect(html).toContain('focused')
+        expect(html).toContain('dimmed')
+        expect(html).not.toContain('[!code focus]')
         expect(html).toContain('def hello()')
       }
       finally {
@@ -240,12 +246,12 @@ describe('Code Block Focus Markers', () => {
         const html = await response.text()
 
         // Should have 3 focused lines
-        // Focus markers not yet implemented - just check code renders
-        expect(html).toContain('const')
+        const focusedCount = (html.match(/<span[^>]*\bfocused\b/g) || []).length
+        expect(focusedCount).toBe(3)
 
-        // Should have 2 dimmed lines
-        // Dimmed lines not yet implemented - just check code renders
-        expect(html).toContain('const')
+        // Should have 2 dimmed lines (a and e)
+        const dimmedCount = (html.match(/<span[^>]*\bdimmed\b/g) || []).length
+        expect(dimmedCount).toBe(2)
       }
       finally {
         stop()
@@ -268,12 +274,12 @@ describe('Code Block Focus Markers', () => {
         const html = await response.text()
 
         // Should have 3 focused lines
-        // Focus markers not yet implemented - just check code renders
-        expect(html).toContain('const')
+        const focusedCount = (html.match(/<span[^>]*\bfocused\b/g) || []).length
+        expect(focusedCount).toBe(3)
 
-        // Should have NO dimmed lines
-        // Dimmed lines not yet implemented - just check code renders
-        expect(html).toContain('const')
+        // Should have NO dimmed lines (all focused)
+        const dimmedCount = (html.match(/<span[^>]*\bdimmed\b/g) || []).length
+        expect(dimmedCount).toBe(0)
       }
       finally {
         stop()
@@ -295,11 +301,11 @@ describe('Code Block Focus Markers', () => {
         const response = await fetch('http://localhost:8011/test-focus-removal')
         const html = await response.text()
 
-        // Should contain the code without trailing spaces or marker
+        // Should contain the code
         expect(html).toContain('test')
         expect(html).toContain('value')
-        // Marker is properly removed
-        // Markers are properly removed during processing
+        // Marker should be removed
+        expect(html).not.toContain('[!code focus]')
       }
       finally {
         stop()
@@ -321,7 +327,7 @@ describe('Code Block Focus Markers', () => {
         const response = await fetch('http://localhost:8012/test-focus-multiple-blocks')
         const html = await response.text()
 
-        // First block should have focused lines (count only in <pre> tags, not CSS)
+        // First block should have has-focused-lines
         const preTagMatches = html.match(/<pre[^>]*class="[^"]*has-focused-lines[^"]*"/g) || []
         expect(preTagMatches.length).toBe(1)
 
