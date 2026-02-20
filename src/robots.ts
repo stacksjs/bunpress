@@ -23,7 +23,7 @@ export async function generateRobotsTxt(
   await fs.promises.writeFile(outputPath, content, 'utf-8')
 
   if (config.verbose) {
-    console.error(`✅ Robots.txt generated: ${outputPath}`)
+    console.log(`✅ Robots.txt generated: ${outputPath}`)
   }
 }
 

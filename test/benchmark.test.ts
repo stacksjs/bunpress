@@ -751,8 +751,8 @@ async function runFullBuildBenchmark(fileCount: number): Promise<{
     files.map(async (file) => {
       const content = await Bun.file(file).text()
       const { html, frontmatter } = await markdownToHtml(content, BENCHMARK_DIR)
-      const isHome = frontmatter.layout === 'home'
-      const fullHtml = await wrapInLayout(html, bunPressConfig, '/benchmark', isHome)
+      const layout = frontmatter.layout || 'doc'
+      const fullHtml = await wrapInLayout(html, bunPressConfig, '/benchmark', layout)
       return fullHtml
     }),
   )

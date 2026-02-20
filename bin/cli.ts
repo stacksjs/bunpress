@@ -8,6 +8,7 @@ import { version } from '../package.json'
 import { config } from '../src/config'
 import type { BunPressConfig } from '../src/types'
 import { generateRobotsTxt } from '../src/robots'
+import { generateRssFeed } from '../src/rss'
 import { generateSitemap } from '../src/sitemap'
 import { serveCLI } from '../src/serve'
 import { cleanCommand } from './commands/clean'
@@ -114,8 +115,10 @@ async function generateSeoFiles(docsDir: string, outdir: string, verbose: boolea
       await generateRobotsTxt(outdir, bunPressConfig)
     }
 
-    // Note: RSS feed generation requires additional configuration
-    // and would be added here when RssFeedConfig is added to BunPressConfig
+    // Generate RSS feed
+    if (bunPressConfig.rss?.enabled) {
+      await generateRssFeed(docsDir, outdir, bunPressConfig, bunPressConfig.rss)
+    }
   }
   catch (error) {
     if (verbose) {
@@ -188,11 +191,11 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
       const relativePath = normalizedFile.replace(normalizedDocsDir, '').replace(/^\//, '').replace(/\.md$/, '')
       const currentPath = `/${relativePath}`
 
-      // Check if this is a home page
-      const isHome = frontmatter.layout === 'home'
+      // Determine layout type
+      const layout = frontmatter.layout || 'doc'
 
       // Wrap in layout (handles navbar, sidebar, SEO, etc.)
-      const fullHtml = await wrapInLayout(html, bunPressConfig, currentPath, isHome)
+      const fullHtml = await wrapInLayout(html, bunPressConfig, currentPath, layout)
 
       // Determine output path
       const outputPath = join(outdir, relativePath + '.html')
@@ -335,7 +338,7 @@ async function generate404Page(outdir: string, bunPressConfig: BunPressConfig): 
 </div>
 `
 
-  const fullHtml = await wrapInLayout(notFoundContent, bunPressConfig, '/404', false)
+  const fullHtml = await wrapInLayout(notFoundContent, bunPressConfig, '/404', 'doc')
 
   // Write 404.html to the output directory root
   await Bun.write(join(outdir, '404.html'), fullHtml)

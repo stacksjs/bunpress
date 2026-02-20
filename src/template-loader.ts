@@ -33,7 +33,7 @@ export function renderTemplate(template: string, data: Record<string, any>): str
 
   for (const [key, value] of Object.entries(data)) {
     const placeholder = new RegExp(`{{\\s*${key}\\s*}}`, 'g')
-    result = result.replace(placeholder, value ?? '')
+    result = result.replace(placeholder, String(value ?? ''))
   }
 
   return result

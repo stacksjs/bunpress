@@ -118,7 +118,7 @@ export async function generateRssFeed(
   await fs.promises.writeFile(outputPath, xml, 'utf-8')
 
   if (config.verbose) {
-    console.error(`✅ RSS feed generated: ${outputPath} (${limitedItems.length} items)`)
+    console.log(`✅ RSS feed generated: ${outputPath} (${limitedItems.length} items)`)
   }
 }
 

@@ -50,7 +50,7 @@ export async function generateSitemap(
 
   // Log verbose output
   if (config.verbose) {
-    console.error(`📄 Generated ${transformedEntries.length} sitemap entries`)
+    console.log(`📄 Generated ${transformedEntries.length} sitemap entries`)
   }
 
   // Generate sitemap(s)
@@ -63,7 +63,7 @@ export async function generateSitemap(
     await fs.promises.writeFile(outputPath, xml, 'utf-8')
 
     if (config.verbose) {
-      console.error(`✅ Sitemap generated: ${outputPath}`)
+      console.log(`✅ Sitemap generated: ${outputPath}`)
     }
   }
 }

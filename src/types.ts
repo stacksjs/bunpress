@@ -64,6 +64,11 @@ export interface BunPressConfig {
   robots?: RobotsConfig
 
   /**
+   * RSS feed configuration
+   */
+  rss?: import('./rss').RssFeedConfig
+
+  /**
    * Fathom Analytics configuration
    */
   fathom?: FathomConfig

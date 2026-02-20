@@ -1282,7 +1282,7 @@ if (typeof document !== 'undefined') {
     syntaxHighlightTheme: 'github-light',
   },
 
-  verbose: true,
+  verbose: false,
 
   // Sitemap configuration
   sitemap: {
