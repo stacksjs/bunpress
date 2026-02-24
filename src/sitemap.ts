@@ -73,7 +73,7 @@ export async function generateSitemap(
  */
 async function collectSitemapEntries(
   docsDir: string,
-  baseUrl: string,
+  _baseUrl: string,
   defaultPriority: number,
   defaultChangefreq: SitemapChangefreq,
   exclude: string[],

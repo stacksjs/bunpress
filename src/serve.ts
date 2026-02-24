@@ -455,6 +455,7 @@ function generateAnalyticsScript(config: BunPressConfig): string {
 
   const dataApiAttr = apiEndpoint ? ` data-api="${apiEndpoint}"` : ''
 
+  /* eslint-disable pickier/no-unused-vars, prefer-const, general/prefer-template */
   return `<!-- ts-analytics: privacy-first analytics -->
 <script data-site="${siteId}"${dataApiAttr} defer>
 (function(){
@@ -512,6 +513,7 @@ l('Initialized',site);
 }catch(err){if(w.console)console.error('[Analytics] Init error:',err);}
 })();
 </script>`
+  /* eslint-enable pickier/no-unused-vars, prefer-const, general/prefer-template */
 }
 
 /**
@@ -627,7 +629,7 @@ function processInlineFormatting(text: string): string {
     .replace(/(?<!~)~(?!~)(.+?)(?<!~)~(?!~)/g, '<sub>$1</sub>')
     // Images with optional caption (must be before links to avoid conflicts)
     // Matches: ![alt](src "caption") or ![alt](src) or ![alt]( src "caption")
-    .replace(/!\[([^\]]*)\]\(\s*([^\s")]+)(?:\s+"([^"]+)")?\)/g, (match, alt, src, caption) => {
+    .replace(/!\[([^\]]*)\]\(\s*([^\s")]+)(?:\s+"([^"]+)")?\)/g, (_match, alt, src, caption) => {
       if (caption) {
         // Image with caption - wrap in figure/figcaption
         return `<figure class="image-figure"><img src="${src}" alt="${alt}"><figcaption>${caption}</figcaption></figure>`
@@ -1330,7 +1332,7 @@ async function processCodeBlock(lines: string[], startIndex: number): Promise<{ 
   // Count the number of backticks in the opening fence (supports 3, 4, 5+ backticks)
   const backtickMatch = firstLine.match(/^(`{3,})/)
   const fenceLength = backtickMatch ? backtickMatch[1].length : 3
-  const closingFence = '`'.repeat(fenceLength)
+  const _closingFence = '`'.repeat(fenceLength)
 
   const infoString = firstLine.substring(fenceLength).trim() // Remove opening backticks
 

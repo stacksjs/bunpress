@@ -342,7 +342,7 @@ export function enhanceHeadingsWithAnchors(content: string): string {
 
   return content.replace(
     /<h([1-6])>(.*?)<\/h[1-6]>/gi,
-    (match, level, content) => {
+    (_match, level, content) => {
       const slug = generateUniqueSlug(content.replace(/<[^>]*>/g, ''), existingSlugs)
       return `<h${level} id="${slug}"><a href="#${slug}" class="heading-anchor">#</a>${content}</h${level}>`
     },
