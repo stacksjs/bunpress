@@ -85,7 +85,6 @@ const showdownConverter = new showdown.Converter({
 const cmParser = new CommonmarkParser()
 const cmRenderer = new HtmlRenderer()
 
-// @ts-expect-error - Bun.markdown types not yet in bun-types
 const bunMarkdown = Bun.markdown
 
 // --------------------------------------------------------------------------

@@ -1675,7 +1675,6 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
 
   // Use Bun's built-in markdown parser for core markdown-to-HTML conversion
   // See: https://bun.com/docs/runtime/markdown
-  // @ts-expect-error - Bun.markdown is available at runtime but types not yet in bun-types
   let finalHtml = Bun.markdown.html(processedContent, {
     tables: true,
     strikethrough: true,
