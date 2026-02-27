@@ -587,7 +587,8 @@ function initToc() {
 // Initialize TOC when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initToc)
-} else {
+}
+else {
   initToc()
 }
 `

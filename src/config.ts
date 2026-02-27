@@ -760,7 +760,8 @@ function getPreferredTheme() {
 function setTheme(theme) {
   if (theme === 'dark') {
     document.documentElement.classList.add('dark');
-  } else {
+  }
+  else {
     document.documentElement.classList.remove('dark');
   }
   localStorage.setItem('bunpress-theme', theme);
@@ -795,7 +796,8 @@ function switchCodeTab(groupId, panelIndex) {
   tabs.forEach((tab, index) => {
     if (index === panelIndex) {
       tab.classList.add('active');
-    } else {
+    }
+    else {
       tab.classList.remove('active');
     }
   });
@@ -805,7 +807,8 @@ function switchCodeTab(groupId, panelIndex) {
   panels.forEach((panel, index) => {
     if (index === panelIndex) {
       panel.classList.add('active');
-    } else {
+    }
+    else {
       panel.classList.remove('active');
     }
   });
@@ -826,7 +829,8 @@ function fallbackCopyToClipboard(text) {
     document.execCommand('copy');
     document.body.removeChild(textArea);
     return true;
-  } catch (err) {
+  }
+  catch (err) {
     document.body.removeChild(textArea);
     return false;
   }
@@ -843,15 +847,18 @@ function copyToClipboard(text) {
           // Fallback to execCommand
           if (fallbackCopyToClipboard(text)) {
             resolve();
-          } else {
+          }
+          else {
             reject(new Error('Copy failed'));
           }
         });
-    } else {
+    }
+    else {
       // Use fallback directly
       if (fallbackCopyToClipboard(text)) {
         resolve();
-      } else {
+      }
+      else {
         reject(new Error('Copy failed'));
       }
     }

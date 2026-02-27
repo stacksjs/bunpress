@@ -487,7 +487,8 @@ x.onerror=function(){l('XHR error');};
 x.send(payload);
 l('Sent via XHR',data.e);
 return true;
-}catch(e){l('XHR failed',e);}
+}
+catch(e){l('XHR failed',e);}
 }
 return sent;
 }
@@ -496,7 +497,8 @@ try{
 var data={s:site,sid:sid,e:e,p:p||{},u:location.href,r:d.referrer||'',t:d.title||'',sw:screen.width,sh:screen.height,ts:Date.now()};
 if(vid)data.vid=vid;
 send(api+'/collect',data);
-}catch(err){l('Track error',err);}
+}
+catch(err){l('Track error',err);}
 }
 var pvSent={};function pv(){var p=location.pathname;if(pvSent[p]&&Date.now()-pvSent[p]<1000)return;pvSent[p]=Date.now();l('Pageview',p);t('pageview',{path:p});}
 ${hashTracking}
@@ -510,7 +512,8 @@ w.addEventListener('visibilitychange',function(){if(d.visibilityState==='hidden'
 ss.setItem('_tsa_start',Date.now());
 w.bunpressAnalytics={track:function(name,props){t('event',{name:name,properties:props});},debug:function(v){debug=v!==false;w.ANALYTICS_DEBUG=debug;}};
 l('Initialized',site);
-}catch(err){if(w.console)console.error('[Analytics] Init error:',err);}
+}
+catch(err){if(w.console)console.error('[Analytics] Init error:',err);}
 })();
 </script>`
   /* eslint-enable pickier/no-unused-vars, prefer-const, general/prefer-template */
