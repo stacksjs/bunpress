@@ -331,7 +331,6 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   const themeName = config.theme || 'vitepress'
   const themeCSS = getThemeCSS(themeName)
   const syntaxHighlightingStyles = getSyntaxHighlightingStyles()
-  const customCSS = `${themeCSS}\n${syntaxHighlightingStyles}\n${config.markdown?.css || ''}`
 
   // Generate SEO meta tags
   const canonicalUrl = generateCanonicalUrl(config, currentPath)
@@ -355,8 +354,14 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   const customScripts = config.markdown?.scripts?.map(script => `<script>${script}</script>`).join('\n') || ''
   const scripts = [structuredData, fathomScript, analyticsScript, customScripts].filter(Boolean).join('\n')
 
+  // Pre-generate nav so we can scan all HTML for crosswind utility classes
+  const nav = generateNav(config)
+
   // Home layout - no sidebar, no navigation, clean hero layout
   if (layout === 'home') {
+    const crosswindCSS = await generateCrosswindCSSFromHtml(content)
+    const customCSS = `${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${config.markdown?.css || ''}`
+
     return await render('layout-home', {
       title,
       description,
@@ -369,33 +374,67 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
 
   // Page layout - nav bar, full-width content, no sidebar, no TOC
   if (layout === 'page') {
+    const crosswindCSS = await generateCrosswindCSSFromHtml(`${content}\n${nav}`)
+    const customCSS = `${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${config.markdown?.css || ''}`
+
     return await render('layout-page', {
       title,
       description,
       meta: allMeta,
       customCSS,
-      nav: generateNav(config),
+      nav,
       content,
       scripts,
     })
   }
 
   // Documentation layout (default) - with sidebar and TOC
-  // Add IDs to headings and generate page TOC
   const contentWithIds = addHeadingIds(content)
   const pageTOC = await generatePageTOC(contentWithIds)
+  const sidebar = await generateSidebar(config, currentPath)
+
+  const crosswindCSS = await generateCrosswindCSSFromHtml(`${contentWithIds}\n${nav}\n${sidebar}`)
+  const customCSS = `${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${config.markdown?.css || ''}`
 
   return await render('layout-doc', {
     title,
     description,
     meta: allMeta,
     customCSS,
-    nav: generateNav(config),
-    sidebar: await generateSidebar(config, currentPath),
+    nav,
+    sidebar,
     content: contentWithIds,
     pageTOC,
     scripts,
   })
+}
+
+let _crosswindModule: any = null
+let _crosswindLoaded = false
+
+async function loadCrosswind(): Promise<any> {
+  if (_crosswindLoaded) return _crosswindModule
+  _crosswindLoaded = true
+  try {
+    _crosswindModule = await import('@cwcss/crosswind')
+  }
+  catch {
+    _crosswindModule = null
+  }
+  return _crosswindModule
+}
+
+async function generateCrosswindCSSFromHtml(html: string): Promise<string> {
+  const cw = await loadCrosswind()
+  if (!cw) return ''
+  const scanner = new cw.Scanner([])
+  const classes = scanner.scanContent(html)
+  if (classes.size === 0) return ''
+  const generator = new cw.CSSGenerator(cw.defaultConfig)
+  for (const cls of classes) {
+    generator.generate(cls)
+  }
+  return generator.toCSS(false, false)
 }
 
 /**
