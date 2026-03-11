@@ -413,3 +413,7 @@ Commit-msg hook validates commit messages with `@stacksjs/gitlint`
 
 - `src/plugin.ts` is entirely commented out — superseded by `src/serve.ts` pipeline
 - The main build system in `bin/cli.ts` has plugins disabled (line 103) — `bun bin/cli.ts dev` uses serve.ts directly
+
+## Git Commits
+
+When committing changes, do not include a `Co-Authored-By` line for Claude in commit messages.
