@@ -414,6 +414,23 @@ Commit-msg hook validates commit messages with `@stacksjs/gitlint`
 - `src/plugin.ts` is entirely commented out — superseded by `src/serve.ts` pipeline
 - The main build system in `bin/cli.ts` has plugins disabled (line 103) — `bun bin/cli.ts dev` uses serve.ts directly
 
-## Git Commits
 
-When committing changes, do not include a `Co-Authored-By` line for Claude in commit messages.
+---
+
+## Linting
+
+- Use **pickier** for linting — never use eslint directly
+- Run `bunx --bun pickier .` to lint, `bunx --bun pickier . --fix` to auto-fix
+- When fixing unused variable warnings, prefer `// eslint-disable-next-line` comments over prefixing with `_`
+
+## Frontend
+
+- Use **stx** for templating — never write vanilla JS (`var`, `document.*`, `window.*`) in stx templates
+- Use **crosswind** as the default CSS framework
+- stx `<script>` tags should only contain stx-compatible code (signals, composables, directives)
+
+## Dependencies
+
+- **buddy-bot** handles dependency updates — not renovatebot
+- **better-dx** provides shared dev tooling as peer dependencies — do not install its peers (e.g., `typescript`, `pickier`, `bun-plugin-dtsx`) separately if `better-dx` is already in `package.json`
+- If `better-dx` is in `package.json`, ensure `bunfig.toml` includes `linker = "hoisted"`
