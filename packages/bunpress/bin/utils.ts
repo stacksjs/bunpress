@@ -89,6 +89,8 @@ export function formatTime(ms: number): string {
 /**
  * Simple spinner for long-running operations
  */
+const isCI = !!(process.env.CI || process.env.GITHUB_ACTIONS || process.env.BUILDKITE || process.env.CIRCLECI || process.env.GITLAB_CI)
+
 export class Spinner {
   private frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
   private index = 0
@@ -100,6 +102,11 @@ export class Spinner {
   }
 
   start(): void {
+    if (isCI) {
+      console.log(`  ${this.text}`)
+      return
+    }
+
     process.stdout.write('\x1B[?25l') // Hide cursor
 
     this.interval = setInterval(() => {
@@ -124,8 +131,10 @@ export class Spinner {
       clearInterval(this.interval)
       this.interval = null
     }
-    process.stdout.write('\r\x1B[K') // Clear line
-    process.stdout.write('\x1B[?25h') // Show cursor
+    if (!isCI) {
+      process.stdout.write('\r\x1B[K') // Clear line
+      process.stdout.write('\x1B[?25h') // Show cursor
+    }
   }
 
   update(text: string): void {
