@@ -52,9 +52,11 @@
     "typecheck": "bun --bun tsc --noEmit"
   },
   "dependencies": {
+    "@stacksjs/clapp": "^0.2.0",
     "@stacksjs/ts-md": "^0.1.1",
     "@stacksjs/ts-cloud": "^0.2.2",
-    "buddy-bot": "^0.9.17"
+    "buddy-bot": "^0.9.17",
+    "bunfig": "^0.15.6"
   },
   "devDependencies": {
     "bun-plugin-dtsx": "0.21.17",

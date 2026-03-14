@@ -3,12 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@stacksjs/bunpress",
-      "dependencies": {
-        "@stacksjs/ts-cloud": "^0.2.2",
-        "@stacksjs/ts-md": "^0.1.1",
-        "buddy-bot": "^0.9.17",
-      },
+      "name": "bunpress-monorepo",
       "devDependencies": {
         "@stacksjs/bumpx": "^0.2.4",
         "@stacksjs/gitlint": "^0.1.5",
@@ -22,9 +17,40 @@
         "typescript": "^5.9.3",
       },
     },
+    "packages/bun-plugin-bunpress": {
+      "name": "bun-plugin-bunpress",
+      "version": "0.1.0",
+      "devDependencies": {
+        "bun-plugin-dtsx": "0.21.17",
+        "bun-types": "^1.3.10",
+        "typescript": "^5.9.3",
+      },
+    },
+    "packages/bunpress": {
+      "name": "@stacksjs/bunpress",
+      "version": "0.1.1",
+      "bin": {
+        "bunpress": "./dist/bin/cli.js",
+      },
+      "dependencies": {
+        "@stacksjs/clapp": "^0.2.0",
+        "@stacksjs/ts-cloud": "^0.2.2",
+        "@stacksjs/ts-md": "^0.1.1",
+        "buddy-bot": "^0.9.17",
+        "bunfig": "^0.15.6",
+      },
+      "devDependencies": {
+        "bun-plugin-dtsx": "0.21.17",
+        "bun-types": "^1.3.10",
+        "ts-syntax-highlighter": "^0.2.1",
+        "typescript": "^5.9.3",
+      },
+    },
   },
   "packages": {
     "@stacksjs/bumpx": ["@stacksjs/bumpx@0.2.4", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "@stacksjs/logsmith": "^0.2.1", "bunfig": "^0.15.6" }, "bin": { "bumpx": "dist/bin/cli.js" } }, "sha512-bt14GhW4QJKqmAgfTyjW0pDblDu+y6+DSX8xva1HnLk2GtLyQe0YXUs51dUvZBFgYVHcHEUijNoj2pivuwIcjQ=="],
+
+    "@stacksjs/bunpress": ["@stacksjs/bunpress@workspace:packages/bunpress"],
 
     "@stacksjs/clapp": ["@stacksjs/clapp@0.2.0", "", { "dependencies": { "mri": "^1.2.0", "wrap-ansi": "^9.0.0" }, "bin": { "clapp": "dist/bin/cli.js", "@stacksjs/clapp": "dist/bin/cli.js" } }, "sha512-dSqnbeZjXnQLLvVxC5NU7D9Vpjxc6cC9Bo2ZwaqjgruK7pbVoFCI0goc9Mtf/lfSTbTx6Uvv/mbY7+cOW/j3Og=="],
 
@@ -48,7 +74,7 @@
 
     "@ts-cloud/core": ["@ts-cloud/core@0.2.2", "", { "dependencies": { "@ts-cloud/aws-types": "0.2.2" } }, "sha512-XXhCgb1RiH1X3wJFx5qWh3I7bfyePaqn/+DLNJLilAIANH08BRGFeeCDV6NQLDob92CkdQKVR/juazQehZPZmw=="],
 
-    "@types/node": ["@types/node@25.3.3", "", { "dependencies": { "undici-types": "~7.18.0" } }, "sha512-DpzbrH7wIcBaJibpKo9nnSQL0MTRdnWttGyE5haGwK86xgMOkFLp7vEyfQPGLOJh5wNYiJ3V9PmUMDhV9u8kkQ=="],
+    "@types/node": ["@types/node@25.5.0", "", { "dependencies": { "undici-types": "~7.18.0" } }, "sha512-jp2P3tQMSxWugkCUKLRPVUpGaL5MVFwF8RDuSRztfwgN1wmqJeMSbKlnEtQqU8UrhTmzEmZdu2I6v2dpp7XIxw=="],
 
     "ansi-regex": ["ansi-regex@6.2.2", "", {}, "sha512-Bq3SmSpyFHaWjPk8If9yc6svM8c56dB5BAtW4Qbw5jHTwwXXcTLoRMkpDJp6VL0XzlWaCHTXrkFURMYmD0sLqg=="],
 
@@ -57,6 +83,8 @@
     "buddy-bot": ["buddy-bot@0.9.17", "", { "dependencies": { "bunfig": "^0.15.6", "prompts": "^2.4.2", "ts-pkgx": "^0.4.154" }, "bin": { "buddy-bot": "./dist/bin/cli.js" } }, "sha512-wAb6yviR5jLQ0DzgxuUa2P4MzPeaXgXiOPAfi25bprPaObGY+ja2FEzuCdfN8ahhYLTXKFL6aL5j5ne6wvAw+Q=="],
 
     "bun-git-hooks": ["bun-git-hooks@0.3.1", "", { "bin": { "git-hooks": "dist/bin/cli.js", "bun-git-hooks": "dist/bin/cli.js" } }, "sha512-Xs/QUqIYgBmLHSVr5VBLVbM5lZbUoAXKX2WZyoQDb2LlzcxC3BpBvMkMTQH75UuOJZwaRBq8yEe4IR6NckqdgQ=="],
+
+    "bun-plugin-bunpress": ["bun-plugin-bunpress@workspace:packages/bun-plugin-bunpress"],
 
     "bun-plugin-dtsx": ["bun-plugin-dtsx@0.21.17", "", { "dependencies": { "@stacksjs/dtsx": "^0.9.8" } }, "sha512-gikZdPs8f7aFPREb+gBn7kaDdjpfQSLIPpVbUI+I5dusAlENvlJmKQj06aq1oS3mP7yg3gdQJBRg+PlzUV5h9g=="],
 

@@ -10,8 +10,8 @@ logs
 node_modules
 temp
 docs/.bunpress/cache
-bin/bunpress
-bin/bunpress*
+packages/bunpress/bin/bunpress
+packages/bunpress/bin/bunpress*
 
 docs/.vitepress/
 
