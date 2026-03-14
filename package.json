@@ -1,6 +1,7 @@
 {
-  "name": "@stacksjs/bunpress",
+  "name": "bunpress-monorepo",
   "type": "module",
+  "private": true,
   "version": "0.1.1",
   "description": "Modern documentation engine. Powered by Bun.",
   "author": "Chris Breuer <chris@stacksjs.org>",
@@ -13,43 +14,18 @@
   "bugs": {
     "url": "https://github.com/stacksjs/bunpress/issues"
   },
-  "keywords": [
-    "bunpress",
-    "bun",
-    "cli",
-    "typescript",
-    "vitepress alternative"
-  ],
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/src/index.js"
-    },
-    "./*": {
-      "import": "./dist/*"
-    }
-  },
-  "module": "./dist/src/index.js",
-  "types": "./dist/index.d.ts",
-  "bin": {
-    "bunpress": "./dist/bin/cli.js"
-  },
-  "files": [
-    "README.md",
-    "dist"
+  "workspaces": [
+    "packages/*"
   ],
   "scripts": {
     "dev": "bun run dev:docs",
-    "build": "bun --bun build.ts && bun run compile",
-    "compile": "bun build ./bin/cli.ts --compile --minify --outfile bin/bunpress",
-    "compile:all": "bun run compile:linux-x64 && bun run compile:linux-arm64 && bun run compile:windows-x64 && bun run compile:darwin-x64 && bun run compile:darwin-arm64",
-    "compile:linux-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-x64 --outfile bin/bunpress-linux-x64",
-    "compile:linux-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-arm64 --outfile bin/bunpress-linux-arm64",
-    "compile:windows-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-windows-x64 --outfile bin/bunpress-windows-x64.exe",
-    "compile:darwin-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-x64 --outfile bin/bunpress-darwin-x64",
-    "compile:darwin-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-arm64 --outfile bin/bunpress-darwin-arm64",
-    "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
-    "prepublishOnly": "bun --bun run build && bun run compile:all",
+    "build": "bun run build:bunpress && bun run build:plugin",
+    "build:bunpress": "cd packages/bunpress && bun run build",
+    "build:plugin": "cd packages/bun-plugin-bunpress && bun run build",
+    "compile": "cd packages/bunpress && bun run compile",
+    "compile:all": "cd packages/bunpress && bun run compile:all",
+    "fresh": "bunx rimraf node_modules/ packages/*/node_modules/ bun.lock && bun i",
+    "prepublishOnly": "bun run build",
     "test": "bun test",
     "test:quick": "bun test --timeout=10000",
     "test:full": "bun test --timeout=60000 --no-bail",
@@ -60,16 +36,11 @@
     "changelog": "bunx logsmith --verbose",
     "changelog:generate": "bunx logsmith --output CHANGELOG.md",
     "release": "bunx --bun bumpx prompt --recursive",
-    "dev:docs": "bun bin/cli.ts dev",
-    "build:docs": "bun bin/cli.ts build --outdir ./dist",
-    "preview:docs": "bun bin/cli.ts preview --outdir ./dist",
+    "dev:docs": "bun packages/bunpress/bin/cli.ts dev",
+    "build:docs": "bun packages/bunpress/bin/cli.ts build --outdir ./dist",
+    "preview:docs": "bun packages/bunpress/bin/cli.ts preview --outdir ./dist",
     "typecheck": "bun --bun tsc --noEmit",
     "bench": "cd benchmark && bun run bench:all"
-  },
-  "dependencies": {
-    "@stacksjs/ts-md": "^0.1.1",
-    "@stacksjs/ts-cloud": "^0.2.2",
-    "buddy-bot": "^0.9.17"
   },
   "devDependencies": {
     "@stacksjs/bumpx": "^0.2.4",

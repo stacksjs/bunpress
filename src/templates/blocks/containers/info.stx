@@ -1,6 +1,0 @@
-<div class="custom-block info">
-  <p class="custom-block-title">{{title}}</p>
-  <div class="custom-block-content">
-    {{content}}
-  </div>
-</div>

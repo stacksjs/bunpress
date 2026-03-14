@@ -1,0 +1,6 @@
+<div class="custom-block warning">
+  <p class="custom-block-title">{{title}}</p>
+  <div class="custom-block-content">
+    {{content}}
+  </div>
+</div>

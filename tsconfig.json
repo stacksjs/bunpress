@@ -26,5 +26,9 @@
     "dist",
     ".config/buddy-bot.ts",
     "benchmark"
+  ],
+  "references": [
+    { "path": "./packages/bunpress" },
+    { "path": "./packages/bun-plugin-bunpress" }
   ]
 }

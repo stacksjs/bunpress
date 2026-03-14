@@ -1,0 +1,3 @@
+<div class="bp-raw">
+  {{content}}
+</div>

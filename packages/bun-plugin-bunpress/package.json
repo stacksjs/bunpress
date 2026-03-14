@@ -1,0 +1,50 @@
+{
+  "name": "bun-plugin-bunpress",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Serve bunpress-built documentation within any Bun.serve() application.",
+  "author": "Chris Breuer <chris@stacksjs.org>",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/bunpress/tree/main/packages/bun-plugin-bunpress#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/bunpress.git",
+    "directory": "packages/bun-plugin-bunpress"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/bunpress/issues"
+  },
+  "keywords": [
+    "bunpress",
+    "bun",
+    "plugin",
+    "documentation",
+    "serve",
+    "static-site"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "import": "./dist/*"
+    }
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "prepublishOnly": "bun --bun run build",
+    "typecheck": "bun --bun tsc --noEmit"
+  },
+  "devDependencies": {
+    "bun-plugin-dtsx": "0.21.17",
+    "bun-types": "^1.3.10",
+    "typescript": "^5.9.3"
+  }
+}
