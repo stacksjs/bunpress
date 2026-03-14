@@ -45,7 +45,7 @@ jobs:
         run: bun run build
 
       - name: Typecheck
-        run: bun --bun run typecheck
+        run: bun --bun tsc --build --noEmit
 
   test:
     runs-on: ubuntu-latest
@@ -88,4 +88,4 @@ jobs:
         run: pantry publish:commit './packages/*'
         env:
           PANTRY_REGISTRY_TOKEN: ${{ secrets.PANTRY_TOKEN }}
-        continue-on-error: true
+          PANTRY_TOKEN: ${{ secrets.PANTRY_TOKEN }}

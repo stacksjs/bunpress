@@ -2,4 +2,4 @@
 registry = { url = "https://registry.npmjs.org/", token = "$BUN_AUTH_TOKEN" }
 
 [test]
-ignore = ["**/benchmark*"]
+ignore = ["test/benchmark*", "**/benchmark*"]
