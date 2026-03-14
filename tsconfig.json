@@ -24,11 +24,12 @@
   "exclude": [
     "node_modules",
     "dist",
+    "pantry",
     ".config/buddy-bot.ts",
     "benchmark"
   ],
   "references": [
     { "path": "./packages/bunpress" },
-    { "path": "./packages/bun-plugin-bunpress" }
+    { "path": "./packages/bun-plugin" }
   ]
 }
