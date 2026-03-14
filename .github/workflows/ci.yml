@@ -45,7 +45,7 @@ jobs:
         run: bun run build
 
       - name: Typecheck
-        run: bun --bun tsc --build --noEmit
+        run: cd packages/bunpress && bun run typecheck
 
   test:
     runs-on: ubuntu-latest
