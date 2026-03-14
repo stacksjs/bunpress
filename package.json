@@ -21,7 +21,7 @@
     "dev": "bun run dev:docs",
     "build": "bun run build:bunpress && bun run build:plugin",
     "build:bunpress": "cd packages/bunpress && bun run build",
-    "build:plugin": "cd packages/bun-plugin-bunpress && bun run build",
+    "build:plugin": "cd packages/bun-plugin && bun run build",
     "compile": "cd packages/bunpress && bun run compile",
     "compile:all": "cd packages/bunpress && bun run compile:all",
     "fresh": "bunx rimraf node_modules/ packages/*/node_modules/ bun.lock && bun i",
