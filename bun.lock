@@ -17,7 +17,7 @@
         "typescript": "^5.9.3",
       },
     },
-    "packages/bun-plugin-bunpress": {
+    "packages/bun-plugin": {
       "name": "bun-plugin-bunpress",
       "version": "0.1.0",
       "devDependencies": {
@@ -84,7 +84,7 @@
 
     "bun-git-hooks": ["bun-git-hooks@0.3.1", "", { "bin": { "git-hooks": "dist/bin/cli.js", "bun-git-hooks": "dist/bin/cli.js" } }, "sha512-Xs/QUqIYgBmLHSVr5VBLVbM5lZbUoAXKX2WZyoQDb2LlzcxC3BpBvMkMTQH75UuOJZwaRBq8yEe4IR6NckqdgQ=="],
 
-    "bun-plugin-bunpress": ["bun-plugin-bunpress@workspace:packages/bun-plugin-bunpress"],
+    "bun-plugin-bunpress": ["bun-plugin-bunpress@workspace:packages/bun-plugin"],
 
     "bun-plugin-dtsx": ["bun-plugin-dtsx@0.21.17", "", { "dependencies": { "@stacksjs/dtsx": "^0.9.8" } }, "sha512-gikZdPs8f7aFPREb+gBn7kaDdjpfQSLIPpVbUI+I5dusAlENvlJmKQj06aq1oS3mP7yg3gdQJBRg+PlzUV5h9g=="],
 
