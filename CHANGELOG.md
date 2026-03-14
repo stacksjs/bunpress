@@ -1,3 +1,62 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.1...v0.1.2)
+
+### 🚀 Features
+
+- add quiet serve ([d3e11a0](https://github.com/stacksjs/bunpress/commit/d3e11a0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🧹 Chores
+
+- release v0.1.2 ([252135b](https://github.com/stacksjs/bunpress/commit/252135b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([a760c83](https://github.com/stacksjs/bunpress/commit/a760c83)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([d683b97](https://github.com/stacksjs/bunpress/commit/d683b97)) _(by Chris <chrisbreuer93@gmail.com>)_
+- convert to monorepo with bun workspaces ([83db1d5](https://github.com/stacksjs/bunpress/commit/83db1d5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([7b03bfb](https://github.com/stacksjs/bunpress/commit/7b03bfb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- update CLAUDE.md with project context and crosswind details ([33f9aad](https://github.com/stacksjs/bunpress/commit/33f9aad)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([dcb6946](https://github.com/stacksjs/bunpress/commit/dcb6946)) _(by Chris <chrisbreuer93@gmail.com>)_
+- add proper claude code guidelines ([29a905e](https://github.com/stacksjs/bunpress/commit/29a905e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- ignore claude config in linter ([6fcefaa](https://github.com/stacksjs/bunpress/commit/6fcefaa)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- add co-author guideline to claude config ([abd298d](https://github.com/stacksjs/bunpress/commit/abd298d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- add claude code guidelines ([7bc161b](https://github.com/stacksjs/bunpress/commit/7bc161b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deps**: update all non-major dependencies (#57) ([fdb27f2](https://github.com/stacksjs/bunpress/commit/fdb27f2)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_ ([#57](https://github.com/stacksjs/bunpress/issues/57), [#57](https://github.com/stacksjs/bunpress/issues/57))
+- **deps**: update all non-major dependencies (rebased) (#55) ([4dfe4cf](https://github.com/stacksjs/bunpress/commit/4dfe4cf)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_ ([#55](https://github.com/stacksjs/bunpress/issues/55), [#55](https://github.com/stacksjs/bunpress/issues/55))
+- wip ([6998208](https://github.com/stacksjs/bunpress/commit/6998208)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([f59ef5f](https://github.com/stacksjs/bunpress/commit/f59ef5f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([b71a59e](https://github.com/stacksjs/bunpress/commit/b71a59e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([b6ad49a](https://github.com/stacksjs/bunpress/commit/b6ad49a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([76e0e95](https://github.com/stacksjs/bunpress/commit/76e0e95)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([894004e](https://github.com/stacksjs/bunpress/commit/894004e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([0ed762c](https://github.com/stacksjs/bunpress/commit/0ed762c)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([75880a7](https://github.com/stacksjs/bunpress/commit/75880a7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([5836f8f](https://github.com/stacksjs/bunpress/commit/5836f8f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([972bad4](https://github.com/stacksjs/bunpress/commit/972bad4)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([6cf21da](https://github.com/stacksjs/bunpress/commit/6cf21da)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([dfdf48b](https://github.com/stacksjs/bunpress/commit/dfdf48b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([b1c2445](https://github.com/stacksjs/bunpress/commit/b1c2445)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([82a86f9](https://github.com/stacksjs/bunpress/commit/82a86f9)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([11ecdf2](https://github.com/stacksjs/bunpress/commit/11ecdf2)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([10d2c17](https://github.com/stacksjs/bunpress/commit/10d2c17)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([2a192c3](https://github.com/stacksjs/bunpress/commit/2a192c3)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([2dc368c](https://github.com/stacksjs/bunpress/commit/2dc368c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([515bc98](https://github.com/stacksjs/bunpress/commit/515bc98)) _(by Chris <chrisbreuer93@gmail.com>)_
+- update cover image ([e58720e](https://github.com/stacksjs/bunpress/commit/e58720e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- add benchmarks ([4ba66a0](https://github.com/stacksjs/bunpress/commit/4ba66a0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([94a0c84](https://github.com/stacksjs/bunpress/commit/94a0c84)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deps**: update all non-major dependencies (#39) ([b1c13ea](https://github.com/stacksjs/bunpress/commit/b1c13ea)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#39](https://github.com/stacksjs/bunpress/issues/39), [#39](https://github.com/stacksjs/bunpress/issues/39))
+- **deps**: update dependency buddy-bot to ^0.9.16 (#40) ([c12a8d7](https://github.com/stacksjs/bunpress/commit/c12a8d7)) _(by [renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot]))_ ([#40](https://github.com/stacksjs/bunpress/issues/40), [#40](https://github.com/stacksjs/bunpress/issues/40))
+- wip ([00a44ed](https://github.com/stacksjs/bunpress/commit/00a44ed)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([74b2a0c](https://github.com/stacksjs/bunpress/commit/74b2a0c)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- release v0.1.1 ([21c2df4](https://github.com/stacksjs/bunpress/commit/21c2df4)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+### 📄 Miscellaneous
+
+- Revert "chore: add claude code guidelines" ([73bab89](https://github.com/stacksjs/bunpress/commit/73bab89)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _[renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot])_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.0...v0.1.1)
 
 ### 🐛 Bug Fixes
