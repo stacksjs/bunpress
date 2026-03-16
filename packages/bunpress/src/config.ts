@@ -1008,22 +1008,22 @@ function getPageAsMarkdown() {
 
     switch(tag) {
       case 'h1':
-        text = '# ' + node.textContent + '\\n\\n';
+        text = \`# \${node.textContent}\\n\\n\`;
         break;
       case 'h2':
-        text = '## ' + node.textContent + '\\n\\n';
+        text = \`## \${node.textContent}\\n\\n\`;
         break;
       case 'h3':
-        text = '### ' + node.textContent + '\\n\\n';
+        text = \`### \${node.textContent}\\n\\n\`;
         break;
       case 'h4':
-        text = '#### ' + node.textContent + '\\n\\n';
+        text = \`#### \${node.textContent}\\n\\n\`;
         break;
       case 'h5':
-        text = '##### ' + node.textContent + '\\n\\n';
+        text = \`##### \${node.textContent}\\n\\n\`;
         break;
       case 'h6':
-        text = '###### ' + node.textContent + '\\n\\n';
+        text = \`###### \${node.textContent}\\n\\n\`;
         break;
       case 'p':
         text = Array.from(node.childNodes).map(n => processNode(n, depth)).join('') + '\\n\\n';
@@ -1040,24 +1040,24 @@ function getPageAsMarkdown() {
         break;
       case 'strong':
       case 'b':
-        text = '**' + node.textContent + '**';
+        text = \`**\${node.textContent}**\`;
         break;
       case 'em':
       case 'i':
-        text = '*' + node.textContent + '*';
+        text = \`*\${node.textContent}*\`;
         break;
       case 'a':
         const href = node.getAttribute('href');
-        text = '[' + node.textContent + '](' + (href?.startsWith('/') ? window.location.origin + href : href) + ')';
+        text = \`[\${node.textContent}](\${href?.startsWith('/') ? window.location.origin + href : href})\`;
         break;
       case 'ul':
-        text = Array.from(node.children).map(li => '- ' + li.textContent).join('\\n') + '\\n\\n';
+        text = \`\${Array.from(node.children).map(li => \`- \${li.textContent}\`).join('\\n')}\\n\\n\`;
         break;
       case 'ol':
-        text = Array.from(node.children).map((li, i) => (i + 1) + '. ' + li.textContent).join('\\n') + '\\n\\n';
+        text = \`\${Array.from(node.children).map((li, i) => \`\${i + 1}. \${li.textContent}\`).join('\\n')}\\n\\n\`;
         break;
       case 'blockquote':
-        text = node.textContent.split('\\n').map(line => '> ' + line).join('\\n') + '\\n\\n';
+        text = \`\${node.textContent.split('\\n').map(line => \`> \${line}\`).join('\\n')}\\n\\n\`;
         break;
       case 'hr':
         text = '---\\n\\n';
@@ -1070,9 +1070,9 @@ function getPageAsMarkdown() {
         const rows = node.querySelectorAll('tr');
         rows.forEach((row, i) => {
           const cells = row.querySelectorAll('th, td');
-          text += '| ' + Array.from(cells).map(c => c.textContent.trim()).join(' | ') + ' |\\n';
+          text += \`| \${Array.from(cells).map(c => c.textContent.trim()).join(' | ')} |\\n\`;
           if (i === 0) {
-            text += '| ' + Array.from(cells).map(() => '---').join(' | ') + ' |\\n';
+            text += \`| \${Array.from(cells).map(() => '---').join(' | ')} |\\n\`;
           }
         });
         text += '\\n';
@@ -1233,7 +1233,7 @@ function openInPerplexity(event) {
   // Perplexity supports URL-based search
   const query = encodeURIComponent(\`Explain this documentation: "\${title}" \${pageUrl}\`);
   closeCopyPageDropdown();
-  window.open('https://www.perplexity.ai/search?q=' + query, '_blank');
+  window.open(\`https://www.perplexity.ai/search?q=\${query}\`, '_blank');
 }
 
 // Close dropdown when clicking outside

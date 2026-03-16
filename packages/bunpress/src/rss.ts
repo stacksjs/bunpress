@@ -281,19 +281,21 @@ function generateRssXml(feed: {
   </item>`
   }).join('\n')
 
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0"
-  xmlns:content="http://purl.org/rss/1.0/modules/content/"
-  xmlns:dc="http://purl.org/dc/elements/1.1/"
-  xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title><![CDATA[${feed.title}]]></title>
-    <description><![CDATA[${feed.description}]]></description>
-    <link>${feed.link}</link>
-    <language>${feed.language}</language>
-    <lastBuildDate>${lastBuildDate.toUTCString()}</lastBuildDate>
-    <atom:link href="${feed.link}/feed.xml" rel="self" type="application/rss+xml"/>
-${items}
-  </channel>
-</rss>`
+  return [
+    `<?xml version="1.0" encoding="UTF-8"?>`,
+    `<rss version="2.0"`,
+    `  xmlns:content="http://purl.org/rss/1.0/modules/content/"`,
+    `  xmlns:dc="http://purl.org/dc/elements/1.1/"`,
+    `  xmlns:atom="http://www.w3.org/2005/Atom">`,
+    `  <channel>`,
+    `    <title><![CDATA[${feed.title}]]></title>`,
+    `    <description><![CDATA[${feed.description}]]></description>`,
+    `    <link>${feed.link}</link>`,
+    `    <language>${feed.language}</language>`,
+    `    <lastBuildDate>${lastBuildDate.toUTCString()}</lastBuildDate>`,
+    `    <atom:link href="${feed.link}/feed.xml" rel="self" type="application/rss+xml"/>`,
+    items,
+    `  </channel>`,
+    `</rss>`,
+  ].join('\n')
 }

@@ -225,12 +225,14 @@ ${childrenHtml}
 </ul>`
   }
 
-  return `<nav class="${className}" role="navigation" aria-label="${title}">
-<div class="toc-container">
-  <h2 class="toc-title">${title}</h2>
-  ${renderList(items)}
-</div>
-</nav>`
+  return [
+    `<nav class="${className}" role="navigation" aria-label="${title}">`,
+    `<div class="toc-container">`,
+    `  <h2 class="toc-title">${title}</h2>`,
+    `  ${renderList(items)}`,
+    `</div>`,
+    `</nav>`,
+  ].join('\n')
 }
 
 /**
@@ -508,7 +510,7 @@ function initToc() {
         })
 
         // Update URL without page reload
-        history.pushState(null, '', '#' + targetId)
+        history.pushState(null, '', `#${targetId}`)
       }
     })
   })

@@ -201,7 +201,7 @@ function fastMarkdownToHtml(markdown: string): { html: string, frontmatter: Reco
     }
 
     // Regular paragraphs - with inline formatting
-    let text = line
+    const text = line
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.+?)\*/g, '<em>$1</em>')
       .replace(/`([^`]+)`/g, '<code>$1</code>')
@@ -380,16 +380,16 @@ BunPress is a lightning-fast static site generator.
 Before getting started, ensure you have:
 
 1. **Runtime Requirements**
-   - Bun 1.0 or higher
-   - Node.js 18+ (optional)
+  - Bun 1.0 or higher
+  - Node.js 18+ (optional)
 
 2. **Development Tools**
-   - VS Code or similar editor
-   - Git for version control
+  - VS Code or similar editor
+  - Git for version control
 
 3. **Knowledge Requirements**
-   - TypeScript basics
-   - Markdown syntax
+  - TypeScript basics
+  - Markdown syntax
 
 ## Installation Guide
 
@@ -671,6 +671,7 @@ async function cleanupBenchmarkFiles(): Promise<void> {
 /**
  * Run the fast build benchmark (comparable to Eleventy's simple markdown processing)
  */
+// eslint-disable-next-line pickier/no-unused-vars
 async function runFastBuildBenchmark(fileCount: number): Promise<{
   totalTime: number
   filesPerSecond: number
@@ -718,6 +719,7 @@ async function runFastBuildBenchmark(fileCount: number): Promise<{
 /**
  * Run the full-featured build benchmark (with syntax highlighting, templates, etc.)
  */
+// eslint-disable-next-line pickier/no-unused-vars
 async function runFullBuildBenchmark(fileCount: number): Promise<{
   totalTime: number
   filesPerSecond: number

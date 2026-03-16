@@ -489,7 +489,8 @@ function generateAnalyticsScript(config: BunPressConfig): string {
   const honorDnt = analytics.honorDNT ? `var dnt=n.doNotTrack||w.doNotTrack||n.msDoNotTrack;if(dnt==="1"||dnt==="yes"||dnt===true){l('DNT enabled, skipping');return;}` : ''
   const hashTracking = analytics.trackHashChanges ? `w.addEventListener('hashchange',function(){pv();});` : ''
   const outboundTracking = analytics.trackOutboundLinks
-    ? `d.addEventListener('click',function(e){try{var a=e.target.closest('a');if(a&&a.hostname&&a.hostname!==location.hostname){t('outbound',{url:a.href,text:(a.textContent||'').slice(0,100)});}}catch(err){l('Outbound error',err);}});`
+    ? `d.addEventListener('click',function(e){try{var a=e.target.closest('a');if(a&&a.hostname&&a.hostname!==location.hostname){t('outbound',{url:a.href,text:(a.textContent||'').slice(0,100)});}}
+catch (err){l('Outbound error',err);}});`
     : ''
 
   const dataApiAttr = apiEndpoint ? ` data-api="${apiEndpoint}"` : ''
@@ -508,13 +509,15 @@ ${honorDnt}
 var SK='_tsa_sid',VK='_tsa_vid';
 var sid=ss.getItem(SK);
 if(!sid){sid=Math.random().toString(36).slice(2)+Date.now().toString(36);ss.setItem(SK,sid);l('New session',sid);}
-var vid=null;try{vid=localStorage.getItem(VK);if(!vid){vid=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);localStorage.setItem(VK,vid);}}catch(e){}
+var vid=null;try{vid=localStorage.getItem(VK);if(!vid){vid=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);localStorage.setItem(VK,vid);}}
+catch (e){}
 function send(url,data){
 var payload=JSON.stringify(data);
 l('Sending to',url,data.e);
 var sent=false;
 if(n.sendBeacon){
-try{sent=n.sendBeacon(url,payload);if(sent){l('Sent via beacon',data.e);return true;}}catch(e){l('Beacon failed',e);}
+try{sent=n.sendBeacon(url,payload);if(sent){l('Sent via beacon',data.e);return true;}}
+catch (e){l('Beacon failed',e);}
 }
 if(!sent){
 try{
@@ -546,7 +549,8 @@ var hp=history.pushState;if(hp){history.pushState=function(){hp.apply(history,ar
 var hr=history.replaceState;if(hr){history.replaceState=function(){hr.apply(history,arguments);};}
 w.addEventListener('popstate',pv);
 l('readyState:',d.readyState);
-if(d.readyState==='complete'||d.readyState==='interactive'){setTimeout(pv,0);}else{w.addEventListener('load',pv);d.addEventListener('DOMContentLoaded',pv);}
+if(d.readyState==='complete'||d.readyState==='interactive'){setTimeout(pv,0);}
+else {w.addEventListener('load',pv);d.addEventListener('DOMContentLoaded',pv);}
 w.addEventListener('visibilitychange',function(){if(d.visibilityState==='hidden'){t('session_end',{duration:Date.now()-(ss.getItem('_tsa_start')||Date.now())});}});
 ss.setItem('_tsa_start',Date.now());
 w.bunpressAnalytics={track:function(name,props){t('event',{name:name,properties:props});},debug:function(v){debug=v!==false;w.ANALYTICS_DEBUG=debug;}};
@@ -1261,20 +1265,22 @@ async function processCodeGroups(content: string): Promise<string> {
         const theme = config.markdown?.syntaxHighlightTheme || 'github-light'
         const highlightedCode = await highlightCode(code, lang, theme)
 
-        return `<div class="code-group-panel ${isActive ? 'active' : ''}" data-panel="${index}">
-  <pre data-lang="${lang}"><code class="language-${lang}">${highlightedCode}</code></pre>
-</div>`
+        const activeClass = isActive ? 'active' : ''
+        const preHtml = `<pre data-lang="${lang}"><code class="language-${lang}">${highlightedCode}</code></pre>`
+        return `<div class="code-group-panel ${activeClass}" data-panel="${index}">\n  ${preHtml}\n</div>`
       }),
     )
 
-    const codeGroupHtml = `<div class="code-group" id="${groupId}">
-  <div class="code-group-tabs">
-    ${tabsHtml}
-  </div>
-  <div class="code-group-panels">
-    ${panelsHtml.join('\n')}
-  </div>
-</div>`
+    const codeGroupHtml = [
+      `<div class="code-group" id="${groupId}">`,
+      `  <div class="code-group-tabs">`,
+      `    ${tabsHtml}`,
+      `  </div>`,
+      `  <div class="code-group-panels">`,
+      `    ${panelsHtml.join('\n')}`,
+      `  </div>`,
+      `</div>`,
+    ].join('\n')
 
     result = result.slice(0, match.index) + codeGroupHtml + result.slice(match.index! + fullMatch.length)
   }
