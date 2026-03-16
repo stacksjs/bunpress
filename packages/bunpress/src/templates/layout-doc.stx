@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ title }}</title>
   <meta name="description" content="{{ description }}">
-  {{ meta }}
+  {!! meta !!}
   <style>
     /* VitePress Theme CSS */
-    {{ customCSS }}
+    {!! customCSS !!}
   </style>
 </head>
 <body>
@@ -30,7 +30,7 @@
 
         <!-- Right side: Navigation + Icons -->
         <div style="display: flex; align-items: center; gap: 24px;">
-          {{ nav }}
+          {!! nav !!}
           <div class="VPSocialLinks" style="display: flex; align-items: center; gap: 12px; padding-left: 24px; border-left: 1px solid var(--bp-c-divider);">
             <!-- Theme Toggle -->
             <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode" title="Toggle dark mode">
@@ -52,14 +52,14 @@
     </header>
 
     <!-- VPSidebar -->
-    {{ sidebar }}
+    {!! sidebar !!}
 
     <!-- VPContent - Main content area -->
     <main class="VPContent" style="position: fixed; top: var(--bp-nav-height, 64px); bottom: 0; overflow-y: auto; left: max(var(--bp-sidebar-width, 272px), calc((100vw - var(--bp-layout-max-width, 1440px)) / 2 + var(--bp-sidebar-width, 272px))); right: max(0px, calc((100vw - var(--bp-layout-max-width, 1440px)) / 2));">
       <div class="VPDoc" style="padding: 32px 24px; padding-right: 32px;">
         <div class="VPDocContent" style="max-width: 768px; margin: 0;">
           <article class="bp-doc">
-            {{ content }}
+            {!! content !!}
           </article>
         </div>
       </div>
@@ -149,9 +149,9 @@
     </div>
 
     <!-- VPDocAside - TOC -->
-    {{ pageTOC }}
+    {!! pageTOC !!}
   </div>
 
-  {{ scripts }}
+  {!! scripts !!}
 </body>
 </html>

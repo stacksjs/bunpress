@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ title }}</title>
   <meta name="description" content="{{ description }}">
-  {{ meta }}
+  {!! meta !!}
   <style>
     /* VitePress Theme CSS */
-    {{ customCSS }}
+    {!! customCSS !!}
   </style>
 </head>
 <body>
@@ -20,7 +20,7 @@
           <a href="/" class="VPNavBarTitle" style="font-size: 16px; font-weight: 600; color: var(--bp-c-text-1); white-space: nowrap; text-decoration: none;">{{ title }}</a>
         </div>
         <div style="display: flex; align-items: center; gap: 24px;">
-          {{ nav }}
+          {!! nav !!}
         </div>
       </div>
     </header>
@@ -29,12 +29,12 @@
     <main class="VPContent" style="padding-top: var(--bp-nav-height, 64px);">
       <div class="VPPage" style="padding: 48px 24px; max-width: 768px; margin: 0 auto;">
         <article class="bp-doc">
-          {{ content }}
+          {!! content !!}
         </article>
       </div>
     </main>
   </div>
 
-  {{ scripts }}
+  {!! scripts !!}
 </body>
 </html>

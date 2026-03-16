@@ -36,6 +36,7 @@ BunPress is a lightning-fast static site generator designed specifically for doc
 - ✅ Tables with alignment and formatting
 - ✅ Image enhancements with captions and lazy loading
 - ✅ Custom header anchors and inline TOC
+- ✅ **STX template syntax** in markdown — dynamic content with `@if`, `@foreach`, `{{ }}`, `<script server>`
 
 ### Developer Experience
 
@@ -116,6 +117,84 @@ export default {
   },
 }
 ```
+
+## STX Templates in Markdown
+
+BunPress supports [STX](https://stx.sh) template syntax directly inside markdown files. This enables dynamic content generation — conditionals, loops, computed values, and more — powered by the STX templating engine.
+
+### Server Scripts
+
+Define variables and logic in `<script server>` blocks:
+
+```markdown
+<script server>
+const features = [
+  { name: 'Fast', desc: 'Built with Zig for maximum performance' },
+  { name: 'Modern', desc: 'ES modules and TypeScript native' },
+  { name: 'Simple', desc: 'Zero config, one binary' },
+]
+const showBeta = false
+</script>
+
+# Features
+
+@foreach (features as feature)
+### {{ feature.name }}
+
+{{ feature.desc }}
+
+@endforeach
+
+@if (showBeta)
+## Beta Features
+
+These features are coming soon.
+@endif
+```
+
+### Available Directives
+
+| Directive | Description |
+|-----------|------------|
+| `<script server>` | Define variables and run server-side logic |
+| `{{ expression }}` | Output an escaped expression |
+| `{!! expression !!}` | Output raw (unescaped) HTML |
+| `@if (condition)` / `@else` / `@endif` | Conditional rendering |
+| `@foreach (array as item)` / `@endforeach` | Iterate over arrays |
+| `@foreach (array as item, index)` | Iterate with index |
+| `@for (let i = 0; i < n; i++)` / `@endfor` | C-style for loops |
+| `@include('Component')` | Include STX components |
+
+### Frontmatter Access
+
+Frontmatter values are automatically available in STX expressions:
+
+```markdown
+---
+title: My Page
+author: Chris
+---
+
+# {{ title }}
+
+Written by {{ author }}.
+```
+
+### Inline Expressions
+
+Use expressions anywhere in your markdown:
+
+```markdown
+<script server>
+const count = 42
+const items = ['Alpha', 'Beta', 'Gamma']
+</script>
+
+There are {{ count }} items and {{ items.length }} categories.
+The sum is {{ 10 + 20 + 12 }}.
+```
+
+STX processing happens before markdown conversion, so the output of STX directives is treated as regular markdown and rendered accordingly — headings, lists, bold, code blocks, and all other markdown features work as expected.
 
 ## CLI Commands
 

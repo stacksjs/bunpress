@@ -1678,6 +1678,24 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
     ? await processMarkdownIncludes(content, rootDir)
     : content
 
+  // Process stx template syntax in markdown (@if, @foreach, {{ }}, <script server>, etc.)
+  // This allows dynamic content generation in .md files using stx directives
+  const hasStxSyntax = processedContent.includes('@if')
+    || processedContent.includes('@foreach')
+    || processedContent.includes('@for (')
+    || processedContent.includes('<script server')
+    || processedContent.includes('@include')
+    || /\{\{(?!\{)\s*\w/.test(processedContent)
+  if (hasStxSyntax) {
+    try {
+      const stx = await import('@stacksjs/stx')
+      processedContent = await stx.renderString(processedContent, { ...frontmatter })
+    }
+    catch {
+      // stx not available or render failed — continue with raw content
+    }
+  }
+
   // Extract TOC data early (before any processing that modifies headings)
   const { content: contentWithTocPlaceholder, tocHtml } = featureEnabled('inlineToc')
     ? extractTocData(processedContent, frontmatter.toc)

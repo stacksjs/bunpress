@@ -1,4 +1,5 @@
 import { join } from 'node:path'
+import { renderString } from '@stacksjs/stx'
 
 const TEMPLATES_DIR = join(import.meta.dir, 'templates')
 
@@ -26,17 +27,12 @@ export async function loadTemplate(name: string): Promise<string> {
 }
 
 /**
- * Render a template with data
+ * Render a template with data using stx engine.
+ * Supports full stx syntax: {{ }}, {!! !!}, @if/@else/@endif,
+ * @foreach/@endforeach, @for/@endfor, @include, <script server>, etc.
  */
-export function renderTemplate(template: string, data: Record<string, any>): string {
-  let result = template
-
-  for (const [key, value] of Object.entries(data)) {
-    const placeholder = new RegExp(`{{\\s*${key}\\s*}}`, 'g')
-    result = result.replace(placeholder, String(value ?? ''))
-  }
-
-  return result
+export async function renderTemplate(template: string, data: Record<string, any>): Promise<string> {
+  return renderString(template, data)
 }
 
 /**

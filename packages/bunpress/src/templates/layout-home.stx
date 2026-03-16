@@ -5,19 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ title }}</title>
   <meta name="description" content="{{ description }}">
-  {{ meta }}
+  {!! meta !!}
   <style>
     /* VitePress Theme CSS */
-    {{ customCSS }}
+    {!! customCSS !!}
   </style>
 </head>
 <body>
   <div class="Layout">
     <main class="VPHome">
-      {{ content }}
+      {!! content !!}
     </main>
   </div>
 
-  {{ scripts }}
+  {!! scripts !!}
 </body>
 </html>

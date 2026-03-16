@@ -16,11 +16,9 @@ const result = await Bun.build({
   splitting: true,
   target: 'bun',
   external: [
-    '@cwcss/crosswind',
+    '@stacksjs/stx',
     '@stacksjs/ts-cloud',
-    '@stacksjs/ts-cloud-aws-types',
-    '@stacksjs/ts-cloud-core',
-    '@stacksjs/ts-cloud-types',
+    '@ts-cloud/core',
     '@stacksjs/ts-md',
   ],
 })
