@@ -1,3 +1,31 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.2...v0.1.3)
+
+### 🚀 Features
+
+- stx template syntax in markdown files ([e29f186](https://github.com/stacksjs/bunpress/commit/e29f186)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🐛 Bug Fixes
+
+- typecheck per-package, rename benchmark to .perf.ts ([3cd717f](https://github.com/stacksjs/bunpress/commit/3cd717f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- typecheck uses --build mode, fix test ignore, fix publish auth ([7be58c8](https://github.com/stacksjs/bunpress/commit/7be58c8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- exclude pantry/ from tsc, skip benchmark tests, fix publish-commit ([01e4717](https://github.com/stacksjs/bunpress/commit/01e4717)) _(by Chris <chrisbreuer93@gmail.com>)_
+- CI build path, use pantry for setup and publish:commit ([e586d92](https://github.com/stacksjs/bunpress/commit/e586d92)) _(by Chris <chrisbreuer93@gmail.com>)_
+- suppress spinner animation in CI environments ([999e240](https://github.com/stacksjs/bunpress/commit/999e240)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🧹 Chores
+
+- release v0.1.3 ([6a22eb8](https://github.com/stacksjs/bunpress/commit/6a22eb8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- remove empty test fixture files, add .gitkeep ([d4105f8](https://github.com/stacksjs/bunpress/commit/d4105f8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- trigger CI with PANTRY_TOKEN configured ([b73aecb](https://github.com/stacksjs/bunpress/commit/b73aecb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- trigger CI with cache bust v2 ([357556c](https://github.com/stacksjs/bunpress/commit/357556c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- trigger CI with deps.yaml system deps support ([9b1f7b8](https://github.com/stacksjs/bunpress/commit/9b1f7b8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- trigger CI with updated pantry action ([9e39d46](https://github.com/stacksjs/bunpress/commit/9e39d46)) _(by Chris <chrisbreuer93@gmail.com>)_
+- minor updates ([46ddb3a](https://github.com/stacksjs/bunpress/commit/46ddb3a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.1...v0.1.2)
 
 ### 🚀 Features
