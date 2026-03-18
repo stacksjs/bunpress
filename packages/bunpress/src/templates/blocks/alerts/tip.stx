@@ -4,6 +4,6 @@
     Tip
   </p>
   <div class="github-alert-content">
-    {{content}}
+    {!! content !!}
   </div>
 </div>

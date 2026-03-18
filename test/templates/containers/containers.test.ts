@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { startServer } from '../../../src/serve'
+import { startServer } from '../../../packages/bunpress/src/serve'
 
 const TEST_MARKDOWN_DIR = './test/markdown/containers'
 

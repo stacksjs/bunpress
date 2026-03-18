@@ -691,11 +691,11 @@ function processInlineFormatting(text: string): string {
     .replace(/!\[([^\]]*)\]\(\s*([^\s")]+)(?:\s+"([^"]+)")?\)/g, (_match, alt, src, caption) => {
       if (caption) {
         // Image with caption - wrap in figure/figcaption
-        return `<figure class="image-figure"><img src="${src}" alt="${alt}"><figcaption>${caption}</figcaption></figure>`
+        return `<figure class="image-figure"><img src="${src}" alt="${alt}" loading="lazy" decoding="async"><figcaption>${caption}</figcaption></figure>`
       }
       else {
         // Regular image without caption
-        return `<img src="${src}" alt="${alt}">`
+        return `<img src="${src}" alt="${alt}" loading="lazy" decoding="async">`
       }
     })
     // Links

@@ -2,12 +2,12 @@ import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { existsSync } from 'node:fs'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { cleanCommand } from '../bin/commands/clean'
-import { configInitCommand, configShowCommand, configValidateCommand } from '../bin/commands/config'
-import { doctorCommand } from '../bin/commands/doctor'
-import { initCommand } from '../bin/commands/init'
-import { newCommand } from '../bin/commands/new'
-import { statsCommand } from '../bin/commands/stats'
+import { cleanCommand } from '../packages/bunpress/bin/commands/clean'
+import { configInitCommand, configShowCommand, configValidateCommand } from '../packages/bunpress/bin/commands/config'
+import { doctorCommand } from '../packages/bunpress/bin/commands/doctor'
+import { initCommand } from '../packages/bunpress/bin/commands/init'
+import { newCommand } from '../packages/bunpress/bin/commands/new'
+import { statsCommand } from '../packages/bunpress/bin/commands/stats'
 
 const TEST_DIR = join(process.cwd(), 'test-cli-temp')
 

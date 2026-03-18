@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { getSyntaxHighlightingStyles, highlightCode, isLanguageSupported, normalizeLanguage } from '../src/highlighter'
+import { getSyntaxHighlightingStyles, highlightCode, isLanguageSupported, normalizeLanguage } from '../packages/bunpress/src/highlighter'
 
 describe('syntax highlighting', () => {
   describe('normalizeLanguage', () => {

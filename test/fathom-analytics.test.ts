@@ -1,6 +1,6 @@
-import type { BunPressConfig } from '../src/types'
+import type { BunPressConfig } from '../packages/bunpress/src/types'
 import { describe, expect, test } from 'bun:test'
-import { startServer } from '../src/serve'
+import { startServer } from '../packages/bunpress/src/serve'
 
 const TEST_PORT = 19100
 

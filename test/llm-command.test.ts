@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { mkdir, rm } from 'node:fs/promises'
 import { join } from 'node:path'
-import { findMarkdownFiles } from '../bin/cli'
+import { findMarkdownFiles } from '../packages/bunpress/bin/cli'
 
 /**
  * Test suite for the LLM command functionality
@@ -832,7 +832,7 @@ title: User Guide
 
       const proc = Bun.spawn([
         'bun',
-        'bin/cli.ts',
+        'packages/bunpress/bin/cli.ts',
         'llm',
         '--dir',
         ctx.testDir,
@@ -869,7 +869,7 @@ More content here.`,
 
       const proc = Bun.spawn([
         'bun',
-        'bin/cli.ts',
+        'packages/bunpress/bin/cli.ts',
         'llm',
         '--dir',
         ctx.testDir,
@@ -894,7 +894,7 @@ More content here.`,
 
       const proc = Bun.spawn([
         'bun',
-        'bin/cli.ts',
+        'packages/bunpress/bin/cli.ts',
         'llm',
         '--dir',
         nonExistentDir,
@@ -915,7 +915,7 @@ More content here.`,
       const proc = Bun.spawn(
         [
           'bun',
-          'bin/cli.ts',
+          'packages/bunpress/bin/cli.ts',
           'llm',
           '--dir',
           ctx.testDir,
