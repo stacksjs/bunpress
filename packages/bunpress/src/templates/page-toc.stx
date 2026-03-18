@@ -3,7 +3,7 @@
     <p class="outline-title">On this page</p>
     <nav class="page-toc">
       <div class="outline-marker"></div>
-      {{ items }}
+      {!! items !!}
     </nav>
   </div>
 </aside>

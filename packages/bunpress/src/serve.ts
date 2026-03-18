@@ -595,9 +595,22 @@ function parseFrontmatter(markdown: string): { frontmatter: any, content: string
     const frontmatter = YAML.parse(frontmatterText)
     return { frontmatter, content }
   }
-  catch (error) {
-    console.error('Failed to parse frontmatter YAML:', error)
-    return { frontmatter: {}, content: markdown }
+  catch {
+    // Retry: wrap unquoted values containing double quotes in single quotes
+    // Handles common pattern like:  details: "Some quote," attribution.
+    // which YAML misinterprets as a double-quoted string
+    try {
+      const fixed = frontmatterText.replace(
+        /^(\s*\w+:\s*)"(.+)",\s*(.+)$/gm,
+        `$1'"$2," $3'`,
+      )
+      const frontmatter = YAML.parse(fixed)
+      return { frontmatter, content }
+    }
+    catch (retryError) {
+      console.error('Failed to parse frontmatter YAML:', retryError)
+      return { frontmatter: {}, content: markdown }
+    }
   }
 }
 

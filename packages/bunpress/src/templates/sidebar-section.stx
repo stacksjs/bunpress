@@ -12,7 +12,7 @@
   </button>
   <div class="sidebar-items-wrapper">
     <ul class="sidebar-items" style="list-style: none; margin: 4px 0 0 0; padding: 0;">
-      {{ items }}
+      {!! items !!}
     </ul>
   </div>
 </div>

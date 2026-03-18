@@ -1,6 +1,6 @@
 <nav class="VPSidebar">
   <div class="sidebar-content">
-    {{ sections }}
+    {!! sections !!}
   </div>
 </nav>
 
