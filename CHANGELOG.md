@@ -1,3 +1,21 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.3...v0.1.4)
+
+### 🧹 Chores
+
+- release v0.1.4 ([4588f36](https://github.com/stacksjs/bunpress/commit/4588f36)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([5952946](https://github.com/stacksjs/bunpress/commit/5952946)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([5e6c34d](https://github.com/stacksjs/bunpress/commit/5e6c34d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- use `hoisted` linker ([379cef1](https://github.com/stacksjs/bunpress/commit/379cef1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([e0c91f0](https://github.com/stacksjs/bunpress/commit/e0c91f0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([552b9d9](https://github.com/stacksjs/bunpress/commit/552b9d9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- minor improvements ([097c7e4](https://github.com/stacksjs/bunpress/commit/097c7e4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- fix lint warnings ([48a4d29](https://github.com/stacksjs/bunpress/commit/48a4d29)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.2...v0.1.3)
 
 ### 🚀 Features

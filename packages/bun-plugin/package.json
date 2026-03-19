@@ -1,7 +1,7 @@
 {
   "name": "bun-plugin-bunpress",
   "type": "module",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Serve bunpress-built documentation within any Bun.serve() application.",
   "author": "Chris Breuer <chris@stacksjs.org>",
   "license": "MIT",
