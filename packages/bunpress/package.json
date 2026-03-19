@@ -55,7 +55,7 @@
     "@stacksjs/clapp": "^0.2.0",
     "@stacksjs/stx": "^0.2.10",
     "@stacksjs/ts-md": "^0.1.1",
-    "@stacksjs/ts-cloud": "^0.2.2",
+    "@stacksjs/ts-cloud": "^0.2.3",
     "bunfig": "^0.15.6"
   },
   "devDependencies": {
