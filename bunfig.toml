@@ -3,4 +3,4 @@ registry = { url = "https://registry.npmjs.org/", token = "$BUN_AUTH_TOKEN" }
 linker = "hoisted"
 
 [test]
-ignore = ["test/benchmark*", "**/benchmark*"]
+ignore = ["test/benchmark*", "**/benchmark*", "pantry/**", "node_modules/**"]
