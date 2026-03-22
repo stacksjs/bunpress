@@ -26,10 +26,8 @@
     "dist",
     "pantry",
     ".config/buddy-bot.ts",
-    "benchmark"
+    "benchmark",
+    "test/benchmark.perf.ts"
   ],
-  "references": [
-    { "path": "./packages/bunpress" },
-    { "path": "./packages/bun-plugin" }
-  ]
+  "references": []
 }
