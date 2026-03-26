@@ -9,6 +9,10 @@
     "source.fixAll": "explicit",
     "source.organizeImports": "never"
   },
+
+  "[stx]": {
+    "editor.defaultFormatter": "pickier.pickier-vscode"
+  },
   // Shell
   "[shellscript]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
