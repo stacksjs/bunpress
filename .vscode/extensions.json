@@ -1,5 +1,6 @@
 {
   "recommendations": [
+    "pickier.pickier-vscode",
     "davidanson.vscode-markdownlint",
     "streetsidesoftware.code-spell-checker"
   ]
