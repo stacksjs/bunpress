@@ -2,23 +2,6 @@
 title: CLI Commands
 description: Complete reference for BunPress CLI commands
 ---
-|--------|---------|-------------|
-| `--port <port>` | `3000` | Server port |
-| `--dir <dir>` | `./docs` | Documentation directory |
-| `--open` | `false` | Open browser automatically |
-| `--watch` | `true` | Watch for file changes |
-| `--verbose` | `false` | Enable verbose logging |
-
-### build
-
-Build documentation for production:
-
-```bash
-bunpress build
-bunpress build --outdir ./public
-bunpress build --minify
-bunpress build --sourcemap
-bunpress build --watch
 ```
 
 **Options:**

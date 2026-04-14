@@ -2,23 +2,6 @@
 title: Table of Contents
 description: Configure automatic table of contents generation
 ---
-### Inline
-
-Insert TOC at a specific location using the `[[toc]]` marker:
-
-```typescript
-toc: {
-  position: 'inline',
-}
-```
-
-Then in your markdown:
-
-```markdown
-
-# My Page Title
-
-[[toc]]
 
 ## First Section
 

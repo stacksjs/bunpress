@@ -3,24 +3,6 @@ title: Configuration
 description: Complete guide to configuring BunPress
 ---
 
-  css: `
-    .content { max-width: 800px; margin: 0 auto; }
-  `,
-
-  scripts: [
-    'https://example.com/analytics.js',
-  ],
-
-  syntaxHighlightTheme: 'github-dark',
-
-  preserveDirectoryStructure: true,
-}
-```
-
-### Navigation
-
-Configure the top navigation bar:
-
 ```typescript
 nav: [
   { text: 'Home', link: '/' },

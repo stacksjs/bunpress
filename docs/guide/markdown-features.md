@@ -2,22 +2,6 @@
 title: Markdown Features
 description: Rich markdown features for beautiful documentation
 ---
-::: danger
-This action cannot be undone!
-:::
-```
-
-::: danger
-This action cannot be undone!
-:::
-
-### Details Container
-
-Create collapsible sections:
-
-```markdown
-::: details Click to expand
-Hidden content that can be revealed.
 
 - Item 1
 - Item 2

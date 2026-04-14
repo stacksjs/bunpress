@@ -2,23 +2,6 @@
 title: SEO Configuration
 description: Optimize your documentation for search engines
 ---
-    '/internal/*',
-    '/404',
-  ],
-
-  // Large site options
-  maxUrlsPerFile: 50000,
-  useSitemapIndex: false,
-
-  // Custom transformation
-  transform: (entry) => {
-    // Modify or filter entries
-    if (entry.url.includes('/old/')) {
-      return null // Exclude
-    }
-    return entry
-  },
-
   verbose: false,
 }
 ```
