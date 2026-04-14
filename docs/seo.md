@@ -144,6 +144,7 @@ export default {
 ```
 
 Generates:
+
 - `sitemap.xml` - Sitemap index file
 - `sitemap-1.xml` - First 50,000 URLs
 - `sitemap-2.xml` - Next 50,000 URLs
@@ -295,10 +296,10 @@ description: Learn how to create beautiful documentation in minutes
   <meta property="og:url" content="https://docs.example.com/getting-started">
   <meta property="og:title" content="Getting Started with BunPress">
   <meta property="og:description" content="Learn how to create beautiful documentation in minutes">
-  <meta property="og:site_name" content="BunPress Documentation">
+  <meta property="og:site*name" content="BunPress Documentation">
 
   <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:card" content="summary*large*image">
   <meta name="twitter:title" content="Getting Started with BunPress">
   <meta name="twitter:description" content="Learn how to create beautiful documentation in minutes">
 </head>
@@ -317,7 +318,7 @@ export default {
   markdown: {
     meta: {
       // Open Graph
-      'og:site_name': 'BunPress Documentation',
+      'og:site*name': 'BunPress Documentation',
       'og:image': 'https://docs.example.com/images/social-card.png',
       'og:image:width': '1200',
       'og:image:height': '630',
@@ -376,7 +377,7 @@ Enhanced Twitter previews with card types.
 export default {
   markdown: {
     meta: {
-      'twitter:card': 'summary_large_image',  // or 'summary'
+      'twitter:card': 'summary*large*image',  // or 'summary'
       'twitter:site': '@stacksjs',
       'twitter:creator': '@username',
       'twitter:image': 'https://docs.example.com/images/twitter-card.png'
@@ -388,15 +389,17 @@ export default {
 ### Card Types
 
 **Summary Large Image** (recommended):
+
 - 1200x628px image
 - Large preview
 - Best for visual content
 
 ```typescript
-'twitter:card': 'summary_large_image'
+'twitter:card': 'summary*large*image'
 ```
 
 **Summary** (compact):
+
 - 120x120px image
 - Small thumbnail
 - Compact preview
@@ -648,10 +651,12 @@ bunpress seo:check --fix
 ```
 
 **What gets fixed:**
+
 - Missing meta descriptions (generated from content)
 - Missing page titles (extracted from first heading)
 
 **What requires manual fix:**
+
 - Broken links (need review)
 - Images without alt text (need descriptive text)
 - Titles/descriptions that are too long/short
@@ -723,11 +728,13 @@ See also: [Configuration Guide](/config) and [CLI Reference](/cli)
 ### 6. Keep URLs Clean
 
 **Good:**
+
 - `/guide/getting-started`
 - `/api/authentication`
 - `/examples/deployment`
 
 **Bad:**
+
 - `/page1`
 - `/doc-2024-10-29`
 - `/untitled`
@@ -774,12 +781,12 @@ Before deploying:
 After deployment:
 
 1. **Google Search Console**
-   - Add property: https://docs.example.com
-   - Submit sitemap: https://docs.example.com/sitemap.xml
+   - Add property: <https://docs.example.com>
+   - Submit sitemap: <https://docs.example.com/sitemap.xml>
 
 2. **Bing Webmaster Tools**
-   - Add site: https://docs.example.com
-   - Submit sitemap: https://docs.example.com/sitemap.xml
+   - Add site: <https://docs.example.com>
+   - Submit sitemap: <https://docs.example.com/sitemap.xml>
 
 ---
 
@@ -841,8 +848,8 @@ export default {
   },
   markdown: {
     meta: {
-      'og:locale': 'en_US',
-      'og:locale:alternate': ['es_ES', 'fr_FR']
+      'og:locale': 'en*US',
+      'og:locale:alternate': ['es*ES', 'fr_FR']
     }
   }
 }
@@ -855,6 +862,7 @@ export default {
 ### Google Search Console
 
 Monitor:
+
 - Indexing status
 - Search performance
 - Mobile usability
@@ -875,7 +883,7 @@ See [Configuration Guide](/config#fathom-analytics) for privacy-focused analytic
 
 ---
 
-## Need Help?
+## Need Help
 
 - 📚 [Documentation](/)
 - 💬 [Discord Community](https://discord.gg/stacksjs)

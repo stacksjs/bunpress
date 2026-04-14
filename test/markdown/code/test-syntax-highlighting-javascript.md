@@ -74,8 +74,10 @@ const multiline = `
 const x = 42
 
 /*
+
  * Multi-line comment
  * with multiple lines
+
  */
 const y = 100
 ```

@@ -3,56 +3,6 @@ title: Configuration
 description: Complete guide to configuring BunPress
 ---
 
-# Configuration
-
-BunPress is configured through a `bunpress.config.ts` file in your project root. This page covers all available configuration options.
-
-## Basic Configuration
-
-Create a `bunpress.config.ts` file:
-
-```typescript
-import type { BunPressOptions } from '@stacksjs/bunpress'
-
-const config: BunPressOptions = {
-  verbose: false,
-  docsDir: './docs',
-  outDir: './dist',
-  theme: 'vitepress',
-
-  markdown: {
-    title: 'My Documentation',
-  },
-}
-
-export default config
-```
-
-## Configuration Options
-
-### General Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `verbose` | `boolean` | `false` | Enable verbose logging |
-| `docsDir` | `string` | `'./docs'` | Source directory for markdown files |
-| `outDir` | `string` | `'./dist'` | Output directory for build |
-| `theme` | `'vitepress'` | `'vitepress'` | Theme to use |
-
-### Markdown Configuration
-
-The `markdown` object contains extensive options:
-
-```typescript
-markdown: {
-  title: 'My Documentation',
-  meta: {
-    description: 'Site description',
-    author: 'Your Name',
-  },
-
-  template: '<div class="content">{{content}}</div>',
-
   css: `
     .content { max-width: 800px; margin: 0 auto; }
   `,
@@ -306,6 +256,7 @@ bunpress config:validate
 ```
 
 This checks for:
+
 - Required fields
 - Valid nav/sidebar structure
 - Correct option types

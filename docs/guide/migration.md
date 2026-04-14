@@ -2,7 +2,7 @@
 
 This guide helps you migrate an existing VitePress documentation site to BunPress.
 
-## Why Migrate?
+## Why Migrate
 
 BunPress offers several advantages:
 
@@ -180,7 +180,9 @@ hero:
   text: Fast & Simple
   tagline: Get started quickly
   actions:
+
     - theme: brand
+
       text: Get Started
       link: /guide/
 ---
@@ -344,7 +346,7 @@ VitePress typically uses gtag. BunPress recommends privacy-focused Fathom:
 export default {
   fathom: {
     enabled: true,
-    siteId: 'YOUR_SITE_ID',
+    siteId: 'YOUR*SITE*ID',
     honorDNT: true,  // Privacy-friendly
   },
 }

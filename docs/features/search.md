@@ -132,7 +132,7 @@ export default {
 ### Custom CSS
 
 ```css
-/* Search input */
+/_ Search input _/
 .search-input {
   background: var(--vp-c-bg-soft);
   border: 1px solid var(--vp-c-divider);
@@ -140,14 +140,14 @@ export default {
   padding: 0.5rem 1rem;
 }
 
-/* Search modal */
+/_ Search modal _/
 .search-modal {
   background: var(--vp-c-bg);
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 }
 
-/* Search results */
+/_ Search results _/
 .search-result {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--vp-c-divider);
@@ -157,7 +157,7 @@ export default {
   background: var(--vp-c-bg-soft);
 }
 
-/* Highlighted matches */
+/_ Highlighted matches _/
 .search-highlight {
   background: rgba(255, 213, 0, 0.3);
   padding: 0.1em 0.2em;
@@ -228,8 +228,10 @@ search: false
 ---
 search:
   keywords:
+
     - alternative name
     - common misspelling
+
 ---
 ```
 

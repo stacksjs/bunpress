@@ -217,9 +217,11 @@ And **bold**, *italic*, and [links](/).
 ```markdown
 :::warning Prerequisites
 Before continuing, ensure you have:
+
 - Node.js 18+
 - Bun installed
 - Git configured
+
 :::
 ```
 
@@ -242,6 +244,7 @@ Back to outer content.
 ### Default Icons
 
 Each container type has a default icon:
+
 - `info` - Information circle
 - `tip` - Light bulb
 - `warning` - Warning triangle
@@ -294,6 +297,7 @@ const hidden = 'code'
 ## Accessibility
 
 Containers are accessible by default:
+
 - Proper ARIA roles
 - Semantic HTML structure
 - Keyboard navigation for collapsible
@@ -329,6 +333,7 @@ This feature requires BunPress 2.0 or higher.
 ```markdown
 :::danger Security
 Never commit sensitive data:
+
 - API keys
 - Passwords
 - Private keys

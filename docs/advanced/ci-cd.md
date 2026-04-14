@@ -16,18 +16,23 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v4
 
       - name: Setup Bun
+
         uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
+
         run: bun install
 
       - name: Build documentation
+
         run: bunpress build
 
       - name: Deploy to GitHub Pages
+
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -41,17 +46,20 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v4
 
       - uses: oven-sh/setup-bun@v2
 
       - name: Cache dependencies
+
         uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
           key: bun-${{ hashFiles('bun.lockb') }}
 
       - name: Cache BunPress
+
         uses: actions/cache@v4
         with:
           path: .bunpress/cache
@@ -59,6 +67,7 @@ jobs:
 
       - run: bun install
       - run: bunpress build
+
 ```
 
 ## Vercel
@@ -111,12 +120,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install
       - run: bunpress build
 
       - name: Deploy to Netlify
+
         uses: nwtgck/actions-netlify@v2
         with:
           publish-dir: ./dist
@@ -138,12 +149,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install
       - run: bunpress build
 
       - name: Deploy to Cloudflare Pages
+
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -164,12 +177,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install
       - run: bunpress build
 
       - name: Configure AWS
+
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -177,16 +192,19 @@ jobs:
           aws-region: us-east-1
 
       - name: Deploy to S3
+
         run: aws s3 sync ./dist s3://my-docs-bucket --delete
 
       - name: Invalidate CloudFront
-        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CF_DISTRIBUTION_ID }} --paths "/*"
+
+        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CF_DISTRIBUTION_ID }} --paths "/_"
 ```
 
 ## GitLab CI
 
 ```yaml
 stages:
+
   - build
   - deploy
 
@@ -194,23 +212,34 @@ build:
   stage: build
   image: oven/bun:latest
   script:
+
     - bun install
     - bunpress build
+
   artifacts:
     paths:
+
       - dist/
 
 pages:
   stage: deploy
   dependencies:
+
     - build
+
   script:
+
     - mv dist public
+
   artifacts:
     paths:
+
       - public
+
   only:
+
     - main
+
 ```
 
 ## Docker Deployment
@@ -244,7 +273,7 @@ server {
         try_files $uri $uri/ $uri.html /index.html;
     }
 
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$ {
+    location ~_ \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
@@ -263,12 +292,14 @@ jobs:
   preview:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install
       - run: bunpress build
 
       - name: Deploy Preview
+
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
@@ -279,7 +310,9 @@ jobs:
 ### Comment Preview URL
 
 ```yaml
+
 - name: Comment Preview URL
+
   uses: marocchino/sticky-pull-request-comment@v2
   with:
     message: |
@@ -319,19 +352,24 @@ jobs:
       matrix:
         shard: [1, 2, 3, 4]
     steps:
+
       - run: bunpress build --shard=${{ matrix.shard }}/4
+
 ```
 
 ### Incremental Builds
 
 ```yaml
+
 - name: Cache build
+
   uses: actions/cache@v4
   with:
     path: .bunpress/cache
     key: bunpress-${{ hashFiles('docs/**') }}
 
 - run: bunpress build --incremental
+
 ```
 
 ## Monitoring
@@ -339,7 +377,9 @@ jobs:
 ### Build Notifications
 
 ```yaml
+
 - name: Notify Slack
+
   if: always()
   uses: slackapi/slack-github-action@v1
   with:

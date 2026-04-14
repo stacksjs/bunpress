@@ -129,10 +129,12 @@ function processData(data) {
 
 // Good: Descriptive comments
 /**
- * Processes user data and validates input
- * @param {Object} data - User input data
- * @returns {Object} Processed and validated data
- */
+
+ _ Processes user data and validates input
+ _ @param {Object} data - User input data
+ _ @returns {Object} Processed and validated data
+
+ _/
 function processUserData(data) {
   // Validate email format
   if (!isValidEmail(data.email)) {
@@ -220,6 +222,7 @@ Use consistent frontmatter patterns across your documentation:
 
 ```yaml
 ---
+
 title: Page Title
 description: Brief description for SEO
 author: Content Author
@@ -230,8 +233,10 @@ order: 1
 layout: doc
 toc: sidebar
 search:
+
   enabled: true
 ---
+
 ```
 
 ### Programmatic Content Generation
@@ -296,11 +301,14 @@ export default {
 
 ```yaml
 ---
+
 title: Custom Page
 themeConfig:
   colors:
+
     primary: '#10b981' # Override global primary color
 ---
+
 ```
 
 ## Advanced Examples
@@ -309,6 +317,7 @@ themeConfig:
 
 ```markdown
 ---
+
 layout: home
 
 hero:
@@ -316,29 +325,42 @@ hero:
   text: "Build amazing things"
   tagline: "Fast, reliable, and easy to use"
   actions:
+
     - theme: brand
+
       text: Get Started
       link: /guide/getting-started
+
     - theme: alt
+
       text: View Source
-      link: https://github.com/myproject
+      link: <https://github.com/myproject>
 
 features:
+
   - title: "Easy Setup"
+
     icon: "🚀"
     details: "Get started in minutes with our simple setup process"
+
   - title: "Powerful Features"
+
     icon: "⚡"
     details: "Everything you need to build modern applications"
+
   - title: "Great Community"
+
     icon: "👥"
+
     details: "Join thousands of developers building with MyProject"
 ---
+
 ```
 
 ### Interactive Examples
 
 ```markdown
+
 ## Try It Out
 
 ::: tip Interactive Example
@@ -378,7 +400,9 @@ First, make sure you have Node.js installed:
 
 ```bash
 node --version
+
 # Should output: v18.0.0 or higher
+
 ```
 
 ### Step 2: Create a New Project
@@ -536,7 +560,9 @@ import { build } from 'bunpress'
 
 <!-- Code examples with keyboard instructions -->
 ```bash
+
 # Press Ctrl+C to stop the server
+
 npm run dev
 ```
 
@@ -612,11 +638,13 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v3
       - uses: oven-sh/setup-bun@v1
       - run: bun install
       - run: bun run build
       - run: bun run deploy
+
 ```
 
 ### Environment-Specific Builds
@@ -653,6 +681,7 @@ export default {
 - [ ] Content is accessible
 - [ ] SEO optimization is applied
 - [ ] Cross-browser compatibility verified
+
 ```
 
 ## Community Engagement
@@ -672,10 +701,12 @@ export default {
 ### Code of Conduct
 
 We expect all contributors to follow our code of conduct:
+
 - Be respectful and inclusive
 - Focus on constructive feedback
 - Help newcomers learn
 - Maintain professional communication
+
 ```
 
 ### Issue Templates
@@ -689,6 +720,7 @@ A clear description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
+
 1. Go to '...'
 2. Click on '...'
 3. See error

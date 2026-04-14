@@ -5,9 +5,11 @@ This directory contains test fixtures for the markdown file inclusion feature.
 ## Files
 
 ### intro.md
+
 Basic markdown content with heading and list for testing full file inclusion.
 
 ### faq.md
+
 Contains two named regions (`getting-started` and `advanced`) for testing region-based inclusion.
 
 Region markers format:
@@ -18,6 +20,7 @@ Content here
 ```
 
 ### nested-a.md and nested-b.md
+
 Files for testing recursive/nested includes. `nested-a.md` includes `nested-b.md`.
 
 ## Usage in Tests

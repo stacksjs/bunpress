@@ -1,4 +1,5 @@
 <!-- #region getting-started -->
+
 ## Getting Started
 
 To get started, run:
@@ -9,6 +10,7 @@ npm install bunpress
 <!-- #endregion -->
 
 <!-- #region advanced -->
+
 ## Advanced Usage
 
 For advanced usage, see the documentation.

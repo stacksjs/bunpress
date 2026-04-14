@@ -33,12 +33,14 @@ Complete documentation for BunPress - a lightning-fast static site generator pow
 ## Key Features Documented
 
 ### Phase 1-2: Foundation
+
 - Basic markdown processing
 - Syntax highlighting with ts-syntax-highlighter
 - Copy-to-clipboard functionality
 - Line numbers and line highlighting
 
 ### Phase 3: Table of Contents
+
 - Automatic TOC generation from headings
 - Configurable depth levels
 - Multiple positions (sidebar, inline, floating)
@@ -46,18 +48,21 @@ Complete documentation for BunPress - a lightning-fast static site generator pow
 - Smooth scrolling navigation
 
 ### Phase 4: Code Features
+
 - **Code Groups** - Tabbed code blocks for multi-language examples
 - **Code Imports** - Import code from source files with line ranges and regions
 - **File Information** - Display file names in code blocks
 - **Diff Highlighting** - Show code changes
 
 ### Phase 5: Content Enhancement
+
 - **Custom Containers** - VitePress-style callout boxes (tip, warning, danger, info, details)
 - **GitHub Alerts** - GitHub-flavored alert syntax ([!NOTE], [!TIP], etc.)
 - **Emoji Support** - Shortcode-based emoji insertion
 - **Inline Badges** - Version indicators and status badges
 
 ### Phase 6: Content Reuse
+
 - **Code Imports** - `<<< ./file.ts` syntax with line ranges and regions
 - **Markdown Includes** - `<!--@include: ./file.md-->` with recursive support
 
@@ -270,9 +275,10 @@ BunPress is open-source software licensed under the MIT License. See [LICENSE](.
 - **GitHub Issues**: [Report bugs or request features](https://github.com/stacksjs/bunpress/issues)
 - **Discord**: Join our community (link in main README)
 
-## What's Next?
+## What's Next
 
 Future enhancements planned:
+
 - Multi-language i18n support
 - Version documentation
 - Advanced theming system

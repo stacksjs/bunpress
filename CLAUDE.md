@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 BunPress is a lightning-fast static site generator designed specifically for documentation. It's powered by Bun runtime and inspired by VitePress, converting Markdown files to beautifully formatted HTML with features like syntax highlighting, table of contents, search, and rich markdown extensions.
 
 **Key Technologies:**
+
 - **Runtime:** Bun (not Node.js - use `bun` commands exclusively)
 - **Language:** TypeScript with strict mode and isolated declarations
 - **Build System:** Bun's native build system with `bun-plugin-dtsx` for type generation
@@ -65,6 +66,7 @@ bunpress --version               # Show version
 ```
 
 ### Building & Development
+
 ```bash
 # Build the library (transpiles and generates types)
 bun run build
@@ -85,6 +87,7 @@ bun run typecheck
 ```
 
 ### Testing
+
 ```bash
 # Run all tests with verbose output
 bun test
@@ -100,6 +103,7 @@ bun test test/table-of-contents.test.ts
 ```
 
 ### Linting & Quality
+
 ```bash
 # Lint all files
 bun run lint
@@ -109,6 +113,7 @@ bun run lint:fix
 ```
 
 ### Building Documentation
+
 ```bash
 # Build the documentation site (not the library)
 bun build.ts
@@ -118,6 +123,7 @@ bun serve --port 3000 dist
 ```
 
 ### Release & Publishing
+
 ```bash
 # Generate changelog
 bun run changelog:generate
@@ -190,12 +196,14 @@ bun run fresh
 BunPress uses **@stacksjs/headwind** for utility-first CSS styling. Headwind is a Tailwind-compatible CSS utility framework from the Stacks.js ecosystem.
 
 **Migration Status:** UnoCSS → Headwind
+
 - UnoCSS is currently referenced in tests and commented code (see `src/plugin.ts`)
 - The project is transitioning to use Headwind instead
 - UnoCSS runtime references (e.g., `@unocss/runtime` CDN imports) should be replaced with Headwind equivalents
 - When uncommenting or updating `src/plugin.ts`, replace UnoCSS imports with Headwind
 
 **Headwind CLI:**
+
 - Headwind provides a CLI binary accessible via `bunx headwind`
 - Uses `@stacksjs/clapp` for command-line interface
 - Configuration can be managed via `bunfig` (similar to other Stacks packages)
@@ -223,7 +231,7 @@ The CLI provides comprehensive commands for documentation management:
 
 - **dev** - Development server with watch mode
   - Builds documentation initially
-  - Serves at http://localhost:3000 (configurable with `--port`)
+  - Serves at <http://localhost:3000> (configurable with `--port`)
   - Custom fetch handler that serves static files and HTML
   - File watching with debounced rebuild
   - Options: `--port`, `--dir`, `--open`, `--watch`, `--verbose`
@@ -284,6 +292,7 @@ The CLI provides comprehensive commands for documentation management:
 #### CLI Utilities (bin/utils.ts)
 
 Helper functions for CLI development:
+
 - Color formatting with ANSI codes
 - Success/error/warning/info loggers
 - Spinner for long-running operations
@@ -295,6 +304,7 @@ Helper functions for CLI development:
 ### Build System (build.ts)
 
 Simple build script that:
+
 1. Compiles `src/index.ts` and `bin/cli.ts` with Bun
 2. Uses `bun-plugin-dtsx` to generate `.d.ts` files
 3. Outputs to `./dist` with minification and code splitting
@@ -329,6 +339,7 @@ Simple build script that:
 ### Markdown Processing Pipeline
 
 The markdown pipeline is implemented in `src/serve.ts` using `Bun.markdown.html()` (Zig-based GFM parser):
+
 - **Pre-processing**: Custom features (containers, alerts, code blocks, emoji, badges) are processed before passing to Bun.markdown
 - **Code blocks**: Extracted and replaced with placeholders before Bun.markdown, restored after
 - **Post-processing**: Tables, headings, external links, images are enhanced after HTML conversion
@@ -379,6 +390,7 @@ bun test test/benchmark.test.ts --timeout 600000
 - **Full Mode**: With syntax highlighting, templates, TOC (comparable to Astro)
 
 The benchmark includes:
+
 - `fastMarkdownToHtml()` - Optimized parser for pure speed benchmarks
 - `runFastBuildBenchmark()` - Tests fast mode performance
 - `runFullBuildBenchmark()` - Tests full-featured mode performance
@@ -386,6 +398,7 @@ The benchmark includes:
 ### Git Hooks
 
 Pre-commit hook runs staged linting:
+
 - Lints `*.{js,ts,json,yaml,yml,md}` files
 - Uses `bunx --bun eslint --fix` for auto-fixing
 
@@ -413,7 +426,6 @@ Commit-msg hook validates commit messages with `@stacksjs/gitlint`
 
 - `src/plugin.ts` is entirely commented out — superseded by `src/serve.ts` pipeline
 - The main build system in `bin/cli.ts` has plugins disabled (line 103) — `bun bin/cli.ts dev` uses serve.ts directly
-
 
 ---
 

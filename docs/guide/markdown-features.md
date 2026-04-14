@@ -2,54 +2,6 @@
 title: Markdown Features
 description: Rich markdown features for beautiful documentation
 ---
-
-# Markdown Features
-
-BunPress supports VitePress-compatible markdown features for creating rich, interactive documentation.
-
-## Custom Containers
-
-Use custom containers to highlight important content:
-
-### Info Container
-
-```markdown
-::: info
-This is an informational message.
-:::
-```
-
-::: info
-This is an informational message.
-:::
-
-### Tip Container
-
-```markdown
-::: tip
-Here's a helpful tip for you!
-:::
-```
-
-::: tip
-Here's a helpful tip for you!
-:::
-
-### Warning Container
-
-```markdown
-::: warning
-Be careful with this operation.
-:::
-```
-
-::: warning
-Be careful with this operation.
-:::
-
-### Danger Container
-
-```markdown
 ::: danger
 This action cannot be undone!
 :::
@@ -70,6 +22,7 @@ Hidden content that can be revealed.
 - Item 1
 - Item 2
 - Item 3
+
 :::
 ```
 
@@ -79,6 +32,7 @@ Hidden content that can be revealed.
 - Item 1
 - Item 2
 - Item 3
+
 :::
 
 ### Custom Titles
@@ -330,7 +284,9 @@ Use emoji shortcodes:
 Customize heading anchor IDs:
 
 ```markdown
+
 ## My Custom Heading {#custom-id}
+
 ```
 
 ## Inline Table of Contents
@@ -372,6 +328,7 @@ Images are automatically lazy-loaded for better performance.
 ## External Links
 
 External links automatically:
+
 - Open in a new tab (`target="_blank"`)
 - Include security attributes (`rel="noreferrer noopener"`)
 - Show an external link icon

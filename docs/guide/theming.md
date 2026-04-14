@@ -443,7 +443,9 @@ export default {
 
       css: `
         /* Smooth transitions */
+
         * {
+
           transition: background-color 0.2s, border-color 0.2s;
         }
 
@@ -483,6 +485,6 @@ export default {
 
 ## Related
 
-- [Configuration Guide](/guide/configuration)
-- [Markdown Extensions](/markdown-extensions)
-- [Plugin Development](/guide/plugins)
+* [Configuration Guide](/guide/configuration)
+* [Markdown Extensions](/markdown-extensions)
+* [Plugin Development](/guide/plugins)

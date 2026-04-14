@@ -69,6 +69,7 @@ Import and configure the library:
 Initialize the library with configuration.
 
 **Parameters:**
+
 - `config` (object): Configuration object
 
 **Returns:** `Promise<Client>`
@@ -89,6 +90,7 @@ const client = await initialize({
 Establish connection to the service.
 
 **Parameters:**
+
 - `options` (object): Connection options
 
 **Example:**
@@ -167,6 +169,7 @@ Key changes:
 - [Quick Start Guide](/quick-start)
 - [Configuration Reference](/config)
 - [GitHub Repository](https://github.com/example/mylib)
+
 ````
 
 ### Tutorial Page
@@ -307,11 +310,13 @@ bun test
 ### Preparing for Production
 
 ::: warning Production Checklist
+
 - [ ] Environment variables configured
 - [ ] Database migrations run
 - [ ] Tests passing
 - [ ] Error logging set up
 - [ ] Performance monitoring enabled
+
 :::
 
 ### Deploy to Cloud
@@ -319,10 +324,13 @@ bun test
 Deploy your application:
 
 ```bash
+
 # Build the application
+
 bun run build
 
 # Deploy (example with fly.io)
+
 fly deploy
 ```
 
@@ -330,9 +338,10 @@ fly deploy
 
 Congratulations! :tada: You've built your first app!
 
-### What's Next?
+### What's Next
 
 ::: tip Continue Learning
+
 1. Add a database layer
 2. Implement authentication
 3. Set up CI/CD pipeline
@@ -347,6 +356,7 @@ Check out our [Advanced Guide](/advanced) for more.
 - [Best Practices](/best-practices)
 - [Community Discord](https://discord.gg/example)
 - [GitHub Examples](https://github.com/example/examples)
+
 ````
 
 ## Feature Showcase Examples
@@ -544,29 +554,45 @@ hero:
     src: /logo.png
     alt: Project Logo
   actions:
+
     - theme: brand
+
       text: Get Started
       link: /guide/getting-started
+
     - theme: alt
+
       text: View on GitHub
       link: https://github.com/user/project
 features:
+
   - icon: ⚡
+
     title: Lightning Fast
     details: Optimized for speed with modern build tools
+
   - icon: 🔒
+
     title: Type Safe
     details: Full TypeScript support out of the box
+
   - icon: 🎨
+
     title: Customizable
     details: Flexible theming and plugin system
+
   - icon: 📦
+
     title: Zero Config
     details: Sensible defaults, works immediately
+
   - icon: 🚀
+
     title: Production Ready
     details: Battle-tested in production environments
+
   - icon: 📚
+
     title: Well Documented
     details: Comprehensive docs and examples
 ---
@@ -668,6 +694,7 @@ All notable changes to this project are documented here.
 
 - Feature A
 - Feature B
+
 ```
 
 ### FAQ Page
@@ -681,25 +708,27 @@ Common questions and answers about the project.
 
 ## General
 
-### What is this project?
+### What is this project
 
 > [!NOTE]
 > This project is a modern framework for building web applications.
 
 <!--@include: ./shared/project-description.md-->
 
-### Who should use this?
+### Who should use this
 
 ::: tip Ideal For
+
 - Full-stack developers
 - Frontend engineers
 - DevOps teams
 - Startup founders
+
 :::
 
 ## Installation
 
-### Which package manager should I use?
+### Which package manager should I use
 
 ::: code-group
 
@@ -720,7 +749,7 @@ yarn add package-name
 > [!TIP]
 > We recommend Bun for the best performance!
 
-### Minimum requirements?
+### Minimum requirements
 
 > [!IMPORTANT]
 > Requires Node.js 18+ or Bun 1.0+
@@ -775,15 +804,19 @@ How does BunPress compare to other static site generators?
 ### BunPress
 
 ::: tip Advantages
+
 - Lightning-fast builds with Bun
 - GitHub-flavored alerts
 - Extensive markdown features
 - Zero configuration needed
+
 :::
 
 ::: warning Limitations
+
 - Newer project, smaller ecosystem
 - No React component support (yet)
+
 :::
 
 ### VitePress
@@ -808,6 +841,7 @@ See our migration guides:
 
 - [From VitePress](/migration/from-vitepress)
 - [From Docusaurus](/migration/from-docusaurus)
+
 ```
 
 ## Best Practices
@@ -819,12 +853,12 @@ See our migration guides:
 
 ## When to Use GitHub Alerts vs Containers
 
-### Use GitHub Alerts for:
+### Use GitHub Alerts for
 
 > [!TIP]
 > Quick, inline callouts in documentation
 
-### Use Containers for:
+### Use Containers for
 
 ::: details Expandable Content
 Long-form content that users can expand to read.

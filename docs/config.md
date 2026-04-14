@@ -335,7 +335,7 @@ export default {
 
 1. Log in to your [Fathom Analytics dashboard](https://app.usefathom.com)
 2. Select your site from the dashboard
-3. Go to **Settings** > **Sites**
+3. Go to **Settings**>**Sites**
 4. Copy the **Site ID** (e.g., `NXCLHKXQ`)
 5. Add it to your `bunpress.config.ts`
 
@@ -753,18 +753,26 @@ hero:
   tagline: Subheading
   image: /logo.png
   actions:
+
     - theme: brand
+
       text: Get Started
       link: /guide/start
+
     - theme: alt
+
       text: View on GitHub
       link: https://github.com/user/repo
 
 # Features (for home layout)
 features:
+
   - title: Feature 1
+
     details: Description of feature 1
+
   - title: Feature 2
+
     details: Description of feature 2
 
 # Navigation overrides
@@ -775,11 +783,15 @@ lastUpdated: true  # Show last updated date
 
 # SEO
 head:
+
   - - meta
     - name: keywords
+
       content: keyword1, keyword2
+
   - - meta
     - property: og:title
+
       content: Custom OG Title
 ---
 ```

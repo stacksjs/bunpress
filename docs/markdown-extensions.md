@@ -168,12 +168,12 @@ console.log(calculateTotal(items))
 Highlight specific lines using curly braces:
 
 ```python {2,4-6}
-def process_data(data):
-    # This line is highlighted
+def process*data(data):
+# This line is highlighted
     if not data:
         return None
 
-    # These lines are highlighted
+# These lines are highlighted
     processed = []
     for item in data:
         processed.append(item.upper())
@@ -261,12 +261,12 @@ SELECT
     u.id,
     u.username,
     u.email,
-    p.first_name,
-    p.last_name
+    p.first*name,
+    p.last*name
 FROM users u
-LEFT JOIN profiles p ON u.id = p.user_id
+LEFT JOIN profiles p ON u.id = p.user*id
 WHERE u.active = true
-ORDER BY u.created_at DESC
+ORDER BY u.created*at DESC
 ```
 
 **Configuration Files:**
@@ -277,9 +277,13 @@ services:
   web:
     build: .
     ports:
+
       - '3000:3000'
+
     environment:
-      - NODE_ENV=production
+
+      - NODE*ENV=production
+
 ```
 
 ### File Information
@@ -301,14 +305,15 @@ export function formatDate(date: Date): string {
 Highlight changes in diff format:
 
 ```diff
+
 + const newFeature = 'This line was added'
 + const enhancedFunction = () => {
-+   console.log('Enhanced functionality')
++ console.log('Enhanced functionality')
 + }
 
 - const oldFeature = 'This line was removed'
 - const basicFunction = () => {
--   console.log('Basic functionality')
+- console.log('Basic functionality')
 - }
 
   const unchanged = 'This line stayed the same'

@@ -2,56 +2,6 @@
 title: Table of Contents
 description: Configure automatic table of contents generation
 ---
-
-# Table of Contents
-
-BunPress automatically generates a table of contents (TOC) from your markdown headings, providing easy navigation for your documentation pages.
-
-## Basic Configuration
-
-Enable and configure the TOC in your `bunpress.config.ts`:
-
-```typescript
-const config: BunPressOptions = {
-  markdown: {
-    toc: {
-      enabled: true,
-      position: 'sidebar',
-      title: 'On this page',
-    },
-  },
-}
-```
-
-## Configuration Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `enabled` | `boolean` | `true` | Enable TOC generation |
-| `position` | `TocPosition \| TocPosition[]` | `['sidebar']` | Where to display the TOC |
-| `title` | `string` | `'Table of Contents'` | TOC heading title |
-| `minDepth` | `number` | `2` | Minimum heading level (h2) |
-| `maxDepth` | `number` | `6` | Maximum heading level (h6) |
-| `className` | `string` | `'table-of-contents'` | CSS class for container |
-| `smoothScroll` | `boolean` | `true` | Enable smooth scrolling |
-| `activeHighlight` | `boolean` | `true` | Highlight active item on scroll |
-| `collapsible` | `boolean` | `true` | Enable collapsible sections |
-| `exclude` | `string[]` | `[]` | Patterns to exclude headings |
-
-## Position Options
-
-The TOC can be displayed in multiple positions:
-
-### Sidebar (Default)
-
-Display in the right sidebar:
-
-```typescript
-toc: {
-  position: 'sidebar',
-}
-```
-
 ### Inline
 
 Insert TOC at a specific location using the `[[toc]]` marker:
@@ -65,11 +15,13 @@ toc: {
 Then in your markdown:
 
 ```markdown
+
 # My Page Title
 
 [[toc]]
 
 ## First Section
+
 Content here...
 ```
 
@@ -125,16 +77,19 @@ toc: {
 Use HTML comments to exclude specific headings:
 
 ```markdown
+
 ## Regular Heading
 
 This heading appears in the TOC.
 
 <!-- toc-ignore -->
+
 ## Hidden Heading
 
 This heading is excluded from the TOC.
 
 ## Another Regular Heading
+
 ```
 
 ## Styling
@@ -229,20 +184,25 @@ Override TOC settings per page using frontmatter:
 
 ```markdown
 ---
+
 title: My Page
+
 toc: false
 ---
 
 # Content without TOC
+
 ```
 
 Or customize per page:
 
 ```markdown
 ---
+
 title: Deep Technical Guide
 toc:
   maxDepth: 5
+
   position: floating
 ---
 
@@ -258,7 +218,9 @@ This page has deeper TOC levels.
 Create custom anchor IDs for headings:
 
 ```markdown
+
 ## My Heading {#custom-anchor}
+
 ```
 
 This creates a heading with anchor `#custom-anchor` instead of auto-generated `#my-heading`.
@@ -268,9 +230,13 @@ This creates a heading with anchor `#custom-anchor` instead of auto-generated `#
 BunPress automatically handles duplicate heading text by appending numbers:
 
 ```markdown
+
 ## Configuration
+
 ...
+
 ## Configuration
+
 ...
 ```
 
@@ -281,9 +247,11 @@ Becomes anchors: `#configuration` and `#configuration-1`
 Headings can include inline code:
 
 ```markdown
+
 ## Using `useState` Hook
 
 ## The `config.ts` File
+
 ```
 
 The TOC will display the code formatting appropriately.
@@ -291,6 +259,7 @@ The TOC will display the code formatting appropriately.
 ## Performance
 
 The TOC is generated at build time, not runtime, ensuring:
+
 - No JavaScript required for basic TOC functionality
 - Fast page loads
 - SEO-friendly anchor links

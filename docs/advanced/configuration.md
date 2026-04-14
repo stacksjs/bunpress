@@ -222,7 +222,7 @@ export default {
 export default {
   fathom: {
     enabled: true,
-    siteId: 'YOUR_SITE_ID',
+    siteId: 'YOUR*SITE*ID',
     honorDNT: true,
   },
 }
@@ -312,11 +312,11 @@ export default {
 export default {
   // Use environment variables
   sitemap: {
-    baseUrl: process.env.SITE_URL || 'https://localhost:3000',
+    baseUrl: process.env.SITE*URL || 'https://localhost:3000',
   },
 
   fathom: {
-    enabled: process.env.NODE_ENV === 'production',
+    enabled: process.env.NODE*ENV === 'production',
   },
 }
 ```

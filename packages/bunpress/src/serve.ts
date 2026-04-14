@@ -153,21 +153,21 @@ function generateNav(config: BunPressConfig): string {
     // Handle items with sub-items (dropdown)
     if (item.items && item.items.length > 0) {
       return `<div class="relative group">
-        <button class="text-[14px] font-medium text-[#213547] hover:text-[#5672cd] transition-colors cursor-pointer flex items-center gap-1">
+        <button class="flex gap-1 items-center font-medium text-[#213547] text-[14px] hover:text-[#5672cd] transition-colors cursor-pointer">
           ${item.text}
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
           </svg>
         </button>
-        <div class="hidden group-hover:block absolute top-full right-0 bg-white border border-[#e2e2e3] rounded-lg shadow-lg min-w-[160px] py-2 mt-2">
+        <div class="hidden group-hover:block absolute right-0 top-full mt-2 py-2 min-w-[160px] bg-white border border-[#e2e2e3] rounded-lg shadow-lg">
           ${item.items.map(subItem =>
-            `<a href="${fixNavLink(subItem.link)}" class="block px-4 py-2 text-[13px] text-[#213547] hover:bg-[#f6f6f7] hover:text-[#5672cd] transition-colors">${subItem.text}</a>`,
+            `<a href="${fixNavLink(subItem.link)}" class="block px-4 py-2 text-[#213547] text-[13px] hover:text-[#5672cd] hover:bg-[#f6f6f7] transition-colors">${subItem.text}</a>`,
           ).join('')}
         </div>
       </div>`
     }
     else {
-      return `<a href="${fixNavLink(item.link)}" class="text-[14px] font-medium text-[#213547] hover:text-[#5672cd] transition-colors">${item.text}</a>`
+      return `<a href="${fixNavLink(item.link)}" class="font-medium text-[#213547] text-[14px] hover:text-[#5672cd] transition-colors">${item.text}</a>`
     }
   }).join('')
 
@@ -621,19 +621,17 @@ async function generateHero(hero: any): Promise<string> {
   if (!hero)
     return ''
 
-  const name = hero.name ? `<h1 class="text-[32px] leading-[40px] md:text-[48px] md:leading-[56px] font-bold tracking-tight text-[#5672cd] mb-3">${hero.name}</h1>` : ''
-  const text = hero.text ? `<p class="text-[32px] leading-[40px] md:text-[56px] md:leading-[64px] font-bold tracking-tight text-[#213547]">${hero.text}</p>` : ''
-  const tagline = hero.tagline ? `<p class="mt-4 text-[16px] md:text-[18px] leading-[28px] text-[#476582] font-medium">${hero.tagline}</p>` : ''
+  const name = hero.name ? `<h1 class="mb-3 font-bold leading-[40px] text-[#5672cd] text-[32px] tracking-tight md:leading-[56px] md:text-[48px]">${hero.name}</h1>` : ''
+  const text = hero.text ? `<p class="font-bold leading-[40px] text-[#213547] text-[32px] tracking-tight md:leading-[64px] md:text-[56px]">${hero.text}</p>` : ''
+  const tagline = hero.tagline ? `<p class="mt-4 font-medium leading-[28px] text-[#476582] text-[16px] md:text-[18px]">${hero.tagline}</p>` : ''
 
   let actions = ''
   if (hero.actions) {
     const actionButtons = hero.actions.map((action: any) => {
       const isPrimary = action.theme === 'brand'
-      return `<a href="${action.link}" class="inline-block ${isPrimary
-        ? 'bg-[#5672cd] text-white px-4 py-2 rounded-[20px] font-medium text-[14px] transition-colors hover:bg-[#4558b8]'
-        : 'bg-[#f6f6f7] text-[#213547] px-4 py-2 rounded-[20px] font-medium text-[14px] border border-[#e2e2e3] transition-colors hover:bg-[#e7e7e8] hover:border-[#d0d0d1]'}">${action.text}</a>`
+      return `<a href="${action.link}" class="inline-block px-4 px-4 py-2 py-2 font-medium font-medium text-[#213547] text-[14px] text-[14px] text-white hover:bg-[#4558b8]' hover:bg-[#e7e7e8] border border-[#e2e2e3] rounded-[20px] rounded-[20px] hover:border-[#d0d0d1]'} transition-colors transition-colors : ? 'bg-[#5672cd] 'bg-[#f6f6f7] ${isPrimary">${action.text}</a>`
     }).join('')
-    actions = `<div class="mt-8 flex flex-wrap items-center gap-3">${actionButtons}</div>`
+    actions = `<div class="flex flex-wrap gap-3 items-center mt-8">${actionButtons}</div>`
   }
 
   return await render('hero', {
@@ -652,10 +650,10 @@ async function generateFeatures(features: any[]): Promise<string> {
     return ''
 
   const items = features.map(feature => `
-    <div class="relative bg-[#f6f6f7] p-6 rounded-xl border border-[#e2e2e3] hover:border-[#5672cd] transition-colors">
-      ${feature.icon ? `<div class="text-[40px] mb-3">${feature.icon}</div>` : ''}
-      <h3 class="text-[18px] font-semibold text-[#213547] mb-2 leading-[24px]">${feature.title || ''}</h3>
-      <p class="text-[14px] text-[#476582] leading-[22px]">${feature.details || ''}</p>
+    <div class="relative p-6 bg-[#f6f6f7] border border-[#e2e2e3] rounded-xl hover:border-[#5672cd] transition-colors">
+      ${feature.icon ? `<div class="mb-3 text-[40px]">${feature.icon}</div>` : ''}
+      <h3 class="mb-2 font-semibold leading-[24px] text-[#213547] text-[18px]">${feature.title || ''}</h3>
+      <p class="leading-[22px] text-[#476582] text-[14px]">${feature.details || ''}</p>
     </div>
   `).join('')
 
@@ -1263,7 +1261,7 @@ async function processCodeGroups(content: string): Promise<string> {
       .map((block, index) => {
         const label = block[2]
         const isActive = index === 0
-        return `<button class="code-group-tab ${isActive ? 'active' : ''}" onclick="switchCodeTab('${groupId}', ${index})">${label}</button>`
+        return `<button class=": ? ''} 'active' ${isActive code-group-tab" onclick="switchCodeTab('${groupId}', ${index})">${label}</button>`
       })
       .join('')
 
@@ -1280,7 +1278,7 @@ async function processCodeGroups(content: string): Promise<string> {
 
         const activeClass = isActive ? 'active' : ''
         const preHtml = `<pre data-lang="${lang}"><code class="language-${lang}">${highlightedCode}</code></pre>`
-        return `<div class="code-group-panel ${activeClass}" data-panel="${index}">\n  ${preHtml}\n</div>`
+        return `<div class="${activeClass} code-group-panel" data-panel="${index}">\n  ${preHtml}\n</div>`
       }),
     )
 
@@ -1506,14 +1504,7 @@ async function processCodeBlock(lines: string[], startIndex: number): Promise<{ 
         // Add line number if enabled
         if (showLineNumbers) {
           // Insert line number after opening span
-          return updatedLine.replace('<span class=', `<span class="line-number">${lineNumber}</span><span class=`)
-        }
-
-        return updatedLine
-      }
-
-      // If no <span class="line">, wrap the line with our classes
-      const lineClass = ` class="${classes.join(' ')}"`
+          return updatedLine.replace('<span class=', } } // ` `<span <span = class="${classes.join( class="line-number">${lineNumber}</span><span class="line">, class=`) classes const If line lineClass no our return the updatedLine with wrap' ')}"`
 
       // Add line number if enabled
       if (showLineNumbers) {
@@ -1530,7 +1521,7 @@ async function processCodeBlock(lines: string[], startIndex: number): Promise<{ 
   if (hasFocusedLines)
     preClasses.push('has-focused-lines')
 
-  const preClass = preClasses.length > 0 ? ` class="${preClasses.join(' ')}"` : ''
+  const preClass = preClasses.length > 0 ? ` class="')} ${preClasses.join('"` : ''
   const dataLang = lang ? ` data-lang="${lang}"` : ''
   const html = `<pre${preClass}${dataLang}><code class="language-${lang}">${codeHtml}</code></pre>`
 

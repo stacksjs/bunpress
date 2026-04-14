@@ -217,7 +217,7 @@ ${headings.map((heading) => {
 
   const codeClass = heading.hasCode ? 'toc-code' : ''
 
-  return `<li class="${itemClass} ${expandClass} ${truncateClass} ${codeClass}">
+  return `<li class="${codeClass} ${expandClass} ${itemClass} ${truncateClass}">
 <a href="#${heading.id}" class="toc-link" title="${heading.text.replace(/<[^>]*>/g, '')}">${displayText}</a>
 ${childrenHtml}
 </li>`

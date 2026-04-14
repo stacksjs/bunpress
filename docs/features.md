@@ -398,18 +398,28 @@ hero:
   text: Lightning-fast documentation
   tagline: Build beautiful docs in seconds
   actions:
+
     - theme: brand
+
       text: Get Started
       link: /install
+
     - theme: alt
+
       text: View on GitHub
       link: https://github.com/stacksjs/bunpress
 features:
+
   - title: Fast
+
     details: Built on Bun for exceptional performance
+
   - title: Flexible
+
     details: Extensive markdown extensions and customization
+
   - title: Simple
+
     details: Zero-config with sensible defaults
 ---
 ```
@@ -747,13 +757,13 @@ Rich social media previews:
 - `og:title` - Page title
 - `og:description` - Page description
 - `og:image` - Social card image (1200x630)
-- `og:site_name` - Site name
+- `og:site*name` - Site name
 
 ### Twitter Cards
 
 Enhanced Twitter previews:
 
-- `twitter:card` - Card type (summary_large_image)
+- `twitter:card` - Card type (summary*large*image)
 - `twitter:title` - Tweet title
 - `twitter:description` - Tweet description
 - `twitter:image` - Preview image
@@ -840,7 +850,7 @@ Privacy-focused analytics with GDPR/CCPA compliance:
 export default {
   fathom: {
     enabled: true,
-    siteId: 'YOUR_SITE_ID',
+    siteId: 'YOUR*SITE*ID',
 
     // Privacy options
     honorDNT: true,          // Honor Do Not Track
@@ -873,41 +883,41 @@ BunPress supports environment variables for dynamic configuration:
 ```typescript
 // bunpress.config.ts
 export default {
-  verbose: process.env.NODE_ENV === 'development',
+  verbose: process.env.NODE*ENV === 'development',
   markdown: {
-    title: process.env.SITE_TITLE || 'My Documentation',
-    description: process.env.SITE_DESCRIPTION || 'Documentation site'
+    title: process.env.SITE*TITLE || 'My Documentation',
+    description: process.env.SITE*DESCRIPTION || 'Documentation site'
   },
   sitemap: {
-    enabled: process.env.ENABLE_SITEMAP === 'true',
-    baseUrl: process.env.SITE_URL || 'https://example.com'
+    enabled: process.env.ENABLE*SITEMAP === 'true',
+    baseUrl: process.env.SITE*URL || 'https://example.com'
   },
   fathom: {
-    enabled: process.env.ENABLE_ANALYTICS === 'true',
-    siteId: process.env.FATHOM_SITE_ID
+    enabled: process.env.ENABLE*ANALYTICS === 'true',
+    siteId: process.env.FATHOM*SITE*ID
   }
 }
 ```
 
 **Common Environment Variables:**
 
-- `NODE_ENV` - Environment mode (development/production)
-- `SITE_TITLE` - Site title
-- `SITE_DESCRIPTION` - Site description
-- `SITE_URL` - Base URL for sitemap and canonical links
-- `ENABLE_SITEMAP` - Toggle sitemap generation
-- `ENABLE_ANALYTICS` - Toggle analytics
-- `FATHOM_SITE_ID` - Fathom Analytics site ID
+- `NODE*ENV` - Environment mode (development/production)
+- `SITE*TITLE` - Site title
+- `SITE*DESCRIPTION` - Site description
+- `SITE*URL` - Base URL for sitemap and canonical links
+- `ENABLE*SITEMAP` - Toggle sitemap generation
+- `ENABLE*ANALYTICS` - Toggle analytics
+- `FATHOM*SITE*ID` - Fathom Analytics site ID
 
 **Using .env files:**
 
 ```bash
 # .env
-NODE_ENV=production
-SITE_TITLE=My Awesome Docs
-SITE_URL=https://docs.example.com
-ENABLE_SITEMAP=true
-FATHOM_SITE_ID=ABCDEFGH
+NODE*ENV=production
+SITE*TITLE=My Awesome Docs
+SITE*URL=https://docs.example.com
+ENABLE*SITEMAP=true
+FATHOM*SITE_ID=ABCDEFGH
 ```
 
 Load with your favorite .env loader (e.g., `dotenv` or Bun's native support):
@@ -1052,7 +1062,7 @@ BunPress uses Bun's built-in Zig-based markdown parser, which dominates all Java
 
 | Engine | Avg Time | vs BunPress |
 |--------|---------|-------------|
-| **BunPress** | **28.60 µs** | - |
+| **BunPress**|**28.60 µs** | - |
 | commonmark (no GFM) | 101.47 µs | 3.5x slower |
 | Eleventy | 124.67 µs | 4.4x slower |
 | VitePress | 178.68 µs | 6.2x slower |
@@ -1065,7 +1075,7 @@ BunPress uses Bun's built-in Zig-based markdown parser, which dominates all Java
 
 | Engine | Avg Time | vs BunPress |
 |--------|---------|-------------|
-| **BunPress** | **204.97 µs** | - |
+| **BunPress**|**204.97 µs** | - |
 | commonmark (no GFM) | 1.01 ms | 4.9x slower |
 | Eleventy | 1.07 ms | 5.2x slower |
 | VitePress | 1.40 ms | 6.8x slower |
@@ -1078,7 +1088,7 @@ BunPress uses Bun's built-in Zig-based markdown parser, which dominates all Java
 
 | Engine | Avg Time | vs BunPress |
 |--------|---------|-------------|
-| **BunPress** | **827.40 µs** | - |
+| **BunPress**|**827.40 µs** | - |
 | commonmark (no GFM) | 3.45 ms | 4.2x slower |
 | Eleventy | 3.80 ms | 4.6x slower |
 | VitePress | 4.85 ms | 5.9x slower |
@@ -1095,7 +1105,7 @@ Using the same methodology as [11ty's official performance tests](https://www.11
 
 | Generator | Build Time | Files/Second | vs BunPress |
 |-----------|-----------|--------------|-------------|
-| **BunPress** | **0.18s** | **22,714** | - |
+| **BunPress**|**0.18s**|**22,714** | - |
 | Eleventy | 1.93s | 2,073 | 11x slower |
 | VitePress | 8.50s | 471 | 47x slower |
 | Astro | 22.90s | 175 | 130x slower |
@@ -1106,7 +1116,7 @@ Using the same methodology as [11ty's official performance tests](https://www.11
 
 | Generator | Build Time | vs BunPress |
 |-----------|-----------|-------------|
-| **BunPress** | **4.12s** | - |
+| **BunPress**|**4.12s** | - |
 | VitePress | 8.50s | 2x slower |
 | Astro | 22.90s | 5.6x slower |
 | Gatsby | 29.05s | 7x slower |
@@ -1116,7 +1126,7 @@ Using the same methodology as [11ty's official performance tests](https://www.11
 
 | Framework | Size (KB) | vs BunPress | Savings |
 |-----------|-----------|-------------|---------|
-| **BunPress** | **45** | - | - |
+| **BunPress**|**45** | - | - |
 | Astro | 65 | 1.4x larger | 31% |
 | VitePress | 180 | 4x larger | 75% |
 | Docusaurus | 220 | 4.9x larger | 80% |
@@ -1127,7 +1137,7 @@ Using the same methodology as [11ty's official performance tests](https://www.11
 **BunPress is:**
 
 - **6.2x faster markdown parsing** than VitePress on real-world documents
-- **4.4x faster** than Eleventy, **90x faster** than Astro on real-world docs
+- **4.4x faster**than Eleventy,**90x faster** than Astro on real-world docs
 - **231x faster** than marked on large documents
 - **11x faster builds** than Eleventy (4,000 files)
 - **4x smaller output** than VitePress
@@ -1182,7 +1192,7 @@ cd benchmark && bun install && bun run bench
 - **Hot reload**: < 100ms update time
 - **Search**: Instant client-side results
 
-## What's Next?
+## What's Next
 
 BunPress continues to evolve with new features in development:
 

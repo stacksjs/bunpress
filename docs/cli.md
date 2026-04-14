@@ -31,6 +31,7 @@ bunpress init [options]
 ```
 
 **Options:**
+
 - `--name <name>` - Project name (default: current directory name)
 - `--template <template>` - Template to use (default, minimal)
 - `--force` - Overwrite existing files without prompting
@@ -48,6 +49,7 @@ bunpress init --force
 ```
 
 **What it creates:**
+
 - `docs/` directory with sample files
 - `bunpress.config.ts` configuration file
 - `.gitignore` with appropriate ignores
@@ -66,6 +68,7 @@ bunpress dev [options]
 ```
 
 **Options:**
+
 - `--port <port>` - Port to listen on (default: 3000)
 - `--dir <dir>` - Documentation directory (default: ./docs)
 - `--watch` - Enable file watching (default: true)
@@ -87,6 +90,7 @@ bunpress dev --verbose
 ```
 
 **Features:**
+
 - Hot module replacement
 - Instant markdown processing
 - Error overlay
@@ -105,6 +109,7 @@ bunpress build [options]
 ```
 
 **Options:**
+
 - `--outdir <outdir>` - Output directory (default: ./dist)
 - `--dir <dir>` - Documentation directory (default: ./docs)
 - `--config <config>` - Path to config file
@@ -132,6 +137,7 @@ bunpress build --outdir ./public
 ```
 
 **Output:**
+
 - Optimized HTML files
 - Minified CSS and JavaScript
 - Static assets copied from `docs/public/`
@@ -150,6 +156,7 @@ bunpress preview [options]
 ```
 
 **Options:**
+
 - `--port <port>` - Port to listen on (default: 3000)
 - `--outdir <outdir>` - Output directory to serve (default: ./dist)
 - `--open` - Open browser automatically
@@ -167,6 +174,7 @@ bunpress preview --open
 ```
 
 **Features:**
+
 - Static file server
 - Proper MIME types
 - 404 handling
@@ -186,10 +194,12 @@ bunpress new <path> [options]
 ```
 
 **Options:**
+
 - `--title <title>` - Page title (default: derived from path)
 - `--template <template>` - Template to use (default, guide, api, blog)
 
 **Templates:**
+
 - `default` - Standard documentation page
 - `guide` - Tutorial/guide format with step-by-step sections
 - `api` - API reference format with parameters and examples
@@ -243,6 +253,7 @@ bunpress clean [options]
 ```
 
 **Options:**
+
 - `--outdir <outdir>` - Output directory to clean (default: ./dist)
 - `--force` - Skip confirmation prompt
 - `--verbose` - Show detailed cleanup information
@@ -260,6 +271,7 @@ bunpress clean --outdir ./public
 ```
 
 **What it removes:**
+
 - All files in output directory
 - Generated HTML files
 - Copied assets
@@ -277,9 +289,11 @@ bunpress doctor [options]
 ```
 
 **Options:**
+
 - `--verbose` - Show detailed diagnostic information
 
 **Checks performed:**
+
 - ✓ Bun runtime version compatibility
 - ✓ Configuration file exists and is valid
 - ✓ Documentation directory exists
@@ -322,10 +336,12 @@ bunpress stats [options]
 ```
 
 **Options:**
+
 - `--dir <dir>` - Documentation directory (default: ./docs)
 - `--verbose` - Show per-file breakdown with detailed stats
 
 **Displays:**
+
 - Total number of markdown files
 - Total size and lines of documentation
 - Word count and reading time estimate
@@ -359,9 +375,11 @@ Headings:     234 (H1: 23, H2: 89, H3: 122)
 Code Blocks:  156 code samples
 
 Top 5 Largest Files:
+
 1. advanced.md        (23.4 KB, 567 lines)
 2. api-reference.md   (18.9 KB, 456 lines)
 3. configuration.md   (15.2 KB, 389 lines)
+
 ...
 ```
 
@@ -377,6 +395,7 @@ bunpress llm [options]
 ```
 
 **Options:**
+
 - `--dir <dir>` - Documentation directory (default: ./docs)
 - `--output <output>` - Output file path (default: ./docs.md)
 - `--full` - Include full content (default: headings only)
@@ -421,6 +440,7 @@ layout: doc
 ```
 
 **Use cases:**
+
 - Provide documentation context to LLMs
 - Documentation analysis
 - Search index generation
@@ -440,6 +460,7 @@ bunpress config:show [options]
 ```
 
 **Options:**
+
 - `--verbose` - Show detailed configuration with comments
 
 **Examples:**
@@ -473,9 +494,11 @@ bunpress config:validate [options]
 ```
 
 **Options:**
+
 - `--verbose` - Show detailed validation results
 
 **Checks:**
+
 - ✓ Configuration file syntax (valid TypeScript/JavaScript)
 - ✓ Required fields present
 - ✓ Navigation structure valid
@@ -556,10 +579,12 @@ bunpress seo:check [options]
 ```
 
 **Options:**
+
 - `--dir <dir>` - Documentation directory (default: ./docs)
 - `--fix` - Automatically fix issues when possible
 
 **Checks performed:**
+
 - ✓ All pages have titles (optimal length: 10-60 characters)
 - ✓ All pages have meta descriptions (optimal length: 50-160 characters)
 - ✓ No duplicate titles across pages
@@ -603,6 +628,7 @@ Run with --fix to automatically resolve some issues.
 ```
 
 **Auto-fix capabilities:**
+
 - Generates meta descriptions from content
 - Adds basic titles from headings
 - Reports but doesn't fix broken links (manual review required)
@@ -638,10 +664,13 @@ BunPress commands return standard exit codes for CI/CD integration:
 **Example in CI:**
 ```yaml
 # .github/workflows/docs.yml
+
 - name: Build documentation
+
   run: bunpress build
 
 - name: Validate SEO
+
   run: bunpress seo:check
 ```
 
@@ -792,7 +821,7 @@ See [Troubleshooting Guide](/troubleshooting) for more solutions.
 
 ---
 
-## Need Help?
+## Need Help
 
 - 📚 [Documentation](/)
 - 💬 [Discord Community](https://discord.gg/stacksjs)

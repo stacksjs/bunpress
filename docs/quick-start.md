@@ -60,18 +60,28 @@ hero:
   text: Build something amazing
   tagline: Fast, simple, and powerful
   actions:
+
     - theme: brand
+
       text: Get Started
       link: /getting-started
+
     - theme: alt
+
       text: View on GitHub
       link: https://github.com/yourusername/project
 features:
+
   - title: ⚡️ Lightning Fast
+
     details: Built on Bun for exceptional performance
+
   - title: 📝 Markdown Powered
+
     details: Write content in Markdown with powerful extensions
+
   - title: 🎨 Customizable
+
     details: Flexible theming and configuration options
 ---
 ```
@@ -114,6 +124,7 @@ console.log(result)
 - Feature 1
 - Feature 2
 - Feature 3
+
 ```
 
 ### 4. Configure BunPress
@@ -156,7 +167,7 @@ export default {
 bunx bunpress dev
 ```
 
-Visit `http://localhost:3000` to see your documentation site!
+Visit `<http://localhost:3000>` to see your documentation site!
 
 ### 6. Build for Production
 
@@ -581,9 +592,11 @@ Create your first component:
 ## Next Steps
 
 ::: tip What's Next?
+
 - Read the [advanced guide](/advanced)
 - Check out [examples](/examples)
 - Join our [community](https://discord.gg/example)
+
 :::
 ```
 

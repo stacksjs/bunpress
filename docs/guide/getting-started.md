@@ -61,7 +61,7 @@ Launch the development server:
 bunpress dev
 ```
 
-Your documentation is now live at `http://localhost:3000` with hot reload enabled.
+Your documentation is now live at `<http://localhost:3000>` with hot reload enabled.
 
 ## Project Structure
 
@@ -108,19 +108,29 @@ hero:
   text: "Fast & Modern"
   tagline: "Build amazing documentation"
   actions:
+
     - theme: brand
+
       text: Get Started
       link: /guide/getting-started
+
     - theme: alt
+
       text: View on GitHub
       link: https://github.com/your/repo
 
 features:
+
   - title: Lightning Fast
+
     details: Built on Bun for exceptional performance
+
   - title: Easy to Use
+
     details: Markdown-first with sensible defaults
+
   - title: Fully Featured
+
     details: SEO, search, and analytics built-in
 ---
 ```

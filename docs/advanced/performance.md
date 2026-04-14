@@ -234,7 +234,7 @@ Engines tested:
 
 | Engine | Avg Time | vs BunPress |
 |--------|---------|-------------|
-| **BunPress** | **2.09 µs** | - |
+| **BunPress**|**2.09 µs** | - |
 | commonmark (no GFM) | 3.91 µs | 1.9x slower |
 | Eleventy | 4.93 µs | 2.4x slower |
 | VitePress | 7.87 µs | 3.8x slower |
@@ -247,7 +247,7 @@ Engines tested:
 
 | Engine | Avg Time | vs BunPress |
 |--------|---------|-------------|
-| **BunPress** | **22.09 µs** | - |
+| **BunPress**|**22.09 µs** | - |
 | commonmark (no GFM) | 79.92 µs | 3.6x slower |
 | Eleventy | 119.70 µs | 5.4x slower |
 | VitePress | 174.47 µs | 7.9x slower |
@@ -260,7 +260,7 @@ Engines tested:
 
 | Engine | Avg Time | vs BunPress |
 |--------|---------|-------------|
-| **BunPress** | **6.14 µs** | - |
+| **BunPress**|**6.14 µs** | - |
 | Eleventy | 22.28 µs | 3.6x slower |
 | commonmark (no GFM) | 24.62 µs | 4x slower |
 | VitePress | 30.52 µs | 5x slower |
@@ -273,7 +273,7 @@ Engines tested:
 
 | Engine | Avg Time | vs BunPress |
 |--------|---------|-------------|
-| **BunPress** | **15.32 µs** | - |
+| **BunPress**|**15.32 µs** | - |
 | Eleventy | 68.88 µs | 4.5x slower |
 | commonmark (no GFM) | 83.98 µs | 5.5x slower |
 | VitePress | 90.52 µs | 5.9x slower |
@@ -286,7 +286,7 @@ Engines tested:
 
 | Engine | Avg Time | vs BunPress |
 |--------|---------|-------------|
-| **BunPress** | **27.03 µs** | - |
+| **BunPress**|**27.03 µs** | - |
 | commonmark (no GFM) | 32.99 µs | 1.2x slower |
 | Eleventy | 142.51 µs | 5.3x slower |
 | VitePress | 182.55 µs | 6.8x slower |
@@ -299,7 +299,7 @@ Engines tested:
 
 | Engine | Avg Time | vs BunPress |
 |--------|---------|-------------|
-| **BunPress** | **19.16 µs** | - |
+| **BunPress**|**19.16 µs** | - |
 | Eleventy | 31.85 µs | 1.7x slower |
 | marked | 33.58 µs | 1.8x slower |
 | VitePress | 34.66 µs | 1.8x slower |
@@ -312,7 +312,7 @@ Engines tested:
 
 | Engine | Avg Time | vs BunPress |
 |--------|---------|-------------|
-| **BunPress** | **7.92 µs** | - |
+| **BunPress**|**7.92 µs** | - |
 | commonmark (no GFM) | 34.69 µs | 4.4x slower |
 | Eleventy | 37.16 µs | 4.7x slower |
 | VitePress | 48.82 µs | 6.2x slower |
@@ -325,7 +325,7 @@ Engines tested:
 
 | Engine | Avg Time | vs BunPress |
 |--------|---------|-------------|
-| **BunPress** | **28.60 µs** | - |
+| **BunPress**|**28.60 µs** | - |
 | commonmark (no GFM) | 101.47 µs | 3.5x slower |
 | Eleventy | 124.67 µs | 4.4x slower |
 | VitePress | 178.68 µs | 6.2x slower |
@@ -338,7 +338,7 @@ Engines tested:
 
 | Engine | Avg Time | vs BunPress |
 |--------|---------|-------------|
-| **BunPress** | **204.97 µs** | - |
+| **BunPress**|**204.97 µs** | - |
 | commonmark (no GFM) | 1.01 ms | 4.9x slower |
 | Eleventy | 1.07 ms | 5.2x slower |
 | VitePress | 1.40 ms | 6.8x slower |
@@ -351,7 +351,7 @@ Engines tested:
 
 | Engine | Avg Time | vs BunPress |
 |--------|---------|-------------|
-| **BunPress** | **827.40 µs** | - |
+| **BunPress**|**827.40 µs** | - |
 | commonmark (no GFM) | 3.45 ms | 4.2x slower |
 | Eleventy | 3.80 ms | 4.6x slower |
 | VitePress | 4.85 ms | 5.9x slower |
@@ -366,7 +366,7 @@ Using the same methodology as [11ty's official performance tests](https://www.11
 
 | Generator | Build Time | Files/Second | vs BunPress |
 |-----------|-----------|--------------|-------------|
-| **BunPress** | **0.18s** | **22,714** | - |
+| **BunPress**|**0.18s**|**22,714** | - |
 | Eleventy | 1.93s | 2,073 | 11x slower |
 | VitePress | 8.50s | 471 | 47x slower |
 | Astro | 22.90s | 175 | 130x slower |
@@ -377,7 +377,7 @@ Using the same methodology as [11ty's official performance tests](https://www.11
 
 | Generator | Build Time | vs BunPress |
 |-----------|-----------|-------------|
-| **BunPress** | **4.12s** | - |
+| **BunPress**|**4.12s** | - |
 | VitePress | 8.50s | 2x slower |
 | Astro | 22.90s | 5.6x slower |
 | Gatsby | 29.05s | 7x slower |

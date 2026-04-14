@@ -494,7 +494,9 @@ Add custom robots rules per page:
 ---
 title: Private Page
 robots:
+
   - userAgent: '*'
+
     disallow: [/private/]
 ---
 
@@ -577,11 +579,13 @@ For complete TypeScript API documentation, see the dedicated [API Reference](/ap
 ### Quick Reference
 
 **Core Functions:**
+
 - `build(options)` - Build documentation
 - `serve(options)` - Start dev server
 - `preview(options)` - Preview production build
 
 **Configuration Interfaces:**
+
 - `BunPressConfig` - Main configuration
 - `MarkdownPluginConfig` - Markdown options
 - `TocConfig` - Table of contents

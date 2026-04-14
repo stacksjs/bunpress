@@ -86,6 +86,7 @@ This is my awesome project documentation built with BunPress!
 - [Getting Started](/guide/getting-started)
 - [API Reference](/api)
 - [Examples](/examples)
+
 ```
 
 Configure your site in `bunpress.config.ts`:
@@ -238,7 +239,7 @@ Real benchmark results comparing BunPress against documentation frameworks and p
 
 | Engine | Avg Time | vs BunPress |
 |--------|---------|-------------|
-| **BunPress** | **2.09 µs** | - |
+| **BunPress**|**2.09 µs** | - |
 | commonmark (no GFM) | 3.91 µs | 1.9x slower |
 | Eleventy | 4.93 µs | 2.4x slower |
 | VitePress | 7.87 µs | 3.8x slower |
@@ -251,7 +252,7 @@ Real benchmark results comparing BunPress against documentation frameworks and p
 
 | Engine | Avg Time | vs BunPress |
 |--------|---------|-------------|
-| **BunPress** | **28.60 µs** | - |
+| **BunPress**|**28.60 µs** | - |
 | commonmark (no GFM) | 101.47 µs | 3.5x slower |
 | Eleventy | 124.67 µs | 4.4x slower |
 | VitePress | 178.68 µs | 6.2x slower |
@@ -264,7 +265,7 @@ Real benchmark results comparing BunPress against documentation frameworks and p
 
 | Engine | Avg Time | vs BunPress |
 |--------|---------|-------------|
-| **BunPress** | **204.97 µs** | - |
+| **BunPress**|**204.97 µs** | - |
 | commonmark (no GFM) | 1.01 ms | 4.9x slower |
 | Eleventy | 1.07 ms | 5.2x slower |
 | VitePress | 1.40 ms | 6.8x slower |
@@ -277,7 +278,7 @@ Real benchmark results comparing BunPress against documentation frameworks and p
 
 | Engine | Avg Time | vs BunPress |
 |--------|---------|-------------|
-| **BunPress** | **827.40 µs** | - |
+| **BunPress**|**827.40 µs** | - |
 | commonmark (no GFM) | 3.45 ms | 4.2x slower |
 | Eleventy | 3.80 ms | 4.6x slower |
 | VitePress | 4.85 ms | 5.9x slower |
@@ -292,7 +293,7 @@ Using the same methodology as [11ty's official performance tests](https://www.11
 
 | Generator | Build Time | vs BunPress |
 |-----------|-----------|-------------|
-| **BunPress** | **0.18s** | - |
+| **BunPress**|**0.18s** | - |
 | Eleventy | 1.93s | 11x slower |
 | VitePress | 8.50s | 47x slower |
 | Astro | 22.90s | 130x slower |
@@ -303,7 +304,7 @@ Using the same methodology as [11ty's official performance tests](https://www.11
 
 | Generator | Build Time | vs BunPress |
 |-----------|-----------|-------------|
-| **BunPress** | **4.12s** | - |
+| **BunPress**|**4.12s** | - |
 | VitePress | 8.50s | 2x slower |
 | Astro | 22.90s | 5.6x slower |
 | Gatsby | 29.05s | 7x slower |

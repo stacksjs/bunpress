@@ -39,6 +39,7 @@ export default {
 ```
 
 Available themes:
+
 - `github-dark` (default)
 - `github-light`
 - `one-dark-pro`
@@ -136,8 +137,10 @@ Or use standard diff syntax:
 
 ````markdown
 ```diff
+
 - const oldValue = 'old'
-+ const newValue = 'new'
+- const newValue = 'new'
+
 ```
 ````
 

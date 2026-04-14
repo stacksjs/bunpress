@@ -2,56 +2,6 @@
 title: SEO Configuration
 description: Optimize your documentation for search engines
 ---
-
-# SEO Configuration
-
-BunPress includes comprehensive SEO features to help your documentation rank well in search engines and provide a great sharing experience on social media.
-
-## Sitemap Generation
-
-### Basic Setup
-
-Enable automatic sitemap generation:
-
-```typescript
-const config: BunPressOptions = {
-  sitemap: {
-    enabled: true,
-    baseUrl: 'https://docs.myproject.com',
-  },
-}
-```
-
-This generates a `sitemap.xml` file in your output directory.
-
-### Configuration Options
-
-```typescript
-sitemap: {
-  enabled: true,
-  baseUrl: 'https://docs.myproject.com',
-  filename: 'sitemap.xml',
-  defaultPriority: 0.5,
-  defaultChangefreq: 'monthly',
-
-  // Custom priority per path pattern
-  priorityMap: {
-    '/': 1.0,           // Home page highest priority
-    '/guide/*': 0.8,    // Guide pages
-    '/api/*': 0.7,      // API reference
-    '/changelog': 0.4,  // Changelog lower priority
-  },
-
-  // Custom change frequency per path
-  changefreqMap: {
-    '/changelog': 'weekly',
-    '/blog/*': 'daily',
-    '/api/*': 'monthly',
-  },
-
-  // Exclude paths from sitemap
-  exclude: [
-    '/draft/*',
     '/internal/*',
     '/404',
   ],
@@ -133,7 +83,9 @@ robots: {
   host: 'https://docs.myproject.com',
 
   customContent: `
+
 # Additional rules
+
 User-agent: BadBot
 Disallow: /
 `,
@@ -154,8 +106,8 @@ User-agent: Googlebot
 Allow: /
 Crawl-delay: 1
 
-Sitemap: https://docs.myproject.com/sitemap.xml
-Host: https://docs.myproject.com
+Sitemap: <https://docs.myproject.com/sitemap.xml>
+Host: <https://docs.myproject.com>
 ```
 
 ## Meta Tags
@@ -181,14 +133,17 @@ Override metadata per page using frontmatter:
 
 ```markdown
 ---
+
 title: API Reference
 description: Complete API documentation for My Project
 meta:
   og:image: /images/api-preview.png
-  twitter:card: summary_large_image
+
+  twitter:card: summary*large*image
 ---
 
 # API Reference
+
 ```
 
 ### Open Graph Tags
@@ -208,7 +163,7 @@ BunPress automatically generates Open Graph tags for social sharing:
 Twitter card meta tags are also generated:
 
 ```html
-<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:card" content="summary*large*image" />
 <meta name="twitter:title" content="Page Title" />
 <meta name="twitter:description" content="Page description" />
 <meta name="twitter:image" content="https://docs.myproject.com/twitter-image.png" />
@@ -223,7 +178,7 @@ Privacy-focused analytics with GDPR/CCPA compliance:
 ```typescript
 fathom: {
   enabled: true,
-  siteId: 'YOUR_SITE_ID',
+  siteId: 'YOUR*SITE*ID',
   scriptUrl: 'https://cdn.usefathom.com/script.js',
   defer: true,
   honorDNT: true,  // Respect Do Not Track
@@ -258,6 +213,7 @@ bunpress seo:check
 ```
 
 This validates:
+
 - Title length (50-60 characters recommended)
 - Description length (150-160 characters recommended)
 - Heading structure (proper h1, h2, h3 hierarchy)
@@ -274,6 +230,7 @@ bunpress seo:check --fix
 ```
 
 This will:
+
 - Add missing meta descriptions (from content)
 - Fix heading hierarchy issues
 - Add missing alt text placeholders
@@ -306,11 +263,14 @@ BunPress generates JSON-LD structured data for better search results:
 
 ```markdown
 ---
+
 title: Getting Started with BunPress | My Project Docs
 ---
+
 ```
 
 Keep titles:
+
 - 50-60 characters
 - Include primary keywords
 - Unique per page
@@ -319,11 +279,14 @@ Keep titles:
 
 ```markdown
 ---
-description: Learn how to install and configure BunPress, the lightning-fast documentation generator, in under 5 minutes.
+
+description: Learn how to install and configure BunPress, the lightning-fast documentation generator, in under 5 minutes
 ---
+
 ```
 
 Keep descriptions:
+
 - 150-160 characters
 - Include call-to-action
 - Unique per page
@@ -331,6 +294,7 @@ Keep descriptions:
 ### Heading Structure
 
 ```markdown
+
 # Main Page Title (only one h1)
 
 ## Section Heading
@@ -340,6 +304,7 @@ Keep descriptions:
 ## Another Section
 
 ### Another Subsection
+
 ```
 
 ### Image Optimization
