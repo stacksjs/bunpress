@@ -629,7 +629,7 @@ async function generateHero(hero: any): Promise<string> {
   if (hero.actions) {
     const actionButtons = hero.actions.map((action: any) => {
       const isPrimary = action.theme === 'brand'
-      return `<a href="${action.link}" class="inline-block px-4 px-4 py-2 py-2 font-medium font-medium text-[#213547] text-[14px] text-[14px] text-white hover:bg-[#4558b8]' hover:bg-[#e7e7e8] border border-[#e2e2e3] rounded-[20px] rounded-[20px] hover:border-[#d0d0d1]'} transition-colors transition-colors : ? 'bg-[#5672cd] 'bg-[#f6f6f7] ${isPrimary">${action.text}</a>`
+      return `<a href="${action.link}" class="inline-block px-4 py-2 font-medium text-[14px] rounded-[20px] transition-colors ${isPrimary ? 'bg-[#5672cd] text-white hover:bg-[#4558b8]' : 'bg-[#f6f6f7] text-[#213547] hover:bg-[#e7e7e8] border border-[#e2e2e3] hover:border-[#d0d0d1]'}">${action.text}</a>`
     }).join('')
     actions = `<div class="flex flex-wrap gap-3 items-center mt-8">${actionButtons}</div>`
   }
@@ -1261,7 +1261,7 @@ async function processCodeGroups(content: string): Promise<string> {
       .map((block, index) => {
         const label = block[2]
         const isActive = index === 0
-        return `<button class=": ? ''} 'active' ${isActive code-group-tab" onclick="switchCodeTab('${groupId}', ${index})">${label}</button>`
+        return `<button class="code-group-tab${isActive ? ' active' : ''}" onclick="switchCodeTab('${groupId}', ${index})">${label}</button>`
       })
       .join('')
 
@@ -1504,7 +1504,13 @@ async function processCodeBlock(lines: string[], startIndex: number): Promise<{ 
         // Add line number if enabled
         if (showLineNumbers) {
           // Insert line number after opening span
-          return updatedLine.replace('<span class=', } } // ` `<span <span = class="${classes.join( class="line-number">${lineNumber}</span><span class="line">, class=`) classes const If line lineClass no our return the updatedLine with wrap' ')}"`
+          return `<span class="${classes.join(' ')}"><span class="line-number">${lineNumber}</span>${updatedLine.replace(/^<span class="[^"]*">/, '').replace(/<\/span>$/, '')}</span>`
+        }
+
+        return updatedLine
+      }
+
+      const lineClass = classes.length > 0 ? ` class="${classes.join(' ')}"` : ''
 
       // Add line number if enabled
       if (showLineNumbers) {
@@ -1521,7 +1527,7 @@ async function processCodeBlock(lines: string[], startIndex: number): Promise<{ 
   if (hasFocusedLines)
     preClasses.push('has-focused-lines')
 
-  const preClass = preClasses.length > 0 ? ` class="')} ${preClasses.join('"` : ''
+  const preClass = preClasses.length > 0 ? ` class="${preClasses.join(' ')}"` : ''
   const dataLang = lang ? ` data-lang="${lang}"` : ''
   const html = `<pre${preClass}${dataLang}><code class="language-${lang}">${codeHtml}</code></pre>`
 
