@@ -27,7 +27,7 @@ jobs:
         uses: home-lang/pantry/packages/action@main
 
       - name: Install Dependencies
-        run: bun install
+        run: pantry install
 
       - name: Lint
         run: bun run lint
@@ -45,7 +45,7 @@ jobs:
         uses: home-lang/pantry/packages/action@main
 
       - name: Install Dependencies
-        run: bun install
+        run: pantry install
 
       - name: Build
         run: bun run build
@@ -66,7 +66,7 @@ jobs:
         uses: home-lang/pantry/packages/action@main
 
       - name: Install Dependencies
-        run: bun install
+        run: pantry install
 
       - name: Build
         run: bun run build
@@ -91,7 +91,7 @@ jobs:
         uses: home-lang/pantry/packages/action@main
 
       - name: Install Dependencies
-        run: bun install
+        run: pantry install
 
       - name: Build
         run: bun run build
