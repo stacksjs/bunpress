@@ -34,7 +34,7 @@ jobs:
             node-modules-
 
       - name: Install Dependencies
-        run: pantry install
+        run: bun install
 
       - name: Publish
         run: pantry publish --npm --access public
