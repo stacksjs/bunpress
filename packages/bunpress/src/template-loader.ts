@@ -32,7 +32,7 @@ export async function loadTemplate(name: string): Promise<string> {
  * @foreach/@endforeach, @for/@endfor, @include, <script server>, etc.
  */
 export async function renderTemplate(template: string, data: Record<string, any>): Promise<string> {
-  return renderString(template, data)
+  return renderString(template, data, { templateOnly: true })
 }
 
 /**

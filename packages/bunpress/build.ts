@@ -20,6 +20,9 @@ const result = await Bun.build({
     '@stacksjs/ts-cloud',
     '@ts-cloud/core',
     '@stacksjs/ts-md',
+    'bunfig',
+    'ts-syntax-highlighter',
+    '@stacksjs/clapp',
   ],
 })
 

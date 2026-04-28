@@ -30,9 +30,9 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
   }
   else if (typeof sidebarConfig === 'object') {
     // Path-based sidebar: { '/': [...], '/guide/': [...] }
-    const pathKey = Object.keys(sidebarConfig).find(key =>
-      currentPath.startsWith(key),
-    ) || '/'
+    // Sort keys longest-first so /guide/ matches before /
+    const sortedKeys = Object.keys(sidebarConfig).sort((a, b) => b.length - a.length)
+    const pathKey = sortedKeys.find(key => currentPath.startsWith(key)) || '/'
     sidebarSections = sidebarConfig[pathKey] || []
   }
 
@@ -130,6 +130,154 @@ function addHeadingIds(html: string): string {
 
     return `<h${level}${attributes} id="${id}">${displayText}</h${level}>`
   })
+}
+
+/**
+ * Inject the SPA router script before </body> in rendered HTML.
+ * Done post-render to avoid stx's template pipeline consuming the script.
+ */
+function injectSPARouter(html: string): string {
+  const script = generateSPARouterScript()
+  const idx = html.lastIndexOf('</body>')
+  if (idx === -1) return html + script
+  return html.slice(0, idx) + script + html.slice(idx)
+}
+
+/**
+ * Generate a lightweight SPA router for VitePress-style client-side navigation.
+ * Intercepts internal link clicks, fetches pages, swaps content, and handles
+ * browser back/forward. No framework dependencies.
+ */
+function generateSPARouterScript(): string {
+  return `<script>
+(function(){
+  var cache = {};
+  var parser = new DOMParser();
+
+  function isInternal(url) {
+    try {
+      var u = new URL(url, location.origin);
+      return u.origin === location.origin && !u.pathname.match(/\\.[a-z]+$/i);
+    } catch(e) { return false; }
+  }
+
+  function updateActiveLinks() {
+    var path = location.pathname;
+    document.querySelectorAll('a[href]').forEach(function(a) {
+      var href = a.getAttribute('href');
+      if (href === path || (href !== '/' && path.startsWith(href))) {
+        a.style.color = 'var(--bp-c-brand-1)';
+        a.style.fontWeight = '500';
+      }
+    });
+  }
+
+  async function navigate(url, push) {
+    if (push !== false) history.pushState(null, '', url);
+
+    var html = cache[url];
+    if (!html) {
+      try {
+        var res = await fetch(url);
+        html = await res.text();
+        cache[url] = html;
+      } catch(e) {
+        location.href = url;
+        return;
+      }
+    }
+
+    var doc = parser.parseFromString(html, 'text/html');
+
+    // Update title
+    var newTitle = doc.querySelector('title');
+    if (newTitle) document.title = newTitle.textContent;
+
+    // Update meta description
+    var newDesc = doc.querySelector('meta[name="description"]');
+    var curDesc = document.querySelector('meta[name="description"]');
+    if (newDesc && curDesc) curDesc.setAttribute('content', newDesc.getAttribute('content'));
+
+    // Detect layout type: home vs doc vs page
+    var curLayout = document.querySelector('.VPHome') ? 'home' : (document.querySelector('.VPContent') ? 'doc' : 'page');
+    var newLayout = doc.querySelector('.VPHome') ? 'home' : (doc.querySelector('.VPContent') ? 'doc' : 'page');
+
+    if (curLayout !== newLayout) {
+      // Layout changed — full body swap
+      document.body.innerHTML = doc.body.innerHTML;
+      // Re-execute scripts so sidebar toggle, theme toggle etc. work
+      doc.body.querySelectorAll('script').forEach(function(s) {
+        var ns = document.createElement('script');
+        if (s.src) ns.src = s.src; else ns.textContent = s.textContent;
+        document.body.appendChild(ns);
+      });
+    } else {
+      // Same layout — swap content + sidebar + TOC
+      if (curLayout === 'home') {
+        var newHome = doc.querySelector('.VPHome');
+        var curHome = document.querySelector('.VPHome');
+        if (newHome && curHome) curHome.innerHTML = newHome.innerHTML;
+      } else {
+        // Doc/page layout: swap content area
+        var newMain = doc.querySelector('.VPDoc') || doc.querySelector('main');
+        var curMain = document.querySelector('.VPDoc') || document.querySelector('main');
+        if (newMain && curMain) curMain.innerHTML = newMain.innerHTML;
+
+        // Update sidebar
+        var newSidebar = doc.querySelector('.VPSidebar');
+        var curSidebar = document.querySelector('.VPSidebar');
+        if (newSidebar && curSidebar) curSidebar.innerHTML = newSidebar.innerHTML;
+
+        // Update TOC
+        var newToc = doc.querySelector('.VPDocAside');
+        var curToc = document.querySelector('.VPDocAside');
+        if (newToc && curToc) curToc.innerHTML = newToc.innerHTML;
+      }
+    }
+
+    // Update <style> tags (CSS may differ between pages)
+    var newStyles = doc.querySelectorAll('style[data-crosswind]');
+    var curStyles = document.querySelectorAll('style[data-crosswind]');
+    if (newStyles.length && curStyles.length) {
+      curStyles.forEach(function(s) { s.remove(); });
+      newStyles.forEach(function(s) { document.head.appendChild(s.cloneNode(true)); });
+    }
+
+    updateActiveLinks();
+    window.scrollTo(0, 0);
+  }
+
+  // Intercept clicks on internal links
+  document.addEventListener('click', function(e) {
+    var a = e.target.closest('a[href]');
+    if (!a) return;
+    var href = a.getAttribute('href');
+    if (!href || href.startsWith('#') || a.target === '_blank') return;
+    var url = new URL(href, location.origin);
+    if (!isInternal(href)) return;
+    e.preventDefault();
+    if (url.pathname === location.pathname) return;
+    navigate(url.pathname);
+  });
+
+  // Handle back/forward
+  window.addEventListener('popstate', function() {
+    navigate(location.pathname, false);
+  });
+
+  // Prefetch on hover
+  document.addEventListener('mouseover', function(e) {
+    var a = e.target.closest('a[href]');
+    if (!a) return;
+    var href = a.getAttribute('href');
+    if (href && isInternal(href) && !cache[href]) {
+      fetch(href).then(function(r) { return r.text(); }).then(function(h) { cache[href] = h; }).catch(function(){});
+    }
+  });
+
+  updateActiveLinks();
+})();
+<` + `/script>`
 }
 
 /**
@@ -362,7 +510,7 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
     const crosswindCSS = await generateCrosswindCSSFromHtml(content)
     const customCSS = `${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${config.markdown?.css || ''}`
 
-    return await render('layout-home', {
+    const html = await render('layout-home', {
       title,
       description,
       meta: allMeta,
@@ -370,6 +518,7 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
       content,
       scripts,
     })
+    return injectSPARouter(html)
   }
 
   // Page layout - nav bar, full-width content, no sidebar, no TOC
@@ -377,7 +526,7 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
     const crosswindCSS = await generateCrosswindCSSFromHtml(`${content}\n${nav}`)
     const customCSS = `${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${config.markdown?.css || ''}`
 
-    return await render('layout-page', {
+    const html = await render('layout-page', {
       title,
       description,
       meta: allMeta,
@@ -386,6 +535,7 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
       content,
       scripts,
     })
+    return injectSPARouter(html)
   }
 
   // Documentation layout (default) - with sidebar and TOC
@@ -396,7 +546,7 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   const crosswindCSS = await generateCrosswindCSSFromHtml(`${contentWithIds}\n${nav}\n${sidebar}`)
   const customCSS = `${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${config.markdown?.css || ''}`
 
-  return await render('layout-doc', {
+  const html = await render('layout-doc', {
     title,
     description,
     meta: allMeta,
@@ -407,6 +557,8 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
     pageTOC,
     scripts,
   })
+
+  return injectSPARouter(html)
 }
 
 let _crosswindModule: any = null
@@ -622,41 +774,80 @@ async function generateHero(hero: any): Promise<string> {
   if (!hero)
     return ''
 
-  const name = hero.name ? `<h1 class="mb-3 font-bold leading-[40px] text-[#5672cd] text-[32px] tracking-tight md:leading-[56px] md:text-[48px]">${hero.name}</h1>` : ''
-  const text = hero.text ? `<p class="font-bold leading-[40px] text-[#213547] text-[32px] tracking-tight md:leading-[64px] md:text-[56px]">${hero.text}</p>` : ''
-  const tagline = hero.tagline ? `<p class="mt-4 font-medium leading-[28px] text-[#476582] text-[16px] md:text-[18px]">${hero.tagline}</p>` : ''
+  const name = hero.name
+    ? `<p style="font-size: 20px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; background: linear-gradient(135deg, #5672cd 0%, #8b9cf7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin: 0 0 8px;">${hero.name}</p>`
+    : ''
+  const text = hero.text
+    ? `<h1 style="font-size: 40px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; color: var(--bp-c-text-1); margin: 0 0 8px;">${hero.text}</h1>`
+    : ''
+  const tagline = hero.tagline
+    ? `<p style="font-size: 18px; font-weight: 400; line-height: 1.6; color: var(--bp-c-text-2); margin: 12px 0 0;">${hero.tagline}</p>`
+    : ''
 
   let actions = ''
   if (hero.actions) {
     const actionButtons = hero.actions.map((action: any) => {
       const isPrimary = action.theme === 'brand'
-      return `<a href="${action.link}" class="inline-block px-4 py-2 font-medium text-[#213547] text-[14px] text-white hover:bg-[#4558b8]' hover:bg-[#e7e7e8] border border-[#e2e2e3] rounded-[20px] hover:border-[#d0d0d1]'} transition-colors : ? 'bg-[#5672cd] 'bg-[#f6f6f7] ${isPrimary">${action.text}</a>`
-    }).join('')
-    actions = `<div class="flex flex-wrap gap-3 items-center mt-8">${actionButtons}</div>`
+      if (isPrimary) {
+        return `<a href="${action.link}" style="display: inline-block; padding: 10px 24px; font-size: 14px; font-weight: 600; color: #fff; background: #5672cd; border-radius: 20px; text-decoration: none; transition: background 0.25s; border: 1px solid transparent;" onmouseover="this.style.background='#4558b8'" onmouseout="this.style.background='#5672cd'">${action.text}</a>`
+      }
+      return `<a href="${action.link}" style="display: inline-block; padding: 10px 24px; font-size: 14px; font-weight: 600; color: var(--bp-c-text-1); background: transparent; border: 1px solid var(--bp-c-divider); border-radius: 20px; text-decoration: none; transition: border-color 0.25s;" onmouseover="this.style.borderColor='var(--bp-c-text-2)'" onmouseout="this.style.borderColor='var(--bp-c-divider)'">${action.text}</a>`
+    }).join('\n      ')
+    actions = `<div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px;">${actionButtons}</div>`
   }
+
+  const image = hero.image
+    ? `<div class="hero-image"><img src="${hero.image}" alt="${hero.name || ''}" /></div>`
+    : ''
 
   return await render('hero', {
     name,
     text,
     tagline,
     actions,
+    image,
   })
 }
 
 /**
  * Generate features grid HTML from frontmatter
  */
+// Map icon names to simple SVG icons (subset for common doc icons)
+const featureIconMap: Record<string, string> = {
+  Fast: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+  Shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  Blade: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+  Tools: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+  Components: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
+  Stream: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12h6l3-9 3 18 3-9h5"/></svg>',
+  Desktop: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>',
+  Parser: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>',
+  Icons: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>',
+}
+
+function getFeatureIcon(icon: string): string {
+  // If it's an emoji or HTML, pass through
+  if (icon.startsWith('<') || /\p{Emoji}/u.test(icon)) return icon
+  // Check icon map
+  return featureIconMap[icon] || `<span style="font-size: 24px; font-weight: 700;">${icon.charAt(0)}</span>`
+}
+
 async function generateFeatures(features: any[]): Promise<string> {
   if (!features || features.length === 0)
     return ''
 
-  const items = features.map(feature => `
-    <div class="relative p-6 bg-[#f6f6f7] border border-[#e2e2e3] rounded-xl hover:border-[#5672cd] transition-colors">
-      ${feature.icon ? `<div class="mb-3 text-[40px]">${feature.icon}</div>` : ''}
-      <h3 class="mb-2 font-semibold leading-[24px] text-[#213547] text-[18px]">${feature.title || ''}</h3>
-      <p class="leading-[22px] text-[#476582] text-[14px]">${feature.details || ''}</p>
-    </div>
-  `).join('')
+  const items = features.map(feature => {
+    const icon = feature.icon ? getFeatureIcon(feature.icon) : ''
+    const iconHtml = icon
+      ? `<div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(86, 114, 205, 0.1); color: #5672cd; margin-bottom: 12px;">${icon}</div>`
+      : ''
+    return `
+    <div style="padding: 24px; background: var(--bp-c-bg-soft, var(--bp-c-bg-alt)); border: 1px solid var(--bp-c-divider); border-radius: 12px; transition: border-color 0.25s, box-shadow 0.25s;" onmouseover="this.style.borderColor='#5672cd';this.style.boxShadow='0 2px 12px rgba(86,114,205,0.08)'" onmouseout="this.style.borderColor='var(--bp-c-divider)';this.style.boxShadow='none'">
+      ${iconHtml}
+      <h3 style="margin: 0 0 8px; font-size: 16px; font-weight: 600; color: var(--bp-c-text-1);">${feature.title || ''}</h3>
+      <p style="margin: 0; font-size: 14px; line-height: 1.6; color: var(--bp-c-text-2);">${feature.details || ''}</p>
+    </div>`
+  }).join('')
 
   return await render('features', {
     items,
@@ -1263,7 +1454,7 @@ async function processCodeGroups(content: string): Promise<string> {
       .map((block, index) => {
         const label = block[2]
         const isActive = index === 0
-        return `<button class=": ? ' ''} active' code-group-tab${isActive" onclick="switchCodeTab('${groupId}', ${index})">${label}</button>`
+        return `<button class="code-group-tab${isActive ? ' active' : ''}" onclick="switchCodeTab('${groupId}', ${index})">${label}</button>`
       })
       .join('')
 
@@ -1508,13 +1699,13 @@ async function processCodeBlock(lines: string[], startIndex: number): Promise<{ 
         // Add line number if enabled
         if (showLineNumbers) {
           // Insert line number after opening span
-          return `<span class="')} ${classes.join('"><span class="line-number">${lineNumber}</span>${updatedLine.replace(/^<span class="[^"]*">/, '').replace(/<\/span>$/, '')}</span>`
+          return `<span class="${classes.join(' ')}"><span class="line-number">${lineNumber}</span>${updatedLine.replace(/^<span class="[^"]*">/, '').replace(/<\/span>$/, '')}</span>`
         }
 
         return updatedLine
       }
 
-      const lineClass = classes.length > 0 ? ` class="')} ${classes.join('"` : ''
+      const lineClass = classes.length > 0 ? ` class="${classes.join(' ')}"` : ''
 
       // Add line number if enabled
       if (showLineNumbers) {
@@ -1531,7 +1722,7 @@ async function processCodeBlock(lines: string[], startIndex: number): Promise<{ 
   if (hasFocusedLines)
     preClasses.push('has-focused-lines')
 
-  const preClass = preClasses.length > 0 ? ` class="')} ${preClasses.join('"` : ''
+  const preClass = preClasses.length > 0 ? ` class="${preClasses.join(' ')}"` : ''
   const dataLang = lang ? ` data-lang="${lang}"` : ''
   const html = `<pre${preClass}${dataLang}><code class="language-${lang}">${codeHtml}</code></pre>`
 
@@ -1699,17 +1890,20 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
     : content
 
   // Process stx template syntax in markdown (@if, @foreach, {{ }}, <script server>, etc.)
-  // This allows dynamic content generation in .md files using stx directives
-  const hasStxSyntax = processedContent.includes('@if')
-    || processedContent.includes('@foreach')
-    || processedContent.includes('@for (')
-    || processedContent.includes('<script server')
-    || processedContent.includes('@include')
-    || /\{\{(?!\{)\s*\w/.test(processedContent)
+  // This allows dynamic content generation in .md files using stx directives.
+  // Strip fenced code blocks before checking — code examples containing {{ }}
+  // or @if are documentation, not live stx expressions.
+  const contentWithoutCodeBlocks = processedContent.replace(/```[\s\S]*?```/g, '')
+  const hasStxSyntax = contentWithoutCodeBlocks.includes('@if')
+    || contentWithoutCodeBlocks.includes('@foreach')
+    || contentWithoutCodeBlocks.includes('@for (')
+    || contentWithoutCodeBlocks.includes('<script server')
+    || contentWithoutCodeBlocks.includes('@include')
+    || /\{\{(?!\{)\s*\w/.test(contentWithoutCodeBlocks)
   if (hasStxSyntax) {
     try {
       const stx = await import('@stacksjs/stx')
-      processedContent = await stx.renderString(processedContent, { ...frontmatter })
+      processedContent = await stx.renderString(processedContent, { ...frontmatter }, { templateOnly: true })
     }
     catch {
       // stx not available or render failed — continue with raw content

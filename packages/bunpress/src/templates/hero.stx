@@ -1,10 +1,65 @@
-<div class="VPHomeHero" style="position: relative; padding: 32px 24px 0;">
-  <div style="max-width: 1152px; margin: 0 auto; padding: 48px 0 64px;">
-    <div class="VPHomeHeroInfo" style="max-width: 592px;">
+<div class="VPHomeHero">
+  <div class="hero-container">
+    <div class="hero-content">
       {!! name !!}
       {!! text !!}
       {!! tagline !!}
       {!! actions !!}
     </div>
+    {!! image !!}
   </div>
 </div>
+
+<style>
+.VPHomeHero {
+  position: relative;
+  padding: 64px 24px 48px;
+}
+
+.hero-container {
+  max-width: 1152px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.hero-content {
+  max-width: 640px;
+}
+
+.hero-image {
+  margin-top: 32px;
+}
+
+.hero-image img {
+  max-width: 200px;
+  height: auto;
+}
+
+@media (min-width: 960px) {
+  .VPHomeHero {
+    padding: 80px 64px 56px;
+  }
+
+  .hero-container {
+    flex-direction: row;
+    text-align: left;
+    gap: 64px;
+  }
+
+  .hero-content {
+    flex: 1;
+  }
+
+  .hero-image {
+    margin-top: 0;
+    flex-shrink: 0;
+  }
+
+  .hero-image img {
+    max-width: 280px;
+  }
+}
+</style>
