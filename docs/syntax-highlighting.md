@@ -19,7 +19,7 @@ BunPress supports syntax highlighting for the following languages:
 
 > [!IMPORTANT]
 > Shell/Bash commands (`bash`, `sh`, `shell`) are **not currently supported** for syntax highlighting. Code will be displayed in a monospace font with HTML entities properly escaped for security.
-
+>
 > [!TIP]
 > For shell commands, you can omit the language identifier or use `text` for plain formatting.
 

@@ -106,7 +106,7 @@ themeConfig: {
 
 ### Using Custom Fonts
 
-**Google Fonts**
+#### Google Fonts
 
 Add fonts via the `scripts` option:
 
@@ -127,7 +127,7 @@ markdown: {
 }
 ```
 
-**Self-Hosted Fonts**
+#### Self-Hosted Fonts
 
 Place fonts in `docs/public/fonts/` and reference them:
 

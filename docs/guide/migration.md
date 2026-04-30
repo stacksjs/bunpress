@@ -394,7 +394,7 @@ Update deployment config if needed:
 
 ### Common Issues
 
-**1. Missing styles**
+#### 1. Missing styles
 
 Ensure CSS is configured:
 
@@ -406,7 +406,7 @@ markdown: {
 }
 ```
 
-**2. Broken navigation**
+#### 2. Broken navigation
 
 Check path format:
 
@@ -415,7 +415,7 @@ Check path format:
 { text: 'Guide', link: '/guide/' }
 ```
 
-**3. Missing sidebar**
+#### 3. Missing sidebar
 
 Ensure correct path matching:
 
@@ -427,7 +427,7 @@ sidebar: {
 }
 ```
 
-**4. Code highlighting issues**
+#### 4. Code highlighting issues
 
 Set the theme explicitly:
 

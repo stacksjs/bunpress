@@ -377,16 +377,16 @@ BunPress supports GitHub-flavored alert syntax for creating attention-grabbing c
 
 > [!NOTE]
 > Essential information that users should know.
-
+>
 > [!TIP]
 > Helpful advice for doing things better or more easily.
-
+>
 > [!IMPORTANT]
 > Key information users need to know to achieve their goal.
-
+>
 > [!WARNING]
 > Urgent information that requires immediate attention to avoid problems.
-
+>
 > [!CAUTION]
 > Potential risks or negative outcomes of certain actions.
 
