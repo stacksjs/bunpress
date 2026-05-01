@@ -640,10 +640,12 @@ function generateAnalyticsScript(config: BunPressConfig): string {
   const apiEndpoint = analytics.apiEndpoint ? escapeAttr(analytics.apiEndpoint) : ''
   const honorDnt = analytics.honorDNT ? `var dnt=n.doNotTrack||w.doNotTrack||n.msDoNotTrack;if(dnt==="1"||dnt==="yes"||dnt===true){l('DNT enabled, skipping');return;}` : ''
   const hashTracking = analytics.trackHashChanges ? `w.addEventListener('hashchange',function(){pv();});` : ''
+  /* eslint-disable pickier/no-unused-vars -- `e`, `a`, `err` are JS inside a template literal, not real bindings */
   const outboundTracking = analytics.trackOutboundLinks
     ? `d.addEventListener('click',function(e){try{var a=e.target.closest('a');if(a&&a.hostname&&a.hostname!==location.hostname){t('outbound',{url:a.href,text:(a.textContent||'').slice(0,100)});}}
 catch (err){l('Outbound error',err);}});`
     : ''
+  /* eslint-enable pickier/no-unused-vars */
 
   const dataApiAttr = apiEndpoint ? ` data-api="${apiEndpoint}"` : ''
 
