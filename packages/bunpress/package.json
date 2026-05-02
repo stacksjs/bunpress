@@ -52,11 +52,11 @@
     "typecheck": "bun --bun tsc --noEmit"
   },
   "dependencies": {
-    "@stacksjs/clapp": "^0.2.0",
-    "@stacksjs/stx": "^0.2.10",
+    "@stacksjs/clapp": "^0.2.6",
+    "@stacksjs/stx": "^0.2.24",
     "@stacksjs/ts-md": "^0.1.1",
-    "@stacksjs/ts-cloud": "^0.2.3",
-    "bunfig": "^0.15.6"
+    "@stacksjs/ts-cloud": "^0.2.7",
+    "bunfig": "^0.15.11"
   },
   "devDependencies": {
     "ts-syntax-highlighter": "^0.2.1",
