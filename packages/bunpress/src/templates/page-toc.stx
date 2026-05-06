@@ -234,6 +234,11 @@ function initPageTOC() {
   });
 
   // Listen to scroll events on the actual scrolling container
+  // Remove any prior listener first so SPA navigation doesn't stack duplicates
+  if (scrollContainer.__bpTocScroll) {
+    scrollContainer.removeEventListener('scroll', scrollContainer.__bpTocScroll);
+  }
+  scrollContainer.__bpTocScroll = onScroll;
   scrollContainer.addEventListener('scroll', onScroll);
 
   // Handle URL hash on page load

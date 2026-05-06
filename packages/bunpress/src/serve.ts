@@ -39,12 +39,10 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
   const sectionsHtml = await Promise.all(sidebarSections.map(async (section) => {
     const itemsHtml = section.items
       ? section.items.map((item: SidebarItem) => {
-          // Use the link as-is (no /docs/ prefix needed)
           const link = item.link || '/'
-
           const isActive = link === currentPath || item.link === currentPath
-          const activeStyle = isActive ? 'color: var(--bp-c-brand-1); font-weight: 500;' : ''
-          return `<li><a href="${link}" style="display: block; padding: 6px 24px; color: var(--bp-c-text-2); text-decoration: none; font-size: 14px; transition: color 0.25s; ${activeStyle}" onmouseover="this.style.color='var(--bp-c-brand-1)'" onmouseout="this.style.color='${isActive ? 'var(--bp-c-brand-1)' : 'var(--bp-c-text-2)'}'">${item.text}</a></li>`
+          const cls = isActive ? 'VPSidebarItem-link is-active' : 'VPSidebarItem-link'
+          return `<li><a class="${cls}" href="${link}">${item.text}</a></li>`
         }).join('')
       : ''
 
@@ -149,131 +147,299 @@ function injectSPARouter(html: string): string {
  * browser back/forward. No framework dependencies.
  */
 function generateSPARouterScript(): string {
-  return `<script>
+  return `<script data-bp-router="1">
 (function(){
-  var cache = {};
-  var parser = new DOMParser();
+  if (history.scrollRestoration) history.scrollRestoration = 'manual';
 
-  function isInternal(url) {
-    try {
-      var u = new URL(url, location.origin);
-      return u.origin === location.origin && !u.pathname.match(/\\.[a-z]+$/i);
-    } catch(e) { return false; }
+  var cache = Object.create(null);
+  var parser = new DOMParser();
+  var scrollPositions = Object.create(null);
+  var historyIndex = (history.state && typeof history.state.idx === 'number') ? history.state.idx : 0;
+  var lastPathname = location.pathname;
+  var lastSearch = location.search;
+
+  // Wrap pushState/replaceState so any caller (incl. inline scripts) gets a tracked idx
+  var origPush = history.pushState.bind(history);
+  var origReplace = history.replaceState.bind(history);
+  history.pushState = function(state, title, url) {
+    state = state || {};
+    if (typeof state.idx !== 'number') {
+      historyIndex++;
+      state.idx = historyIndex;
+    } else {
+      historyIndex = state.idx;
+    }
+    return origPush(state, title, url);
+  };
+  history.replaceState = function(state, title, url) {
+    state = state || {};
+    if (typeof state.idx !== 'number') state.idx = historyIndex;
+    else historyIndex = state.idx;
+    return origReplace(state, title, url);
+  };
+  if (!history.state || typeof history.state.idx !== 'number') {
+    origReplace({ idx: historyIndex }, '', location.href);
+  }
+
+  function getScroller() {
+    var el = document.querySelector('.VPContent');
+    if (el) {
+      var cs = getComputedStyle(el);
+      if (cs.position === 'fixed' && (cs.overflowY === 'auto' || cs.overflowY === 'scroll')) {
+        return el;
+      }
+    }
+    return window;
+  }
+
+  function readScroll() {
+    var s = getScroller();
+    return s === window ? window.scrollY : s.scrollTop;
+  }
+
+  function applyScroll(y) {
+    var s = getScroller();
+    if (s === window) window.scrollTo(0, y);
+    else s.scrollTop = y;
+  }
+
+  function saveScroll() {
+    scrollPositions[historyIndex] = readScroll();
+  }
+
+  function isInternalNavigable(u) {
+    return u.origin === location.origin && !u.pathname.match(/\\.[a-z]+$/i);
   }
 
   function updateActiveLinks() {
     var path = location.pathname;
+    document.querySelectorAll('a.is-active').forEach(function(a) {
+      a.classList.remove('is-active');
+    });
     document.querySelectorAll('a[href]').forEach(function(a) {
       var href = a.getAttribute('href');
-      if (href === path || (href !== '/' && path.startsWith(href))) {
-        a.style.color = 'var(--bp-c-brand-1)';
-        a.style.fontWeight = '500';
+      if (!href || href.startsWith('#')) return;
+      var u;
+      try { u = new URL(href, location.origin); } catch(_) { return; }
+      if (u.origin !== location.origin) return;
+      var p = u.pathname;
+      // eslint-disable-next-line general/prefer-template -- inner JS string; template literals would clash with the outer TS template
+      if (p === path || (p !== '/' && (path === p || path.startsWith(p + '/')))) {
+        a.classList.add('is-active');
       }
     });
   }
 
-  async function navigate(url, push) {
-    if (push !== false) history.pushState(null, '', url);
+  function executeScripts(root) {
+    if (!root) return;
+    root.querySelectorAll('script').forEach(function(s) {
+      if (s.dataset && s.dataset.bpRouter) return;
+      var ns = document.createElement('script');
+      for (var i = 0; i < s.attributes.length; i++) {
+        var attr = s.attributes[i];
+        ns.setAttribute(attr.name, attr.value);
+      }
+      if (!s.src) ns.textContent = s.textContent;
+      s.parentNode.replaceChild(ns, s);
+    });
+  }
 
-    var html = cache[url];
+  function scrollToHash(hash) {
+    if (!hash) return false;
+    var id;
+    try { id = decodeURIComponent(hash.slice(1)); } catch(_) { id = hash.slice(1); }
+    if (!id) return false;
+    var el = document.getElementById(id);
+    if (!el) {
+      try { el = document.querySelector('[name="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]'); } catch(_) {}
+    }
+    if (el) {
+      el.scrollIntoView({ behavior: 'auto', block: 'start' });
+      return true;
+    }
+    return false;
+  }
+
+  function detectLayout(root) {
+    if (root.querySelector('.VPHome')) return 'home';
+    if (root.querySelector('.VPContent--doc') || root.querySelector('.VPSidebar')) return 'doc';
+    if (root.querySelector('.VPContent--page') || root.querySelector('.VPPage')) return 'page';
+    return 'page';
+  }
+
+  async function navigate(href, opts) {
+    opts = opts || {};
+    var target = new URL(href, location.origin);
+    var key = target.pathname + target.search;
+
+    if (opts.push) {
+      saveScroll();
+      history.pushState({}, '', target.pathname + target.search + target.hash);
+    }
+
+    var html = cache[key];
     if (!html) {
       try {
-        var res = await fetch(url);
+        var res = await fetch(key, { headers: { 'X-BP-SPA': '1' } });
+        if (!res.ok) {
+          // 404 / 5xx — fall through to a real navigation so the browser shows the actual error page
+          location.href = target.href;
+          return;
+        }
         html = await res.text();
-        cache[url] = html;
-      } catch(e) {
-        location.href = url;
+        cache[key] = html;
+      } catch(_) {
+        location.href = target.href;
         return;
       }
     }
 
     var doc = parser.parseFromString(html, 'text/html');
 
-    // Update title
     var newTitle = doc.querySelector('title');
     if (newTitle) document.title = newTitle.textContent;
 
-    // Update meta description
-    var newDesc = doc.querySelector('meta[name="description"]');
-    var curDesc = document.querySelector('meta[name="description"]');
-    if (newDesc && curDesc) curDesc.setAttribute('content', newDesc.getAttribute('content'));
+    // Sync description, og:*, twitter:* meta tags
+    doc.querySelectorAll('meta[name="description"], meta[property^="og:"], meta[name^="twitter:"]').forEach(function(nm) {
+      var sel;
+      if (nm.getAttribute('property')) sel = 'meta[property="' + nm.getAttribute('property') + '"]';
+      else sel = 'meta[name="' + nm.getAttribute('name') + '"]';
+      var existing = document.querySelector(sel);
+      if (existing) existing.setAttribute('content', nm.getAttribute('content') || '');
+      else document.head.appendChild(nm.cloneNode(true));
+    });
+    var newCanonical = doc.querySelector('link[rel="canonical"]');
+    var curCanonical = document.querySelector('link[rel="canonical"]');
+    if (newCanonical && curCanonical) curCanonical.setAttribute('href', newCanonical.getAttribute('href') || '');
+    else if (newCanonical && !curCanonical) document.head.appendChild(newCanonical.cloneNode(true));
 
-    // Detect layout type: home vs doc vs page
-    var curLayout = document.querySelector('.VPHome') ? 'home' : (document.querySelector('.VPContent') ? 'doc' : 'page');
-    var newLayout = doc.querySelector('.VPHome') ? 'home' : (doc.querySelector('.VPContent') ? 'doc' : 'page');
+    var curLayout = detectLayout(document);
+    var newLayout = detectLayout(doc);
 
     if (curLayout !== newLayout) {
-      // Layout changed — full body swap
       document.body.innerHTML = doc.body.innerHTML;
-      // Re-execute scripts so sidebar toggle, theme toggle etc. work
-      doc.body.querySelectorAll('script').forEach(function(s) {
-        var ns = document.createElement('script');
-        if (s.src) ns.src = s.src; else ns.textContent = s.textContent;
-        document.body.appendChild(ns);
-      });
+      executeScripts(document.body);
+    } else if (curLayout === 'home') {
+      var newHome = doc.querySelector('.VPHome');
+      var curHome = document.querySelector('.VPHome');
+      if (newHome && curHome) {
+        curHome.innerHTML = newHome.innerHTML;
+        executeScripts(curHome);
+      }
+    } else if (curLayout === 'doc') {
+      var newMain = doc.querySelector('.VPDoc');
+      var curMain = document.querySelector('.VPDoc');
+      if (newMain && curMain) {
+        curMain.innerHTML = newMain.innerHTML;
+        executeScripts(curMain);
+      }
+      var newSidebar = doc.querySelector('.VPSidebar');
+      var curSidebar = document.querySelector('.VPSidebar');
+      if (newSidebar && curSidebar) {
+        curSidebar.innerHTML = newSidebar.innerHTML;
+        executeScripts(curSidebar);
+      }
+      var newAside = doc.querySelector('.VPDocAside');
+      var curAside = document.querySelector('.VPDocAside');
+      if (newAside && curAside) {
+        curAside.innerHTML = newAside.innerHTML;
+        executeScripts(curAside);
+      }
     } else {
-      // Same layout — swap content + sidebar + TOC
-      if (curLayout === 'home') {
-        var newHome = doc.querySelector('.VPHome');
-        var curHome = document.querySelector('.VPHome');
-        if (newHome && curHome) curHome.innerHTML = newHome.innerHTML;
-      } else {
-        // Doc/page layout: swap content area
-        var newMain = doc.querySelector('.VPDoc') || doc.querySelector('main');
-        var curMain = document.querySelector('.VPDoc') || document.querySelector('main');
-        if (newMain && curMain) curMain.innerHTML = newMain.innerHTML;
-
-        // Update sidebar
-        var newSidebar = doc.querySelector('.VPSidebar');
-        var curSidebar = document.querySelector('.VPSidebar');
-        if (newSidebar && curSidebar) curSidebar.innerHTML = newSidebar.innerHTML;
-
-        // Update TOC
-        var newToc = doc.querySelector('.VPDocAside');
-        var curToc = document.querySelector('.VPDocAside');
-        if (newToc && curToc) curToc.innerHTML = newToc.innerHTML;
+      // page layout
+      var newPage = doc.querySelector('.VPPage') || doc.querySelector('.VPContent');
+      var curPage = document.querySelector('.VPPage') || document.querySelector('.VPContent');
+      if (newPage && curPage) {
+        curPage.innerHTML = newPage.innerHTML;
+        executeScripts(curPage);
       }
     }
 
-    // Update <style> tags (CSS may differ between pages)
     var newStyles = doc.querySelectorAll('style[data-crosswind]');
-    var curStyles = document.querySelectorAll('style[data-crosswind]');
-    if (newStyles.length && curStyles.length) {
-      curStyles.forEach(function(s) { s.remove(); });
+    if (newStyles.length) {
+      document.querySelectorAll('style[data-crosswind]').forEach(function(s) { s.remove(); });
       newStyles.forEach(function(s) { document.head.appendChild(s.cloneNode(true)); });
     }
 
+    lastPathname = target.pathname;
+    lastSearch = target.search;
     updateActiveLinks();
-    window.scrollTo(0, 0);
+
+    if (typeof opts.restoreScroll === 'number') {
+      applyScroll(opts.restoreScroll);
+    } else if (target.hash) {
+      if (!scrollToHash(target.hash)) {
+        requestAnimationFrame(function(){ scrollToHash(target.hash); });
+      }
+    } else {
+      applyScroll(0);
+    }
   }
 
-  // Intercept clicks on internal links
   document.addEventListener('click', function(e) {
+    if (e.defaultPrevented) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
     var a = e.target.closest('a[href]');
     if (!a) return;
+    if (a.target && a.target !== '_self') return;
+    if (a.hasAttribute('download')) return;
+    var rel = a.getAttribute('rel') || '';
+    if (/\\bexternal\\b/.test(rel)) return;
     var href = a.getAttribute('href');
-    if (!href || href.startsWith('#') || a.target === '_blank') return;
-    var url = new URL(href, location.origin);
-    if (!isInternal(href)) return;
+    if (!href || href.startsWith('#')) return;
+    var u;
+    try { u = new URL(href, location.origin); } catch(_) { return; }
+    if (!isInternalNavigable(u)) return;
+
     e.preventDefault();
-    if (url.pathname === location.pathname) return;
-    navigate(url.pathname);
+
+    if (u.pathname === location.pathname && u.search === location.search) {
+      // Same page; update hash + scroll without re-render
+      saveScroll();
+      if (u.hash) {
+        history.pushState({}, '', u.pathname + u.search + u.hash);
+        scrollToHash(u.hash);
+      } else {
+        history.pushState({}, '', u.pathname + u.search);
+        applyScroll(0);
+      }
+      lastPathname = u.pathname;
+      lastSearch = u.search;
+      return;
+    }
+    navigate(u.href, { push: true });
   });
 
-  // Handle back/forward
-  window.addEventListener('popstate', function() {
-    navigate(location.pathname, false);
+  window.addEventListener('popstate', function(e) {
+    var newIdx = (e.state && typeof e.state.idx === 'number') ? e.state.idx : historyIndex;
+    var savedScroll = scrollPositions[newIdx];
+    saveScroll(); // capture scroll for the page being left, under the *current* historyIndex
+    historyIndex = newIdx;
+
+    if (location.pathname === lastPathname && location.search === lastSearch) {
+      // Hash-only or no-op change — skip re-render
+      if (typeof savedScroll === 'number') applyScroll(savedScroll);
+      else if (location.hash) { if (!scrollToHash(location.hash)) applyScroll(0); }
+      else applyScroll(0);
+      return;
+    }
+    navigate(location.href, { push: false, restoreScroll: typeof savedScroll === 'number' ? savedScroll : 0 });
   });
 
-  // Prefetch on hover
   document.addEventListener('mouseover', function(e) {
     var a = e.target.closest('a[href]');
     if (!a) return;
     var href = a.getAttribute('href');
-    if (href && isInternal(href) && !cache[href]) {
-      fetch(href).then(function(r) { return r.text(); }).then(function(h) { cache[href] = h; }).catch(function(){});
-    }
+    if (!href || href.startsWith('#')) return;
+    var u;
+    try { u = new URL(href, location.origin); } catch(_) { return; }
+    if (!isInternalNavigable(u)) return;
+    var key = u.pathname + u.search;
+    if (cache[key]) return;
+    fetch(key).then(function(r){ return r.ok ? r.text() : null; }).then(function(h){ if (h) cache[key] = h; }).catch(function(){});
   });
+
+  window.addEventListener('beforeunload', saveScroll);
 
   updateActiveLinks();
 })();
@@ -298,25 +464,22 @@ function generateNav(config: BunPressConfig): string {
   }
 
   const links = navConfig.map((item) => {
-    // Handle items with sub-items (dropdown)
     if (item.items && item.items.length > 0) {
-      return `<div class="relative group">
-        <button class="flex gap-1 items-center font-medium text-[#213547] text-[14px] hover:text-[#5672cd] transition-colors cursor-pointer">
-          ${item.text}
-          <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      return `<div class="VPNavBarMenu-group">
+        <button class="VPNavBarMenu-group-button" type="button">
+          <span>${item.text}</span>
+          <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
           </svg>
         </button>
-        <div class="hidden group-hover:block absolute right-0 top-full mt-2 py-2 min-w-[160px] bg-white border border-[#e2e2e3] rounded-lg shadow-lg">
+        <div class="VPNavBarMenu-group-items">
           ${item.items.map(subItem =>
-            `<a href="${fixNavLink(subItem.link)}" class="block px-4 py-2 text-[#213547] text-[13px] hover:text-[#5672cd] hover:bg-[#f6f6f7] transition-colors">${subItem.text}</a>`,
+            `<a href="${fixNavLink(subItem.link)}">${subItem.text}</a>`,
           ).join('')}
         </div>
       </div>`
     }
-    else {
-      return `<a href="${fixNavLink(item.link)}" class="font-medium text-[#213547] text-[14px] hover:text-[#5672cd] transition-colors">${item.text}</a>`
-    }
+    return `<a class="VPNavBarMenu-link" href="${fixNavLink(item.link)}">${item.text}</a>`
   }).join('')
 
   return links
@@ -777,25 +940,22 @@ async function generateHero(hero: any): Promise<string> {
     return ''
 
   const name = hero.name
-    ? `<p style="font-size: 20px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; background: linear-gradient(135deg, #5672cd 0%, #8b9cf7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin: 0 0 8px;">${hero.name}</p>`
+    ? `<p class="VPHero-name">${hero.name}</p>`
     : ''
   const text = hero.text
-    ? `<h1 style="font-size: 40px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; color: var(--bp-c-text-1); margin: 0 0 8px;">${hero.text}</h1>`
+    ? `<h1 class="VPHero-text">${hero.text}</h1>`
     : ''
   const tagline = hero.tagline
-    ? `<p style="font-size: 18px; font-weight: 400; line-height: 1.6; color: var(--bp-c-text-2); margin: 12px 0 0;">${hero.tagline}</p>`
+    ? `<p class="VPHero-tagline">${hero.tagline}</p>`
     : ''
 
   let actions = ''
   if (hero.actions) {
     const actionButtons = hero.actions.map((action: any) => {
-      const isPrimary = action.theme === 'brand'
-      if (isPrimary) {
-        return `<a href="${action.link}" style="display: inline-block; padding: 10px 24px; font-size: 14px; font-weight: 600; color: #fff; background: #5672cd; border-radius: 20px; text-decoration: none; transition: background 0.25s; border: 1px solid transparent;" onmouseover="this.style.background='#4558b8'" onmouseout="this.style.background='#5672cd'">${action.text}</a>`
-      }
-      return `<a href="${action.link}" style="display: inline-block; padding: 10px 24px; font-size: 14px; font-weight: 600; color: var(--bp-c-text-1); background: transparent; border: 1px solid var(--bp-c-divider); border-radius: 20px; text-decoration: none; transition: border-color 0.25s;" onmouseover="this.style.borderColor='var(--bp-c-text-2)'" onmouseout="this.style.borderColor='var(--bp-c-divider)'">${action.text}</a>`
+      const cls = action.theme === 'brand' ? 'VPButton VPButton-brand' : 'VPButton VPButton-alt'
+      return `<a class="${cls}" href="${action.link}">${action.text}</a>`
     }).join('\n      ')
-    actions = `<div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px;">${actionButtons}</div>`
+    actions = `<div class="VPHero-actions">${actionButtons}</div>`
   }
 
   const image = hero.image
@@ -831,7 +991,7 @@ function getFeatureIcon(icon: string): string {
   // If it's an emoji or HTML, pass through
   if (icon.startsWith('<') || /\p{Emoji}/u.test(icon)) return icon
   // Check icon map
-  return featureIconMap[icon] || `<span style="font-size: 24px; font-weight: 700;">${icon.charAt(0)}</span>`
+  return featureIconMap[icon] || `<span class="VPFeature-icon-text">${icon.charAt(0)}</span>`
 }
 
 async function generateFeatures(features: any[]): Promise<string> {
@@ -840,15 +1000,16 @@ async function generateFeatures(features: any[]): Promise<string> {
 
   const items = features.map(feature => {
     const icon = feature.icon ? getFeatureIcon(feature.icon) : ''
-    const iconHtml = icon
-      ? `<div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(86, 114, 205, 0.1); color: #5672cd; margin-bottom: 12px;">${icon}</div>`
-      : ''
+    const iconHtml = icon ? `<div class="VPFeature-icon">${icon}</div>` : ''
+    const link = feature.link
+    const tag = link ? 'a' : 'div'
+    const linkAttr = link ? ` href="${link}"` : ''
     return `
-    <div style="padding: 24px; background: var(--bp-c-bg-soft, var(--bp-c-bg-alt)); border: 1px solid var(--bp-c-divider); border-radius: 12px; transition: border-color 0.25s, box-shadow 0.25s;" onmouseover="this.style.borderColor='#5672cd';this.style.boxShadow='0 2px 12px rgba(86,114,205,0.08)'" onmouseout="this.style.borderColor='var(--bp-c-divider)';this.style.boxShadow='none'">
+    <${tag} class="VPFeature"${linkAttr}>
       ${iconHtml}
-      <h3 style="margin: 0 0 8px; font-size: 16px; font-weight: 600; color: var(--bp-c-text-1);">${feature.title || ''}</h3>
-      <p style="margin: 0; font-size: 14px; line-height: 1.6; color: var(--bp-c-text-2);">${feature.details || ''}</p>
-    </div>`
+      <h3 class="VPFeature-title">${feature.title || ''}</h3>
+      <p class="VPFeature-details">${feature.details || ''}</p>
+    </${tag}>`
   }).join('')
 
   return await render('features', {
@@ -1106,24 +1267,11 @@ function processBadges(content: string): string {
   const badgeRegex = /<Badge([^/>]+)\/>/gi
 
   return content.replace(badgeRegex, (_match, attributes) => {
-    // Extract type and text attributes
     const typeMatch = attributes.match(/type="(info|tip|warning|danger)"/i)
     const textMatch = attributes.match(/text="([^"]+)"/)
-
     const type = typeMatch ? typeMatch[1].toLowerCase() : 'info'
     const text = textMatch ? textMatch[1] : ''
-
-    // Badge color schemes matching VitePress
-    const colors: Record<string, { bg: string, text: string, border: string }> = {
-      info: { bg: '#e0f2fe', text: '#0c4a6e', border: '#0ea5e9' },
-      tip: { bg: '#dcfce7', text: '#14532d', border: '#22c55e' },
-      warning: { bg: '#fef3c7', text: '#78350f', border: '#f59e0b' },
-      danger: { bg: '#fee2e2', text: '#7f1d1d', border: '#ef4444' },
-    }
-
-    const color = colors[type] || colors.info
-
-    return `<span class="badge badge-${type}" style="display: inline-block; padding: 2px 8px; font-size: 0.85em; font-weight: 600; border-radius: 4px; background: ${color.bg}; color: ${color.text}; border: 1px solid ${color.border}; margin: 0 4px; vertical-align: middle;">${text}</span>`
+    return `<span class="bp-badge bp-badge-${type}">${text}</span>`
   })
 }
 
@@ -1161,7 +1309,7 @@ function addExternalLinkIcons(html: string): string {
     if (match.includes('external-link-icon'))
       return match
 
-    const externalIcon = '<svg class="external-link-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; margin-left: 4px; vertical-align: middle;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>'
+    const externalIcon = '<svg class="external-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>'
     return match.replace('</a>', `${externalIcon}</a>`)
   })
 }

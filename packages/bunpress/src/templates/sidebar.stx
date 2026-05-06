@@ -1,8 +1,30 @@
+<div class="VPSidebar-backdrop" onclick="toggleSidebar(false)"></div>
 <nav class="VPSidebar">
   <div class="sidebar-content">
     {!! sections !!}
   </div>
 </nav>
+
+<script>
+function toggleSidebar(forceState) {
+  var sb = document.querySelector('.VPSidebar');
+  var bd = document.querySelector('.VPSidebar-backdrop');
+  if (!sb) return;
+  var nextOpen = typeof forceState === 'boolean' ? forceState : !sb.classList.contains('is-open');
+  sb.classList.toggle('is-open', nextOpen);
+  if (bd) bd.classList.toggle('is-open', nextOpen);
+  document.body.style.overflow = nextOpen ? 'hidden' : '';
+}
+if (!window.__bpSidebarBound) {
+  window.__bpSidebarBound = true;
+  // Close drawer when the user clicks a sidebar link on mobile
+  document.addEventListener('click', function(e) {
+    if (window.matchMedia('(min-width: 960px)').matches) return;
+    var a = e.target.closest('.VPSidebar a');
+    if (a) toggleSidebar(false);
+  });
+}
+</script>
 
 <style>
 .VPSidebar {
