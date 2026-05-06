@@ -1271,7 +1271,7 @@ function processBadges(content: string): string {
     const textMatch = attributes.match(/text="([^"]+)"/)
     const type = typeMatch ? typeMatch[1].toLowerCase() : 'info'
     const text = textMatch ? textMatch[1] : ''
-    return `<span class="bp-badge bp-badge-${type}">${text}</span>`
+    return `<span class="badge badge-${type}">${text}</span>`
   })
 }
 

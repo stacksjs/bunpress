@@ -2382,7 +2382,7 @@ export const layoutCSS = `/**
  * Inline content — badges, external link icons
  * -------------------------------------------------------------------------- */
 
-.bp-badge {
+.badge {
   display: inline-block;
   padding: 2px 8px;
   font-size: 0.85em;
@@ -2394,25 +2394,25 @@ export const layoutCSS = `/**
   line-height: 1.5;
 }
 
-.bp-badge-tip {
+.badge-tip {
   background: var(--bp-c-tip-soft, rgba(16, 185, 129, 0.14));
   color: var(--bp-c-tip-1, var(--bp-c-green-1));
   border-color: var(--bp-c-tip-2, var(--bp-c-green-2));
 }
 
-.bp-badge-info {
+.badge-info {
   background: var(--bp-c-default-soft, var(--bp-c-gray-soft));
   color: var(--bp-c-text-1);
   border-color: var(--bp-c-divider);
 }
 
-.bp-badge-warning {
+.badge-warning {
   background: var(--bp-c-warning-soft, rgba(234, 179, 8, 0.14));
   color: var(--bp-c-warning-1, var(--bp-c-yellow-1));
   border-color: var(--bp-c-warning-2, var(--bp-c-yellow-2));
 }
 
-.bp-badge-danger {
+.badge-danger {
   background: var(--bp-c-danger-soft, rgba(244, 63, 94, 0.14));
   color: var(--bp-c-danger-1, var(--bp-c-red-1));
   border-color: var(--bp-c-danger-2, var(--bp-c-red-2));
