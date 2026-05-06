@@ -155,7 +155,5 @@
     <!-- VPDocAside - TOC -->
     {!! pageTOC !!}
   </div>
-
-  {!! scripts !!}
 </body>
 </html>

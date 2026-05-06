@@ -189,8 +189,8 @@ const tools = ['Bun', 'Node.js', 'Deno']
 const steps = ['Install', 'Configure', 'Deploy']
 </script>
 
-@foreach (steps as step, i)
-{{ i + 1 }}. {{ step }}
+@foreach (steps as step)
+{{ loop.iteration }}. {{ step }}
 @endforeach`,
         )
 

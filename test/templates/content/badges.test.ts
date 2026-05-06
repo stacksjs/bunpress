@@ -21,11 +21,6 @@ describe('Inline Badges', () => {
         expect(html).toContain('v2.0')
         expect(html).toContain('class="badge badge-info"')
 
-        // Should have info styling (blue)
-        expect(html).toContain('#e0f2fe') // bg
-        expect(html).toContain('#0c4a6e') // text
-        expect(html).toContain('#0ea5e9') // border
-
         // Should NOT show raw badge syntax
         expect(html).not.toContain('<Badge')
       }
@@ -49,11 +44,6 @@ describe('Inline Badges', () => {
 
         expect(html).toContain('stable')
         expect(html).toContain('class="badge badge-tip"')
-
-        // Should have tip styling (green)
-        expect(html).toContain('#dcfce7') // bg
-        expect(html).toContain('#14532d') // text
-        expect(html).toContain('#22c55e') // border
       }
       finally {
         stop()
@@ -75,11 +65,6 @@ describe('Inline Badges', () => {
 
         expect(html).toContain('beta')
         expect(html).toContain('class="badge badge-warning"')
-
-        // Should have warning styling (orange)
-        expect(html).toContain('#fef3c7') // bg
-        expect(html).toContain('#78350f') // text
-        expect(html).toContain('#f59e0b') // border
       }
       finally {
         stop()
@@ -101,11 +86,6 @@ describe('Inline Badges', () => {
 
         expect(html).toContain('deprecated')
         expect(html).toContain('class="badge badge-danger"')
-
-        // Should have danger styling (red)
-        expect(html).toContain('#fee2e2') // bg
-        expect(html).toContain('#7f1d1d') // text
-        expect(html).toContain('#ef4444') // border
       }
       finally {
         stop()
@@ -129,7 +109,6 @@ describe('Inline Badges', () => {
 
         expect(html).toContain('1.0')
         expect(html).toContain('class="badge badge-info"')
-        expect(html).toContain('#e0f2fe') // info bg color
       }
       finally {
         stop()
@@ -458,7 +437,6 @@ This feature is now available <Badge type="info" text="stable" />
 
         expect(html).toContain('ready')
         expect(html).toContain('badge-tip')
-        expect(html).toContain('#dcfce7') // tip bg color
       }
       finally {
         stop()

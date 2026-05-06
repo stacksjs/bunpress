@@ -141,6 +141,16 @@ function injectSPARouter(html: string): string {
   return html.slice(0, idx) + script + html.slice(idx)
 }
 
+// stx 0.2.40+ sanitizes <script> tags from {!! ... !!} output, so layout
+// templates can't carry them through. Inject script blocks straight into the
+// HTML after rendering to bypass the sanitizer.
+function injectScripts(html: string, scripts: string): string {
+  if (!scripts) return html
+  const idx = html.lastIndexOf('</body>')
+  if (idx === -1) return html + scripts
+  return html.slice(0, idx) + scripts + html.slice(idx)
+}
+
 /**
  * Generate a lightweight SPA router for VitePress-style client-side navigation.
  * Intercepts internal link clicks, fetches pages, swaps content, and handles
@@ -679,9 +689,8 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
       meta: allMeta,
       customCSS,
       content,
-      scripts,
     })
-    return injectSPARouter(html)
+    return injectSPARouter(injectScripts(html, scripts))
   }
 
   // Page layout - nav bar, full-width content, no sidebar, no TOC
@@ -696,9 +705,8 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
       customCSS,
       nav,
       content,
-      scripts,
     })
-    return injectSPARouter(html)
+    return injectSPARouter(injectScripts(html, scripts))
   }
 
   // Documentation layout (default) - with sidebar and TOC
@@ -718,10 +726,9 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
     sidebar,
     content: contentWithIds,
     pageTOC,
-    scripts,
   })
 
-  return injectSPARouter(html)
+  return injectSPARouter(injectScripts(html, scripts))
 }
 
 let _crosswindModule: any = null
@@ -1619,9 +1626,8 @@ async function processCodeGroups(content: string): Promise<string> {
         const theme = config.markdown?.syntaxHighlightTheme || 'github-light'
         const highlightedCode = await highlightCode(code, lang, theme)
 
-        const activeClass = isActive ? 'active' : ''
         const preHtml = `<pre data-lang="${lang}"><code class="language-${lang}">${highlightedCode}</code></pre>`
-        return `<div class="${activeClass} code-group-panel" data-panel="${index}">\n  ${preHtml}\n</div>`
+        return `<div class="code-group-panel${isActive ? ' active' : ''}" data-panel="${index}">\n  ${preHtml}\n</div>`
       }),
     )
 

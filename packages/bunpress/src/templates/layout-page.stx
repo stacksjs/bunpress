@@ -36,7 +36,5 @@
       </div>
     </main>
   </div>
-
-  {!! scripts !!}
 </body>
 </html>
