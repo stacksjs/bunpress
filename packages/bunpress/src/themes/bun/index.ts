@@ -11,6 +11,8 @@
  * - Dark backgrounds: #0d0e11, #14151a, #282a36
  */
 
+import { layoutCSS } from '../vitepress'
+
 // CSS Variables - Exact values from bun.sh
 const varsCSS = `/**
  * Bun Theme for BunPress
@@ -2036,6 +2038,7 @@ export function getBunThemeCSS(): string {
 /* Colors extracted from bun.sh */
 ${varsCSS}
 ${baseCSS}
+${layoutCSS}
 ${customBlockCSS}
 ${codeGroupCSS}
 ${bunExtrasCSS}

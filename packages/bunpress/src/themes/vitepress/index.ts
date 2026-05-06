@@ -1901,6 +1901,645 @@ const codeGroupCSS = `/**
   border: none;
 }`
 
+// Layout / chrome styles — classes referenced by layout-doc.stx, layout-page.stx, layout-home.stx,
+// and the nav/sidebar generators in serve.ts. Keeps templates declarative and dark-mode aware.
+export const layoutCSS = `/**
+ * VitePress Theme for BunPress - Layout & Chrome
+ * -------------------------------------------------------------------------- */
+
+.Layout {
+  min-height: 100vh;
+}
+
+/* VPNav — top bar */
+.VPNav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--bp-nav-height, 64px);
+  background-color: var(--bp-nav-bg-color, var(--bp-c-bg));
+  border-bottom: 1px solid var(--bp-c-divider);
+  z-index: var(--bp-z-index-nav, 30);
+  backdrop-filter: saturate(50%) blur(8px);
+}
+
+.VPNavBar {
+  max-width: var(--bp-layout-max-width, 1440px);
+  margin: 0 auto;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  gap: 24px;
+}
+
+.VPNavBarStart {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex: 1;
+  min-width: 0;
+}
+
+.VPNavBarEnd {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.VPNavBarTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--bp-c-text-1);
+  white-space: nowrap;
+  text-decoration: none;
+  transition: color 0.25s;
+}
+
+.VPNavBarTitle:hover {
+  color: var(--bp-c-brand-1);
+}
+
+.VPNavBarMenu {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.VPNavBarMenu a,
+.VPNavBarMenu .VPNavBarMenu-link {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--bp-c-text-1);
+  text-decoration: none;
+  transition: color 0.25s;
+  cursor: pointer;
+}
+
+.VPNavBarMenu a:hover,
+.VPNavBarMenu .VPNavBarMenu-link:hover,
+.VPNavBarMenu a.is-active {
+  color: var(--bp-c-brand-1);
+}
+
+.VPNavBarMenu-group {
+  position: relative;
+}
+
+.VPNavBarMenu-group-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--bp-c-text-1);
+  cursor: pointer;
+  transition: color 0.25s;
+}
+
+.VPNavBarMenu-group-button:hover {
+  color: var(--bp-c-brand-1);
+}
+
+.VPNavBarMenu-group-button .chevron {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  transition: transform 0.25s;
+}
+
+.VPNavBarMenu-group:hover > .VPNavBarMenu-group-button .chevron {
+  transform: rotate(180deg);
+}
+
+.VPNavBarMenu-group-items {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 8px;
+  padding: 8px 0;
+  min-width: 192px;
+  background: var(--bp-c-bg);
+  border: 1px solid var(--bp-c-divider);
+  border-radius: 8px;
+  box-shadow: var(--bp-shadow-3, 0 12px 32px rgba(0, 0, 0, 0.1));
+  z-index: 10;
+}
+
+.VPNavBarMenu-group:hover > .VPNavBarMenu-group-items {
+  display: block;
+}
+
+.VPNavBarMenu-group-items a {
+  display: block;
+  padding: 6px 16px;
+  font-size: 13px;
+  color: var(--bp-c-text-1);
+  text-decoration: none;
+  transition: color 0.25s, background-color 0.25s;
+}
+
+.VPNavBarMenu-group-items a:hover {
+  color: var(--bp-c-brand-1);
+  background-color: var(--bp-c-bg-soft);
+}
+
+/* Search */
+.VPNavBarSearch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 260px;
+  width: 100%;
+}
+
+.VPNavBarSearch-icon {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  color: var(--bp-c-text-3);
+  pointer-events: none;
+}
+
+.VPNavBarSearch-input {
+  width: 100%;
+  height: 32px;
+  padding: 0 48px 0 36px;
+  font: inherit;
+  font-size: 13px;
+  background-color: var(--bp-c-bg-alt);
+  border: 1px solid var(--bp-c-divider);
+  border-radius: 4px;
+  color: var(--bp-c-text-1);
+  outline: none;
+  transition: border-color 0.25s, background-color 0.25s;
+}
+
+.VPNavBarSearch-input::placeholder {
+  color: var(--bp-c-text-3);
+}
+
+.VPNavBarSearch-input:hover,
+.VPNavBarSearch-input:focus {
+  border-color: var(--bp-c-brand-1);
+  background-color: var(--bp-c-bg);
+}
+
+.VPNavBarSearch-kbd {
+  position: absolute;
+  right: 8px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--bp-c-text-3);
+  background-color: var(--bp-c-bg);
+  border: 1px solid var(--bp-c-divider);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+/* Social/icon links cluster */
+.VPSocialLinks {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 24px;
+  border-left: 1px solid var(--bp-c-divider);
+}
+
+.VPSocialLinks > a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--bp-c-text-2);
+  border-radius: 4px;
+  transition: color 0.25s, background-color 0.25s;
+}
+
+.VPSocialLinks > a:hover {
+  color: var(--bp-c-text-1);
+  background-color: var(--bp-c-bg-soft);
+}
+
+.VPSocialLinks > a svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Content area */
+.VPContent {
+  flex: 1;
+}
+
+.VPContent--doc {
+  position: fixed;
+  top: var(--bp-nav-height, 64px);
+  bottom: 0;
+  overflow-y: auto;
+  left: max(var(--bp-sidebar-width, 272px), calc((100vw - var(--bp-layout-max-width, 1440px)) / 2 + var(--bp-sidebar-width, 272px)));
+  right: max(0px, calc((100vw - var(--bp-layout-max-width, 1440px)) / 2));
+}
+
+.VPContent--page {
+  padding-top: var(--bp-nav-height, 64px);
+}
+
+.VPDoc {
+  padding: 32px 24px;
+  padding-right: 32px;
+}
+
+@media (min-width: 1280px) {
+  .VPDoc {
+    padding: 48px 32px 128px;
+  }
+}
+
+.VPDocContent {
+  max-width: 768px;
+  margin: 0;
+}
+
+.VPPage {
+  padding: 48px 24px;
+  max-width: 768px;
+  margin: 0 auto;
+}
+
+@media (min-width: 1280px) {
+  .VPPage {
+    padding: 64px 32px;
+  }
+}
+
+/* Mobile sidebar drawer behaviour */
+@media (max-width: 959px) {
+  .VPNavBarSearch {
+    display: none;
+  }
+  .VPSocialLinks {
+    padding-left: 12px;
+    gap: 8px;
+  }
+  .VPNavBarMenu {
+    display: none;
+  }
+}
+
+/**
+ * Hero (home layout) — used by hero.stx + serve.ts generateHero
+ * -------------------------------------------------------------------------- */
+
+.VPHero-name {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0 0 8px;
+  background: linear-gradient(135deg, var(--bp-c-brand-1, #5672cd) 0%, var(--bp-c-brand-2, #8b9cf7) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.VPHero-text {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--bp-c-text-1);
+  margin: 0 0 8px;
+}
+
+.VPHero-tagline {
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--bp-c-text-2);
+  margin: 12px 0 0;
+}
+
+@media (min-width: 960px) {
+  .VPHero-name {
+    font-size: 24px;
+  }
+  .VPHero-text {
+    font-size: 56px;
+  }
+  .VPHero-tagline {
+    font-size: 20px;
+  }
+}
+
+.VPHero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.VPButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 20px;
+  text-decoration: none;
+  transition: background-color 0.25s, color 0.25s, border-color 0.25s;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.VPButton-brand {
+  color: var(--bp-button-brand-text, #fff);
+  background-color: var(--bp-c-brand-1);
+  border-color: var(--bp-c-brand-1);
+}
+
+.VPButton-brand:hover {
+  background-color: var(--bp-c-brand-2);
+  border-color: var(--bp-c-brand-2);
+}
+
+.VPButton-alt {
+  color: var(--bp-c-text-1);
+  background-color: transparent;
+  border-color: var(--bp-c-divider);
+}
+
+.VPButton-alt:hover {
+  border-color: var(--bp-c-text-2);
+  color: var(--bp-c-brand-1);
+}
+
+/**
+ * Features grid — used by features.stx + serve.ts generateFeatures
+ * -------------------------------------------------------------------------- */
+
+.VPHomeFeatures {
+  padding: 48px 24px;
+  border-top: 1px solid var(--bp-c-divider);
+}
+
+.VPHomeFeatures-inner {
+  max-width: 1152px;
+  margin: 0 auto;
+}
+
+.VPFeatures {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .VPFeatures {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+}
+
+@media (min-width: 960px) {
+  .VPHomeFeatures {
+    padding: 64px 32px;
+  }
+  .VPFeatures {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.VPFeature {
+  display: block;
+  padding: 24px;
+  background-color: var(--bp-c-bg-soft, var(--bp-c-bg-alt));
+  border: 1px solid var(--bp-c-divider);
+  border-radius: 12px;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.VPFeature:hover {
+  border-color: var(--bp-c-brand-1);
+  box-shadow: 0 2px 12px rgba(86, 114, 205, 0.08);
+}
+
+.VPFeature-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--bp-c-brand-soft, rgba(86, 114, 205, 0.1));
+  color: var(--bp-c-brand-1);
+  margin-bottom: 12px;
+}
+
+.VPFeature-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.VPFeature-icon-text {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.VPFeature-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--bp-c-text-1);
+}
+
+.VPFeature-details {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--bp-c-text-2);
+}
+
+/**
+ * Inline content — badges, external link icons
+ * -------------------------------------------------------------------------- */
+
+.bp-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.85em;
+  font-weight: 600;
+  border-radius: 4px;
+  margin: 0 4px;
+  vertical-align: middle;
+  border: 1px solid transparent;
+  line-height: 1.5;
+}
+
+.bp-badge-tip {
+  background: var(--bp-c-tip-soft, rgba(16, 185, 129, 0.14));
+  color: var(--bp-c-tip-1, var(--bp-c-green-1));
+  border-color: var(--bp-c-tip-2, var(--bp-c-green-2));
+}
+
+.bp-badge-info {
+  background: var(--bp-c-default-soft, var(--bp-c-gray-soft));
+  color: var(--bp-c-text-1);
+  border-color: var(--bp-c-divider);
+}
+
+.bp-badge-warning {
+  background: var(--bp-c-warning-soft, rgba(234, 179, 8, 0.14));
+  color: var(--bp-c-warning-1, var(--bp-c-yellow-1));
+  border-color: var(--bp-c-warning-2, var(--bp-c-yellow-2));
+}
+
+.bp-badge-danger {
+  background: var(--bp-c-danger-soft, rgba(244, 63, 94, 0.14));
+  color: var(--bp-c-danger-1, var(--bp-c-red-1));
+  border-color: var(--bp-c-danger-2, var(--bp-c-red-2));
+}
+
+.external-link-icon {
+  display: inline-block;
+  margin-left: 4px;
+  vertical-align: middle;
+  width: 12px;
+  height: 12px;
+}
+
+/**
+ * Polish: prose elements
+ * -------------------------------------------------------------------------- */
+
+/* Subtle row hover on tables */
+.bp-doc tr:hover {
+  background-color: var(--bp-c-bg-soft);
+}
+
+/* Mobile-safe table scroll */
+.bp-doc table {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Slightly stronger blockquote with brand-tinted accent */
+.bp-doc blockquote {
+  border-left-color: var(--bp-c-brand-1);
+  padding: 8px 0 8px 16px;
+}
+
+/* Code-block scrollbar */
+.bp-doc [class*='language-'] pre::-webkit-scrollbar,
+.bp-doc pre[data-lang]::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.bp-doc [class*='language-'] pre::-webkit-scrollbar-thumb,
+.bp-doc pre[data-lang]::-webkit-scrollbar-thumb {
+  background-color: var(--bp-c-divider);
+  border-radius: 3px;
+}
+.bp-doc [class*='language-'] pre::-webkit-scrollbar-thumb:hover,
+.bp-doc pre[data-lang]::-webkit-scrollbar-thumb:hover {
+  background-color: var(--bp-c-text-3);
+}
+
+/* Heading anchor: keep it subtle */
+.bp-doc .header-anchor {
+  color: var(--bp-c-text-3);
+}
+.bp-doc .header-anchor:hover,
+.bp-doc .header-anchor:focus {
+  color: var(--bp-c-brand-1);
+}
+
+/**
+ * Mobile nav / sidebar drawer
+ * -------------------------------------------------------------------------- */
+
+.VPNavBarHamburger {
+  display: none;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  color: var(--bp-c-text-2);
+  border-radius: 4px;
+  padding: 0;
+  margin-left: -4px;
+}
+
+.VPNavBarHamburger:hover {
+  color: var(--bp-c-text-1);
+  background-color: var(--bp-c-bg-soft);
+}
+
+.VPNavBarHamburger svg {
+  width: 20px;
+  height: 20px;
+}
+
+@media (max-width: 959px) {
+  .VPNavBarHamburger {
+    display: inline-flex;
+  }
+
+  .VPSidebar {
+    transform: translateX(-100%);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    z-index: var(--bp-z-index-sidebar, 25);
+    background-color: var(--bp-c-bg-alt);
+    box-shadow: none;
+  }
+
+  .VPSidebar.is-open {
+    transform: translateX(0);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  }
+
+  .VPSidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.32);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: calc(var(--bp-z-index-sidebar, 25) - 1);
+  }
+
+  .VPSidebar-backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .VPContent--doc {
+    left: 0;
+  }
+}
+`
+
 /**
  * Get all VitePress theme CSS combined
  */
@@ -1909,6 +2548,7 @@ export function getVitePressThemeCSS(): string {
 /* VitePress Theme for BunPress */
 ${varsCSS}
 ${baseCSS}
+${layoutCSS}
 ${customBlockCSS}
 ${codeGroupCSS}
 `

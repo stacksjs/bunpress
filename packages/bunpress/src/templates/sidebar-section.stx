@@ -1,27 +1,60 @@
-<div class="VPSidebarItem sidebar-section" style="margin-bottom: 16px;">
-  <button
-    style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 8px 24px; font-size: 14px; font-weight: 600; color: var(--bp-c-text-1); background: transparent; border: none; cursor: pointer; transition: color 0.25s;"
-    onclick="toggleSection(this.parentElement)"
-    onmouseover="this.style.color='var(--bp-c-brand-1)'"
-    onmouseout="this.style.color='var(--bp-c-text-1)'"
-  >
+<div class="VPSidebarItem sidebar-section">
+  <button class="sidebar-section-toggle" onclick="toggleSection(this.parentElement)" type="button">
     <span>{{ title }}</span>
-    <svg class="chevron" style="width: 16px; height: 16px; transition: transform 0.2s ease-in-out;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
     </svg>
   </button>
   <div class="sidebar-items-wrapper">
-    <ul class="sidebar-items" style="list-style: none; margin: 4px 0 0 0; padding: 0;">
+    <ul class="sidebar-items">
       {!! items !!}
     </ul>
   </div>
 </div>
 
 <style>
+.sidebar-section {
+  margin-bottom: 16px;
+}
+
+.sidebar-section-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--bp-c-text-1);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.25s;
+  font-family: inherit;
+  text-align: left;
+}
+
+.sidebar-section-toggle:hover {
+  color: var(--bp-c-brand-1);
+}
+
+.sidebar-section-toggle .chevron {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s ease-in-out;
+  flex-shrink: 0;
+}
+
+.sidebar-items {
+  list-style: none;
+  margin: 4px 0 0 0;
+  padding: 0;
+}
+
 .sidebar-items-wrapper {
   overflow: hidden;
   transition: max-height 0.3s ease-in-out, opacity 0.2s ease-in-out;
-  max-height: 500px;
+  max-height: 1000px;
   opacity: 1;
 }
 
@@ -30,8 +63,31 @@
   opacity: 0;
 }
 
-.sidebar-section.collapsed .chevron {
+.sidebar-section.collapsed .sidebar-section-toggle .chevron {
   transform: rotate(-90deg);
+}
+
+.VPSidebarItem-link {
+  display: block;
+  padding: 6px 24px;
+  color: var(--bp-c-text-2);
+  text-decoration: none;
+  font-size: 14px;
+  line-height: 1.5;
+  transition: color 0.25s;
+  border-left: 2px solid transparent;
+  margin-left: 0;
+}
+
+.VPSidebarItem-link:hover {
+  color: var(--bp-c-brand-1);
+}
+
+.VPSidebarItem-link.is-active {
+  color: var(--bp-c-brand-1);
+  font-weight: 600;
+  border-left-color: var(--bp-c-brand-1);
+  padding-left: 22px;
 }
 </style>
 
