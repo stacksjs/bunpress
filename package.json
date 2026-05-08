@@ -56,10 +56,10 @@
   },
   "git-hooks": {
     "pre-commit": {
-      "staged-lint": {
+      "stagedLint": {
         "*.{js,ts,json,yaml,yml,md}": "bunx --bun pickier --fix"
       }
     },
-    "commit-msg": "bunx gitlint --edit .git/COMMIT_EDITMSG"
+    "commit-msg": "bunx --bun @stacksjs/gitlint --edit .git/COMMIT_EDITMSG"
   }
 }
