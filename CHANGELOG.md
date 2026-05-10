@@ -1,3 +1,65 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.4...v0.1.5)
+
+### 🐛 Bug Fixes
+
+- respect mounted docs base path ([980fbdc](https://github.com/stacksjs/bunpress/commit/980fbdc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- kebab staged-lint key + bunx gitlint package path ([bc3f597](https://github.com/stacksjs/bunpress/commit/bc3f597)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **serve**: inject custom scripts after stx render to bypass <script> sanitizer ([12f89c7](https://github.com/stacksjs/bunpress/commit/12f89c7)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **theme**: keep badge class names matching test contract ([ed004e7](https://github.com/stacksjs/bunpress/commit/ed004e7)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **spa**: repair client-side router and scroll handling ([177ae4a](https://github.com/stacksjs/bunpress/commit/177ae4a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **test**: line-numbers tests asserting wrong content ([059ef63](https://github.com/stacksjs/bunpress/commit/059ef63)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **lint**: wrap outboundTracking template literal in eslint-disable ([b93123b](https://github.com/stacksjs/bunpress/commit/b93123b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- restore docs content deleted by pickier --fix ([48ce07e](https://github.com/stacksjs/bunpress/commit/48ce07e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- add setup-bun step to all CI and release jobs ([1fcc7ba](https://github.com/stacksjs/bunpress/commit/1fcc7ba)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- resolve typecheck errors ([a626bcc](https://github.com/stacksjs/bunpress/commit/a626bcc)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- resolve typecheck errors ([7b98043](https://github.com/stacksjs/bunpress/commit/7b98043)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+### 💅 Styles
+
+- **theme**: polish pass on default theme ([9a173d1](https://github.com/stacksjs/bunpress/commit/9a173d1)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+### 🧪 Tests
+
+- add empty stx markdown fixture stubs ([813139e](https://github.com/stacksjs/bunpress/commit/813139e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+### 🤖 Continuous Integration
+
+- drop redundant setup-bun (pantry installs bun via deps.yaml) ([c9293ec](https://github.com/stacksjs/bunpress/commit/c9293ec)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+### 🧹 Chores
+
+- release v0.1.5 ([8baedd5](https://github.com/stacksjs/bunpress/commit/8baedd5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- refresh bun.lock ([4962954](https://github.com/stacksjs/bunpress/commit/4962954)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- refresh bun.lock and apply pickier --fix ([7efaa90](https://github.com/stacksjs/bunpress/commit/7efaa90)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- refresh bun.lock ([29c0dd7](https://github.com/stacksjs/bunpress/commit/29c0dd7)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([895cc65](https://github.com/stacksjs/bunpress/commit/895cc65)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- fresh install to pick up dtsx 0.9.14 and bunfig 0.15.9 ([9c7a64b](https://github.com/stacksjs/bunpress/commit/9c7a64b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([afbcc39](https://github.com/stacksjs/bunpress/commit/afbcc39)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- migrate all CI commands from bun to pantry ([c8f63ca](https://github.com/stacksjs/bunpress/commit/c8f63ca)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- migrate from bun install to pantry install ([28cc0eb](https://github.com/stacksjs/bunpress/commit/28cc0eb)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- fix lint errors ([3ff10c7](https://github.com/stacksjs/bunpress/commit/3ff10c7)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- gitignore pantry directory ([96cfb1d](https://github.com/stacksjs/bunpress/commit/96cfb1d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- minor updates ([6ca857b](https://github.com/stacksjs/bunpress/commit/6ca857b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- fix lint errors ([4d7ba05](https://github.com/stacksjs/bunpress/commit/4d7ba05)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- include md in pickier lint extensions ([25f3305](https://github.com/stacksjs/bunpress/commit/25f3305)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deps**: update dependency typescript to 6.0.2 (updated) (#60) ([8b578a1](https://github.com/stacksjs/bunpress/commit/8b578a1)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_ ([#60](https://github.com/stacksjs/bunpress/issues/60), [#60](https://github.com/stacksjs/bunpress/issues/60))
+- update vscode config ([49252fa](https://github.com/stacksjs/bunpress/commit/49252fa)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- update vscode config ([3d24c6c](https://github.com/stacksjs/bunpress/commit/3d24c6c)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- repo cleanup and modernization ([73f345f](https://github.com/stacksjs/bunpress/commit/73f345f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- update bun-plugin-dtsx to 0.9.13 ([1036835](https://github.com/stacksjs/bunpress/commit/1036835)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deps**: update all non-major dependencies (rebased) (#58) ([e5cfc6f](https://github.com/stacksjs/bunpress/commit/e5cfc6f)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_ ([#58](https://github.com/stacksjs/bunpress/issues/58), [#58](https://github.com/stacksjs/bunpress/issues/58))
+
+### ⏪ Reverts
+
+- keep staged-lint kebab + bunx gitlint shorthand ([a25a658](https://github.com/stacksjs/bunpress/commit/a25a658)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- restore bun commands in CI until pantry handles npm deps ([a28a2f6](https://github.com/stacksjs/bunpress/commit/a28a2f6)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- use bun install until pantry handles npm deps (home-lang/pantry#200) ([aa105fa](https://github.com/stacksjs/bunpress/commit/aa105fa)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#200](https://github.com/stacksjs/bunpress/issues/200), [#200](https://github.com/stacksjs/bunpress/issues/200))
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.3...v0.1.4)
 
 ### 🧹 Chores
