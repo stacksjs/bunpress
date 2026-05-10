@@ -40,9 +40,10 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
     const itemsHtml = section.items
       ? section.items.map((item: SidebarItem) => {
           const link = item.link || '/'
+          const href = prefixRootPath(config, link)
           const isActive = link === currentPath || item.link === currentPath
           const cls = isActive ? 'VPSidebarItem-link is-active' : 'VPSidebarItem-link'
-          return `<li><a class="${cls}" href="${link}">${item.text}</a></li>`
+          return `<li><a class="${cls}" href="${href}">${item.text}</a></li>`
         }).join('')
       : ''
 
@@ -468,9 +469,8 @@ function generateNav(config: BunPressConfig): string {
     return ''
   }
 
-  // Helper function to normalize nav links (no /docs/ prefix needed)
   const fixNavLink = (link: string | undefined): string => {
-    return link || '/'
+    return prefixRootPath(config, link || '/')
   }
 
   const links = navConfig.map((item) => {
@@ -493,6 +493,41 @@ function generateNav(config: BunPressConfig): string {
   }).join('')
 
   return links
+}
+
+function getConfiguredBasePath(config: BunPressConfig): string {
+  const baseUrl = config.sitemap?.baseUrl
+  if (!baseUrl) {
+    return ''
+  }
+
+  try {
+    const pathname = new URL(baseUrl).pathname.replace(/\/+$/, '')
+    return pathname === '/' ? '' : pathname
+  }
+  catch {
+    return ''
+  }
+}
+
+function prefixRootPath(config: BunPressConfig, value: string): string {
+  const basePath = getConfiguredBasePath(config)
+  if (!basePath || !value.startsWith('/') || value.startsWith('//')) {
+    return value
+  }
+
+  if (value === basePath || value.startsWith(`${basePath}/`)) {
+    return value
+  }
+
+  return value === '/' ? `${basePath}/` : `${basePath}${value}`
+}
+
+function prefixRootRelativeAttributes(html: string, config: BunPressConfig): string {
+  return html.replace(/\b(href|src|action)="(\/[^"]*)"/g, (match, attribute, value) => {
+    const prefixed = prefixRootPath(config, value)
+    return prefixed === value ? match : `${attribute}="${prefixed}"`
+  })
 }
 
 /**
@@ -690,7 +725,7 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
       customCSS,
       content,
     })
-    return injectSPARouter(injectScripts(html, scripts))
+    return prefixRootRelativeAttributes(injectSPARouter(injectScripts(html, scripts)), config)
   }
 
   // Page layout - nav bar, full-width content, no sidebar, no TOC
@@ -706,7 +741,7 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
       nav,
       content,
     })
-    return injectSPARouter(injectScripts(html, scripts))
+    return prefixRootRelativeAttributes(injectSPARouter(injectScripts(html, scripts)), config)
   }
 
   // Documentation layout (default) - with sidebar and TOC
@@ -728,7 +763,7 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
     pageTOC,
   })
 
-  return injectSPARouter(injectScripts(html, scripts))
+  return prefixRootRelativeAttributes(injectSPARouter(injectScripts(html, scripts)), config)
 }
 
 let _crosswindModule: any = null
