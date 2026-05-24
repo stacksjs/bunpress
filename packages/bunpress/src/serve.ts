@@ -495,7 +495,14 @@ function generateNav(config: BunPressConfig): string {
   return links
 }
 
-function getConfiguredBasePath(config: BunPressConfig): string {
+export function getConfiguredBasePath(config: BunPressConfig): string {
+  if (config.basePath) {
+    const normalized = config.basePath.trim().replace(/\/+$/, '')
+    if (!normalized || normalized === '/')
+      return ''
+    return normalized.startsWith('/') ? normalized : `/${normalized}`
+  }
+
   const baseUrl = config.sitemap?.baseUrl
   if (!baseUrl) {
     return ''
@@ -508,6 +515,17 @@ function getConfiguredBasePath(config: BunPressConfig): string {
   catch {
     return ''
   }
+}
+
+export function stripConfiguredBasePath(config: BunPressConfig, pathname: string): string {
+  const basePath = getConfiguredBasePath(config)
+  if (!basePath)
+    return pathname
+
+  if (pathname === basePath || pathname.startsWith(`${basePath}/`))
+    return pathname.slice(basePath.length) || '/'
+
+  return pathname
 }
 
 function prefixRootPath(config: BunPressConfig, value: string): string {
@@ -2207,7 +2225,7 @@ export async function startServer(options: {
     port,
     async fetch(req) {
       const url = new URL(req.url)
-      let path = url.pathname
+      let path = stripConfiguredBasePath(bunPressConfig, url.pathname)
 
       // Serve root as index
       if (path === '/') {

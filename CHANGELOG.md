@@ -1,4 +1,10 @@
-[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.4...v0.1.5)
+## [0.1.6](https://github.com/stacksjs/bunpress/compare/v0.1.5...v0.1.6)
+
+### 🐛 Bug Fixes
+
+- **serve**: strip mounted `basePath` from incoming request paths so `/docs/**` routing works behind path-based reverse proxies
+
+## [0.1.5](https://github.com/stacksjs/bunpress/compare/v0.1.4...v0.1.5)
 
 ### 🐛 Bug Fixes
 

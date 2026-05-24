@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'bun:test'
-import { wrapInLayout } from '../packages/bunpress/src/serve'
+import {
+  getConfiguredBasePath,
+  startServer,
+  stripConfiguredBasePath,
+  wrapInLayout,
+} from '../packages/bunpress/src/serve'
 
 describe('mounted base path output', () => {
   it('prefixes root-relative links and assets when sitemap baseUrl has a path', async () => {
@@ -28,5 +33,44 @@ describe('mounted base path output', () => {
     expect(html).toContain('src="/docs/images/logo.svg"')
     expect(html).toContain('action="/docs/search"')
     expect(html).toContain('href="https://stacksjs.com/docs/guide/get-started"')
+  })
+
+  it('reads basePath from config.basePath', () => {
+    expect(getConfiguredBasePath({ verbose: false, markdown: {}, basePath: '/docs' })).toBe('/docs')
+  })
+
+  it('strips configured base path from request paths', () => {
+    const cfg = { verbose: false, markdown: {}, basePath: '/docs' }
+    expect(stripConfiguredBasePath(cfg, '/docs/guide/intro')).toBe('/guide/intro')
+    expect(stripConfiguredBasePath(cfg, '/docs')).toBe('/')
+    expect(stripConfiguredBasePath(cfg, '/guide/intro')).toBe('/guide/intro')
+  })
+
+  it('serves markdown under a mounted base path', async () => {
+    const root = `${import.meta.dir}/fixtures/base-path-docs`
+    const { server, stop } = await startServer({
+      port: 0,
+      root,
+      quiet: true,
+      config: {
+        verbose: false,
+        markdown: { title: 'Mounted' },
+        basePath: '/docs',
+      },
+    })
+
+    try {
+      const port = server.port
+      const index = await fetch(`http://127.0.0.1:${port}/docs`)
+      expect(index.status).toBe(200)
+      expect(await index.text()).toContain('Mounted page')
+
+      const nested = await fetch(`http://127.0.0.1:${port}/docs/page`)
+      expect(nested.status).toBe(200)
+      expect(await nested.text()).toContain('Nested page')
+    }
+    finally {
+      stop()
+    }
   })
 })

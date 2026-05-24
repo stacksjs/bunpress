@@ -33,6 +33,12 @@ export interface BunPressConfig {
   outDir?: string
 
   /**
+   * URL path prefix when docs are mounted under the app host (e.g. `/docs`).
+   * Also inferred from `sitemap.baseUrl` when it includes a pathname.
+   */
+  basePath?: string
+
+  /**
    * Theme to use for the documentation site
    * @default 'vitepress'
    */
