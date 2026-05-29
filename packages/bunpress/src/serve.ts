@@ -4,7 +4,9 @@ import { stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import process from 'node:process'
 import { config } from './config'
+import { clearDataCache, loadDataFiles } from './data-loader'
 import { getSyntaxHighlightingStyles, highlightCode } from './highlighter'
+import { clearComponentCache, resolveStxComponents } from './stx-components'
 import { clearTemplateCache, render } from './template-loader'
 import { getThemeCSS } from './themes'
 import { buildTocHierarchy, defaultTocConfig, extractHeadings, filterHeadings, generateInlineTocHtml, generateSlug } from './toc'
@@ -731,9 +733,9 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   // Pre-generate nav so we can scan all HTML for crosswind utility classes
   const nav = generateNav(config)
 
-  // Home layout - no sidebar, no navigation, clean hero layout
+  // Home layout - nav bar + hero/features/body, no sidebar
   if (layout === 'home') {
-    const crosswindCSS = await generateCrosswindCSSFromHtml(content)
+    const crosswindCSS = await generateCrosswindCSSFromHtml(`${content}\n${nav}`)
     const customCSS = `${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${config.markdown?.css || ''}`
 
     const html = await render('layout-home', {
@@ -741,6 +743,7 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
       description,
       meta: allMeta,
       customCSS,
+      nav,
       content,
     })
     return prefixRootRelativeAttributes(injectSPARouter(injectScripts(html, scripts)), config)
@@ -2074,16 +2077,35 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
   // Parse frontmatter
   const { frontmatter, content } = parseFrontmatter(markdown)
 
-  // If it's a home layout, generate hero and features
+  // Home layout: render the hero + features grid from frontmatter, then the
+  // page body (stx + markdown) below them — mirroring how VitePress renders
+  // markdown beneath a home hero. Previously the body was dropped entirely.
   if (frontmatter.layout === 'home') {
     const heroHtml = await generateHero(frontmatter.hero)
     const featuresHtml = await generateFeatures(frontmatter.features)
+    const bodyHtml = content.trim()
+      ? await renderMarkdownBody(content, frontmatter, rootDir)
+      : ''
+    const body = bodyHtml
+      ? `<div class="VPHome-content"><div class="vp-doc container">${bodyHtml}</div></div>`
+      : ''
     return {
-      html: heroHtml + featuresHtml,
+      html: heroHtml + featuresHtml + body,
       frontmatter,
     }
   }
 
+  const html = await renderMarkdownBody(content, frontmatter, rootDir)
+  return { html, frontmatter }
+}
+
+/**
+ * Render a markdown page body through the full pipeline: stx component
+ * resolution + data context, stx directives, markdown features, syntax
+ * highlighting, and HTML post-processing. Shared by every layout (doc, page,
+ * and the body of a home page).
+ */
+async function renderMarkdownBody(content: string, frontmatter: any, rootDir: string): Promise<string> {
   // Resolve feature toggles from config (all default to true)
   const features = (config as BunPressConfig).markdown?.features
   const featureEnabled = (key: keyof import('./types').MarkdownFeaturesConfig): boolean => {
@@ -2097,6 +2119,27 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
   let processedContent = featureEnabled('includes')
     ? await processMarkdownIncludes(content, rootDir)
     : content
+
+  // Build the stx render context: frontmatter + global data files (.data/*.json,
+  // exposed as `data`) + a `site` object with high-level config. This is what
+  // markdown stx directives, bound component props, and <script server> see.
+  const stxContext: Record<string, any> = {
+    ...frontmatter,
+    data: await loadDataFiles(rootDir),
+    site: {
+      title: (config as BunPressConfig).title || (config as BunPressConfig).markdown?.title || '',
+      description: (config as BunPressConfig).description || (config as BunPressConfig).markdown?.meta?.description || '',
+      themeConfig: (config as BunPressConfig).themeConfig,
+    },
+  }
+
+  // Resolve PascalCase stx components (<Callout />, <ProgressBar />, …) from the
+  // components directory before anything else, so their output flows through the
+  // rest of the markdown pipeline. Like Vue components in VitePress markdown.
+  const componentsDir = (config as BunPressConfig).componentsDir
+    ? join(process.cwd(), (config as BunPressConfig).componentsDir as string)
+    : join(rootDir, '.components')
+  processedContent = await resolveStxComponents(processedContent, componentsDir, stxContext)
 
   // Process stx template syntax in markdown (@if, @foreach, {{ }}, <script server>, etc.)
   // This allows dynamic content generation in .md files using stx directives.
@@ -2112,7 +2155,7 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
   if (hasStxSyntax) {
     try {
       const stx = await import('@stacksjs/stx')
-      processedContent = await stx.renderString(processedContent, { ...frontmatter }, { templateOnly: true })
+      processedContent = await stx.renderString(processedContent, stxContext)
     }
     catch {
       // stx not available or render failed — continue with raw content
@@ -2201,10 +2244,7 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
     finalHtml = processImagesHtml(finalHtml)
   }
 
-  return {
-    html: finalHtml,
-    frontmatter,
-  }
+  return finalHtml
 }
 
 /**
@@ -2339,8 +2379,10 @@ export async function serveCLI(options: {
           clearTimeout(timeout)
         timeout = setTimeout(async () => {
           console.log('File changed detected, reloading...')
-          // Clear template cache to pick up template changes
+          // Clear caches to pick up template, component, and data changes
           clearTemplateCache()
+          clearComponentCache()
+          clearDataCache()
           // The server will automatically serve the updated files on next request
           console.log('Ready for requests')
         }, 100) // Debounce 100ms

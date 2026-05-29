@@ -13,6 +13,13 @@
 </head>
 <body>
   <div class="Layout">
+    <!-- VPNav - Header -->
+    <header class="VPNav">
+      <div class="VPNavBar">
+        {!! nav !!}
+      </div>
+    </header>
+
     <main class="VPHome">
       {!! content !!}
     </main>

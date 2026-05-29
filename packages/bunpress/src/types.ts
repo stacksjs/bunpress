@@ -39,6 +39,21 @@ export interface BunPressConfig {
   basePath?: string
 
   /**
+   * Directory holding reusable `.stx` components referenced as PascalCase tags
+   * in markdown (e.g. `<Callout />`). Resolved relative to the current working
+   * directory.
+   * @default '<docsDir>/.components'
+   */
+  componentsDir?: string
+
+  /**
+   * Directory holding global JSON data files exposed to every page's stx
+   * context under the `data` object (e.g. `.data/stats.json` -> `data.stats`).
+   * @default '<docsDir>/.data'
+   */
+  dataDir?: string
+
+  /**
    * Theme to use for the documentation site
    * @default 'vitepress'
    */
