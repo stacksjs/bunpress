@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.8...v0.1.9)
+
+### 🚀 Features
+
+- **fonts**: first-class web-font loading via config.fonts ([e3e2509](https://github.com/stacksjs/bunpress/commit/e3e2509)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🧹 Chores
+
+- release v0.1.9 ([d121f24](https://github.com/stacksjs/bunpress/commit/d121f24)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.7...v0.1.8)
 
 ### 🐛 Bug Fixes
