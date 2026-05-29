@@ -54,6 +54,26 @@ export interface BunPressConfig {
   dataDir?: string
 
   /**
+   * Web fonts to load. Google Fonts families are loaded via `<link>` tags in
+   * the document head (with preconnect); raw `@font-face` blocks are injected
+   * for self-hosted fonts. Reference the families in `markdown.css`
+   * (e.g. `font-family: 'Inter', sans-serif`) or via crosswind `font-*` utilities.
+   *
+   * @example
+   * fonts: { google: ['Inter:wght@400;600;700', 'JetBrains Mono:wght@400;700'] }
+   */
+  fonts?: {
+    /** Google Fonts families in css2 syntax; spaces become `+` automatically. */
+    google?: string[]
+    /** `font-display` for the Google stylesheet (default `swap`). */
+    display?: 'auto' | 'block' | 'swap' | 'fallback' | 'optional'
+    /** Emit `<link rel="preconnect">` for the Google Fonts hosts (default true). */
+    preconnect?: boolean
+    /** Raw `@font-face { … }` blocks for self-hosted fonts. */
+    faces?: string[]
+  }
+
+  /**
    * Theme to use for the documentation site
    * @default 'vitepress'
    */

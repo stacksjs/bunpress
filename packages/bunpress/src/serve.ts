@@ -696,6 +696,33 @@ function generateStructuredData(
 }
 
 /**
+ * Build web-font markup from `config.fonts`: `<link>` tags (preconnect +
+ * Google Fonts stylesheet) for the document head, and raw `@font-face` CSS for
+ * self-hosted fonts. Returns empty strings when no fonts are configured.
+ */
+function generateFontTags(config: BunPressConfig): { fontLinks: string, fontFaceCss: string } {
+  const fonts = config.fonts
+  if (!fonts)
+    return { fontLinks: '', fontFaceCss: '' }
+
+  const links: string[] = []
+  const google = fonts.google?.filter(Boolean) ?? []
+  if (google.length > 0) {
+    if (fonts.preconnect !== false) {
+      links.push('<link rel="preconnect" href="https://fonts.googleapis.com">')
+      links.push('<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>')
+    }
+    const families = google.map(family => `family=${family.trim().replace(/\s+/g, '+')}`).join('&')
+    const display = fonts.display ?? 'swap'
+    links.push(`<link href="https://fonts.googleapis.com/css2?${families}&display=${display}" rel="stylesheet">`)
+  }
+
+  const fontFaceCss = (fonts.faces ?? []).map(face => face.trim()).filter(Boolean).join('\n')
+
+  return { fontLinks: links.join('\n  '), fontFaceCss }
+}
+
+/**
  * Wrap content in BunPress documentation layout
  */
 export async function wrapInLayout(content: string, config: BunPressConfig, currentPath: string, layout: string = 'doc'): Promise<string> {
@@ -728,7 +755,10 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
     .map(([key, value]) => `<meta name="${key}" content="${value}">`)
     .join('\n  ')
 
-  const allMeta = [basicMeta, canonicalUrl, openGraphTags, twitterCardTags].filter(Boolean).join('\n  ')
+  // Web fonts: <link> tags (with preconnect) go in <head> via the meta slot;
+  // raw @font-face blocks are folded into the stylesheet below.
+  const { fontLinks, fontFaceCss } = generateFontTags(config)
+  const allMeta = [basicMeta, canonicalUrl, openGraphTags, twitterCardTags, fontLinks].filter(Boolean).join('\n  ')
 
   // Generate analytics scripts
   const fathomScript = generateFathomScript(config)
@@ -744,7 +774,7 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   // Home layout - nav bar + hero/features/body, no sidebar
   if (layout === 'home') {
     const crosswindCSS = await generateCrosswindCSSFromHtml(`${content}\n${nav}`)
-    const customCSS = `${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}`
+    const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}`
 
     const html = await render('layout-home', {
       title,
@@ -760,7 +790,7 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   // Page layout - nav bar, full-width content, no sidebar, no TOC
   if (layout === 'page') {
     const crosswindCSS = await generateCrosswindCSSFromHtml(`${content}\n${nav}`)
-    const customCSS = `${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}`
+    const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}`
 
     const html = await render('layout-page', {
       title,
@@ -779,7 +809,7 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   const sidebar = await generateSidebar(config, currentPath)
 
   const crosswindCSS = await generateCrosswindCSSFromHtml(`${contentWithIds}\n${nav}\n${sidebar}`)
-  const customCSS = `${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}`
+  const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}`
 
   const html = await render('layout-doc', {
     title,
