@@ -3,7 +3,7 @@ import { Glob, YAML } from 'bun'
 import { stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import process from 'node:process'
-import { config } from './config'
+import { config, defaultConfig } from './config'
 import { clearDataCache, loadDataFiles } from './data-loader'
 import { getSyntaxHighlightingStyles, highlightCode } from './highlighter'
 import { clearComponentCache, resolveStxComponents } from './stx-components'
@@ -708,6 +708,14 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   const themeCSS = getThemeCSS(themeName)
   const syntaxHighlightingStyles = getSyntaxHighlightingStyles()
 
+  // Base doc/widget CSS (code-copy buttons, the copy-page dropdown, etc.) ships
+  // as the default markdown.css. It must always be present, so inject it
+  // unconditionally and treat a user-supplied `markdown.css` as ADDITIVE rather
+  // than a replacement — otherwise a custom css string silently breaks widgets.
+  const baseDocCss = (defaultConfig.markdown?.css as string) || ''
+  const userCss = config.markdown?.css || ''
+  const extraCss = userCss && userCss !== baseDocCss ? userCss : ''
+
   // Generate SEO meta tags
   const canonicalUrl = generateCanonicalUrl(config, currentPath)
   const openGraphTags = generateOpenGraphTags(title, description, config, currentPath)
@@ -736,7 +744,7 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   // Home layout - nav bar + hero/features/body, no sidebar
   if (layout === 'home') {
     const crosswindCSS = await generateCrosswindCSSFromHtml(`${content}\n${nav}`)
-    const customCSS = `${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${config.markdown?.css || ''}`
+    const customCSS = `${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}`
 
     const html = await render('layout-home', {
       title,
@@ -752,7 +760,7 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   // Page layout - nav bar, full-width content, no sidebar, no TOC
   if (layout === 'page') {
     const crosswindCSS = await generateCrosswindCSSFromHtml(`${content}\n${nav}`)
-    const customCSS = `${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${config.markdown?.css || ''}`
+    const customCSS = `${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}`
 
     const html = await render('layout-page', {
       title,
@@ -771,7 +779,7 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   const sidebar = await generateSidebar(config, currentPath)
 
   const crosswindCSS = await generateCrosswindCSSFromHtml(`${contentWithIds}\n${nav}\n${sidebar}`)
-  const customCSS = `${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${config.markdown?.css || ''}`
+  const customCSS = `${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}`
 
   const html = await render('layout-doc', {
     title,
