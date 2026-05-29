@@ -1,5 +1,5 @@
-<aside class="VPDocAside">
-  <div class="VPDocAsideOutline">
+<aside class="BPDocAside">
+  <div class="BPDocAsideOutline">
     <p class="outline-title">On this page</p>
     <nav class="page-toc">
       <div class="outline-marker"></div>
@@ -9,7 +9,7 @@
 </aside>
 
 <style>
-.VPDocAside {
+.BPDocAside {
   position: fixed;
   top: var(--bp-nav-height, 64px);
   bottom: 0;
@@ -23,11 +23,11 @@
   scrollbar-width: none;
 }
 
-.VPDocAside::-webkit-scrollbar {
+.BPDocAside::-webkit-scrollbar {
   display: none;
 }
 
-.VPDocAsideOutline {
+.BPDocAsideOutline {
   font-size: 14px;
 }
 
@@ -42,11 +42,11 @@
 
 /* Show aside on xl screens and adjust main content */
 @media (min-width: 1280px) {
-  .VPDocAside {
+  .BPDocAside {
     display: block !important;
   }
 
-  .VPContent {
+  .BPContent {
     right: max(256px, calc((100vw - var(--bp-layout-max-width, 1440px)) / 2 + 256px)) !important;
   }
 }
@@ -118,7 +118,7 @@ function initPageTOC() {
   const marker = document.querySelector('.outline-marker');
   const tocLinks = document.querySelectorAll('.page-toc a');
   const headings = Array.from(document.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]'));
-  const scrollContainer = document.querySelector('.VPContent');
+  const scrollContainer = document.querySelector('.BPContent');
 
   if (!tocLinks.length || !headings.length || !scrollContainer || !marker) return;
 

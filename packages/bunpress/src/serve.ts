@@ -44,7 +44,7 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
           const link = item.link || '/'
           const href = prefixRootPath(config, link)
           const isActive = link === currentPath || item.link === currentPath
-          const cls = isActive ? 'VPSidebarItem-link is-active' : 'VPSidebarItem-link'
+          const cls = isActive ? 'BPSidebarItem-link is-active' : 'BPSidebarItem-link'
           return `<li><a class="${cls}" href="${href}">${item.text}</a></li>`
         }).join('')
       : ''
@@ -195,7 +195,7 @@ function generateSPARouterScript(): string {
   }
 
   function getScroller() {
-    var el = document.querySelector('.VPContent');
+    var el = document.querySelector('.BPContent');
     if (el) {
       var cs = getComputedStyle(el);
       if (cs.position === 'fixed' && (cs.overflowY === 'auto' || cs.overflowY === 'scroll')) {
@@ -274,9 +274,9 @@ function generateSPARouterScript(): string {
   }
 
   function detectLayout(root) {
-    if (root.querySelector('.VPHome')) return 'home';
-    if (root.querySelector('.VPContent--doc') || root.querySelector('.VPSidebar')) return 'doc';
-    if (root.querySelector('.VPContent--page') || root.querySelector('.VPPage')) return 'page';
+    if (root.querySelector('.BPHome')) return 'home';
+    if (root.querySelector('.BPContent--doc') || root.querySelector('.BPSidebar')) return 'doc';
+    if (root.querySelector('.BPContent--page') || root.querySelector('.BPPage')) return 'page';
     return 'page';
   }
 
@@ -333,35 +333,35 @@ function generateSPARouterScript(): string {
       document.body.innerHTML = doc.body.innerHTML;
       executeScripts(document.body);
     } else if (curLayout === 'home') {
-      var newHome = doc.querySelector('.VPHome');
-      var curHome = document.querySelector('.VPHome');
+      var newHome = doc.querySelector('.BPHome');
+      var curHome = document.querySelector('.BPHome');
       if (newHome && curHome) {
         curHome.innerHTML = newHome.innerHTML;
         executeScripts(curHome);
       }
     } else if (curLayout === 'doc') {
-      var newMain = doc.querySelector('.VPDoc');
-      var curMain = document.querySelector('.VPDoc');
+      var newMain = doc.querySelector('.BPDoc');
+      var curMain = document.querySelector('.BPDoc');
       if (newMain && curMain) {
         curMain.innerHTML = newMain.innerHTML;
         executeScripts(curMain);
       }
-      var newSidebar = doc.querySelector('.VPSidebar');
-      var curSidebar = document.querySelector('.VPSidebar');
+      var newSidebar = doc.querySelector('.BPSidebar');
+      var curSidebar = document.querySelector('.BPSidebar');
       if (newSidebar && curSidebar) {
         curSidebar.innerHTML = newSidebar.innerHTML;
         executeScripts(curSidebar);
       }
-      var newAside = doc.querySelector('.VPDocAside');
-      var curAside = document.querySelector('.VPDocAside');
+      var newAside = doc.querySelector('.BPDocAside');
+      var curAside = document.querySelector('.BPDocAside');
       if (newAside && curAside) {
         curAside.innerHTML = newAside.innerHTML;
         executeScripts(curAside);
       }
     } else {
       // page layout
-      var newPage = doc.querySelector('.VPPage') || doc.querySelector('.VPContent');
-      var curPage = document.querySelector('.VPPage') || document.querySelector('.VPContent');
+      var newPage = doc.querySelector('.BPPage') || doc.querySelector('.BPContent');
+      var curPage = document.querySelector('.BPPage') || document.querySelector('.BPContent');
       if (newPage && curPage) {
         curPage.innerHTML = newPage.innerHTML;
         executeScripts(curPage);
@@ -477,21 +477,21 @@ function generateNav(config: BunPressConfig): string {
 
   const links = navConfig.map((item) => {
     if (item.items && item.items.length > 0) {
-      return `<div class="VPNavBarMenu-group">
-        <button class="VPNavBarMenu-group-button" type="button">
+      return `<div class="BPNavBarMenu-group">
+        <button class="BPNavBarMenu-group-button" type="button">
           <span>${item.text}</span>
           <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
           </svg>
         </button>
-        <div class="VPNavBarMenu-group-items">
+        <div class="BPNavBarMenu-group-items">
           ${item.items.map(subItem =>
             `<a href="${fixNavLink(subItem.link)}">${subItem.text}</a>`,
           ).join('')}
         </div>
       </div>`
     }
-    return `<a class="VPNavBarMenu-link" href="${fixNavLink(item.link)}">${item.text}</a>`
+    return `<a class="BPNavBarMenu-link" href="${fixNavLink(item.link)}">${item.text}</a>`
   }).join('')
 
   return links
@@ -1003,22 +1003,22 @@ async function generateHero(hero: any): Promise<string> {
     return ''
 
   const name = hero.name
-    ? `<p class="VPHero-name">${hero.name}</p>`
+    ? `<p class="BPHero-name">${hero.name}</p>`
     : ''
   const text = hero.text
-    ? `<h1 class="VPHero-text">${hero.text}</h1>`
+    ? `<h1 class="BPHero-text">${hero.text}</h1>`
     : ''
   const tagline = hero.tagline
-    ? `<p class="VPHero-tagline">${hero.tagline}</p>`
+    ? `<p class="BPHero-tagline">${hero.tagline}</p>`
     : ''
 
   let actions = ''
   if (hero.actions) {
     const actionButtons = hero.actions.map((action: any) => {
-      const cls = action.theme === 'brand' ? 'VPButton VPButton-brand' : 'VPButton VPButton-alt'
+      const cls = action.theme === 'brand' ? 'BPButton BPButton-brand' : 'BPButton BPButton-alt'
       return `<a class="${cls}" href="${action.link}">${action.text}</a>`
     }).join('\n      ')
-    actions = `<div class="VPHero-actions">${actionButtons}</div>`
+    actions = `<div class="BPHero-actions">${actionButtons}</div>`
   }
 
   const image = hero.image
@@ -1054,7 +1054,7 @@ function getFeatureIcon(icon: string): string {
   // If it's an emoji or HTML, pass through
   if (icon.startsWith('<') || /\p{Emoji}/u.test(icon)) return icon
   // Check icon map
-  return featureIconMap[icon] || `<span class="VPFeature-icon-text">${icon.charAt(0)}</span>`
+  return featureIconMap[icon] || `<span class="BPFeature-icon-text">${icon.charAt(0)}</span>`
 }
 
 async function generateFeatures(features: any[]): Promise<string> {
@@ -1063,15 +1063,15 @@ async function generateFeatures(features: any[]): Promise<string> {
 
   const items = features.map(feature => {
     const icon = feature.icon ? getFeatureIcon(feature.icon) : ''
-    const iconHtml = icon ? `<div class="VPFeature-icon">${icon}</div>` : ''
+    const iconHtml = icon ? `<div class="BPFeature-icon">${icon}</div>` : ''
     const link = feature.link
     const tag = link ? 'a' : 'div'
     const linkAttr = link ? ` href="${link}"` : ''
     return `
-    <${tag} class="VPFeature"${linkAttr}>
+    <${tag} class="BPFeature"${linkAttr}>
       ${iconHtml}
-      <h3 class="VPFeature-title">${feature.title || ''}</h3>
-      <p class="VPFeature-details">${feature.details || ''}</p>
+      <h3 class="BPFeature-title">${feature.title || ''}</h3>
+      <p class="BPFeature-details">${feature.details || ''}</p>
     </${tag}>`
   }).join('')
 
@@ -2087,7 +2087,7 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
       ? await renderMarkdownBody(content, frontmatter, rootDir)
       : ''
     const body = bodyHtml
-      ? `<div class="VPHome-content"><div class="vp-doc container">${bodyHtml}</div></div>`
+      ? `<div class="BPHome-content"><div class="vp-doc container">${bodyHtml}</div></div>`
       : ''
     return {
       html: heroHtml + featuresHtml + body,

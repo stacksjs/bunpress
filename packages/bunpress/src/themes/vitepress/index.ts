@@ -826,7 +826,7 @@ mjx-container > svg {
 }
 
 /**
- * VPDoc Styles - Documentation Content
+ * BPDoc Styles - Documentation Content
  * -------------------------------------------------------------------------- */
 
 .bp-doc h1,
@@ -1385,7 +1385,7 @@ mjx-container > svg {
 }
 
 /**
- * Component: Team - VPTeamMembers
+ * Component: Team - BPTeamMembers
  * -------------------------------------------------------------------------- */
 
 .bp-doc .BPTeamMembers {
@@ -1911,8 +1911,8 @@ export const layoutCSS = `/**
   min-height: 100vh;
 }
 
-/* VPNav — top bar */
-.VPNav {
+/* BPNav — top bar */
+.BPNav {
   position: fixed;
   top: 0;
   left: 0;
@@ -1924,7 +1924,7 @@ export const layoutCSS = `/**
   backdrop-filter: saturate(50%) blur(8px);
 }
 
-.VPNavBar {
+.BPNavBar {
   max-width: var(--bp-layout-max-width, 1440px);
   margin: 0 auto;
   width: 100%;
@@ -1936,7 +1936,7 @@ export const layoutCSS = `/**
   gap: 24px;
 }
 
-.VPNavBarStart {
+.BPNavBarStart {
   display: flex;
   align-items: center;
   gap: 24px;
@@ -1944,14 +1944,14 @@ export const layoutCSS = `/**
   min-width: 0;
 }
 
-.VPNavBarEnd {
+.BPNavBarEnd {
   display: flex;
   align-items: center;
   gap: 24px;
   flex-shrink: 0;
 }
 
-.VPNavBarTitle {
+.BPNavBarTitle {
   font-size: 16px;
   font-weight: 600;
   color: var(--bp-c-text-1);
@@ -1960,18 +1960,18 @@ export const layoutCSS = `/**
   transition: color 0.25s;
 }
 
-.VPNavBarTitle:hover {
+.BPNavBarTitle:hover {
   color: var(--bp-c-brand-1);
 }
 
-.VPNavBarMenu {
+.BPNavBarMenu {
   display: flex;
   align-items: center;
   gap: 24px;
 }
 
-.VPNavBarMenu a,
-.VPNavBarMenu .VPNavBarMenu-link {
+.BPNavBarMenu a,
+.BPNavBarMenu .BPNavBarMenu-link {
   font-size: 14px;
   font-weight: 500;
   color: var(--bp-c-text-1);
@@ -1980,17 +1980,17 @@ export const layoutCSS = `/**
   cursor: pointer;
 }
 
-.VPNavBarMenu a:hover,
-.VPNavBarMenu .VPNavBarMenu-link:hover,
-.VPNavBarMenu a.is-active {
+.BPNavBarMenu a:hover,
+.BPNavBarMenu .BPNavBarMenu-link:hover,
+.BPNavBarMenu a.is-active {
   color: var(--bp-c-brand-1);
 }
 
-.VPNavBarMenu-group {
+.BPNavBarMenu-group {
   position: relative;
 }
 
-.VPNavBarMenu-group-button {
+.BPNavBarMenu-group-button {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -2005,22 +2005,22 @@ export const layoutCSS = `/**
   transition: color 0.25s;
 }
 
-.VPNavBarMenu-group-button:hover {
+.BPNavBarMenu-group-button:hover {
   color: var(--bp-c-brand-1);
 }
 
-.VPNavBarMenu-group-button .chevron {
+.BPNavBarMenu-group-button .chevron {
   width: 12px;
   height: 12px;
   flex-shrink: 0;
   transition: transform 0.25s;
 }
 
-.VPNavBarMenu-group:hover > .VPNavBarMenu-group-button .chevron {
+.BPNavBarMenu-group:hover > .BPNavBarMenu-group-button .chevron {
   transform: rotate(180deg);
 }
 
-.VPNavBarMenu-group-items {
+.BPNavBarMenu-group-items {
   display: none;
   position: absolute;
   right: 0;
@@ -2035,11 +2035,11 @@ export const layoutCSS = `/**
   z-index: 10;
 }
 
-.VPNavBarMenu-group:hover > .VPNavBarMenu-group-items {
+.BPNavBarMenu-group:hover > .BPNavBarMenu-group-items {
   display: block;
 }
 
-.VPNavBarMenu-group-items a {
+.BPNavBarMenu-group-items a {
   display: block;
   padding: 6px 16px;
   font-size: 13px;
@@ -2048,13 +2048,13 @@ export const layoutCSS = `/**
   transition: color 0.25s, background-color 0.25s;
 }
 
-.VPNavBarMenu-group-items a:hover {
+.BPNavBarMenu-group-items a:hover {
   color: var(--bp-c-brand-1);
   background-color: var(--bp-c-bg-soft);
 }
 
 /* Search */
-.VPNavBarSearch {
+.BPNavBarSearch {
   position: relative;
   display: flex;
   align-items: center;
@@ -2062,7 +2062,7 @@ export const layoutCSS = `/**
   width: 100%;
 }
 
-.VPNavBarSearch-icon {
+.BPNavBarSearch-icon {
   position: absolute;
   left: 12px;
   width: 16px;
@@ -2071,7 +2071,7 @@ export const layoutCSS = `/**
   pointer-events: none;
 }
 
-.VPNavBarSearch-input {
+.BPNavBarSearch-input {
   width: 100%;
   height: 32px;
   padding: 0 48px 0 36px;
@@ -2085,17 +2085,17 @@ export const layoutCSS = `/**
   transition: border-color 0.25s, background-color 0.25s;
 }
 
-.VPNavBarSearch-input::placeholder {
+.BPNavBarSearch-input::placeholder {
   color: var(--bp-c-text-3);
 }
 
-.VPNavBarSearch-input:hover,
-.VPNavBarSearch-input:focus {
+.BPNavBarSearch-input:hover,
+.BPNavBarSearch-input:focus {
   border-color: var(--bp-c-brand-1);
   background-color: var(--bp-c-bg);
 }
 
-.VPNavBarSearch-kbd {
+.BPNavBarSearch-kbd {
   position: absolute;
   right: 8px;
   padding: 2px 6px;
@@ -2110,7 +2110,7 @@ export const layoutCSS = `/**
 }
 
 /* Social/icon links cluster */
-.VPSocialLinks {
+.BPSocialLinks {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -2118,7 +2118,7 @@ export const layoutCSS = `/**
   border-left: 1px solid var(--bp-c-divider);
 }
 
-.VPSocialLinks > a {
+.BPSocialLinks > a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2129,22 +2129,22 @@ export const layoutCSS = `/**
   transition: color 0.25s, background-color 0.25s;
 }
 
-.VPSocialLinks > a:hover {
+.BPSocialLinks > a:hover {
   color: var(--bp-c-text-1);
   background-color: var(--bp-c-bg-soft);
 }
 
-.VPSocialLinks > a svg {
+.BPSocialLinks > a svg {
   width: 20px;
   height: 20px;
 }
 
 /* Content area */
-.VPContent {
+.BPContent {
   flex: 1;
 }
 
-.VPContent--doc {
+.BPContent--doc {
   position: fixed;
   top: var(--bp-nav-height, 64px);
   bottom: 0;
@@ -2153,48 +2153,48 @@ export const layoutCSS = `/**
   right: max(0px, calc((100vw - var(--bp-layout-max-width, 1440px)) / 2));
 }
 
-.VPContent--page {
+.BPContent--page {
   padding-top: var(--bp-nav-height, 64px);
 }
 
-.VPDoc {
+.BPDoc {
   padding: 32px 24px;
   padding-right: 32px;
 }
 
 @media (min-width: 1280px) {
-  .VPDoc {
+  .BPDoc {
     padding: 48px 32px 128px;
   }
 }
 
-.VPDocContent {
+.BPDocContent {
   max-width: 768px;
   margin: 0;
 }
 
-.VPPage {
+.BPPage {
   padding: 48px 24px;
   max-width: 768px;
   margin: 0 auto;
 }
 
 @media (min-width: 1280px) {
-  .VPPage {
+  .BPPage {
     padding: 64px 32px;
   }
 }
 
 /* Mobile sidebar drawer behaviour */
 @media (max-width: 959px) {
-  .VPNavBarSearch {
+  .BPNavBarSearch {
     display: none;
   }
-  .VPSocialLinks {
+  .BPSocialLinks {
     padding-left: 12px;
     gap: 8px;
   }
-  .VPNavBarMenu {
+  .BPNavBarMenu {
     display: none;
   }
 }
@@ -2203,7 +2203,7 @@ export const layoutCSS = `/**
  * Hero (home layout) — used by hero.stx + serve.ts generateHero
  * -------------------------------------------------------------------------- */
 
-.VPHero-name {
+.BPHero-name {
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -2215,7 +2215,7 @@ export const layoutCSS = `/**
   background-clip: text;
 }
 
-.VPHero-text {
+.BPHero-text {
   font-size: 40px;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -2224,7 +2224,7 @@ export const layoutCSS = `/**
   margin: 0 0 8px;
 }
 
-.VPHero-tagline {
+.BPHero-tagline {
   font-size: 18px;
   font-weight: 400;
   line-height: 1.6;
@@ -2233,25 +2233,25 @@ export const layoutCSS = `/**
 }
 
 @media (min-width: 960px) {
-  .VPHero-name {
+  .BPHero-name {
     font-size: 24px;
   }
-  .VPHero-text {
+  .BPHero-text {
     font-size: 56px;
   }
-  .VPHero-tagline {
+  .BPHero-tagline {
     font-size: 20px;
   }
 }
 
-.VPHero-actions {
+.BPHero-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 28px;
 }
 
-.VPButton {
+.BPButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2267,24 +2267,24 @@ export const layoutCSS = `/**
   cursor: pointer;
 }
 
-.VPButton-brand {
+.BPButton-brand {
   color: var(--bp-button-brand-text, #fff);
   background-color: var(--bp-c-brand-1);
   border-color: var(--bp-c-brand-1);
 }
 
-.VPButton-brand:hover {
+.BPButton-brand:hover {
   background-color: var(--bp-c-brand-2);
   border-color: var(--bp-c-brand-2);
 }
 
-.VPButton-alt {
+.BPButton-alt {
   color: var(--bp-c-text-1);
   background-color: transparent;
   border-color: var(--bp-c-divider);
 }
 
-.VPButton-alt:hover {
+.BPButton-alt:hover {
   border-color: var(--bp-c-text-2);
   color: var(--bp-c-brand-1);
 }
@@ -2293,39 +2293,39 @@ export const layoutCSS = `/**
  * Features grid — used by features.stx + serve.ts generateFeatures
  * -------------------------------------------------------------------------- */
 
-.VPHomeFeatures {
+.BPHomeFeatures {
   padding: 48px 24px;
   border-top: 1px solid var(--bp-c-divider);
 }
 
-.VPHomeFeatures-inner {
+.BPHomeFeatures-inner {
   max-width: 1152px;
   margin: 0 auto;
 }
 
-.VPFeatures {
+.BPFeatures {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
   gap: 16px;
 }
 
 @media (min-width: 640px) {
-  .VPFeatures {
+  .BPFeatures {
     grid-template-columns: repeat(2, 1fr);
     gap: 24px;
   }
 }
 
 @media (min-width: 960px) {
-  .VPHomeFeatures {
+  .BPHomeFeatures {
     padding: 64px 32px;
   }
-  .VPFeatures {
+  .BPFeatures {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
-.VPFeature {
+.BPFeature {
   display: block;
   padding: 24px;
   background-color: var(--bp-c-bg-soft, var(--bp-c-bg-alt));
@@ -2336,12 +2336,12 @@ export const layoutCSS = `/**
   color: inherit;
 }
 
-.VPFeature:hover {
+.BPFeature:hover {
   border-color: var(--bp-c-brand-1);
   box-shadow: 0 2px 12px rgba(86, 114, 205, 0.08);
 }
 
-.VPFeature-icon {
+.BPFeature-icon {
   width: 40px;
   height: 40px;
   display: flex;
@@ -2353,17 +2353,17 @@ export const layoutCSS = `/**
   margin-bottom: 12px;
 }
 
-.VPFeature-icon svg {
+.BPFeature-icon svg {
   width: 24px;
   height: 24px;
 }
 
-.VPFeature-icon-text {
+.BPFeature-icon-text {
   font-size: 24px;
   font-weight: 700;
 }
 
-.VPFeature-title {
+.BPFeature-title {
   margin: 0 0 8px;
   font-size: 16px;
   font-weight: 600;
@@ -2371,7 +2371,7 @@ export const layoutCSS = `/**
   color: var(--bp-c-text-1);
 }
 
-.VPFeature-details {
+.BPFeature-details {
   margin: 0;
   font-size: 14px;
   line-height: 1.6;
@@ -2476,7 +2476,7 @@ export const layoutCSS = `/**
  * Mobile nav / sidebar drawer
  * -------------------------------------------------------------------------- */
 
-.VPNavBarHamburger {
+.BPNavBarHamburger {
   display: none;
   width: 32px;
   height: 32px;
@@ -2491,22 +2491,22 @@ export const layoutCSS = `/**
   margin-left: -4px;
 }
 
-.VPNavBarHamburger:hover {
+.BPNavBarHamburger:hover {
   color: var(--bp-c-text-1);
   background-color: var(--bp-c-bg-soft);
 }
 
-.VPNavBarHamburger svg {
+.BPNavBarHamburger svg {
   width: 20px;
   height: 20px;
 }
 
 @media (max-width: 959px) {
-  .VPNavBarHamburger {
+  .BPNavBarHamburger {
     display: inline-flex;
   }
 
-  .VPSidebar {
+  .BPSidebar {
     transform: translateX(-100%);
     transition: transform 0.25s ease, box-shadow 0.25s ease;
     z-index: var(--bp-z-index-sidebar, 25);
@@ -2514,12 +2514,12 @@ export const layoutCSS = `/**
     box-shadow: none;
   }
 
-  .VPSidebar.is-open {
+  .BPSidebar.is-open {
     transform: translateX(0);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
   }
 
-  .VPSidebar-backdrop {
+  .BPSidebar-backdrop {
     position: fixed;
     inset: 0;
     background-color: rgba(0, 0, 0, 0.32);
@@ -2529,12 +2529,12 @@ export const layoutCSS = `/**
     z-index: calc(var(--bp-z-index-sidebar, 25) - 1);
   }
 
-  .VPSidebar-backdrop.is-open {
+  .BPSidebar-backdrop.is-open {
     opacity: 1;
     pointer-events: auto;
   }
 
-  .VPContent--doc {
+  .BPContent--doc {
     left: 0;
   }
 }

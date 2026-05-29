@@ -1,4 +1,4 @@
-<div class="VPHomeHero">
+<div class="BPHomeHero">
   <div class="hero-container">
     <div class="hero-content">
       {!! name !!}
@@ -11,7 +11,7 @@
 </div>
 
 <style>
-.VPHomeHero {
+.BPHomeHero {
   position: relative;
   padding: 64px 24px 48px;
 }
@@ -39,7 +39,7 @@
 }
 
 @media (min-width: 960px) {
-  .VPHomeHero {
+  .BPHomeHero {
     padding: 80px 64px 56px;
   }
 

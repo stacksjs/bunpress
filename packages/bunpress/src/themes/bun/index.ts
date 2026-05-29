@@ -814,7 +814,7 @@ p {
 }
 
 /**
- * VPDoc Styles - Documentation Content
+ * BPDoc Styles - Documentation Content
  * -------------------------------------------------------------------------- */
 
 .bp-doc h1,

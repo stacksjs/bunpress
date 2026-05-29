@@ -1,4 +1,4 @@
-<div class="VPSidebarItem sidebar-section">
+<div class="BPSidebarItem sidebar-section">
   <button class="sidebar-section-toggle" onclick="toggleSection(this.parentElement)" type="button">
     <span>{{ title }}</span>
     <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -67,7 +67,7 @@
   transform: rotate(-90deg);
 }
 
-.VPSidebarItem-link {
+.BPSidebarItem-link {
   display: block;
   padding: 6px 24px;
   color: var(--bp-c-text-2);
@@ -79,11 +79,11 @@
   margin-left: 0;
 }
 
-.VPSidebarItem-link:hover {
+.BPSidebarItem-link:hover {
   color: var(--bp-c-brand-1);
 }
 
-.VPSidebarItem-link.is-active {
+.BPSidebarItem-link.is-active {
   color: var(--bp-c-brand-1);
   font-weight: 600;
   border-left-color: var(--bp-c-brand-1);

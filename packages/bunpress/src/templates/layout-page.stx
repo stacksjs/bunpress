@@ -13,23 +13,23 @@
 </head>
 <body>
   <div class="Layout">
-    <!-- VPNav - Header -->
-    <header class="VPNav">
-      <div class="VPNavBar">
-        <div class="VPNavBarStart">
-          <a href="/" class="VPNavBarTitle">{{ title }}</a>
+    <!-- BPNav - Header -->
+    <header class="BPNav">
+      <div class="BPNavBar">
+        <div class="BPNavBarStart">
+          <a href="/" class="BPNavBarTitle">{{ title }}</a>
         </div>
-        <div class="VPNavBarEnd">
-          <div class="VPNavBarMenu">
+        <div class="BPNavBarEnd">
+          <div class="BPNavBarMenu">
             {!! nav !!}
           </div>
         </div>
       </div>
     </header>
 
-    <!-- VPContent - Full-width content without sidebar -->
-    <main class="VPContent VPContent--page">
-      <div class="VPPage">
+    <!-- BPContent - Full-width content without sidebar -->
+    <main class="BPContent BPContent--page">
+      <div class="BPPage">
         <article class="bp-doc">
           {!! content !!}
         </article>

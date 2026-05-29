@@ -1,5 +1,5 @@
-<div class="VPSidebar-backdrop" onclick="toggleSidebar(false)"></div>
-<nav class="VPSidebar">
+<div class="BPSidebar-backdrop" onclick="toggleSidebar(false)"></div>
+<nav class="BPSidebar">
   <div class="sidebar-content">
     {!! sections !!}
   </div>
@@ -7,8 +7,8 @@
 
 <script>
 function toggleSidebar(forceState) {
-  var sb = document.querySelector('.VPSidebar');
-  var bd = document.querySelector('.VPSidebar-backdrop');
+  var sb = document.querySelector('.BPSidebar');
+  var bd = document.querySelector('.BPSidebar-backdrop');
   if (!sb) return;
   var nextOpen = typeof forceState === 'boolean' ? forceState : !sb.classList.contains('is-open');
   sb.classList.toggle('is-open', nextOpen);
@@ -20,14 +20,14 @@ if (!window.__bpSidebarBound) {
   // Close drawer when the user clicks a sidebar link on mobile
   document.addEventListener('click', function(e) {
     if (window.matchMedia('(min-width: 960px)').matches) return;
-    var a = e.target.closest('.VPSidebar a');
+    var a = e.target.closest('.BPSidebar a');
     if (a) toggleSidebar(false);
   });
 }
 </script>
 
 <style>
-.VPSidebar {
+.BPSidebar {
   position: fixed;
   top: var(--bp-nav-height, 64px);
   bottom: 0;
@@ -48,7 +48,7 @@ if (!window.__bpSidebarBound) {
 
 /* At 960px+ (tablet), position sidebar normally */
 @media (min-width: 960px) {
-  .VPSidebar {
+  .BPSidebar {
     left: 0;
     width: var(--bp-sidebar-width, 272px);
   }
@@ -61,7 +61,7 @@ if (!window.__bpSidebarBound) {
 
 /* At 1440px+ (ultra-wide), extend sidebar to fill left margin */
 @media (min-width: 1440px) {
-  .VPSidebar {
+  .BPSidebar {
     /* Extend width to include left margin area */
     width: calc((100vw - var(--bp-layout-max-width, 1440px)) / 2 + var(--bp-sidebar-width, 272px));
     /* Padding pushes content to the right position */

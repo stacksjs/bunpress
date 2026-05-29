@@ -1,6 +1,6 @@
-<div class="VPHomeFeatures">
-  <div class="VPHomeFeatures-inner">
-    <div class="VPFeatures">
+<div class="BPHomeFeatures">
+  <div class="BPHomeFeatures-inner">
+    <div class="BPFeatures">
       {!! items !!}
     </div>
   </div>

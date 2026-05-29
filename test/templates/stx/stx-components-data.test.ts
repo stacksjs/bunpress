@@ -115,9 +115,9 @@ describe('Home layout body rendering', () => {
     const { html, frontmatter } = await markdownToHtml(md, ROOT)
     expect(frontmatter.layout).toBe('home')
     // Hero still rendered
-    expect(html).toContain('VPHero')
+    expect(html).toContain('BPHero')
     // Body content rendered below (previously dropped entirely)
-    expect(html).toContain('VPHome-content')
+    expect(html).toContain('BPHome-content')
     expect(html).toContain('We pass 19582 tests.')
     expect(html).toContain('Status')
   })
