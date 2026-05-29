@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.7...v0.1.8)
+
+### 🐛 Bug Fixes
+
+- **serve**: always inject base doc CSS; treat markdown.css as additive ([f2799f5](https://github.com/stacksjs/bunpress/commit/f2799f5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🧹 Chores
+
+- release v0.1.8 ([53ed57a](https://github.com/stacksjs/bunpress/commit/53ed57a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.6...v0.1.7)
 
 ### 🚀 Features
