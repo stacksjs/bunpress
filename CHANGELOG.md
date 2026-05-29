@@ -1,3 +1,27 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.6...v0.1.7)
+
+### 🚀 Features
+
+- **stx**: wrap stx in markdown like Vue in VitePress ([d625392](https://github.com/stacksjs/bunpress/commit/d625392)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### ♻️ Code Refactoring
+
+- rebrand VP* design-system class prefix to BP* ([55c4bab](https://github.com/stacksjs/bunpress/commit/55c4bab)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🤖 Continuous Integration
+
+- **buddy-bot**: add daily cleanup cron to workflow ([92d66b7](https://github.com/stacksjs/bunpress/commit/92d66b7)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_
+
+### 🧹 Chores
+
+- release v0.1.7 ([05b7462](https://github.com/stacksjs/bunpress/commit/05b7462)) _(by Chris <chrisbreuer93@gmail.com>)_
+- align monorepo versions to 0.1.6 and add release:{patch,minor,major} scripts ([e23c454](https://github.com/stacksjs/bunpress/commit/e23c454)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 ## [0.1.6](https://github.com/stacksjs/bunpress/compare/v0.1.5...v0.1.6)
 
 ### 🐛 Bug Fixes
