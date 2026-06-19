@@ -65,7 +65,45 @@ interface RssItem {
 }
 
 /**
- * Generate RSS feed from markdown files
+ * Build an RSS feed from a directory of markdown files and return the XML
+ * string. Use this to serve a feed dynamically from a request handler; use
+ * {@link generateRssFeed} to write it to disk during a static build.
+ *
+ * `config.sitemap.baseUrl` is the absolute link base, and may include a path
+ * prefix (e.g. `https://example.com/blog`).
+ */
+export async function buildRssFeed(
+  docsDir: string,
+  config: BunPressConfig,
+  rssConfig?: RssFeedConfig,
+): Promise<string> {
+  const baseUrl = config.sitemap?.baseUrl || ''
+  const feedTitle = rssConfig?.title || config.title || config.markdown?.title || 'Documentation Feed'
+  const feedDescription = rssConfig?.description || config.description || config.markdown?.meta?.description || 'Documentation updates'
+  const feedAuthor = rssConfig?.author || 'Documentation Team'
+  const feedEmail = rssConfig?.email || ''
+  const feedLanguage = rssConfig?.language || 'en-us'
+  const maxItems = rssConfig?.maxItems || 20
+  const fullContent = rssConfig?.fullContent || false
+
+  const items = await collectRssItems(docsDir, baseUrl, fullContent)
+  items.sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime())
+  const limitedItems = items.slice(0, maxItems)
+
+  return generateRssXml({
+    title: feedTitle,
+    description: feedDescription,
+    link: baseUrl,
+    language: feedLanguage,
+    author: feedAuthor,
+    email: feedEmail,
+    items: limitedItems,
+  })
+}
+
+/**
+ * Generate an RSS feed and write it to disk (static-build helper). For dynamic
+ * serving, call {@link buildRssFeed} and return the string yourself.
  */
 export async function generateRssFeed(
   docsDir: string,
@@ -77,48 +115,21 @@ export async function generateRssFeed(
     return
   }
 
-  const baseUrl = config.sitemap?.baseUrl
-  if (!baseUrl) {
+  if (!config.sitemap?.baseUrl) {
     if (config.verbose) {
       console.warn('⚠️  RSS feed generation skipped: baseUrl not configured')
     }
     return
   }
 
-  const feedTitle = rssConfig.title || config.title || config.markdown?.title || 'Documentation Feed'
-  const feedDescription = rssConfig.description || config.description || config.markdown?.meta?.description || 'Documentation updates'
-  const feedAuthor = rssConfig.author || 'Documentation Team'
-  const feedEmail = rssConfig.email || ''
-  const feedLanguage = rssConfig.language || 'en-us'
+  const xml = await buildRssFeed(docsDir, config, rssConfig)
   const filename = rssConfig.filename || 'feed.xml'
-  const maxItems = rssConfig.maxItems || 20
-  const fullContent = rssConfig.fullContent || false
-
-  // Collect RSS items
-  const items = await collectRssItems(docsDir, baseUrl, fullContent)
-
-  // Sort by date (newest first)
-  items.sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime())
-
-  // Limit number of items
-  const limitedItems = items.slice(0, maxItems)
-
-  // Generate RSS XML
-  const xml = generateRssXml({
-    title: feedTitle,
-    description: feedDescription,
-    link: baseUrl,
-    language: feedLanguage,
-    author: feedAuthor,
-    email: feedEmail,
-    items: limitedItems,
-  })
-
   const outputPath = path.join(outputDir, filename)
   await fs.promises.writeFile(outputPath, xml, 'utf-8')
 
   if (config.verbose) {
-    console.log(`✅ RSS feed generated: ${outputPath} (${limitedItems.length} items)`)
+    const count = (xml.match(/<item>/g) || []).length
+    console.log(`✅ RSS feed generated: ${outputPath} (${count} items)`)
   }
 }
 

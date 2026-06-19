@@ -3,7 +3,42 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 
 /**
- * Generate XML sitemap from markdown files
+ * Collect + transform sitemap entries for a docs directory. Shared by
+ * {@link buildSitemap} and {@link generateSitemap}.
+ */
+async function sitemapEntriesFor(docsDir: string, config: BunPressConfig, baseUrl: string): Promise<SitemapEntry[]> {
+  const sitemapConfig = config.sitemap
+  const entries = await collectSitemapEntries(
+    docsDir,
+    baseUrl,
+    sitemapConfig?.defaultPriority ?? 0.5,
+    sitemapConfig?.defaultChangefreq || 'monthly',
+    sitemapConfig?.exclude || [],
+    sitemapConfig?.priorityMap || {},
+    sitemapConfig?.changefreqMap || {},
+  )
+  return sitemapConfig?.transform
+    ? entries.map(entry => sitemapConfig.transform!(entry)).filter(Boolean) as SitemapEntry[]
+    : entries
+}
+
+/**
+ * Build an XML sitemap for a directory of markdown files and return the string.
+ * Use this to serve a sitemap dynamically from a request handler; use
+ * {@link generateSitemap} to write it to disk during a static build.
+ *
+ * `config.sitemap.baseUrl` is prefixed onto every `<loc>` and may include a
+ * path (e.g. `https://example.com/blog`).
+ */
+export async function buildSitemap(docsDir: string, config: BunPressConfig): Promise<string> {
+  const baseUrl = (config.sitemap?.baseUrl || '').replace(/\/$/, '')
+  const entries = await sitemapEntriesFor(docsDir, config, baseUrl)
+  return generateSitemapXml(entries, baseUrl)
+}
+
+/**
+ * Generate XML sitemap from markdown files and write it to disk (static-build
+ * helper). For dynamic serving, call {@link buildSitemap}.
  */
 export async function generateSitemap(
   docsDir: string,
@@ -27,26 +62,10 @@ export async function generateSitemap(
 
   const baseUrl = sitemapConfig.baseUrl.replace(/\/$/, '') // Remove trailing slash
   const filename = sitemapConfig.filename || 'sitemap.xml'
-  const defaultPriority = sitemapConfig.defaultPriority ?? 0.5
-  const defaultChangefreq: SitemapChangefreq = sitemapConfig.defaultChangefreq || 'monthly'
   const maxUrlsPerFile = sitemapConfig.maxUrlsPerFile || 50000
   const useSitemapIndex = sitemapConfig.useSitemapIndex || false
 
-  // Find all markdown files
-  const entries = await collectSitemapEntries(
-    docsDir,
-    baseUrl,
-    defaultPriority,
-    defaultChangefreq,
-    sitemapConfig.exclude || [],
-    sitemapConfig.priorityMap || {},
-    sitemapConfig.changefreqMap || {},
-  )
-
-  // Apply custom transform if provided
-  const transformedEntries = sitemapConfig.transform
-    ? entries.map(entry => sitemapConfig.transform!(entry)).filter(Boolean) as SitemapEntry[]
-    : entries
+  const transformedEntries = await sitemapEntriesFor(docsDir, config, baseUrl)
 
   // Log verbose output
   if (config.verbose) {
@@ -58,7 +77,7 @@ export async function generateSitemap(
     await generateSitemapIndex(transformedEntries, outputDir, baseUrl, filename, maxUrlsPerFile)
   }
   else {
-    const xml = generateSitemapXml(transformedEntries)
+    const xml = generateSitemapXml(transformedEntries, baseUrl)
     const outputPath = path.join(outputDir, filename)
     await fs.promises.writeFile(outputPath, xml, 'utf-8')
 
@@ -193,9 +212,12 @@ function matchesPattern(url: string, pattern: string): boolean {
 /**
  * Generate sitemap XML
  */
-function generateSitemapXml(entries: SitemapEntry[]): string {
+function generateSitemapXml(entries: SitemapEntry[], baseUrl = ''): string {
+  const base = baseUrl.replace(/\/$/, '')
   const urls = entries.map((entry) => {
-    const loc = entry.url
+    // Emit an absolute <loc> — relative locs are invalid in a sitemap. `base`
+    // may include a path prefix (e.g. https://example.com/blog).
+    const loc = /^https?:\/\//.test(entry.url) ? entry.url : `${base}${entry.url}`
     const lastmod = entry.lastmod ? `\n    <lastmod>${formatDate(entry.lastmod)}</lastmod>` : ''
     const changefreq = entry.changefreq ? `\n    <changefreq>${entry.changefreq}</changefreq>` : ''
     const priority = entry.priority !== undefined ? `\n    <priority>${entry.priority.toFixed(1)}</priority>` : ''
@@ -227,7 +249,7 @@ async function generateSitemapIndex(
   // Generate individual sitemap files
   for (let i = 0; i < chunks.length; i++) {
     const filename = `sitemap-${i + 1}.xml`
-    const xml = generateSitemapXml(chunks[i])
+    const xml = generateSitemapXml(chunks[i], baseUrl)
     const outputPath = path.join(outputDir, filename)
     await fs.promises.writeFile(outputPath, xml, 'utf-8')
     sitemapFiles.push(filename)
