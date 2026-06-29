@@ -461,11 +461,11 @@ function generateSPARouterScript(): string {
 
 /**
  * Generate navigation HTML from BunPress config
- * Supports both VitePress-style (themeConfig.nav) and legacy (nav) formats
+ * Supports VitePress-style (themeConfig.nav), markdown.nav, and legacy
+ * top-level nav formats.
  */
 function generateNav(config: BunPressConfig): string {
-  // Support both VitePress-style themeConfig.nav and legacy nav
-  const navConfig = config.themeConfig?.nav || config.nav
+  const navConfig = config.themeConfig?.nav || config.markdown?.nav || config.nav
 
   if (!navConfig || navConfig.length === 0) {
     return ''
@@ -2296,7 +2296,7 @@ export async function startServer(options: {
   config?: BunPressConfig
 } = {}): Promise<{ server: any, url: string, stop: () => void }> {
   const bunPressConfig = options.config || config as BunPressConfig
-  const port = options.port || 3000
+  const port = options.port ?? 3000
   const root = options.root || './docs'
 
   const server = Bun.serve({

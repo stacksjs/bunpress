@@ -10,7 +10,6 @@ import type { BunPressConfig } from '../src/types'
 import { generateRobotsTxt } from '../src/robots'
 import { generateRssFeed } from '../src/rss'
 import { generateSitemap } from '../src/sitemap'
-import { serveCLI } from '../src/serve'
 import { cleanCommand } from './commands/clean'
 import { configInitCommand, configShowCommand, configValidateCommand } from './commands/config'
 import { doctorCommand } from './commands/doctor'
@@ -421,7 +420,9 @@ cli
       })
     }
 
-    // Start the server using the serve.ts implementation
+    // Start the server using the serve.ts implementation. Keep this lazy so
+    // build-only CLI startup does not load dev-server dependencies.
+    const { serveCLI } = await import('../src/serve')
     await serveCLI({
       port,
       root,
@@ -668,4 +669,10 @@ cli
 
 cli.help()
 cli.version(version)
-cli.parse()
+
+const argvEntrypoint = Bun.argv[1] || ''
+const isCliEntrypoint = argvEntrypoint.endsWith('/bunpress') || argvEntrypoint.endsWith('/cli.ts') || argvEntrypoint.endsWith('/cli.js')
+
+if (isCliEntrypoint) {
+  cli.parse()
+}

@@ -16,7 +16,14 @@
     <!-- BPNav - Header -->
     <header class="BPNav">
       <div class="BPNavBar">
-        {!! nav !!}
+        <div class="BPNavBarStart">
+          <a href="/" class="BPNavBarTitle">{{ title }}</a>
+        </div>
+        <div class="BPNavBarEnd">
+          <div class="BPNavBarMenu">
+            {!! nav !!}
+          </div>
+        </div>
       </div>
     </header>
 

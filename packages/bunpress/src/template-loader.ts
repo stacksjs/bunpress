@@ -1,5 +1,4 @@
 import { join } from 'node:path'
-import { renderString } from '@stacksjs/stx'
 
 const TEMPLATES_DIR = join(import.meta.dir, 'templates')
 
@@ -27,12 +26,11 @@ export async function loadTemplate(name: string): Promise<string> {
 }
 
 /**
- * Render a template with data using stx engine.
- * Supports full stx syntax: {{ }}, {!! !!}, @if/@else/@endif,
- * @foreach/@endforeach, @for/@endfor, @include, <script server>, etc.
+ * Render a bundled Bunpress template.
+ * Supports escaped {{ key }} and raw {!! key !!} placeholders.
  */
 export async function renderTemplate(template: string, data: Record<string, any>): Promise<string> {
-  return renderString(template, data)
+  return interpolateTemplate(template, data)
 }
 
 /**
@@ -40,7 +38,7 @@ export async function renderTemplate(template: string, data: Record<string, any>
  */
 export async function render(templateName: string, data: Record<string, any>): Promise<string> {
   const template = await loadTemplate(templateName)
-  return renderTemplate(template, data)
+  return interpolateTemplate(template, data)
 }
 
 /**
@@ -48,4 +46,35 @@ export async function render(templateName: string, data: Record<string, any>): P
  */
 export function clearTemplateCache(): void {
   templateCache.clear()
+}
+
+function interpolateTemplate(template: string, data: Record<string, any>): string {
+  return template
+    .replace(/\{!!\s*([\w.]+)\s*!!\}/g, (_match, key) => stringifyValue(readTemplateValue(data, key)))
+    .replace(/\{\{\s*([\w.]+)\s*\}\}/g, (_match, key) => escapeHtml(stringifyValue(readTemplateValue(data, key))))
+}
+
+function readTemplateValue(data: Record<string, any>, key: string): unknown {
+  return key.split('.').reduce<unknown>((value, part) => {
+    if (value == null || typeof value !== 'object')
+      return undefined
+
+    return (value as Record<string, unknown>)[part]
+  }, data)
+}
+
+function stringifyValue(value: unknown): string {
+  if (value == null)
+    return ''
+
+  return String(value)
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
 }

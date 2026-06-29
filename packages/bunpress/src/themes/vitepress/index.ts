@@ -1952,8 +1952,10 @@ export const layoutCSS = `/**
 }
 
 .BPNavBarTitle {
+  display: inline-flex;
+  align-items: center;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 750;
   color: var(--bp-c-text-1);
   white-space: nowrap;
   text-decoration: none;
@@ -1973,8 +1975,8 @@ export const layoutCSS = `/**
 .BPNavBarMenu a,
 .BPNavBarMenu .BPNavBarMenu-link {
   font-size: 14px;
-  font-weight: 500;
-  color: var(--bp-c-text-1);
+  font-weight: 600;
+  color: var(--bp-c-text-2);
   text-decoration: none;
   transition: color 0.25s;
   cursor: pointer;
@@ -2204,7 +2206,7 @@ export const layoutCSS = `/**
  * -------------------------------------------------------------------------- */
 
 .BPHero-name {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.2;
@@ -2216,7 +2218,7 @@ export const layoutCSS = `/**
 }
 
 .BPHero-text {
-  font-size: 40px;
+  font-size: 48px;
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.1;
@@ -2225,6 +2227,7 @@ export const layoutCSS = `/**
 }
 
 .BPHero-tagline {
+  max-width: 720px;
   font-size: 18px;
   font-weight: 400;
   line-height: 1.6;
@@ -2268,7 +2271,7 @@ export const layoutCSS = `/**
 }
 
 .BPButton-brand {
-  color: var(--bp-button-brand-text, #fff);
+  color: var(--bp-button-brand-text, #03110b);
   background-color: var(--bp-c-brand-1);
   border-color: var(--bp-c-brand-1);
 }
@@ -2327,7 +2330,7 @@ export const layoutCSS = `/**
 
 .BPFeature {
   display: block;
-  padding: 24px;
+  padding: 26px;
   background-color: var(--bp-c-bg-soft, var(--bp-c-bg-alt));
   border: 1px solid var(--bp-c-divider);
   border-radius: 12px;
