@@ -1,3 +1,18 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.9...v0.1.10)
+
+### 🐛 Bug Fixes
+
+- improve bunpress docs rendering ([284105a](https://github.com/stacksjs/bunpress/commit/284105a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🧹 Chores
+
+- release v0.1.10 ([71764de](https://github.com/stacksjs/bunpress/commit/71764de)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([c897e0e](https://github.com/stacksjs/bunpress/commit/c897e0e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.8...v0.1.9)
 
 ### 🚀 Features
