@@ -2143,7 +2143,7 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
       ? await renderMarkdownBody(content, frontmatter, rootDir)
       : ''
     const body = bodyHtml
-      ? `<div class="BPHome-content"><div class="vp-doc container">${bodyHtml}</div></div>`
+      ? `<div class="BPHome-content"><div class="bp-doc vp-doc container">${bodyHtml}</div></div>`
       : ''
     return {
       html: heroHtml + featuresHtml + body,

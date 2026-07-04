@@ -2382,6 +2382,26 @@ export const layoutCSS = `/**
 }
 
 /**
+ * Home page markdown body — rendered below the hero + features grid.
+ * Wrapped as .BPHome-content > .bp-doc.vp-doc.container by markdownToHtml.
+ * -------------------------------------------------------------------------- */
+
+.BPHome-content {
+  padding: 48px 24px 96px;
+}
+
+.BPHome-content .container {
+  margin: 0 auto;
+  max-width: 1152px;
+}
+
+@media (min-width: 960px) {
+  .BPHome-content {
+    padding: 64px 32px 128px;
+  }
+}
+
+/**
  * Inline content — badges, external link icons
  * -------------------------------------------------------------------------- */
 
