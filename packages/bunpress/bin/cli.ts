@@ -196,8 +196,14 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
       // Wrap in layout (handles navbar, sidebar, SEO, etc.)
       const fullHtml = await wrapInLayout(html, bunPressConfig, currentPath, layout)
 
-      // Determine output path
-      const outputPath = join(outdir, relativePath + '.html')
+      // Determine output path. Emit directory-style (`<path>/index.html`) so the
+      // clean, extensionless URLs bunpress links to (`/guide/install`) resolve on
+      // directory-rewriting hosts and static servers alike. The homepage and any
+      // page already named `index` stay flat.
+      const isIndex = relativePath === 'index' || relativePath.endsWith('/index')
+      const outputPath = isIndex
+        ? join(outdir, `${relativePath}.html`)
+        : join(outdir, relativePath, 'index.html')
 
       // Ensure output directory exists
       const outputDir = outputPath.substring(0, outputPath.lastIndexOf('/'))
