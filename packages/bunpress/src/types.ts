@@ -12,6 +12,14 @@ export interface BunPressConfig {
   description?: string
 
   /**
+   * Force the docs color theme. `'dark'`/`'light'` (or `true`/`false`) render
+   * that theme with no JS and no flash-of-wrong-theme, and for crawlers;
+   * `'auto'` (default) follows the OS preference and the theme toggle. A forced
+   * value is SSR'd onto `<html>` and honored by the client theme script.
+   */
+  darkMode?: boolean | 'auto' | 'dark' | 'light'
+
+  /**
    * Theme configuration (VitePress-style)
    */
   themeConfig?: ThemeConfig & {

@@ -748,7 +748,14 @@ export const defaultConfig: BunPressConfig = {
     scripts: [`
 // Theme toggle functionality
 function getPreferredTheme() {
-  // Check localStorage first
+  // A site can force a theme (config darkMode: 'dark' | 'light'), SSR'd as
+  // data-theme-mode on <html>. Honor it over localStorage/system so a forced
+  // theme is never overridden (and the SSR'd class is never stripped).
+  const forced = document.documentElement.getAttribute('data-theme-mode');
+  if (forced === 'dark' || forced === 'light') {
+    return forced;
+  }
+  // Check localStorage next
   const stored = localStorage.getItem('bunpress-theme');
   if (stored) {
     return stored;
@@ -775,12 +782,25 @@ function toggleTheme() {
 
 // Initialize theme on page load
 (function() {
+  const forced = document.documentElement.getAttribute('data-theme-mode');
   const theme = getPreferredTheme();
   setTheme(theme);
 
-  // Listen for system theme changes
+  // A forced theme has no alternate to switch to; hide the toggle so nobody
+  // lands on a broken half-themed page from clicking it.
+  if (forced === 'dark' || forced === 'light') {
+    const toggle = document.querySelector('.theme-toggle');
+    if (toggle)
+      toggle.style.display = 'none';
+    return;
+  }
+
+  // Listen for system theme changes. Skip when the site forces a theme, and
+  // only auto-switch if the user hasn't manually set a preference.
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-    // Only auto-switch if user hasn't manually set a preference
+    const forced = document.documentElement.getAttribute('data-theme-mode');
+    if (forced === 'dark' || forced === 'light')
+      return;
     if (!localStorage.getItem('bunpress-theme')) {
       setTheme(e.matches ? 'dark' : 'light');
     }

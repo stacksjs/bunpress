@@ -771,12 +771,26 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   // Pre-generate nav so we can scan all HTML for crosswind utility classes
   const nav = generateNav(config)
 
+  // Resolve the initial color theme. A forced 'dark'/'light' is SSR'd onto
+  // <html> so the page renders in the right theme with no JS, no flash, and for
+  // crawlers; `data-theme-mode` lets the client theme script honor the forced
+  // choice instead of the OS preference. 'auto' (default) leaves it to the script.
+  const rawDarkMode = config.darkMode ?? config.themeConfig?.darkMode ?? 'auto'
+  const themeMode = rawDarkMode === true || rawDarkMode === 'dark'
+    ? 'dark'
+    : rawDarkMode === false || rawDarkMode === 'light'
+      ? 'light'
+      : 'auto'
+  const htmlClass = themeMode === 'dark' ? 'dark' : ''
+
   // Home layout - nav bar + hero/features/body, no sidebar
   if (layout === 'home') {
     const crosswindCSS = await generateCrosswindCSSFromHtml(`${content}\n${nav}`)
     const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}`
 
     const html = await render('layout-home', {
+      htmlClass,
+      themeMode,
       title,
       description,
       meta: allMeta,
@@ -793,6 +807,8 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
     const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}`
 
     const html = await render('layout-page', {
+      htmlClass,
+      themeMode,
       title,
       description,
       meta: allMeta,
@@ -812,6 +828,8 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}`
 
   const html = await render('layout-doc', {
+    htmlClass,
+    themeMode,
     title,
     description,
     meta: allMeta,
