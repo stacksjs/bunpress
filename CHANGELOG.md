@@ -1,3 +1,23 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.10...v0.1.11)
+
+### 🐛 Bug Fixes
+
+- **theme**: style the home layout markdown body ([a3d9508](https://github.com/stacksjs/bunpress/commit/a3d9508)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **build**: emit directory-style output so clean URLs resolve ([7a0bbc8](https://github.com/stacksjs/bunpress/commit/7a0bbc8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **theme**: honor a forced darkMode so dark-only sites render everywhere ([c7ed801](https://github.com/stacksjs/bunpress/commit/c7ed801)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🤖 Continuous Integration
+
+- make pantry commit publish non-blocking ([4c8a8a0](https://github.com/stacksjs/bunpress/commit/4c8a8a0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🧹 Chores
+
+- release v0.1.11 ([5a925e0](https://github.com/stacksjs/bunpress/commit/5a925e0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.9...v0.1.10)
 
 ### 🐛 Bug Fixes
