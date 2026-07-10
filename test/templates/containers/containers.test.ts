@@ -6,7 +6,7 @@ const TEST_MARKDOWN_DIR = './test/markdown/containers'
 describe('Custom Containers', () => {
   describe('Info Container', () => {
     it('should render ::: info container with default title', async () => {
-      const { server: _server, stop } = await startServer({ port: 4001, root: TEST_MARKDOWN_DIR })
+      const { url, stop } = await startServer({ port: 0, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -14,7 +14,7 @@ describe('Custom Containers', () => {
           '::: info\nThis is an info message.\n:::',
         )
 
-        const response = await fetch('http://localhost:4001/test-container-info')
+        const response = await fetch(`${url}/test-container-info`)
         const html = await response.text()
 
         expect(html).toContain('<div class="custom-block info">')
@@ -28,7 +28,7 @@ describe('Custom Containers', () => {
     })
 
     it('should render ::: info container with custom title', async () => {
-      const { server: _server, stop } = await startServer({ port: 4002, root: TEST_MARKDOWN_DIR })
+      const { url, stop } = await startServer({ port: 0, root: TEST_MARKDOWN_DIR })
 
       try {
         await Bun.write(
@@ -36,7 +36,7 @@ describe('Custom Containers', () => {
           '::: info Custom Title\nThis is an info message.\n:::',
         )
 
-        const response = await fetch('http://localhost:4002/test-container-info-custom')
+        const response = await fetch(`${url}/test-container-info-custom`)
         const html = await response.text()
 
         expect(html).toContain('<div class="custom-block info">')
