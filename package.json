@@ -24,21 +24,21 @@
     "build:plugin": "cd packages/bun-plugin && bun run build",
     "compile": "cd packages/bunpress && bun run compile",
     "compile:all": "cd packages/bunpress && bun run compile:all",
-    "fresh": "bunx rimraf node_modules/ packages/*/node_modules/ bun.lock && bun i",
+    "fresh": "bun x rimraf node_modules/ packages/*/node_modules/ bun.lock && bun i",
     "prepublishOnly": "bun run build",
     "test": "bun test",
     "test:quick": "bun test --timeout=10000",
     "test:full": "bun test --timeout=60000 --no-bail",
-    "lint": "bunx --bun pickier .",
-    "lint:fix": "bunx --bun pickier . --fix",
-    "format": "bunx --bun pickier . --format",
-    "format:fix": "bunx --bun pickier . --format --write",
-    "changelog": "bunx logsmith --verbose",
-    "changelog:generate": "bunx logsmith --output CHANGELOG.md",
-    "release": "bunx --bun bumpx prompt --recursive",
-    "release:patch": "bunx --bun bumpx patch --recursive --yes",
-    "release:minor": "bunx --bun bumpx minor --recursive --yes",
-    "release:major": "bunx --bun bumpx major --recursive --yes",
+    "lint": "bun x --bun pickier .",
+    "lint:fix": "bun x --bun pickier . --fix",
+    "format": "bun x --bun pickier . --format",
+    "format:fix": "bun x --bun pickier . --format --write",
+    "changelog": "bun x logsmith --verbose",
+    "changelog:generate": "bun x logsmith --output CHANGELOG.md",
+    "release": "bun x --bun bumpx prompt --recursive",
+    "release:patch": "bun x --bun bumpx patch --recursive --commit --tag --push --yes",
+    "release:minor": "bun x --bun bumpx minor --recursive --commit --tag --push --yes",
+    "release:major": "bun x --bun bumpx major --recursive --commit --tag --push --yes",
     "dev:docs": "bun packages/bunpress/bin/cli.ts dev",
     "build:docs": "bun packages/bunpress/bin/cli.ts build --outdir ./dist",
     "preview:docs": "bun packages/bunpress/bin/cli.ts preview --outdir ./dist",
@@ -51,7 +51,7 @@
     "@stacksjs/logsmith": "^0.2.1",
     "@stacksjs/ts-i18n": "^0.0.0",
     "bun-git-hooks": "^0.3.1",
-    "bun-plugin-dtsx": "0.9.13",
+    "bun-plugin-dtsx": "^0.10.4",
     "bun-types": "^1.3.11",
     "bunfig": "^0.15.6",
     "ts-syntax-highlighter": "^0.2.1",
@@ -60,10 +60,10 @@
   "git-hooks": {
     "pre-commit": {
       "staged-lint": {
-        "*.{js,ts,json,yaml,yml,md}": "bunx --bun pickier --fix"
+        "*.{js,ts,json,yaml,yml,md}": "bun x --bun pickier --fix"
       }
     },
-    "commit-msg": "bunx gitlint --edit .git/COMMIT_EDITMSG"
+    "commit-msg": "bun x gitlint --edit .git/COMMIT_EDITMSG"
   },
   "overrides": {
     "typescript": "^7.0.2"
