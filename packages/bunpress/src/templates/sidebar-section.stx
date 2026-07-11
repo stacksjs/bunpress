@@ -1,4 +1,4 @@
-<div class="BPSidebarItem sidebar-section">
+<div class="BPSidebarItem sidebar-section{{ collapsedClass }}">
   <button class="sidebar-section-toggle" onclick="toggleSection(this.parentElement)" type="button">
     <span>{{ title }}</span>
     <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">

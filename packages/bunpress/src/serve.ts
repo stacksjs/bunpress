@@ -52,6 +52,7 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
     return await render('sidebar-section', {
       title: section.text,
       items: itemsHtml,
+      collapsedClass: section.collapsed ? ' collapsed' : '',
     })
   }))
 

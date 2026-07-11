@@ -371,6 +371,8 @@ export interface SidebarItem {
   text: string
   link?: string
   items?: SidebarItem[]
+  /** Whether a group starts with its nested items hidden. */
+  collapsed?: boolean
 }
 
 /**
@@ -830,6 +832,21 @@ export interface SearchResult {
  * Theme configuration
  */
 export interface ThemeConfig {
+  /** Path to the site logo. */
+  logo?: string
+
+  /** Content rendered in the documentation footer. */
+  footer?: {
+    message?: string
+    copyright?: string
+  }
+
+  /** Links to the project's social profiles. */
+  socialLinks?: Array<{
+    icon: string
+    link: string
+  }>
+
   /**
    * Color palette
    */

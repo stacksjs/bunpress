@@ -19,9 +19,12 @@ describe('mounted base path output', () => {
           baseUrl: 'https://stacksjs.com/docs',
         },
         themeConfig: {
+          logo: '/images/logo.svg',
+          footer: { message: 'Released under MIT.' },
+          socialLinks: [{ icon: 'github', link: 'https://github.com/stacksjs/bunpress' }],
           nav: [{ text: 'Guide', link: '/guide/get-started' }],
           sidebar: {
-            '/': [{ text: 'Guide', items: [{ text: 'Intro', link: '/guide/intro' }] }],
+            '/': [{ text: 'Guide', collapsed: true, items: [{ text: 'Intro', link: '/guide/intro' }] }],
           },
         },
       },
@@ -30,6 +33,7 @@ describe('mounted base path output', () => {
 
     expect(html).toContain('href="/docs/guide/get-started"')
     expect(html).toContain('href="/docs/guide/intro"')
+    expect(html).toContain('class="BPSidebarItem sidebar-section collapsed"')
     expect(html).toContain('src="/docs/images/logo.svg"')
     expect(html).toContain('action="/docs/search"')
     expect(html).toContain('href="https://stacksjs.com/docs/guide/get-started"')
