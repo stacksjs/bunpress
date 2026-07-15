@@ -1,3 +1,14 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.12...v0.1.13)
+
+### 🧹 Chores
+
+- release v0.1.13 ([bf445cb](https://github.com/stacksjs/bunpress/commit/bf445cb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **pkg**: add sideEffects:false for bundler tree-shaking (publint) ([6e6e510](https://github.com/stacksjs/bunpress/commit/6e6e510)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.10...v0.1.11)
 
 ### 🐛 Bug Fixes
