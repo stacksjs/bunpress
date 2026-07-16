@@ -55,7 +55,7 @@
   "dependencies": {
     "@stacksjs/stx": "^0.2.82",
     "@stacksjs/ts-md": "^0.1.1",
-    "@stacksjs/ts-cloud": "^0.7.10",
+    "@stacksjs/ts-cloud": "^0.7.26",
     "bunfig": "^0.15.6"
   },
   "devDependencies": {
