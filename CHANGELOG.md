@@ -1,3 +1,14 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.18...v0.1.19)
+
+### 🧹 Chores
+
+- release v0.1.19 ([b908519](https://github.com/stacksjs/bunpress/commit/b908519)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: update ts-cloud ([0cfdd63](https://github.com/stacksjs/bunpress/commit/0cfdd63)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.17...v0.1.18)
 
 ### 🐛 Bug Fixes
