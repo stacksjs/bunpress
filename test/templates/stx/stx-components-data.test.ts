@@ -52,6 +52,25 @@ describe('Global data files (.data/*.json)', () => {
     const { html } = await markdownToHtml(`# Score\n\nWe pass {{ data.stats.passing }} tests.`, ROOT)
     expect(html).toContain('We pass 19582 tests.')
   })
+
+  it('does not compile fenced scripts when live stx exists elsewhere', async () => {
+    const md = `# Score
+
+We pass {{ data.stats.passing }} tests.
+
+\`\`\`html
+<script setup lang="ts">
+const HeavyComponent = defineAsyncComponent(() =>
+  import('@/components/HeavyComponent.stx')
+)
+</script>
+\`\`\``
+    const { html } = await markdownToHtml(md, ROOT)
+
+    expect(html).toContain('We pass 19582 tests.')
+    expect(html).toContain('@/components/HeavyComponent.stx')
+    expect(html).not.toContain('Could not resolve')
+  })
 })
 
 describe('stx component resolution', () => {

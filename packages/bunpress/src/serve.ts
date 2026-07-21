@@ -2212,7 +2212,19 @@ async function renderMarkdownBody(content: string, frontmatter: any, rootDir: st
   if (hasStxSyntax) {
     try {
       const stx = await import('@stacksjs/stx')
-      processedContent = await stx.renderString(processedContent, stxContext)
+      const codeSegments: string[] = []
+      const maskedContent = processedContent
+        .replace(/```[\s\S]*?```/g, (segment) => {
+          codeSegments.push(segment)
+          return `\u0000BPSTXCODE${codeSegments.length - 1}\u0000`
+        })
+        .replace(/`[^`\n]*`/g, (segment) => {
+          codeSegments.push(segment)
+          return `\u0000BPSTXCODE${codeSegments.length - 1}\u0000`
+        })
+
+      processedContent = await stx.renderString(maskedContent, stxContext)
+      processedContent = processedContent.replace(/\u0000BPSTXCODE(\d+)\u0000/g, (_, index) => codeSegments[Number(index)] ?? '')
     }
     catch {
       // stx not available or render failed — continue with raw content
