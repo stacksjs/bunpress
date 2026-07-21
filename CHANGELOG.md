@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.16...v0.1.17)
+
+### 🐛 Bug Fixes
+
+- **seo**: ignore links in comments ([ac77b3e](https://github.com/stacksjs/bunpress/commit/ac77b3e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🧹 Chores
+
+- release v0.1.17 ([fb80717](https://github.com/stacksjs/bunpress/commit/fb80717)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.15...v0.1.16)
 
 ### 🐛 Bug Fixes
