@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.17...v0.1.18)
+
+### 🐛 Bug Fixes
+
+- **seo**: serialize valid frontmatter ([ef192f3](https://github.com/stacksjs/bunpress/commit/ef192f3)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🧹 Chores
+
+- release v0.1.18 ([9ca0c1d](https://github.com/stacksjs/bunpress/commit/9ca0c1d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.16...v0.1.17)
 
 ### 🐛 Bug Fixes
