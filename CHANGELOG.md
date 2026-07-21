@@ -1,3 +1,19 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.13...v0.1.14)
+
+### 🐛 Bug Fixes
+
+- **build**: validate the published entrypoint ([46a2f6b](https://github.com/stacksjs/bunpress/commit/46a2f6b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🧹 Chores
+
+- release v0.1.14 ([83123e0](https://github.com/stacksjs/bunpress/commit/83123e0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: bump @stacksjs/ts-cloud to ^0.7.26 ([7ea3916](https://github.com/stacksjs/bunpress/commit/7ea3916)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: declare bun ^1.3.14 in deps.yaml ([2cd2161](https://github.com/stacksjs/bunpress/commit/2cd2161)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.12...v0.1.13)
 
 ### 🧹 Chores
