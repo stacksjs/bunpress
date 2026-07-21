@@ -30,13 +30,14 @@ describe('SEO internal link checks', () => {
     expect(findBrokenInternalLinks(markdown, docsDir, currentFile)).toEqual([])
   })
 
-  test('ignores links inside code and reports missing content links', () => {
+  test('ignores links inside code and comments, then reports missing content links', () => {
     const { docsDir, currentFile } = createDocsFixture()
     const markdown = [
       '```ts',
       "const template = '[Release]({{compareUrl}})'",
       '```',
       '`[pattern]([^"\\s]*)`',
+      '<!-- [Draft diagram](../images/not-published.png) -->',
       '[Missing](/guide/missing)',
     ].join('\n')
 

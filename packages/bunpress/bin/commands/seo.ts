@@ -306,6 +306,7 @@ export function findBrokenInternalLinks(
     .replace(/```[\s\S]*?```/g, '')
     .replace(/~~~[\s\S]*?~~~/g, '')
     .replace(/`+[^`\n]*`+/g, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
   let match
 
   while ((match = linkRegex.exec(searchableMarkdown)) !== null) {
