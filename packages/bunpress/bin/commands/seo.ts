@@ -295,20 +295,24 @@ function extractDescription(markdown: string, maxLength: number = 155): string {
 /**
  * Find broken internal links in markdown
  */
-function findBrokenInternalLinks(
+export function findBrokenInternalLinks(
   markdown: string,
   docsDir: string,
   currentFile: string,
 ): string[] {
   const brokenLinks: string[] = []
   const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g
+  const searchableMarkdown = markdown
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/~~~[\s\S]*?~~~/g, '')
+    .replace(/`+[^`\n]*`+/g, '')
   let match
 
-  while ((match = linkRegex.exec(markdown)) !== null) {
-    const linkUrl = match[2]
+  while ((match = linkRegex.exec(searchableMarkdown)) !== null) {
+    const linkUrl = match[2].trim()
 
-    // Skip external links
-    if (linkUrl.startsWith('http://') || linkUrl.startsWith('https://')) {
+    // Skip external links and links handled by other protocols.
+    if (/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(linkUrl)) {
       continue
     }
 
@@ -317,15 +321,31 @@ function findBrokenInternalLinks(
       continue
     }
 
-    // Check if internal link exists
-    const currentDir = path.dirname(currentFile)
-    const targetPath = path.resolve(currentDir, linkUrl)
+    const rawPath = linkUrl.split('#', 1)[0].split('?', 1)[0]
+    if (!rawPath) {
+      continue
+    }
 
-    // Try with .md extension
-    const mdPath = targetPath.endsWith('.md') ? targetPath : `${targetPath}.md`
+    let decodedPath: string
+    try {
+      decodedPath = decodeURIComponent(rawPath.replace(/^<|>$/g, ''))
+    }
+    catch {
+      brokenLinks.push(linkUrl)
+      continue
+    }
 
-    // Check if file exists
-    if (!fs.existsSync(mdPath) && !fs.existsSync(targetPath)) {
+    // Site-absolute links resolve from docsDir. Relative links resolve from
+    // the current page, matching how BunPress maps markdown to URLs.
+    const targetPath = decodedPath.startsWith('/')
+      ? path.resolve(docsDir, `.${decodedPath}`)
+      : path.resolve(path.dirname(currentFile), decodedPath)
+
+    const candidates = targetPath.endsWith('.md')
+      ? [targetPath]
+      : [targetPath, `${targetPath}.md`, path.join(targetPath, 'index.md')]
+
+    if (!candidates.some(candidate => fs.existsSync(candidate))) {
       brokenLinks.push(linkUrl)
     }
   }
