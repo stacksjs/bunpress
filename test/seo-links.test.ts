@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { findBrokenInternalLinks } from '../packages/bunpress/bin/commands/seo'
+import { findBrokenInternalLinks, serializeFrontmatter } from '../packages/bunpress/bin/commands/seo'
 
 function createDocsFixture(): { docsDir: string, currentFile: string } {
   const docsDir = mkdtempSync(join(tmpdir(), 'bunpress-seo-'))
@@ -16,6 +16,12 @@ function createDocsFixture(): { docsDir: string, currentFile: string } {
 }
 
 describe('SEO internal link checks', () => {
+  test('serializes parseable block-style frontmatter', () => {
+    const output = serializeFrontmatter({ title: 'Queues', description: 'Run work in the background.' }, '# Queues\n')
+
+    expect(output).toBe('---\ntitle: Queues\ndescription: Run work in the background.\n---\n# Queues\n')
+  })
+
   test('resolves site-absolute clean URLs and directory indexes', () => {
     const { docsDir, currentFile } = createDocsFixture()
     const markdown = '[Queues](/guide/queues) [Architecture](/architecture/)'

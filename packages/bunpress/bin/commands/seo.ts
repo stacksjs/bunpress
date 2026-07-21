@@ -77,7 +77,10 @@ async function checkFile(
   const { frontmatter, markdown } = parseFrontmatter(content)
   const relativePath = path.relative(docsDir, filePath)
   let hasIssues = false
-  let modified = false
+  // In fix mode, normalize existing metadata too. This guarantees a prior
+  // flow-style or hand-formatted header round-trips through the same valid
+  // block serializer used for newly generated fields.
+  let modified = fix && Object.keys(frontmatter).length > 0
   let newFrontmatter = { ...frontmatter }
 
   // Check for title
@@ -200,13 +203,18 @@ async function checkFile(
 
   // Write back if modified
   if (modified) {
-    const newContent = `---\n${YAML.stringify(newFrontmatter)}---\n${markdown}`
+    const newContent = serializeFrontmatter(newFrontmatter, markdown)
     await fs.promises.writeFile(filePath, newContent, 'utf-8')
   }
 
   if (!hasIssues) {
     report.passed++
   }
+}
+
+/** Serialize frontmatter in block style with delimiters on their own lines. */
+export function serializeFrontmatter(frontmatter: Record<string, unknown>, markdown: string): string {
+  return `---\n${YAML.stringify(frontmatter, null, 2)}\n---\n${markdown}`
 }
 
 /**
