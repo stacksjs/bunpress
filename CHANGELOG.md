@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.14...v0.1.15)
+
+### 🐛 Bug Fixes
+
+- **seo**: resolve clean internal links ([a92cdfd](https://github.com/stacksjs/bunpress/commit/a92cdfd)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🧹 Chores
+
+- release v0.1.15 ([afab6fd](https://github.com/stacksjs/bunpress/commit/afab6fd)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.13...v0.1.14)
 
 ### 🐛 Bug Fixes
