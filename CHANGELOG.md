@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.15...v0.1.16)
+
+### 🐛 Bug Fixes
+
+- **markdown**: isolate fenced code from stx ([c400d0a](https://github.com/stacksjs/bunpress/commit/c400d0a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🧹 Chores
+
+- release v0.1.16 ([1558bce](https://github.com/stacksjs/bunpress/commit/1558bce)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.14...v0.1.15)
 
 ### 🐛 Bug Fixes
