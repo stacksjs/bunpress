@@ -1,9 +1,12 @@
-import { copyFile, mkdir, readdir } from 'node:fs/promises'
-import { join } from 'node:path'
+import { copyFile, mkdir, readdir, rm } from 'node:fs/promises'
+import { join, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import process from 'node:process'
 import { dts } from 'bun-plugin-dtsx'
 
 console.log('Building library...')
+
+await rm('./dist', { recursive: true, force: true })
 
 const result = await Bun.build({
   entrypoints: [
@@ -57,5 +60,15 @@ console.log('Copied templates to dist/')
 // Copy theme CSS files
 await copyDir('./src/themes/vitepress', './dist/themes/vitepress')
 console.log('Copied theme CSS to dist/')
+
+const publicEntry = pathToFileURL(resolve('./dist/src/index.js')).href
+const publicApi = await import(publicEntry)
+const requiredExports = ['buildRssFeed', 'buildSitemap', 'generateRobotsTxt', 'markdownToHtml', 'wrapInLayout']
+const missingExports = requiredExports.filter(name => typeof publicApi[name] !== 'function')
+
+if (missingExports.length > 0)
+  throw new Error(`Built package is missing public exports: ${missingExports.join(', ')}`)
+
+console.log('Validated public package entrypoint')
 
 console.log('Build completed successfully!')
