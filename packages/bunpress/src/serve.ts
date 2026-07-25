@@ -919,6 +919,15 @@ function generateAnalyticsScript(config: BunPressConfig): string {
   }
 
   const siteId = escapeAttr(analytics.siteId)
+
+  // An external first-party tracker owns tracking entirely — emit the tag and
+  // generate none of the inline client, so the page never runs two trackers.
+  // The inline client's honorDNT/hash/outbound options do not apply; that
+  // behaviour belongs to the referenced script.
+  if (analytics.scriptSrc) {
+    return `<script defer src="${escapeAttr(analytics.scriptSrc)}" data-site="${siteId}"></script>`
+  }
+
   // apiEndpoint is now optional - script will fallback to window.ANALYTICS_API_ENDPOINT or '/api/analytics'
   const apiEndpoint = analytics.apiEndpoint ? escapeAttr(analytics.apiEndpoint) : ''
   const honorDnt = analytics.honorDNT ? `var dnt=n.doNotTrack||w.doNotTrack||n.msDoNotTrack;if(dnt==="1"||dnt==="yes"||dnt===true){l('DNT enabled, skipping');return;}` : ''

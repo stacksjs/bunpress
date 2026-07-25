@@ -1227,6 +1227,27 @@ export interface AnalyticsConfig {
   apiEndpoint?: string
 
   /**
+   * Load an external, first-party tracker instead of inlining the built-in
+   * client. When set, BunPress emits
+   * `<script defer src="<scriptSrc>" data-site="<siteId>"></script>` and none
+   * of the inline client is generated — the referenced script owns the whole
+   * tracking behaviour.
+   *
+   * Use this when the analytics service ships its own tracker (e.g.
+   * `https://analyticshq.org/script.js`). It keeps ONE canonical client rather
+   * than a second, divergent implementation to keep in sync, and it avoids the
+   * inline client's `sessionStorage`/`localStorage` session ids — which matter
+   * for a service that derives sessions server-side and advertises itself as
+   * cookieless and consent-free.
+   *
+   * `honorDNT`, `trackHashChanges` and `trackOutboundLinks` configure the
+   * inline client only and are ignored here; the external tracker decides.
+   *
+   * Example: 'https://analyticshq.org/script.js'
+   */
+  scriptSrc?: string
+
+  /**
    * Honor Do Not Track (DNT) browser setting
    * @default false
    */
