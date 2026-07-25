@@ -886,5 +886,5 @@ See [Configuration Guide](/config#fathom-analytics) for privacy-focused analytic
 ## Need Help
 
 - 📚 [Documentation](/)
-- 💬 [Discord Community](https://discord.gg/stacksjs)
+- 💬 [Discord Community](https://stacksjs.com/discord)
 - 🐛 [Report Issues](https://github.com/stacksjs/bunpress/issues)

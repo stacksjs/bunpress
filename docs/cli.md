@@ -824,6 +824,6 @@ See [Troubleshooting Guide](/troubleshooting) for more solutions.
 ## Need Help
 
 - 📚 [Documentation](/)
-- 💬 [Discord Community](https://discord.gg/stacksjs)
+- 💬 [Discord Community](https://stacksjs.com/discord)
 - 🐛 [Report Issues](https://github.com/stacksjs/bunpress/issues)
 - 📧 [Contact Support](mailto:support@stacksjs.org)
