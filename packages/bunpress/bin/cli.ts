@@ -1,7 +1,8 @@
 #!/usr/bin/env bun
 import { Glob } from 'bun'
 import { copyFile, mkdir, readdir } from 'node:fs/promises'
-import { join } from 'node:path'
+import { existsSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import process from 'node:process'
 import { CLI } from '@stacksjs/clapp'
 import { version } from '../package.json'
@@ -127,10 +128,35 @@ async function generateSeoFiles(docsDir: string, outdir: string, verbose: boolea
 }
 
 /**
+ * Resolve the effective config for a command.
+ *
+ * Without `--config`, this is the config bunfig discovered relative to the
+ * working directory at import time. With `--config <path>`, that file's default
+ * export is layered on top.
+ *
+ * The flag was previously declared on `build` but never read, so a config
+ * passed that way was silently ignored and the site rendered with defaults —
+ * no theme, no nav, no analytics — while reporting success.
+ */
+export async function resolveConfig(options: CliOption = {}): Promise<BunPressConfig> {
+  const discovered = await config as BunPressConfig
+  if (!options.config)
+    return discovered
+
+  const path = resolve(process.cwd(), options.config)
+  if (!existsSync(path))
+    throw new Error(`Config file not found: ${path}`)
+
+  const loaded = await import(path)
+  const override = (loaded.default ?? loaded) as BunPressConfig
+  return { ...discovered, ...override }
+}
+
+/**
  * Build the documentation files
  */
 export async function buildDocs(options: CliOption = {}): Promise<boolean> {
-  const bunPressConfig = await config as BunPressConfig
+  const bunPressConfig = await resolveConfig(options)
   const baseOutdir = options.outdir || bunPressConfig.outDir || defaultOptions.outdir
   // Build to .bunpress folder inside the output directory
   const outdir = join(baseOutdir, '.bunpress')
