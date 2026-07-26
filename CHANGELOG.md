@@ -1,3 +1,25 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.20...v0.1.21)
+
+### 🚀 Features
+
+- **analytics**: support an external first-party tracker via scriptSrc ([cd95c5f](https://github.com/stacksjs/bunpress/commit/cd95c5f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🐛 Bug Fixes
+
+- **cli**: honor --config instead of silently ignoring it ([9c50543](https://github.com/stacksjs/bunpress/commit/9c50543)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 📚 Documentation
+
+- link the community as stacksjs.com/discord ([8dc5be5](https://github.com/stacksjs/bunpress/commit/8dc5be5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🧹 Chores
+
+- release v0.1.21 ([b803e0b](https://github.com/stacksjs/bunpress/commit/b803e0b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.19...v0.1.20)
 
 ### 🧹 Chores
