@@ -2349,6 +2349,11 @@ export async function startServer(options: {
       if (path === '/') {
         path = '/index'
       }
+      // `/guide/` and `/guide` are the same page. Normalizing here means the
+      // markdown lookup below only has to reason about one shape.
+      else if (path.length > 1 && path.endsWith('/')) {
+        path = path.replace(/\/+$/, '')
+      }
 
       // Try to serve static files first (images, css, js, etc.)
       const staticExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.css', '.js', '.ico', '.woff', '.woff2', '.ttf']
@@ -2373,22 +2378,26 @@ export async function startServer(options: {
         }
       }
 
-      // Try to serve markdown file
-      const mdPath = `${root}${path}.md`
-      try {
-        const mdFile = Bun.file(mdPath)
-        if (await mdFile.exists()) {
-          const markdown = await mdFile.text()
-          const { html, frontmatter } = await markdownToHtml(markdown, root)
-          const layout = frontmatter.layout || 'doc'
-          const wrappedHtml = await wrapInLayout(html, bunPressConfig, path, layout)
-          return new Response(wrappedHtml, {
-            headers: { 'Content-Type': 'text/html; charset=utf-8' },
-          })
+      // Try to serve markdown file. `/guide` resolves to `guide.md`, falling
+      // back to `guide/index.md` — a section landing page is the natural way to
+      // organize docs, and without the second candidate every one of them 404s.
+      const candidates = [`${root}${path}.md`, `${root}${path}/index.md`]
+      for (const mdPath of candidates) {
+        try {
+          const mdFile = Bun.file(mdPath)
+          if (await mdFile.exists()) {
+            const markdown = await mdFile.text()
+            const { html, frontmatter } = await markdownToHtml(markdown, root)
+            const layout = frontmatter.layout || 'doc'
+            const wrappedHtml = await wrapInLayout(html, bunPressConfig, path, layout)
+            return new Response(wrappedHtml, {
+              headers: { 'Content-Type': 'text/html; charset=utf-8' },
+            })
+          }
         }
-      }
-      catch {
-        // Continue to 404
+        catch {
+          // Try the next candidate, then fall through to 404.
+        }
       }
 
       // 404 response
