@@ -1725,8 +1725,12 @@ async function processCodeGroups(content: string): Promise<string> {
     if (codeBlocks.length === 0)
       continue
 
-    // Generate unique ID for this code group
-    const groupId = `code-group-${Math.random().toString(36).substr(2, 9)}`
+    // IDs are content-addressed so identical source produces byte-identical
+    // output. Include the source offset to keep repeated identical groups on a
+    // page distinct without relying on process-global or random state.
+    const groupHasher = new Bun.CryptoHasher('sha256')
+    groupHasher.update(`${match.index}\0${fullMatch}`)
+    const groupId = `code-group-${groupHasher.digest('hex').slice(0, 12)}`
 
     // Generate tab buttons HTML
     const tabsHtml = codeBlocks

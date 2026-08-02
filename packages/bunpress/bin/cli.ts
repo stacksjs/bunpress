@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 import { Glob } from 'bun'
-import { copyFile, mkdir, readdir } from 'node:fs/promises'
+import { copyFile, mkdir, readdir, rename, rm } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import process from 'node:process'
@@ -11,6 +11,7 @@ import type { BunPressConfig } from '../src/types'
 import { generateRobotsTxt } from '../src/robots'
 import { generateRssFeed } from '../src/rss'
 import { generateSitemap } from '../src/sitemap'
+import { verifyBuildManifest, writeBuildManifest } from '../src/build-manifest'
 import { cleanCommand } from './commands/clean'
 import { configInitCommand, configShowCommand, configValidateCommand } from './commands/config'
 import { doctorCommand } from './commands/doctor'
@@ -38,6 +39,8 @@ interface CliOption {
   output?: string
   minify?: boolean
   sourcemap?: boolean
+  manifest?: string
+  checkManifest?: string
   name?: string
   template?: string
   title?: string
@@ -156,10 +159,15 @@ export async function resolveConfig(options: CliOption = {}): Promise<BunPressCo
  * Build the documentation files
  */
 export async function buildDocs(options: CliOption = {}): Promise<boolean> {
+  if (options.manifest && options.checkManifest)
+    throw new Error('--manifest and --check-manifest are mutually exclusive')
+
   const bunPressConfig = await resolveConfig(options)
   const baseOutdir = options.outdir || bunPressConfig.outDir || defaultOptions.outdir
-  // Build to .bunpress folder inside the output directory
-  const outdir = join(baseOutdir, '.bunpress')
+  // Build a complete replacement tree. A failed build leaves the last good
+  // output intact and a removed source page cannot survive as a stale file.
+  const finalOutdir = join(baseOutdir, '.bunpress')
+  const outdir = `${finalOutdir}.tmp-${process.pid}`
   const docsDir = options.dir || bunPressConfig.docsDir || defaultOptions.docsdir
   const verbose = options.verbose ?? defaultOptions.verbose
   const minify = options.minify ?? false
@@ -172,7 +180,7 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
     spinner.start()
   }
 
-  // Ensure output directory exists
+  await rm(outdir, { recursive: true, force: true })
   await mkdir(outdir, { recursive: true })
 
   // Find all markdown files
@@ -261,6 +269,15 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
     // Generate sitemap, robots.txt, and RSS feed
     await generateSeoFiles(docsDir, outdir, verbose || false)
 
+    if (options.checkManifest)
+      await verifyBuildManifest(outdir, options.checkManifest, version)
+
+    await rm(finalOutdir, { recursive: true, force: true })
+    await rename(outdir, finalOutdir)
+
+    if (options.manifest)
+      await writeBuildManifest(finalOutdir, options.manifest, version)
+
     const endTime = performance.now()
     const duration = endTime - startTime
 
@@ -269,12 +286,13 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
     }
     else {
       logSuccess(`Build completed in ${formatTime(duration)}`)
-      console.log(`\nGenerated ${markdownFiles.length} HTML files in ${outdir}`)
+      console.log(`\nGenerated ${markdownFiles.length} HTML files in ${finalOutdir}`)
     }
 
     return true
   }
   catch (err) {
+    await rm(outdir, { recursive: true, force: true })
     if (!verbose) {
       spinner.fail('Build failed')
     }
@@ -403,6 +421,8 @@ cli
   .option('--config <config>', 'Path to config file')
   .option('--minify', 'Minify output files', { default: false })
   .option('--sourcemap', 'Generate source maps', { default: false })
+  .option('--manifest <path>', 'Write a deterministic rendered-tree manifest')
+  .option('--check-manifest <path>', 'Fail unless the rendered tree matches a checked manifest')
   .option('--watch', 'Watch for changes and rebuild', { default: false })
   .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
   .action(async (options: CliOption) => {
