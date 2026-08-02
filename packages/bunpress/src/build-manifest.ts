@@ -105,7 +105,10 @@ export async function verifyBuildManifest(
       const prior = expectedOutputs.get(output.path)
       return prior && (prior.bytes !== output.bytes || prior.sha256 !== output.sha256)
     })
-    .map(output => output.path)
+    .map((output) => {
+      const prior = expectedOutputs.get(output.path)!
+      return `${output.path} [bytes ${prior.bytes} -> ${output.bytes}; sha256 ${prior.sha256} -> ${output.sha256}]`
+    })
 
   const parts = [
     expected.generator_version !== actual.generator_version

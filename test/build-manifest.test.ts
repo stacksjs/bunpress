@@ -76,6 +76,10 @@ const value = 1
     await Bun.write(join(root, 'index.html'), 'after')
     await Bun.write(join(root, 'new.txt'), 'new')
 
-    await expect(verifyBuildManifest(root, path, '1.2.3')).rejects.toThrow('added: new.txt; changed: index.html')
+    const expectedHash = new Bun.CryptoHasher('sha256').update('before').digest('hex')
+    const actualHash = new Bun.CryptoHasher('sha256').update('after').digest('hex')
+    await expect(verifyBuildManifest(root, path, '1.2.3')).rejects.toThrow(
+      `added: new.txt; changed: index.html [bytes 6 -> 5; sha256 ${expectedHash} -> ${actualHash}]`,
+    )
   })
 })
