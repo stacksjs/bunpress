@@ -25,12 +25,16 @@ const config: BuddyBotConfig = {
   packages: {
     strategy: 'all',
     ignore: [
-      // Add packages to ignore here
-      // Example: '@types/node', 'eslint'
+      '@stacksjs/desktop',
+      '@stacksjs/sanitizer',
+      '@stacksjs/stx',
+      'bun-plugin-stx',
+      'stx-router',
+      'ts-syntax-highlighter',
     ],
     ignorePaths: [
-      // Add file/directory paths to ignore using glob patterns
-      // Example: 'packages/test-*/**', '**/*test-envs/**', 'apps/legacy/**'
+      '../stx/**',
+      '../../Libraries/ts-syntax-highlighter/**',
     ],
   },
   verbose: false,

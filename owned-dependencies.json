@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "dependencies": [
+    {
+      "name": "@stacksjs/stx",
+      "repository": "stacksjs/stx",
+      "path": "../stx",
+      "revision": "c215f1b82bdb40b983cf54f0182c7d959587f31d",
+      "packages": [
+        "packages/stx",
+        "packages/desktop",
+        "packages/sanitizer",
+        "packages/bun-plugin",
+        "packages/router"
+      ],
+      "clean_paths": [
+        "."
+      ],
+      "build": {
+        "cwd": "packages/stx",
+        "command": [
+          "run",
+          "build"
+        ]
+      }
+    },
+    {
+      "name": "ts-syntax-highlighter",
+      "repository": "stacksjs/ts-syntax-highlighter",
+      "path": "../../Libraries/ts-syntax-highlighter",
+      "revision": "38ea140aa4b5c404f5b4e8450a04eb8195293271",
+      "packages": [
+        "packages/ts-syntax-highlighter"
+      ],
+      "clean_paths": [
+        "bun.lock",
+        "package.json",
+        "packages/ts-syntax-highlighter/build.ts",
+        "packages/ts-syntax-highlighter/package.json",
+        "packages/ts-syntax-highlighter/src"
+      ],
+      "build": {
+        "cwd": "packages/ts-syntax-highlighter",
+        "command": [
+          "--bun",
+          "build.ts"
+        ]
+      }
+    }
+  ]
+}

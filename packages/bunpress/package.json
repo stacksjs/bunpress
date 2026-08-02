@@ -53,11 +53,11 @@
   },
   "dependencies": {
     "@stacksjs/clapp": "^0.2.0",
-    "@stacksjs/stx": "^0.2.151",
+    "@stacksjs/stx": "workspace:0.2.151",
     "@stacksjs/ts-md": "^0.1.1",
     "@stacksjs/ts-cloud": "^0.7.51",
     "bunfig": "^0.15.17",
-    "ts-syntax-highlighter": "^0.2.1"
+    "ts-syntax-highlighter": "workspace:0.2.6"
   },
   "devDependencies": {
     "typescript": "^7.0.2"
