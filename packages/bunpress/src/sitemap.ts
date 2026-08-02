@@ -122,10 +122,6 @@ async function collectSitemapEntries(
       continue
     }
 
-    // Get file stats for lastmod
-    const stats = await fs.promises.stat(filePath)
-    const lastmod = stats.mtime.toISOString()
-
     // Determine priority
     let priority = defaultPriority
     for (const [pattern, customPriority] of Object.entries(priorityMap)) {
@@ -146,13 +142,12 @@ async function collectSitemapEntries(
 
     entries.push({
       url,
-      lastmod,
       changefreq,
       priority,
     })
   }
 
-  return entries
+  return entries.sort((a, b) => a.url.localeCompare(b.url))
 }
 
 /**
@@ -258,11 +253,9 @@ async function generateSitemapIndex(
   // Generate sitemap index
   const sitemaps = sitemapFiles.map((filename) => {
     const loc = `${baseUrl}/${filename}`
-    const lastmod = new Date().toISOString()
 
     return `  <sitemap>
     <loc>${loc}</loc>
-    <lastmod>${formatDate(lastmod)}</lastmod>
   </sitemap>`
   }).join('\n')
 

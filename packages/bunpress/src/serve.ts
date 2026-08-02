@@ -2224,7 +2224,9 @@ async function renderMarkdownBody(content: string, frontmatter: any, rootDir: st
     || /\{\{(?!\{)\s*\w/.test(contentWithoutCodeBlocks)
   if (hasStxSyntax) {
     try {
-      const stx = await import('@stacksjs/stx')
+      // Keep the static renderer isolated from unrelated package-root runtime
+      // initialization and its platform-specific optional dependencies.
+      const stx = await import('@stacksjs/stx/render')
       const codeSegments: string[] = []
       const maskedContent = processedContent
         .replace(/```[\s\S]*?```/g, (segment) => {
@@ -2239,8 +2241,9 @@ async function renderMarkdownBody(content: string, frontmatter: any, rootDir: st
       processedContent = await stx.renderString(maskedContent, stxContext)
       processedContent = processedContent.replace(/\u0000BPSTXCODE(\d+)\u0000/g, (_, index) => codeSegments[Number(index)] ?? '')
     }
-    catch {
-      // stx not available or render failed — continue with raw content
+    catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      throw new Error(`Failed to render BunPress stx syntax: ${detail}`, { cause: error })
     }
   }
 

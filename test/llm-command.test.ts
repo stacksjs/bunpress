@@ -831,7 +831,7 @@ title: User Guide
       ])
 
       const proc = Bun.spawn([
-        'bun',
+        process.execPath,
         'packages/bunpress/bin/cli.ts',
         'llm',
         '--dir',
@@ -868,7 +868,7 @@ More content here.`,
       ])
 
       const proc = Bun.spawn([
-        'bun',
+        process.execPath,
         'packages/bunpress/bin/cli.ts',
         'llm',
         '--dir',
@@ -893,7 +893,7 @@ More content here.`,
       const nonExistentDir = join(ctx.testDir, 'does-not-exist')
 
       const proc = Bun.spawn([
-        'bun',
+        process.execPath,
         'packages/bunpress/bin/cli.ts',
         'llm',
         '--dir',
@@ -914,7 +914,7 @@ More content here.`,
 
       const proc = Bun.spawn(
         [
-          'bun',
+          process.execPath,
           'packages/bunpress/bin/cli.ts',
           'llm',
           '--dir',

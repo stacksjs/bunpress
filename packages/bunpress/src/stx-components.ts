@@ -157,13 +157,17 @@ export async function resolveStxComponents(
     }
 
     const props = parseProps(attrs.trim(), context)
-    let rendered = ''
+    let rendered: string
     try {
-      const { renderString } = await import('@stacksjs/stx')
+      // Import the renderer entry point directly. The package root initializes
+      // unrelated browser, image, and application subsystems whose platform
+      // dependencies must not decide whether static component rendering works.
+      const { renderString } = await import('@stacksjs/stx/render')
       rendered = await renderString(src, { ...context, ...props, slot })
     }
-    catch {
-      rendered = ''
+    catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      throw new Error(`Failed to render BunPress component ${name}: ${detail}`, { cause: error })
     }
 
     result += rendered
