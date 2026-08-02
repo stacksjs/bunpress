@@ -163,7 +163,7 @@ export async function resolveStxComponents(
       // unrelated browser, image, and application subsystems whose platform
       // dependencies must not decide whether static component rendering works.
       const { renderString } = await import('@stacksjs/stx/render')
-      rendered = await renderString(src, { ...context, ...props, slot })
+      rendered = await renderString(src, { ...context, ...props, slot }, { injectCSS: false, templateOnly: true })
     }
     catch (error) {
       const detail = error instanceof Error ? error.message : String(error)

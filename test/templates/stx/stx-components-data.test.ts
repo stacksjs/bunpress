@@ -82,6 +82,7 @@ describe('stx component resolution', () => {
     )
     expect(out).toContain('class="badge badge-ok"')
     expect(out).toContain('Passing')
+    expect(out).not.toContain('data-crosswind="generated"')
   })
 
   it('evaluates bound props against the page context', async () => {
@@ -125,6 +126,7 @@ describe('stx component resolution', () => {
     const { html } = await markdownToHtml(md, ROOT)
     expect(html).toContain('width: 79.1%')
     expect(html).toContain('Done.')
+    expect(html).not.toContain('data-crosswind="generated"')
   })
 })
 

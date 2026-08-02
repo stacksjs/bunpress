@@ -2238,7 +2238,7 @@ async function renderMarkdownBody(content: string, frontmatter: any, rootDir: st
           return `\u0000BPSTXCODE${codeSegments.length - 1}\u0000`
         })
 
-      processedContent = await stx.renderString(maskedContent, stxContext)
+      processedContent = await stx.renderString(maskedContent, stxContext, { injectCSS: false, templateOnly: true })
       processedContent = processedContent.replace(/\u0000BPSTXCODE(\d+)\u0000/g, (_, index) => codeSegments[Number(index)] ?? '')
     }
     catch (error) {
