@@ -12,8 +12,8 @@
   },
   "devDependencies": {
     "commonmark": "^0.31.2",
-    "marked": "^17.0.4",
-    "markdown-it": "^14.1.1",
+    "marked": "^17.0.6",
+    "markdown-it": "^14.3.0",
     "micromark": "^4.0.2",
     "micromark-extension-gfm": "^3.0.0",
     "showdown": "^2.1.0",
