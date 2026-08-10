@@ -102,34 +102,27 @@ export default {
 }
 ```
 
-## Using ts-md Parser
+## Programmatic Markdown Rendering
 
-BunPress uses ts-md, a fast native Bun-powered markdown parser.
+BunPress renders markdown with `Bun.markdown`, Bun's native Zig-based parser,
+wrapped in the BunPress pipeline (frontmatter, stx, containers, alerts, code
+groups, syntax highlighting). Use `markdownToHtml` to run that whole pipeline
+yourself:
 
 ```typescript
-import { parseMarkdown, parseMarkdownWithFrontmatter } from 'ts-md'
+import { markdownToHtml, wrapInLayout } from '@stacksjs/bunpress'
 
-// Parse markdown to HTML
-const html = parseMarkdown('# Hello **World**')
+const { html, frontmatter } = await markdownToHtml(source, './docs')
 
-// Parse with frontmatter
-const result = parseMarkdownWithFrontmatter(`---
-title: My Document
----
+console.log(frontmatter) // { title: 'My Document', ... }
+console.log(html)        // fully processed page body
 
-# Content here
-`)
-
-console.log(result.data) // { title: 'My Document' }
-console.log(result.html) // '<h1 id="content-here">Content here</h1>'
-
-// With syntax highlighting callback
-const highlighted = parseMarkdown(content, {
-  gfm: true,
-  breaks: false,
-  highlight: (code, lang) => highlightCode(code, lang)
-})
+// Wrap it in the theme, exactly as the CLI does
+const page = await wrapInLayout(html, config, '/my-page', frontmatter.layout ?? 'doc', frontmatter)
 ```
+
+Parser behaviour is configured with `markdown.parserOptions` — see
+[Configuration](/advanced/configuration#markdown-configuration).
 
 ## Data Loading and Content Management
 
