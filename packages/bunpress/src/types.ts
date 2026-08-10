@@ -29,6 +29,15 @@ export interface BunPressConfig {
   }
 
   /**
+   * Site search. Enabled by default — set `enabled: false` to drop both the
+   * nav affordance and the generated index.
+   *
+   * Also accepted under `markdown.search` for backwards compatibility; the
+   * top-level form wins when both are set.
+   */
+  search?: SearchConfig
+
+  /**
    * Source directory containing markdown files
    * @default './docs'
    */

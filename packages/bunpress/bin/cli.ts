@@ -10,6 +10,7 @@ import { config } from '../src/config'
 import type { BunPressConfig } from '../src/types'
 import { generateRobotsTxt } from '../src/robots'
 import { generateRssFeed } from '../src/rss'
+import { buildSearchIndex, SEARCH_INDEX_PATH } from '../src/search-index'
 import { generateSitemap } from '../src/sitemap'
 import { verifyBuildManifest, writeBuildManifest } from '../src/build-manifest'
 import { cleanCommand } from './commands/clean'
@@ -98,6 +99,27 @@ async function copyStaticAssets(outdir: string, docsDir: string, verbose: boolea
     if (verbose) {
       console.log('No public directory found, skipping static assets copy')
     }
+  }
+}
+
+/**
+ * Write the client search index next to the built pages.
+ */
+async function generateSearchIndex(docsDir: string, outdir: string, bunPressConfig: BunPressConfig, verbose: boolean): Promise<void> {
+  if ((bunPressConfig.search ?? bunPressConfig.markdown?.search)?.enabled === false)
+    return
+
+  try {
+    const index = await buildSearchIndex(docsDir, bunPressConfig)
+    await Bun.write(join(outdir, SEARCH_INDEX_PATH.replace(/^\//, '')), JSON.stringify(index))
+
+    if (verbose)
+      console.log(`Indexed ${index.length} sections for search.`)
+  }
+  catch (error) {
+    // A missing index degrades search to "no results", never a broken build.
+    if (verbose)
+      console.error('Error generating search index:', error)
   }
 }
 
@@ -265,6 +287,10 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
 
     // Generate 404 page
     await generate404Page(outdir, bunPressConfig)
+
+    // Search index consumed by the nav search dialog. The dev server builds
+    // this on demand at the same path; here it becomes a static file.
+    await generateSearchIndex(docsDir, outdir, bunPressConfig, verbose || false)
 
     // Generate sitemap, robots.txt, and RSS feed
     await generateSeoFiles(docsDir, outdir, verbose || false)

@@ -236,6 +236,9 @@ const varsCSS = `/**
   --bp-z-index-layout-top: 40;
   --bp-z-index-backdrop: 50;
   --bp-z-index-sidebar: 60;
+  /* Above the sidebar drawer: search opens over everything, including a
+   * drawer left open behind it. */
+  --bp-z-index-search: 200;
 }
 
 @media (min-width: 960px) {
@@ -2318,60 +2321,68 @@ export const layoutCSS = `/**
   background-color: var(--bp-c-bg-soft);
 }
 
-/* Search */
+/* Search trigger. A button that looks like a field: the real input lives in
+ * the search dialog it opens. */
 .BPNavBarSearch {
-  position: relative;
   display: flex;
   align-items: center;
-  max-width: 260px;
+  gap: 8px;
   width: 100%;
-}
-
-.BPNavBarSearch-icon {
-  position: absolute;
-  left: 12px;
-  width: 16px;
-  height: 16px;
-  color: var(--bp-c-text-3);
-  pointer-events: none;
-}
-
-.BPNavBarSearch-input {
-  width: 100%;
+  max-width: 240px;
   height: 32px;
-  padding: 0 48px 0 36px;
-  font: inherit;
+  padding: 0 8px 0 10px;
+  font-family: inherit;
   font-size: 13px;
+  text-align: left;
+  color: var(--bp-c-text-3);
   background-color: var(--bp-c-bg-alt);
   border: 1px solid var(--bp-c-divider);
-  border-radius: 4px;
-  color: var(--bp-c-text-1);
-  outline: none;
-  transition: border-color 0.25s, background-color 0.25s;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.25s, background-color 0.25s, color 0.25s;
 }
 
-.BPNavBarSearch-input::placeholder {
-  color: var(--bp-c-text-3);
-}
-
-.BPNavBarSearch-input:hover,
-.BPNavBarSearch-input:focus {
+.BPNavBarSearch:hover {
+  color: var(--bp-c-text-2);
   border-color: var(--bp-c-brand-1);
   background-color: var(--bp-c-bg);
 }
 
+.BPNavBarSearch:focus-visible {
+  outline: 2px solid var(--bp-c-brand-1);
+  outline-offset: 2px;
+}
+
+.BPNavBarSearch-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.BPNavBarSearch-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .BPNavBarSearch-kbd {
-  position: absolute;
-  right: 8px;
-  padding: 2px 6px;
+  flex-shrink: 0;
+  padding: 1px 5px;
   font-size: 11px;
   font-weight: 600;
   font-family: inherit;
+  line-height: 1.5;
   color: var(--bp-c-text-3);
   background-color: var(--bp-c-bg);
   border: 1px solid var(--bp-c-divider);
   border-radius: 4px;
-  pointer-events: none;
+}
+
+.BPSocialLinks-text {
+  font-size: 13px;
+  font-weight: 500;
 }
 
 /* Social/icon links cluster */
@@ -2452,8 +2463,24 @@ export const layoutCSS = `/**
 
 /* Mobile sidebar drawer behaviour */
 @media (max-width: 959px) {
+  /* Collapses to an icon button rather than disappearing: search is the main
+   * way to get around a docs site on a phone, where the sidebar is behind a
+   * drawer and the TOC behind a disclosure. */
   .BPNavBarSearch {
+    width: 36px;
+    max-width: none;
+    padding: 0;
+    justify-content: center;
+    background-color: transparent;
+    border-color: transparent;
+  }
+  .BPNavBarSearch-label,
+  .BPNavBarSearch-kbd {
     display: none;
+  }
+  .BPNavBarSearch-icon {
+    width: 18px;
+    height: 18px;
   }
   .BPSocialLinks {
     /* The divider separates the nav links from the icons — with the links

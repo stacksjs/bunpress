@@ -14,22 +14,14 @@
 <body>
   <div class="Layout">
     <!-- BPNav - Header -->
-    <header class="BPNav">
-      <div class="BPNavBar">
-        <div class="BPNavBarStart">
-          <a href="/" class="BPNavBarTitle">{{ title }}</a>
-        </div>
-        <div class="BPNavBarEnd">
-          <div class="BPNavBarMenu">
-            {!! nav !!}
-          </div>
-        </div>
-      </div>
-    </header>
+    {!! navbar !!}
 
     <main class="BPHome">
       {!! content !!}
     </main>
   </div>
+
+  <!-- Search overlay -->
+  {!! search !!}
 </body>
 </html>

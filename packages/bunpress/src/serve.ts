@@ -6,6 +6,7 @@ import process from 'node:process'
 import { config, defaultConfig } from './config'
 import { clearDataCache, loadDataFiles } from './data-loader'
 import { getSyntaxHighlightingStyles, highlightCode } from './highlighter'
+import { buildSearchIndex, SEARCH_INDEX_PATH } from './search-index'
 import { clearComponentCache, resolveStxComponents } from './stx-components'
 import { clearTemplateCache, render } from './template-loader'
 import { getThemeCSS } from './themes'
@@ -59,6 +60,67 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
   return await render('sidebar', {
     sections: sectionsHtml.join(''),
   })
+}
+
+/** Drawer toggle. Only the doc layout has a sidebar to toggle. */
+const HAMBURGER_BUTTON = `<button class="BPNavBarHamburger" type="button" aria-label="Toggle navigation" onclick="toggleSidebar()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>`
+
+/**
+ * The nav search affordance is a BUTTON, not an input.
+ *
+ * It looks like a field but opens the search dialog, where the real input
+ * lives. A second focusable text input in the bar would be a decoy: typing
+ * into it did nothing, which is exactly how the old markup behaved.
+ */
+const SEARCH_TRIGGER_BUTTON = `<button class="BPNavBarSearch" type="button" aria-label="Search documentation" aria-keyshortcuts="Meta+K Control+K">
+            <svg class="BPNavBarSearch-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <span class="BPNavBarSearch-label">Search</span>
+            <kbd class="BPNavBarSearch-kbd">⌘K</kbd>
+          </button>`
+
+const SOCIAL_ICONS: Record<string, string> = {
+  github: '<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>',
+  twitter: '<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>',
+  discord: '<path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.6 12.6 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.74 19.74 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.009c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.891.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.056c.5-5.177-.838-9.674-3.549-13.66a.06.06 0 0 0-.031-.028M8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418m7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418"/>',
+  x: '<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>',
+}
+
+/**
+ * Render the configured social links.
+ *
+ * Driven entirely by `themeConfig.socialLinks` — the previous markup hardcoded
+ * BunPress's own GitHub repository into the layout, so every site built with
+ * it linked back here.
+ */
+function generateSocialLinks(config: BunPressConfig): string {
+  const links = config.themeConfig?.socialLinks ?? []
+
+  return links
+    .map(({ icon, link }) => {
+      const path = SOCIAL_ICONS[icon?.toLowerCase()]
+      const label = icon ? icon.charAt(0).toUpperCase() + icon.slice(1) : 'Link'
+      const glyph = path
+        ? `<svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`
+        // Unknown icon names still get a usable link rather than an empty box.
+        : `<span class="BPSocialLinks-text">${escapeHtmlAttribute(label)}</span>`
+
+      return `<a href="${escapeHtmlAttribute(link)}" target="_blank" rel="noopener external" aria-label="${escapeHtmlAttribute(label)}">${glyph}</a>`
+    })
+    .join('\n            ')
+}
+
+function escapeHtmlAttribute(value: string): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
 }
 
 /**
@@ -828,6 +890,23 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   // Pre-generate nav so we can scan all HTML for crosswind utility classes
   const nav = generateNav(config)
 
+  // One nav bar for every layout. It used to be inlined per layout, so the
+  // home and page layouts silently shipped without search, the theme toggle
+  // or the social links that the doc layout had.
+  const searchEnabled = (config.search ?? config.markdown?.search)?.enabled !== false
+  // prefixRootRelativeAttributes only rewrites href/src/action attributes, so
+  // a basePath has to be applied to the fetch URL here — it lives in a script.
+  const searchOverlay = searchEnabled
+    ? await render('search', { indexUrl: prefixRootPath(config, SEARCH_INDEX_PATH) })
+    : ''
+  const navbarFor = async (variant: 'doc' | 'plain'): Promise<string> => render('navbar', {
+    title,
+    nav,
+    searchTrigger: searchEnabled ? SEARCH_TRIGGER_BUTTON : '',
+    hamburger: variant === 'doc' ? HAMBURGER_BUTTON : '',
+    socialLinks: generateSocialLinks(config),
+  })
+
   // Resolve the initial color theme. A forced 'dark'/'light' is SSR'd onto
   // <html> so the page renders in the right theme with no JS, no flash, and for
   // crawlers; `data-theme-mode` lets the client theme script honor the forced
@@ -852,7 +931,8 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
       description,
       meta: allMeta,
       customCSS,
-      nav,
+      navbar: await navbarFor('plain'),
+      search: searchOverlay,
       content,
     })
     return prefixRootRelativeAttributes(injectSPARouter(injectScripts(html, scripts)), config)
@@ -870,7 +950,8 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
       description,
       meta: allMeta,
       customCSS,
-      nav,
+      navbar: await navbarFor('plain'),
+      search: searchOverlay,
       content,
     })
     return prefixRootRelativeAttributes(injectSPARouter(injectScripts(html, scripts)), config)
@@ -895,7 +976,8 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
     description,
     meta: allMeta,
     customCSS,
-    nav,
+    navbar: await navbarFor('doc'),
+    search: searchOverlay,
     sidebar,
     content: docContent,
     pageTOC,
@@ -2398,6 +2480,16 @@ export async function startServer(options: {
       // markdown lookup below only has to reason about one shape.
       else if (path.length > 1 && path.endsWith('/')) {
         path = path.replace(/\/+$/, '')
+      }
+
+      // Search index. Rebuilt per request rather than cached: in dev the docs
+      // change under you, and a stale index is worse than a slightly slower
+      // first search. The build writes this same payload to a static file.
+      if (path === SEARCH_INDEX_PATH.replace(/\.json$/, '') || url.pathname.endsWith(SEARCH_INDEX_PATH)) {
+        const index = await buildSearchIndex(root, bunPressConfig)
+        return new Response(JSON.stringify(index), {
+          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+        })
       }
 
       // Try to serve static files first (images, css, js, etc.)

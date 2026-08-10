@@ -1270,6 +1270,22 @@ if (typeof document !== 'undefined') {
     syntaxHighlightTheme: 'github-light',
   },
 
+  // Search is on by default: the nav shows a search affordance, and shipping
+  // that affordance without the dialog behind it is worse than no search.
+  search: {
+    enabled: true,
+    maxResults: 12,
+    keyboardShortcuts: true,
+  },
+
+  themeConfig: {
+    // Rendered into the nav bar. Previously the GitHub link was hardcoded into
+    // the layout, so every site built with BunPress linked back to this repo.
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/stacksjs/bunpress' },
+    ],
+  },
+
   verbose: false,
 
   // Sitemap configuration
