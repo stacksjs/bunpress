@@ -2670,6 +2670,65 @@ export const layoutCSS = `/**
 }
 
 /**
+ * Layout scrollbars
+ * --------------------------------------------------------------------------
+ * The doc layout scrolls in independent panes, so on any platform with
+ * always-visible scrollbars the reader gets full-height grey tracks down the
+ * middle of the page. Thin them to match the code-block treatment. (The TOC
+ * aside hides its scrollbar outright — see page-toc.stx.)
+ */
+
+.BPSidebar,
+.BPContent--doc {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bp-c-divider) transparent;
+}
+
+.BPSidebar::-webkit-scrollbar,
+.BPContent--doc::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.BPSidebar::-webkit-scrollbar-track,
+.BPContent--doc::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.BPSidebar::-webkit-scrollbar-thumb,
+.BPContent--doc::-webkit-scrollbar-thumb {
+  background-color: var(--bp-c-divider);
+  border-radius: 4px;
+}
+
+.BPSidebar:hover::-webkit-scrollbar-thumb,
+.BPContent--doc:hover::-webkit-scrollbar-thumb {
+  background-color: var(--bp-c-text-3);
+}
+
+/**
+ * Keyboard focus
+ * --------------------------------------------------------------------------
+ * :focus-visible only, so pointer users never see a ring, but every
+ * interactive control in the chrome is reachable and visible by keyboard.
+ */
+
+.BPNavBarTitle:focus-visible,
+.BPNavBarMenu a:focus-visible,
+.BPSocialLinks > a:focus-visible,
+.BPNavBarHamburger:focus-visible,
+.theme-toggle:focus-visible,
+.BPSidebarItem-link:focus-visible,
+.sidebar-section-toggle:focus-visible,
+.BPDocAside a:focus-visible,
+.bp-doc a:focus-visible,
+.BPButton:focus-visible {
+  outline: 2px solid var(--bp-c-brand-1);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/**
  * Mobile nav / sidebar drawer
  * -------------------------------------------------------------------------- */
 

@@ -135,6 +135,31 @@ function addHeadingIds(html: string): string {
 }
 
 /**
+ * Pair the page's <h1> with the copy-page control in a flex header row.
+ *
+ * This is done server-side, inside the content, rather than by moving the
+ * control next to the H1 on DOMContentLoaded. The client-side version had
+ * three problems: the control popped in after first paint, it was absent
+ * entirely for readers without JS, and — because it ended up inside .BPDoc,
+ * whose innerHTML the SPA router replaces wholesale — it disappeared for good
+ * after the first client-side navigation.
+ *
+ * Pages with no <h1> get the content back untouched: there is nothing to
+ * anchor the control to, and floating it alone above the body reads as chrome
+ * belonging to whatever follows it.
+ */
+function attachPageHeader(html: string, copyPageHtml: string): string {
+  if (!copyPageHtml)
+    return html
+
+  // Non-global regex: only the page's first h1 is the page title.
+  return html.replace(
+    /<h1(?:\s[^>]*)?>[\s\S]*?<\/h1>/,
+    match => `<div class="bp-page-header">${match}${copyPageHtml}</div>`,
+  )
+}
+
+/**
  * Inject the SPA router script before </body> in rendered HTML.
  * Done post-render to avoid stx's template pipeline consuming the script.
  */
@@ -378,6 +403,11 @@ function generateSPARouterScript(): string {
     lastPathname = target.pathname;
     lastSearch = target.search;
     updateActiveLinks();
+
+    // Swapping .BPDoc's innerHTML discards every element a DOMContentLoaded
+    // handler had added to it (code copy buttons, for one). Announce the swap
+    // so those enhancements can re-apply — DOMContentLoaded fires only once.
+    document.dispatchEvent(new CustomEvent('bp:navigated', { detail: { path: target.pathname } }));
 
     if (typeof opts.restoreScroll === 'number') {
       applyScroll(opts.restoreScroll);
@@ -821,11 +851,14 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   }
 
   // Documentation layout (default) - with sidebar and TOC
+  // The TOC is built before the header is attached so the copy-page control's
+  // own markup can never be mistaken for page content.
   const contentWithIds = addHeadingIds(content)
   const pageTOC = await generatePageTOC(contentWithIds)
   const sidebar = await generateSidebar(config, currentPath)
+  const docContent = attachPageHeader(contentWithIds, await render('copy-page', {}))
 
-  const crosswindCSS = await generateCrosswindCSSFromHtml(`${contentWithIds}\n${nav}\n${sidebar}`)
+  const crosswindCSS = await generateCrosswindCSSFromHtml(`${docContent}\n${nav}\n${sidebar}`)
   const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}`
 
   const html = await render('layout-doc', {
@@ -837,7 +870,7 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
     customCSS,
     nav,
     sidebar,
-    content: contentWithIds,
+    content: docContent,
     pageTOC,
   })
 

@@ -471,23 +471,18 @@ export const defaultConfig: BunPressConfig = {
     }
 
     /* Copy Page Dropdown */
+    /* Rendered server-side inside .bp-page-header, so it needs no JS to be placed and no "hidden until positioned" state. */
     .copy-page-dropdown {
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      display: none; /* Hidden until JS positions it */
+      position: relative;
+      display: inline-block;
+      flex-shrink: 0;
       z-index: 10;
     }
 
-    .copy-page-dropdown.positioned {
-      display: inline-block;
-    }
-
-    /* Page header row with H1 and Copy button */
+    /* Page header row: H1 on the left, copy control trailing it. */
     .bp-page-header {
       display: flex;
-      align-items: flex-start;
+      align-items: baseline;
       justify-content: space-between;
       gap: 16px;
       position: relative;
@@ -506,28 +501,15 @@ export const defaultConfig: BunPressConfig = {
       hyphens: none;
     }
 
+    /* The control is chrome, not content: it sits on the title's baseline and stays visually quieter than the heading it accompanies. */
+    .bp-page-header .copy-page-dropdown {
+      align-self: baseline;
+    }
+
     @media (max-width: 639px) {
       .bp-page-header {
-        gap: 12px;
+        gap: 10px;
       }
-
-      .bp-page-header .copy-page-dropdown {
-        margin-top: 0;
-      }
-    }
-
-    .bp-page-header .copy-page-dropdown {
-      position: relative;
-      right: auto;
-      top: auto;
-      transform: none;
-      flex-shrink: 0;
-      margin-top: 4px;
-      display: inline-block;
-    }
-
-    .bp-page-header .copy-page-dropdown.positioned {
-      display: inline-block;
     }
 
     /* Split button group */
@@ -539,31 +521,40 @@ export const defaultConfig: BunPressConfig = {
     .copy-page-button {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      background-color: var(--bp-c-bg-soft, #f6f6f7);
+      gap: 6px;
+      /* Deliberately smaller than body copy: this is a utility next to the page title, and at 14px/40px tall it competed with the H1. */
+      height: 32px;
+      padding: 0 10px;
+      background-color: transparent;
       border: 1px solid var(--bp-c-divider, #e2e2e3);
-      color: var(--bp-c-text-1, #3c3c43);
-      font-size: 14px;
+      color: var(--bp-c-text-2, #67676c);
+      font-family: inherit;
+      font-size: 13px;
       font-weight: 500;
+      white-space: nowrap;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
     }
 
     .copy-page-button.copy-page-main {
-      border-radius: 8px 0 0 8px;
+      border-radius: 6px 0 0 6px;
       border-right: none;
-      padding-right: 12px;
     }
 
     .copy-page-button.copy-page-toggle {
-      border-radius: 0 8px 8px 0;
-      padding: 8px 8px;
+      border-radius: 0 6px 6px 0;
+      padding: 0 6px;
       border-left: 1px solid var(--bp-c-divider, #e2e2e3);
     }
 
     .copy-page-button:hover {
-      background-color: var(--bp-c-bg, #ffffff);
+      color: var(--bp-c-text-1, #3c3c43);
+      background-color: var(--bp-c-bg-soft, #f6f6f7);
+    }
+
+    .copy-page-button:focus-visible {
+      outline: 2px solid var(--bp-c-brand-1, #5672cd);
+      outline-offset: 2px;
     }
 
     .copy-page-button-group:hover .copy-page-button {
@@ -575,8 +566,9 @@ export const defaultConfig: BunPressConfig = {
     }
 
     .copy-page-button svg {
-      width: 16px;
-      height: 16px;
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
     }
 
     .copy-page-button .chevron {
@@ -611,7 +603,9 @@ export const defaultConfig: BunPressConfig = {
       position: absolute;
       top: calc(100% + 8px);
       right: 0;
-      min-width: 280px;
+      width: 280px;
+      /* The trigger sits near the left edge on a phone, so a right-anchored 280px panel hangs off-screen. Cap it to the viewport and let the start-edge clamp below flip it when there is no room to the left. */
+      max-width: calc(100vw - 32px);
       background-color: var(--bp-c-bg, #ffffff);
       border: 1px solid var(--bp-c-divider, #e2e2e3);
       border-radius: 12px;
@@ -619,9 +613,17 @@ export const defaultConfig: BunPressConfig = {
       opacity: 0;
       visibility: hidden;
       transform: translateY(-8px);
-      transition: all 0.2s ease;
+      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
       z-index: 100;
       overflow: hidden;
+    }
+
+    /* Below the point where the panel is wider than the space to the trigger's left, anchor it to the start edge instead so it opens into the page. */
+    @media (max-width: 519px) {
+      .copy-page-menu {
+        right: auto;
+        left: 0;
+      }
     }
 
     .copy-page-dropdown.open .copy-page-menu {
@@ -636,9 +638,20 @@ export const defaultConfig: BunPressConfig = {
       gap: 12px;
       padding: 12px 16px;
       color: var(--bp-c-text-1, #3c3c43);
-      text-decoration: none;
       cursor: pointer;
       transition: background-color 0.15s ease;
+    }
+
+    /* The control is rendered inside .bp-doc, so prose link styling (brand colour + underline) would otherwise bleed onto every menu row. */
+    .copy-page-dropdown a,
+    .copy-page-dropdown a:hover {
+      color: inherit;
+      font-weight: inherit;
+      text-decoration: none;
+    }
+
+    .copy-page-dropdown a::after {
+      content: none;
     }
 
     .copy-page-menu-item:hover {
@@ -966,44 +979,32 @@ function copyCode(button) {
   });
 }
 
-// Add copy buttons to all code blocks when page loads
-if (typeof document !== 'undefined') {
-  document.addEventListener('DOMContentLoaded', () => {
-    const codeBlocks = document.querySelectorAll('pre > code');
-    codeBlocks.forEach(code => {
-      const pre = code.parentElement;
-      if (!pre || pre.querySelector('.copy-code-button')) return;
+// Add copy buttons to all code blocks.
+// Idempotent and re-run after client-side navigation: the SPA router replaces
+// .BPDoc wholesale, so buttons added on first load are gone from the new page.
+// (The copy-page control is rendered server-side inside the content, so it
+// survives the same swap without any JS.)
+function addCodeCopyButtons() {
+  document.querySelectorAll('pre > code').forEach(code => {
+    const pre = code.parentElement;
+    if (!pre || pre.querySelector('.copy-code-button')) return;
 
-      const button = document.createElement('button');
-      button.className = 'copy-code-button';
-      button.setAttribute('onclick', 'copyCode(this)');
-      button.setAttribute('aria-label', 'Copy code');
-      button.innerHTML = \`<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-      </svg>\`;
+    const button = document.createElement('button');
+    button.className = 'copy-code-button';
+    button.setAttribute('onclick', 'copyCode(this)');
+    button.setAttribute('type', 'button');
+    button.setAttribute('aria-label', 'Copy code');
+    button.innerHTML = \`<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+    </svg>\`;
 
-      pre.appendChild(button);
-    });
-
-    // Position Copy Page dropdown next to H1
-    const h1 = document.querySelector('article.bp-doc h1');
-    const dropdown = document.getElementById('copy-page-dropdown');
-    if (h1 && dropdown) {
-      // Create wrapper div for H1 and dropdown
-      const wrapper = document.createElement('div');
-      wrapper.className = 'bp-page-header';
-
-      // Insert wrapper before H1
-      h1.parentNode.insertBefore(wrapper, h1);
-
-      // Move H1 and dropdown into wrapper
-      wrapper.appendChild(h1);
-      wrapper.appendChild(dropdown);
-
-      // Show dropdown now that it's positioned
-      dropdown.classList.add('positioned');
-    }
+    pre.appendChild(button);
   });
+}
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', addCodeCopyButtons);
+  document.addEventListener('bp:navigated', addCodeCopyButtons);
 }
 
 // Copy Page Dropdown functionality
