@@ -779,7 +779,7 @@ features:
 sidebar: false  # Disable sidebar for this page
 navbar: true    # Show/hide navbar
 editLink: true  # Show edit link
-lastUpdated: true  # Show last updated date
+lastUpdated: true  # NOT IMPLEMENTED — accepted, ignored
 
 # SEO
 head:

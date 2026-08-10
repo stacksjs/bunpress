@@ -1,0 +1,45 @@
+<footer class="BPFooter">
+  {!! message !!}
+  {!! copyright !!}
+</footer>
+
+<style>
+.BPFooter {
+  margin-top: 64px;
+  padding-top: 24px;
+  border-top: 1px solid var(--bp-c-divider);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--bp-c-text-2);
+}
+
+.BPFooter p {
+  margin: 0;
+}
+
+.BPFooter p + p {
+  margin-top: 4px;
+}
+
+.BPFooter a {
+  color: var(--bp-c-brand-1);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.BPFooter-copyright {
+  color: var(--bp-c-text-3);
+}
+
+/* On the home and page layouts the footer is the width of the content, which
+   is centred — so it centres too rather than hugging the left edge. */
+.BPHome .BPFooter,
+.BPPage .BPFooter {
+  max-width: 1152px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 24px;
+  padding-right: 24px;
+  padding-bottom: 32px;
+}
+</style>

@@ -4,6 +4,12 @@ This section covers advanced features and configuration options for power users.
 
 ## Custom Templates
 
+::: warning Not implemented
+`markdown.template` is accepted but ignored — pages always render through the
+built-in layouts selected by frontmatter `layout`. Use `themeConfig` and
+`markdown.css` to restyle them.
+:::
+
 BunPress supports custom HTML templates for complete control over output.
 
 ### Basic Template
@@ -212,6 +218,13 @@ const highlighted = parseMarkdown(content, {
 ```
 
 ## Build Hooks
+
+::: warning Not implemented
+Build lifecycle hooks are not wired up. `ConfigPlugin`'s config hooks
+(`extendConfig`, `validateConfig`, `onConfigLoad`, `onConfigChange`) do run —
+see [Plugin Development](/guide/plugins) — but the `hooks` config block below
+is accepted and ignored.
+:::
 
 ### Pre-build Hook
 

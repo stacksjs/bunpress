@@ -1,5 +1,14 @@
 # Configuration Deep-Dive
 
+::: info Configuration status
+Not every block on this page is wired up. `docsDir`, `outDir`, `basePath`,
+`markdown`, `nav`, `sidebar`, `themeConfig`, `search`, `sitemap`, `robots`,
+`rss`, `fonts`, `darkMode`, `theme` and `verbose` are honoured. `build`, `dev`,
+`server`, `ssr`, `deploy`, `security`, `runtime`, `cacheDir`, `publicDir`,
+`base`, `head` and `hooks` are accepted but currently ignored.
+:::
+
+
 BunPress supports comprehensive configuration for customizing every aspect of your documentation site.
 
 ## Configuration File

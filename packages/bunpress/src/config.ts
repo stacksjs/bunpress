@@ -1305,12 +1305,75 @@ if (typeof document !== 'undefined') {
   },
 }
 
+/**
+ * Run the config through the plugins it declares.
+ *
+ * `ConfigPlugin` and its four hooks were a documented, typed interface that
+ * nothing ever called — a plugin could be written and registered and would
+ * simply never run. Hooks apply in declaration order so a later plugin sees
+ * what earlier ones produced.
+ *
+ * A plugin that throws is reported and skipped rather than taking the whole
+ * site down: a broken third-party plugin should not make the docs unbuildable.
+ */
+export function applyConfigPlugins(loaded: BunPressConfig): BunPressConfig {
+  const plugins = loaded.plugins
+  if (!Array.isArray(plugins) || plugins.length === 0)
+    return loaded
+
+  let resolved = loaded
+
+  for (const plugin of plugins) {
+    if (!plugin || typeof plugin !== 'object')
+      continue
+
+    const label = plugin.name || 'unnamed plugin'
+
+    try {
+      if (typeof plugin.extendConfig === 'function')
+        resolved = plugin.extendConfig(resolved) ?? resolved
+    }
+    catch (error) {
+      console.error(`[bunpress] ${label}: extendConfig failed —`, error)
+    }
+
+    try {
+      if (typeof plugin.validateConfig === 'function') {
+        const result = plugin.validateConfig(resolved)
+        for (const warning of result?.warnings ?? [])
+          console.warn(`[bunpress] ${label}: ${warning}`)
+        // Errors are surfaced, not thrown: validation reports a problem with
+        // the site's config, and the author is better served by a built site
+        // plus a loud message than by a build that refuses to run.
+        for (const failure of result?.errors ?? [])
+          console.error(`[bunpress] ${label}: ${failure}`)
+      }
+    }
+    catch (error) {
+      console.error(`[bunpress] ${label}: validateConfig failed —`, error)
+    }
+  }
+
+  for (const plugin of plugins) {
+    try {
+      // Fire-and-forget: an async onConfigLoad must not block module init,
+      // which happens at import time.
+      void plugin?.onConfigLoad?.(resolved)
+    }
+    catch (error) {
+      console.error(`[bunpress] ${plugin?.name || 'unnamed plugin'}: onConfigLoad failed —`, error)
+    }
+  }
+
+  return resolved
+}
+
 // Load and export the resolved configuration
-export const config: BunPressConfig = await loadConfig({
+export const config: BunPressConfig = applyConfigPlugins(await loadConfig({
   name: 'bunpress',
   alias: 'docs',
   defaultConfig,
-})
+}))
 
 // Backward compatibility - simple config getter
 export async function getConfig(): Promise<BunPressConfig> {

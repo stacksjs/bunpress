@@ -6,7 +6,7 @@ import { join, resolve } from 'node:path'
 import process from 'node:process'
 import { CLI } from '@stacksjs/clapp'
 import { version } from '../package.json'
-import { config } from '../src/config'
+import { applyConfigPlugins, config } from '../src/config'
 import type { BunPressConfig } from '../src/types'
 import { generateRobotsTxt } from '../src/robots'
 import { generateRssFeed } from '../src/rss'
@@ -175,7 +175,9 @@ export async function resolveConfig(options: CliOption = {}): Promise<BunPressCo
 
   const loaded = await import(path)
   const override = (loaded.default ?? loaded) as BunPressConfig
-  return { ...discovered, ...override }
+  // A config supplied with --config declares its own plugins, so they have to
+  // run against the merged result rather than only the discovered config.
+  return applyConfigPlugins({ ...discovered, ...override })
 }
 
 /**
@@ -251,7 +253,7 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
       const layout = frontmatter.layout || 'doc'
 
       // Wrap in layout (handles navbar, sidebar, SEO, etc.)
-      const fullHtml = await wrapInLayout(html, bunPressConfig, currentPath, layout)
+      const fullHtml = await wrapInLayout(html, bunPressConfig, currentPath, layout, frontmatter)
 
       // Determine output path. Emit directory-style (`<path>/index.html`) so the
       // clean, extensionless URLs bunpress links to (`/guide/install`) resolve on

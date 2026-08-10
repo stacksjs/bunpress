@@ -1,4 +1,4 @@
-import type { BunPressConfig, NavItem, SidebarItem } from './types'
+import type { BunPressConfig, Frontmatter, NavItem, SidebarItem } from './types'
 import { Glob, YAML } from 'bun'
 import { stat } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -707,7 +707,12 @@ function prefixRootRelativeAttributes(html: string, config: BunPressConfig): str
 /**
  * Generate canonical URL for the current page
  */
-function generateCanonicalUrl(config: BunPressConfig, currentPath: string): string {
+function generateCanonicalUrl(config: BunPressConfig, currentPath: string, override?: string): string {
+  // An explicit `canonical:` is used verbatim — it is how a page points at a
+  // copy of itself that lives somewhere else entirely.
+  if (override)
+    return `<link rel="canonical" href="${escapeHtmlAttribute(override)}">`
+
   const baseUrl = config.sitemap?.baseUrl
   if (!baseUrl) {
     return ''
@@ -726,6 +731,7 @@ function generateOpenGraphTags(
   description: string,
   config: BunPressConfig,
   currentPath: string,
+  pageImage?: string,
 ): string {
   const baseUrl = config.sitemap?.baseUrl
   if (!baseUrl) {
@@ -737,7 +743,9 @@ function generateOpenGraphTags(
   const url = `${cleanBaseUrl}${cleanPath}`
 
   const siteName = config.title || config.markdown?.title || title
-  const ogImage = config.markdown?.meta?.['og:image'] || config.markdown?.meta?.ogImage
+  // A page's own `image:` beats the site-wide default, so link previews show
+  // the page rather than the same banner everywhere.
+  const ogImage = pageImage || config.markdown?.meta?.['og:image'] || config.markdown?.meta?.ogImage
 
   const tags = [
     `<meta property="og:type" content="website">`,
@@ -761,10 +769,11 @@ function generateTwitterCardTags(
   title: string,
   description: string,
   config: BunPressConfig,
+  pageImage?: string,
 ): string {
   const twitterCard = config.markdown?.meta?.['twitter:card'] || config.markdown?.meta?.twitterCard || 'summary'
   const twitterSite = config.markdown?.meta?.['twitter:site'] || config.markdown?.meta?.twitterSite
-  const twitterImage = config.markdown?.meta?.['twitter:image'] || config.markdown?.meta?.twitterImage
+  const twitterImage = pageImage || config.markdown?.meta?.['twitter:image'] || config.markdown?.meta?.twitterImage
 
   const tags = [
     `<meta name="twitter:card" content="${twitterCard}">`,
@@ -877,12 +886,174 @@ function generateFontTags(config: BunPressConfig): { fontLinks: string, fontFace
 }
 
 /**
+ * Translate `themeConfig` into CSS the theme actually reads.
+ *
+ * `colors`, `fonts`, `cssVars` and `css` were all typed and documented but
+ * never read by anything, so setting a brand colour changed nothing. Each maps
+ * onto the `--bp-*` variables the stylesheet already keys off, emitted after
+ * the theme so it overrides rather than fights it.
+ */
+function generateThemeOverrideCss(config: BunPressConfig): string {
+  const theme = config.themeConfig
+  if (!theme)
+    return ''
+
+  const vars: string[] = []
+  const set = (name: string, value?: string): void => {
+    if (value)
+      vars.push(`  ${name}: ${value};`)
+  }
+
+  const colors = theme.colors ?? {}
+  // Brand colours drive links, active nav, rails and buttons. The 2/3 steps
+  // are hover/active shades; without them a custom primary would revert to the
+  // default indigo the moment you moused over a link.
+  set('--bp-c-brand-1', colors.primary)
+  set('--bp-c-brand-2', colors.secondary || colors.primary)
+  set('--bp-c-brand-3', colors.accent || colors.secondary || colors.primary)
+  set('--bp-c-bg', colors.background)
+  set('--bp-c-bg-alt', colors.surface)
+  set('--bp-c-bg-soft', colors.surface)
+  set('--bp-c-text-1', colors.text)
+  set('--bp-c-text-2', colors.muted)
+
+  const fonts = theme.fonts ?? {}
+  set('--bp-font-family-base', fonts.body)
+  set('--bp-font-family-mono', fonts.mono)
+
+  for (const [name, value] of Object.entries(theme.cssVars ?? {})) {
+    // Accept both `--custom` and `custom`, since the docs show the bare form.
+    set(name.startsWith('--') ? name : `--${name}`, value)
+  }
+
+  const blocks: string[] = []
+  if (vars.length)
+    blocks.push(`:root {\n${vars.join('\n')}\n}`)
+
+  // A heading font is not a theme variable — the base stylesheet has no hook
+  // for it — so it is applied directly to the elements it names.
+  if (fonts.heading) {
+    blocks.push(`.bp-doc h1,\n.bp-doc h2,\n.bp-doc h3,\n.bp-doc h4,\n.bp-doc h5,\n.bp-doc h6,\n.BPHero-text {\n  font-family: ${fonts.heading};\n}`)
+  }
+
+  if (theme.css)
+    blocks.push(theme.css)
+
+  return blocks.join('\n\n')
+}
+
+/**
+ * Everything about a page that belongs in <head>, resolved from its
+ * frontmatter with sensible fallbacks.
+ *
+ * Frontmatter wins, then the page's own <h1>, then the site defaults. The h1
+ * fallback matters most: almost no docs page carries a `title:` key, and
+ * without it every page inherits the site title verbatim.
+ */
+function resolvePageMeta(
+  frontmatter: Frontmatter,
+  html: string,
+  siteTitle: string,
+  config: BunPressConfig,
+): {
+    documentTitle: string
+    pageTitle: string
+    description: string
+    image?: string
+    canonical?: string
+    extraTags: string
+  } {
+  const headingMatch = html.match(/<h1(?:\s[^>]*)?>([\s\S]*?)<\/h1>/)
+  const headingText = headingMatch
+    ? headingMatch[1].replace(/<[^>]+>/g, '').trim()
+    : ''
+
+  const pageTitle = (typeof frontmatter.title === 'string' && frontmatter.title.trim())
+    || headingText
+    || siteTitle
+
+  // `Page | Site`, but never `Site | Site` on the landing page.
+  const documentTitle = pageTitle && pageTitle !== siteTitle
+    ? `${pageTitle} | ${siteTitle}`
+    : siteTitle
+
+  const description = (typeof frontmatter.description === 'string' && frontmatter.description.trim())
+    || config.description
+    || config.markdown?.meta?.description
+    || 'Documentation built with BunPress'
+
+  const tags: string[] = []
+  const push = (tag: string): void => {
+    tags.push(tag)
+  }
+
+  // `keywords` may be written as a list or a comma-separated string.
+  const keywords = frontmatter.keywords
+  if (keywords) {
+    const value = Array.isArray(keywords) ? keywords.join(', ') : String(keywords)
+    if (value.trim())
+      push(`<meta name="keywords" content="${escapeHtmlAttribute(value)}">`)
+  }
+
+  if (typeof frontmatter.author === 'string' && frontmatter.author.trim())
+    push(`<meta name="author" content="${escapeHtmlAttribute(frontmatter.author)}">`)
+
+  if (typeof frontmatter.robots === 'string' && frontmatter.robots.trim())
+    push(`<meta name="robots" content="${escapeHtmlAttribute(frontmatter.robots)}">`)
+
+  // Arbitrary name/property meta, e.g. `meta: { og:image: /x.png }`.
+  if (frontmatter.meta && typeof frontmatter.meta === 'object') {
+    for (const [key, value] of Object.entries(frontmatter.meta as Record<string, unknown>)) {
+      if (value === undefined || value === null)
+        continue
+      const attribute = key.startsWith('og:') ? 'property' : 'name'
+      push(`<meta ${attribute}="${escapeHtmlAttribute(key)}" content="${escapeHtmlAttribute(String(value))}">`)
+    }
+  }
+
+  // VitePress-shaped `head: [[tag, attrs], ...]`, for anything the keys above
+  // do not cover (preloads, verification tokens, alternate links).
+  if (Array.isArray(frontmatter.head)) {
+    for (const entry of frontmatter.head) {
+      if (!Array.isArray(entry) || typeof entry[0] !== 'string')
+        continue
+      const [tag, attrs] = entry as [string, Record<string, unknown> | undefined]
+      // Only void metadata elements — a page must not be able to inject a
+      // <script> into the document head through its own frontmatter.
+      if (!['meta', 'link', 'base'].includes(tag.toLowerCase()))
+        continue
+      const rendered = Object.entries(attrs ?? {})
+        .map(([key, value]) => `${escapeHtmlAttribute(key)}="${escapeHtmlAttribute(String(value))}"`)
+        .join(' ')
+      push(`<${tag.toLowerCase()}${rendered ? ` ${rendered}` : ''}>`)
+    }
+  }
+
+  const image = typeof frontmatter.image === 'string' ? frontmatter.image : undefined
+  const canonical = typeof frontmatter.canonical === 'string' ? frontmatter.canonical : undefined
+
+  return { documentTitle, pageTitle, description, image, canonical, extraTags: tags.join('\n  ') }
+}
+
+/**
  * Wrap content in BunPress documentation layout
  */
-export async function wrapInLayout(content: string, config: BunPressConfig, currentPath: string, layout: string = 'doc'): Promise<string> {
+export async function wrapInLayout(
+  content: string,
+  config: BunPressConfig,
+  currentPath: string,
+  layout: string = 'doc',
+  frontmatter: Frontmatter = {},
+): Promise<string> {
   // Support both top-level config (VitePress-style) and markdown.title format
   const title = config.title || config.themeConfig?.siteTitle || config.markdown?.title || 'BunPress Documentation'
-  const description = config.description || config.markdown?.meta?.description || 'Documentation built with BunPress'
+
+  // The page's own identity, distinct from the site's. Without this every page
+  // in a site shipped the same <title>, description, Open Graph and Twitter
+  // card — search results and link previews were identical site-wide.
+  const pageMeta = resolvePageMeta(frontmatter, content, title, config)
+  const documentTitle = pageMeta.documentTitle
+  const description = pageMeta.description
 
   // Get theme CSS (defaults to 'vitepress' theme)
   const themeName = config.theme || 'vitepress'
@@ -896,12 +1067,14 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   const baseDocCss = (defaultConfig.markdown?.css as string) || ''
   const userCss = config.markdown?.css || ''
   const extraCss = userCss && userCss !== baseDocCss ? userCss : ''
+  // Last in the cascade so themeConfig wins over both the theme and markdown.css.
+  const themeOverrideCss = generateThemeOverrideCss(config)
 
   // Generate SEO meta tags
-  const canonicalUrl = generateCanonicalUrl(config, currentPath)
-  const openGraphTags = generateOpenGraphTags(title, description, config, currentPath)
-  const twitterCardTags = generateTwitterCardTags(title, description, config)
-  const structuredData = generateStructuredData(title, description, config, currentPath)
+  const canonicalUrl = generateCanonicalUrl(config, currentPath, pageMeta.canonical)
+  const openGraphTags = generateOpenGraphTags(pageMeta.pageTitle, description, config, currentPath, pageMeta.image)
+  const twitterCardTags = generateTwitterCardTags(pageMeta.pageTitle, description, config, pageMeta.image)
+  const structuredData = generateStructuredData(pageMeta.pageTitle, description, config, currentPath)
 
   // Combine all meta tags
   const basicMeta = Object.entries(config.markdown?.meta || {})
@@ -912,7 +1085,8 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   // Web fonts: <link> tags (with preconnect) go in <head> via the meta slot;
   // raw @font-face blocks are folded into the stylesheet below.
   const { fontLinks, fontFaceCss } = generateFontTags(config)
-  const allMeta = [basicMeta, canonicalUrl, openGraphTags, twitterCardTags, fontLinks].filter(Boolean).join('\n  ')
+  // Page tags come after the site-wide ones so a page can override them.
+  const allMeta = [basicMeta, canonicalUrl, openGraphTags, twitterCardTags, pageMeta.extraTags, fontLinks].filter(Boolean).join('\n  ')
 
   // Generate analytics scripts
   const fathomScript = generateFathomScript(config)
@@ -948,8 +1122,23 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
       })
     : ''
 
+  // Rendered only when configured — an empty bordered strip at the bottom of
+  // every page is worse than no footer.
+  const footerConfig = config.themeConfig?.footer
+  const footer = (footerConfig?.message || footerConfig?.copyright)
+    ? await render('footer', {
+        message: footerConfig.message ? `<p class="BPFooter-message">${footerConfig.message}</p>` : '',
+        copyright: footerConfig.copyright ? `<p class="BPFooter-copyright">${footerConfig.copyright}</p>` : '',
+      })
+    : ''
+
+  const logo = config.themeConfig?.logo
+    ? `<img class="BPNavBarTitle-logo" src="${escapeHtmlAttribute(config.themeConfig.logo)}" alt="">`
+    : ''
+
   const navbarFor = async (variant: 'doc' | 'plain'): Promise<string> => render('navbar', {
     title,
+    logo,
     nav,
     searchTrigger: searchEnabled ? searchTriggerButton(searchRuntime.placeholder, searchRuntime.shortcuts) : '',
     hamburger: variant === 'doc' ? HAMBURGER_BUTTON : '',
@@ -971,17 +1160,19 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   // Home layout - nav bar + hero/features/body, no sidebar
   if (layout === 'home') {
     const crosswindCSS = await generateCrosswindCSSFromHtml(`${content}\n${nav}`)
-    const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}`
+    const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}\n${themeOverrideCss}`
 
     const html = await render('layout-home', {
       htmlClass,
       themeMode,
       title,
+      documentTitle,
       description,
       meta: allMeta,
       customCSS,
       navbar: await navbarFor('plain'),
       search: searchOverlay,
+      footer,
       content,
     })
     return prefixRootRelativeAttributes(injectSPARouter(injectScripts(html, scripts)), config)
@@ -990,17 +1181,19 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   // Page layout - nav bar, full-width content, no sidebar, no TOC
   if (layout === 'page') {
     const crosswindCSS = await generateCrosswindCSSFromHtml(`${content}\n${nav}`)
-    const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}`
+    const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}\n${themeOverrideCss}`
 
     const html = await render('layout-page', {
       htmlClass,
       themeMode,
       title,
+      documentTitle,
       description,
       meta: allMeta,
       customCSS,
       navbar: await navbarFor('plain'),
       search: searchOverlay,
+      footer,
       content,
     })
     return prefixRootRelativeAttributes(injectSPARouter(injectScripts(html, scripts)), config)
@@ -1016,17 +1209,19 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   const pageTOC = outline.aside
 
   const crosswindCSS = await generateCrosswindCSSFromHtml(`${docContent}\n${nav}\n${sidebar}`)
-  const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}`
+  const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}\n${themeOverrideCss}`
 
   const html = await render('layout-doc', {
     htmlClass,
     themeMode,
     title,
+    documentTitle,
     description,
     meta: allMeta,
     customCSS,
     navbar: await navbarFor('doc'),
     search: searchOverlay,
+    footer,
     sidebar,
     content: docContent,
     pageTOC,
@@ -2575,7 +2770,7 @@ export async function startServer(options: {
             const markdown = await mdFile.text()
             const { html, frontmatter } = await markdownToHtml(markdown, root)
             const layout = frontmatter.layout || 'doc'
-            const wrappedHtml = await wrapInLayout(html, bunPressConfig, path, layout)
+            const wrappedHtml = await wrapInLayout(html, bunPressConfig, path, layout, frontmatter)
             return new Response(wrappedHtml, {
               headers: { 'Content-Type': 'text/html; charset=utf-8' },
             })

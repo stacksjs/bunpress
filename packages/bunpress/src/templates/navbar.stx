@@ -2,7 +2,7 @@
   <div class="BPNavBar">
     <div class="BPNavBarStart">
       {!! hamburger !!}
-      <a href="/" class="BPNavBarTitle">{{ title }}</a>
+      <a href="/" class="BPNavBarTitle">{!! logo !!}<span class="BPNavBarTitle-text">{{ title }}</span></a>
       {!! searchTrigger !!}
     </div>
 
@@ -24,3 +24,25 @@
     </div>
   </div>
 </header>
+
+<style>
+/* The brand is a logo, a wordmark, or both. */
+.BPNavBarTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.BPNavBarTitle-logo {
+  height: 24px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.BPNavBarTitle-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

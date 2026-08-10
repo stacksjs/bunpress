@@ -929,7 +929,13 @@ import { config } from './bunpress.config'
 
 ## Internationalization (i18n)
 
-BunPress supports multiple languages for documentation:
+::: warning Not implemented
+`i18n` is not wired up yet — the config block below is accepted but ignored,
+and no locale routing or content resolution happens. It is documented here as
+the intended shape, not as working behaviour.
+:::
+
+The planned configuration:
 
 ```typescript
 // bunpress.config.ts
