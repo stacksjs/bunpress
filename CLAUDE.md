@@ -445,14 +445,27 @@ Commit-msg hook validates commit messages with `@stacksjs/gitlint`
 
 - **buddy-bot** handles dependency updates — not renovatebot
 - **better-dx** provides shared dev tooling as peer dependencies — do not install its peers (e.g., `typescript`, `pickier`, `bun-plugin-dtsx`) separately if `better-dx` is already in `package.json`
+- If `better-dx` is in `package.json`, ensure `bunfig.toml` includes `linker = "hoisted"`
 - Sibling Stacks packages (`@stacksjs/stx`, `@stacksjs/ts-i18n`, `ts-syntax-highlighter`, `@stacksjs/clapp`) live in their own repositories and are installed **from npm**. `workspaces` is `packages/*` only — never add a sibling checkout path to it
 - `@stacksjs/ts-cloud` is an **optional peer**, needed only by `bunpress deploy`. Do not promote it to a dependency; it is ~27MB
 
 ### Lockfile and Bun version
 
-`packageManager` pins **bun@1.3.14**, and CI installs exactly that. Bun 1.3.14
-writes `lockfileVersion: 1` and **cannot parse version 2**, which newer Bun
-releases write.
+Three files pin **bun 1.3.14**, and they must always agree:
+
+| File | Role |
+|------|------|
+| `package.json` → `packageManager` | the version the lockfile must stay readable by |
+| `deps.yaml` → `bun.sh` | what `pantry install` provisions locally |
+| `.github/workflows/*.yml` → `bun.sh@…` | what CI installs |
+
+Bun 1.3.14 writes `lockfileVersion: 1` and **cannot parse version 2**, which
+1.4+ writes. We stay on 1.3.14 while 1.4 is canary-only.
+
+`deps.yaml` is pinned exactly rather than caret-ranged — `^1.3.14` would resolve
+to 1.4 the day it ships stable, which is precisely the break below. Moving off
+1.3.14 is a deliberate edit to all three files plus a lockfile regeneration;
+`test/lockfile.test.ts` fails if they disagree or if `bun.lock` outruns the pin.
 
 A newer Bun is fine for running things day to day, but if it rewrites
 `bun.lock` the file becomes unreadable to CI and every job fails at
@@ -467,4 +480,3 @@ rm bun.lock && /tmp/bun1314/bun-darwin-aarch64/bun install
 ```
 
 Check with `head -2 bun.lock` — it must say `"lockfileVersion": 1`.
-- If `better-dx` is in `package.json`, ensure `bunfig.toml` includes `linker = "hoisted"`

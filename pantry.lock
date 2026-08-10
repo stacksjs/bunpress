@@ -8,22 +8,20 @@
         "@stacksjs/bumpx": "^0.2.4",
         "@stacksjs/gitlint": "^0.1.5",
         "@stacksjs/logsmith": "^0.2.1",
-        "@stacksjs/ts-i18n": "^0.0.0",
         "bun-git-hooks": "^0.3.1",
         "bun-plugin-dtsx": "^0.10.4",
         "bun-types": "^1.3.11",
-        "bunfig": "^0.15.6",
-        "ts-syntax-highlighter": "^0.2.1",
         "typescript": "^7.0.2"
       },
       "system": {
-        "bun.sh": "^1.3.14"
+        "bun.sh": "1.3.14"
       }
     },
     "packages/bun-plugin": {
       "name": "bun-plugin-bunpress",
       "version": "0.2.0",
       "devDependencies": {
+        "bun-plugin-dtsx": "^0.10.4",
         "typescript": "^7.0.2"
       }
     },
@@ -31,19 +29,34 @@
       "name": "@stacksjs/bunpress",
       "version": "0.2.0",
       "dependencies": {
-        "@stacksjs/stx": "^0.2.82",
-        "@stacksjs/ts-cloud": "^0.7.51",
-        "@stacksjs/ts-md": "^0.1.1",
-        "bunfig": "^0.15.6"
+        "@cwcss/crosswind": "^0.2.16",
+        "@stacksjs/clapp": "^0.2.0",
+        "@stacksjs/stx": "^0.2.171",
+        "@stacksjs/ts-i18n": "^0.1.11",
+        "bunfig": "^0.15.17",
+        "ts-syntax-highlighter": "^0.2.14"
       },
       "devDependencies": {
-        "@stacksjs/clapp": "^0.2.0",
-        "ts-syntax-highlighter": "^0.2.1",
+        "bun-plugin-dtsx": "^0.10.4",
         "typescript": "^7.0.2"
       }
     }
   },
   "packages": {
+    "@cwcss/crosswind@0.2.16": {
+      "name": "@cwcss/crosswind",
+      "version": "0.2.16",
+      "source": "npm",
+      "resolved": "https://registry.npmjs.org/@cwcss/crosswind/-/crosswind-0.2.16.tgz",
+      "integrity": "sha512-QgSTpcnt1seUQF2++taD5wk/H1lE3wSaybd+i9iP/syQTB2w/v2aM2U9SzYYe2ZcHA3Uxa1Sn/YvhcmHeFfuCA==",
+      "dependencies": {
+        "@stacksjs/clapp": "^0.2.0",
+        "bunfig": "^0.15.17"
+      },
+      "bin": {
+        "crosswind": "./dist/cli.js"
+      }
+    },
     "@stacksjs/bumpx@0.2.6": {
       "name": "@stacksjs/bumpx",
       "version": "0.2.6",
@@ -92,21 +105,22 @@
         "logsmith": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/stx@0.2.99": {
+    "@stacksjs/stx@0.2.173": {
       "name": "@stacksjs/stx",
-      "version": "0.2.99",
+      "version": "0.2.173",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/stx/-/stx-0.2.99.tgz",
-      "integrity": "sha512-F4GuF4XXRLC7QEUQvcZkzj9yc27wDS0k44GQ7TAZzbu0Dxd4KxJsGw2PM4fgVc5Fi+C/v/tXXf9Dp9AnP7QV/w==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/stx/-/stx-0.2.173.tgz",
+      "integrity": "sha512-WLL2BpUViCH2fGA+RooMKjUooYh+IWopxXpnRqP+dyb8M6GEO4jbYLEudxOLp9HSMk+4FeB66fX742xPUWg7uw==",
       "dependencies": {
-        "@cwcss/crosswind": "^0.2.6",
+        "@cwcss/crosswind": "^0.2.14",
         "@stacksjs/clapp": "^0.2.0",
-        "@stacksjs/sanitizer": "0.2.99",
+        "@stacksjs/desktop": "0.2.173",
+        "@stacksjs/sanitizer": "0.2.173",
         "@stacksjs/ts-i18n": "^0.1.11",
-        "bun-plugin-stx": "0.2.99",
-        "bunfig": "^0.15.15",
-        "stx-router": "0.2.99",
-        "ts-broadcasting": "^0.0.8",
+        "bun-plugin-stx": "0.2.173",
+        "bunfig": "^0.15.17",
+        "stx-router": "0.2.173",
+        "ts-broadcasting": "^0.0.9",
         "ts-images": "^0.1.9",
         "ts-syntax-highlighter": "^0.2.1"
       },
@@ -114,45 +128,18 @@
         "stx": "./dist/cli.js"
       }
     },
-    "@stacksjs/ts-cloud@0.7.51": {
-      "name": "@stacksjs/ts-cloud",
-      "version": "0.7.51",
-      "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/ts-cloud/-/ts-cloud-0.7.51.tgz",
-      "integrity": "sha512-fmgjc+cjuVHpNP0Hg/Y73EYp6YcVClzkeAmT5VzY3SCM2Yek9YfA6+WcvySwoRTG79DmRIUqfT75AFogvovsNw==",
-      "dependencies": {
-        "@stacksjs/ts-xml": "^0.1.0",
-        "@ts-cloud/aws-types": "0.7.51",
-        "@ts-cloud/core": "0.7.51"
-      },
-      "bin": {
-        "cloud": "./dist/bin/cli.js"
-      }
-    },
-    "@stacksjs/ts-i18n@0.0.0": {
+    "@stacksjs/ts-i18n@0.1.11": {
       "name": "@stacksjs/ts-i18n",
-      "version": "0.0.0",
+      "version": "0.1.11",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/ts-i18n/-/ts-i18n-0.0.0.tgz",
-      "integrity": "sha512-5MBLMIZLeWX5Gc2xRe26UyFXN0q5Am51w7fRVhOf58MKa/4XL1YpQ4MwkR/M45VqVhEnvl396zY319S8WycBrQ==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/ts-i18n/-/ts-i18n-0.1.11.tgz",
+      "integrity": "sha512-33FM0gKdxBy6EUsUZLGAMe0D7QUZ4f/BQXRsQIyzkZgs2+juruUTevPuJGCjWSZsgJuiaBfEJn8Oq8ctuo1OWQ==",
       "dependencies": {
-        "@stacksjs/clapp": "^0.1.16",
-        "bunfig": "^0.14.1",
-        "tinyglobby": "^0.2.9",
-        "yaml": "^2.6.0"
+        "@stacksjs/clapp": "^0.2.9",
+        "bunfig": "^0.15.6"
       },
       "bin": {
-        "i18n": "./dist/bin/cli.js"
-      }
-    },
-    "@stacksjs/ts-md@0.1.1": {
-      "name": "@stacksjs/ts-md",
-      "version": "0.1.1",
-      "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/ts-md/-/ts-md-0.1.1.tgz",
-      "integrity": "sha512-kvsSg7S3vHq65fnHIRggTLudN4n1sjkos86xLB62V6PVRa8iosYAmFKVDTGaJk+0MdsIoRwQbJ2vLWVcNQsgGw==",
-      "bin": {
-        "md": "./bin/cli.ts"
+        "i18n": "./dist/cli.js"
       }
     },
     "bun-git-hooks@0.3.2": {
@@ -192,12 +179,12 @@
       "source": "pantry",
       "resolved": "registry:bun.sh@1.3.14"
     },
-    "bunfig@0.15.15": {
+    "bunfig@0.15.17": {
       "name": "bunfig",
-      "version": "0.15.15",
+      "version": "0.15.17",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/bunfig/-/bunfig-0.15.15.tgz",
-      "integrity": "sha512-LEBk4M2WqwsJs7U9N5ZnEV6C9Oq74yhcF0VQj/dFBLWyxhDozH3xn4zxrJOFyTwYzYPn6AyDGtSnq2B05HrWZA==",
+      "resolved": "https://registry.npmjs.org/bunfig/-/bunfig-0.15.17.tgz",
+      "integrity": "sha512-nJAYGUq29lMmKindrIQIU5MD0JFFRoVFt+PBoNEvvVO9gKS3WgsYQVQLzN0gzHNnZtOZSR9p7jTBiRCwjQpr1g==",
       "dependencies": {
         "@stacksjs/clapp": "^0.2.0",
         "@stacksjs/clarity": "^0.3.24"
@@ -206,12 +193,12 @@
         "bunfig": "./bin/cli.js"
       }
     },
-    "ts-syntax-highlighter@0.2.5": {
+    "ts-syntax-highlighter@0.2.14": {
       "name": "ts-syntax-highlighter",
-      "version": "0.2.5",
+      "version": "0.2.14",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/ts-syntax-highlighter/-/ts-syntax-highlighter-0.2.5.tgz",
-      "integrity": "sha512-4v2wDrPRZOeAA3o647xhyvuzpTIiSqimuR/KWoRZ/BtqX1yC9tesJzRMPpkbwZOI6BoJs65wST20Ma6Nyw+2Rg==",
+      "resolved": "https://registry.npmjs.org/ts-syntax-highlighter/-/ts-syntax-highlighter-0.2.14.tgz",
+      "integrity": "sha512-xujx4yJ4Rlhwdstopq6KVYs78K5nSfkpUk/GRK/InwmnJ/SN+E+hUSuSvQZz922xlXYe1SFBtzXxQXbpRt46fw==",
       "bin": {
         "ts-syntax-highlighter": "./dist/bin/cli.js"
       }
