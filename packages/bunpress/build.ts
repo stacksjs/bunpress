@@ -18,14 +18,17 @@ const result = await Bun.build({
   minify: true,
   splitting: true,
   target: 'bun',
+  // Kept out of the bundle so consumers resolve them from their own
+  // node_modules. Mirrors dependencies + the optional ts-cloud peer.
   external: [
+    '@cwcss/crosswind',
+    '@stacksjs/clapp',
     '@stacksjs/stx',
     '@stacksjs/ts-cloud',
+    '@stacksjs/ts-i18n',
     '@ts-cloud/core',
-    '@stacksjs/ts-md',
     'bunfig',
     'ts-syntax-highlighter',
-    '@stacksjs/clapp',
   ],
 })
 

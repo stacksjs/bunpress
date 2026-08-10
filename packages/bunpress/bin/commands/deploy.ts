@@ -9,10 +9,28 @@ import type { BunPressConfig, DnsProviderOptions } from '../../src/types'
 import { buildDocs } from '../cli'
 import { Spinner, logSuccess, logError, logInfo } from '../utils'
 
-// ts-cloud is dynamically imported in deployCommand() to avoid breaking
-// typecheck/tests when the package has build issues
+// ts-cloud is an optional peer dependency: it is ~27MB of AWS SDK that only
+// `bunpress deploy` needs, so it is imported dynamically and by a variable
+// specifier, which also keeps it out of tsc resolution and the bundle.
 // eslint-disable-next-line ts/no-require-imports -- hidden from tsc resolution
 const tsCloudModule = '@stacksjs/ts-cloud'
+
+/**
+ * Load ts-cloud, turning a missing optional peer into an actionable message
+ * rather than an unhandled module-resolution error.
+ */
+async function loadTsCloud(): Promise<any> {
+  try {
+    return await import(tsCloudModule)
+  }
+  catch (error) {
+    throw new Error(
+      'Deploying requires @stacksjs/ts-cloud, which is an optional dependency.\n'
+      + 'Install it with:  bun add -d @stacksjs/ts-cloud\n'
+      + `Original error: ${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+}
 
 interface DeployOptions {
   region?: string
@@ -201,7 +219,7 @@ export async function deployCommand(options: DeployOptions = {}): Promise<boolea
         onProgress: createProgressHandler(spinner, verbose),
       }
 
-      const { deployStaticSiteWithExternalDnsFull } = await import(tsCloudModule)
+      const { deployStaticSiteWithExternalDnsFull } = await loadTsCloud()
       result = await deployStaticSiteWithExternalDnsFull(deployConfig)
     }
     else {
@@ -231,7 +249,7 @@ export async function deployCommand(options: DeployOptions = {}): Promise<boolea
         onProgress: createProgressHandler(spinner, verbose),
       }
 
-      const { deployStaticSiteFull } = await import(tsCloudModule)
+      const { deployStaticSiteFull } = await loadTsCloud()
       result = await deployStaticSiteFull(deployConfig)
     }
 

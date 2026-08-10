@@ -52,15 +52,23 @@
     "typecheck": "bun --bun tsc --noEmit"
   },
   "dependencies": {
+    "@cwcss/crosswind": "^0.2.16",
     "@stacksjs/clapp": "^0.2.0",
     "@stacksjs/stx": "^0.2.171",
-    "@stacksjs/ts-cloud": "^0.7.51",
     "@stacksjs/ts-i18n": "^0.1.11",
-    "@stacksjs/ts-md": "^0.1.1",
     "bunfig": "^0.15.17",
     "ts-syntax-highlighter": "^0.2.13"
   },
   "devDependencies": {
+    "bun-plugin-dtsx": "^0.10.4",
     "typescript": "^7.0.2"
+  },
+  "peerDependencies": {
+    "@stacksjs/ts-cloud": "^0.7.51"
+  },
+  "peerDependenciesMeta": {
+    "@stacksjs/ts-cloud": {
+      "optional": true
+    }
   }
 }
