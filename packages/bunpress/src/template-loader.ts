@@ -48,10 +48,24 @@ export function clearTemplateCache(): void {
   templateCache.clear()
 }
 
+/**
+ * Substitute both placeholder syntaxes in a SINGLE pass.
+ *
+ * Two sequential `.replace()` calls would rescan the text injected by the
+ * first one: a page that legitimately documents `{{ content }}` (in a table
+ * cell, say) would have the whole rendered page spliced back into itself on
+ * the second pass. One pass means substituted values are never re-scanned.
+ */
 function interpolateTemplate(template: string, data: Record<string, any>): string {
-  return template
-    .replace(/\{!!\s*([\w.]+)\s*!!\}/g, (_match, key) => stringifyValue(readTemplateValue(data, key)))
-    .replace(/\{\{\s*([\w.]+)\s*\}\}/g, (_match, key) => escapeHtml(stringifyValue(readTemplateValue(data, key))))
+  return template.replace(
+    /\{!!\s*([\w.]+)\s*!!\}|\{\{\s*([\w.]+)\s*\}\}/g,
+    (_match, rawKey: string | undefined, escapedKey: string | undefined) => {
+      if (rawKey !== undefined)
+        return stringifyValue(readTemplateValue(data, rawKey))
+
+      return escapeHtml(stringifyValue(readTemplateValue(data, escapedKey!)))
+    },
+  )
 }
 
 function readTemplateValue(data: Record<string, any>, key: string): unknown {
