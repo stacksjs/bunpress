@@ -57,7 +57,7 @@
     "@stacksjs/stx": "^0.2.171",
     "@stacksjs/ts-i18n": "^0.1.11",
     "bunfig": "^0.15.17",
-    "ts-syntax-highlighter": "^0.2.13"
+    "ts-syntax-highlighter": "^0.2.14"
   },
   "devDependencies": {
     "bun-plugin-dtsx": "^0.10.4",

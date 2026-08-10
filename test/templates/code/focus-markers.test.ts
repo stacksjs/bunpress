@@ -3,6 +3,12 @@ import { startServer } from '../../../packages/bunpress/src/serve'
 
 const TEST_MARKDOWN_DIR = './test/markdown/code'
 
+
+/** Visible text of a page: highlighted source is split across token spans. */
+function textOf(html: string): string {
+  return html.replace(/<[^>]+>/g, '')
+}
+
 describe('Code Block Focus Markers', () => {
   describe('Basic Focus', () => {
     it('should focus a single line with // [!code focus]', async () => {
@@ -223,7 +229,7 @@ describe('Code Block Focus Markers', () => {
         expect(html).toContain('focused')
         expect(html).toContain('dimmed')
         expect(html).not.toContain('[!code focus]')
-        expect(html).toContain('def hello()')
+        expect(textOf(html)).toContain('def hello()')
       }
       finally {
         stop()

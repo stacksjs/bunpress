@@ -3,6 +3,18 @@ import { startServer } from '../../../packages/bunpress/src/serve'
 
 const TEST_MARKDOWN_DIR = './test/markdown/code'
 
+
+/**
+ * Visible text of a rendered page.
+ *
+ * Imported source is split across token spans once the language is
+ * highlighted, so asserting on raw substrings of the source only held while
+ * that language happened to render unhighlighted.
+ */
+function textOf(html: string): string {
+  return html.replace(/<[^>]+>/g, '')
+}
+
 describe('Code Imports from Files', () => {
   describe('Full File Import', () => {
     it('should import entire JavaScript file', async () => {
@@ -73,8 +85,8 @@ describe('Code Imports from Files', () => {
         const response = await fetch('http://localhost:12003/test-import-full-py')
         const html = await response.text()
 
-        expect(html).toContain('def greet(name):')
-        expect(html).toContain('def multiply(a, b):')
+        expect(textOf(html)).toContain('def greet(name):')
+        expect(textOf(html)).toContain('def multiply(a, b):')
         expect(html).toContain('class="language-python"')
       }
       finally {
@@ -217,12 +229,12 @@ describe('Code Imports from Files', () => {
         const response = await fetch('http://localhost:12008/test-import-py-region')
         const html = await response.text()
 
-        expect(html).toContain('def multiply(a, b):')
-        expect(html).toContain('def divide(a, b):')
+        expect(textOf(html)).toContain('def multiply(a, b):')
+        expect(textOf(html)).toContain('def divide(a, b):')
 
         // Should NOT contain code outside region
-        expect(html).not.toContain('def greet(name):')
-        expect(html).not.toContain('def subtract(a, b):')
+        expect(textOf(html)).not.toContain('def greet(name):')
+        expect(textOf(html)).not.toContain('def subtract(a, b):')
       }
       finally {
         stop()

@@ -1,5 +1,5 @@
 import type { Highlighter as TSHighlighter } from 'ts-syntax-highlighter'
-import { createHighlighter as createTSHighlighter, highlight as highlightTS } from 'ts-syntax-highlighter'
+import { createHighlighter as createTSHighlighter, highlight as highlightTS, listLanguages } from 'ts-syntax-highlighter'
 
 // Singleton highlighter instance
 let globalHighlighter: TSHighlighter | null = null
@@ -28,35 +28,51 @@ async function getHighlighter(): Promise<TSHighlighter> {
 }
 
 /**
- * Language aliases mapping
+ * Every language id and alias the highlighter knows, built once from its own
+ * registry.
+ *
+ * This used to be a hand-written list of seven languages plus a hand-written
+ * alias table, while the highlighter shipped grammars for forty-eight. Every
+ * other fence — markdown, yaml, sql, go, python, rust, diff, dockerfile — fell
+ * through to the "unsupported" branch and rendered as plain escaped text.
  */
-const LANGUAGE_ALIASES: Record<string, string> = {
-  js: 'javascript',
-  ts: 'typescript',
-  jsx: 'javascript', // ts-syntax-highlighter treats JSX as javascript
-  tsx: 'typescript', // ts-syntax-highlighter treats TSX as typescript
-  htm: 'html',
-  sh: 'bash',
-  shell: 'bash',
-  zsh: 'bash',
+let languageIndex: Map<string, string> | null = null
+
+function getLanguageIndex(): Map<string, string> {
+  if (languageIndex)
+    return languageIndex
+
+  const index = new Map<string, string>()
+  try {
+    for (const language of listLanguages()) {
+      index.set(language.id.toLowerCase(), language.id)
+      for (const alias of language.aliases ?? [])
+        index.set(alias.toLowerCase(), language.id)
+    }
+  }
+  catch {
+    // A highlighter without a registry leaves the map empty, which degrades to
+    // unhighlighted code rather than breaking the build.
+  }
+
+  languageIndex = index
+  return index
 }
 
 /**
- * Normalizes a language identifier
+ * Normalizes a language identifier to its canonical id.
+ * Unknown identifiers are returned as-is so the caller can report them.
  */
 export function normalizeLanguage(lang: string): string {
   const normalized = lang.toLowerCase().trim()
-  return LANGUAGE_ALIASES[normalized] || normalized
+  return getLanguageIndex().get(normalized) ?? normalized
 }
 
 /**
  * Checks if a language is supported by ts-syntax-highlighter
  */
 export function isLanguageSupported(lang: string): boolean {
-  const normalized = normalizeLanguage(lang)
-  // ts-syntax-highlighter supports these languages
-  const supported = ['javascript', 'typescript', 'html', 'css', 'json', 'stx', 'bash']
-  return supported.includes(normalized)
+  return getLanguageIndex().has(lang.toLowerCase().trim())
 }
 
 /**
@@ -99,16 +115,17 @@ function restoreWhitespaceForLine(originalLine: string, highlightedHtml: string)
     return highlightedHtml
   }
 
-  // Rebuild HTML with proper whitespace from original
+  // Rebuild HTML with proper whitespace from original.
+  //
+  // Leading indentation is NOT prepended up front: the highlighter already
+  // emits it, either inside the first token or as a token of its own. Adding
+  // it here as well doubled every indent — two-space source rendered at four,
+  // and each nesting level compounded. The scan below covers both shapes: a
+  // token that carries its own indentation is found at offset 0 and consumes
+  // it, and a token that does not leaves a whitespace gap that gets copied
+  // across verbatim.
   let result = ''
   let originalPos = 0
-
-  // Add leading whitespace from original line
-  const leadingWhitespace = originalLine.match(/^(\s*)/)
-  if (leadingWhitespace && leadingWhitespace[1]) {
-    result += leadingWhitespace[1]
-    originalPos = leadingWhitespace[1].length
-  }
 
   for (let i = 0; i < tokens.length; i++) {
     const { text: tokenText, span: tokenSpan } = tokens[i]
