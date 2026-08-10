@@ -1,3 +1,47 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.21...v0.2.0)
+
+## ✨ Features
+
+- **i18n**: multi-language sites via ts-i18n, and no ignored config ([81b7799](https://github.com/stacksjs/bunpress/commit/81b7799)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **seo**: give every page its own metadata, and wire up theming and plugins ([f87dd73](https://github.com/stacksjs/bunpress/commit/f87dd73)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **search**: implement every documented search option ([0140edc](https://github.com/stacksjs/bunpress/commit/0140edc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **search**: implement site search and unify the nav bar ([f6816c7](https://github.com/stacksjs/bunpress/commit/f6816c7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **theme**: add in-content page outline and fix component rendering ([49b46f0](https://github.com/stacksjs/bunpress/commit/49b46f0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **build**: add deterministic output manifests ([e38af56](https://github.com/stacksjs/bunpress/commit/e38af56)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **highlight**: support all 48 languages, and stop doubling indentation ([becb4d0](https://github.com/stacksjs/bunpress/commit/becb4d0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **markdown**: close containers outside the lists they contain ([4b272cc](https://github.com/stacksjs/bunpress/commit/4b272cc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: align workspace pins with their checkouts, implement page provenance ([7ad6d42](https://github.com/stacksjs/bunpress/commit/7ad6d42)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **theme**: render the copy-page control server-side ([5e6fcd1](https://github.com/stacksjs/bunpress/commit/5e6fcd1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **templates**: interpolate placeholders in a single pass ([e78f98c](https://github.com/stacksjs/bunpress/commit/e78f98c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **build**: build complete owned STX graph ([1262895](https://github.com/stacksjs/bunpress/commit/1262895)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **render**: keep page CSS out of inline STX ([56f5fee](https://github.com/stacksjs/bunpress/commit/56f5fee)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **build**: report exact manifest drift ([81c7ccd](https://github.com/stacksjs/bunpress/commit/81c7ccd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **build**: make static output cross-host deterministic ([dd82b74](https://github.com/stacksjs/bunpress/commit/dd82b74)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: declare renderer runtime imports ([7f24aa8](https://github.com/stacksjs/bunpress/commit/7f24aa8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **serve**: resolve directory index pages ([45b0dff](https://github.com/stacksjs/bunpress/commit/45b0dff)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💄 Styles
+
+- **theme**: rework tables, lists, code blocks and mobile chrome ([03c0101](https://github.com/stacksjs/bunpress/commit/03c0101)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 👷 Build System
+
+- **deps**: declare crosswind, drop dead ts-md, make ts-cloud an optional peer ([a96971c](https://github.com/stacksjs/bunpress/commit/a96971c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: install sibling packages from npm, drop the owned-deps mechanism ([8539d53](https://github.com/stacksjs/bunpress/commit/8539d53)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: consume owned renderer workspaces ([047ea6b](https://github.com/stacksjs/bunpress/commit/047ea6b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.0 ([0e3f7ce](https://github.com/stacksjs/bunpress/commit/0e3f7ce)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: raise the bunfig floor to 0.15.17 ([d6714ea](https://github.com/stacksjs/bunpress/commit/d6714ea)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.20...v0.1.21)
 
 ### 🚀 Features
