@@ -4,6 +4,8 @@ import { YAML } from 'bun'
 import { colorize, logError, logInfo, logSuccess, logWarning, table } from '../utils'
 import { config } from '../../src/config'
 import type { BunPressConfig } from '../../src/types'
+import { stripFencedCode } from '../../src/markdown-fences'
+import { generateSlug } from '../../src/toc'
 
 interface SeoIssue {
   type: 'error' | 'warning'
@@ -55,6 +57,11 @@ export async function seoCheck(options: {
     await checkFile(filePath, docsDir, report, fix)
   }
 
+  // Nav and sidebar links appear on every page, so one broken entry there is
+  // the most-visible kind of broken link — and the only one no page's own
+  // content check can see.
+  checkConfiguredLinks(bunPressConfig, docsDir, report)
+
   // Print report
   printReport(report)
 
@@ -84,7 +91,18 @@ async function checkFile(
   let newFrontmatter = { ...frontmatter }
 
   // Check for title
-  if (!frontmatter.title) {
+  //
+  // A home-layout page has no `# heading` — its title comes from the hero, and
+  // the renderer uses it for <title>. Reporting that as a missing title made
+  // `seo:check` exit 1 on a correct landing page.
+  const heroTitle = frontmatter.layout === 'home'
+    ? (frontmatter.hero?.text || frontmatter.hero?.name)
+    : undefined
+
+  if (!frontmatter.title && heroTitle) {
+    // Nothing to report: the page has a title, just not under that key.
+  }
+  else if (!frontmatter.title) {
     const title = extractTitleFromContent(markdown)
     if (!title) {
       report.errors.push({
@@ -212,6 +230,63 @@ async function checkFile(
   }
 }
 
+/**
+ * Walk the configured nav and sidebar and report entries that do not resolve.
+ */
+export function checkConfiguredLinks(config: BunPressConfig, docsDir: string, report: SeoReport): void {
+  const seen = new Set<string>()
+
+  const check = (link: unknown, source: string): void => {
+    if (typeof link !== 'string' || !link.startsWith('/'))
+      return
+    const key = `${source}:${link}`
+    if (seen.has(key))
+      return
+    seen.add(key)
+
+    const [rawPath, fragment] = link.split('#')
+    const resolved = resolveDocFile(path.resolve(docsDir, `.${rawPath}`))
+    if (!resolved) {
+      report.errors.push({ type: 'error', category: 'Links', file: source, message: `Broken link: ${link}` })
+      return
+    }
+    if (fragment && !headingAnchors(resolved).has(fragment))
+      report.errors.push({ type: 'error', category: 'Links', file: source, message: `Broken anchor: ${link}` })
+  }
+
+  const walk = (items: unknown, source: string): void => {
+    if (!Array.isArray(items))
+      return
+    for (const item of items) {
+      if (!item || typeof item !== 'object')
+        continue
+      const entry = item as { link?: unknown, items?: unknown }
+      check(entry.link, source)
+      walk(entry.items, source)
+    }
+  }
+
+  walk(config.nav, 'config nav')
+  walk(config.themeConfig?.nav, 'themeConfig nav')
+
+  // Sidebars live in two places and take two shapes: a flat list, or groups
+  // keyed by the path prefix they apply to.
+  const sidebars: Array<[unknown, string]> = [
+    [config.markdown?.sidebar, 'config sidebar'],
+    [config.themeConfig?.sidebar, 'themeConfig sidebar'],
+  ]
+
+  for (const [sidebar, label] of sidebars) {
+    if (Array.isArray(sidebar)) {
+      walk(sidebar, label)
+    }
+    else if (sidebar && typeof sidebar === 'object') {
+      for (const [prefix, group] of Object.entries(sidebar as Record<string, unknown>))
+        walk(group, `${label} ${prefix}`)
+    }
+  }
+}
+
 /** Serialize frontmatter in block style with delimiters on their own lines. */
 export function serializeFrontmatter(frontmatter: Record<string, unknown>, markdown: string): string {
   return `---\n${YAML.stringify(frontmatter, null, 2)}\n---\n${markdown}`
@@ -310,9 +385,10 @@ export function findBrokenInternalLinks(
 ): string[] {
   const brokenLinks: string[] = []
   const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g
-  const searchableMarkdown = markdown
-    .replace(/```[\s\S]*?```/g, '')
-    .replace(/~~~[\s\S]*?~~~/g, '')
+  // stripFencedCode pairs fences the way CommonMark does. The regex this
+  // replaced desynced on a four-backtick block wrapping three-backtick ones,
+  // which is how docs show examples — so example links were checked as if real.
+  const searchableMarkdown = stripFencedCode(markdown)
     .replace(/`+[^`\n]*`+/g, '')
     .replace(/<!--[\s\S]*?-->/g, '')
   let match
@@ -325,8 +401,12 @@ export function findBrokenInternalLinks(
       continue
     }
 
-    // Skip anchors
+    const fragment = linkUrl.includes('#') ? linkUrl.slice(linkUrl.indexOf('#') + 1) : ''
+
+    // A same-page anchor is checked against this page's own headings.
     if (linkUrl.startsWith('#')) {
+      if (fragment && !headingAnchors(currentFile).has(fragment))
+        brokenLinks.push(linkUrl)
       continue
     }
 
@@ -350,16 +430,96 @@ export function findBrokenInternalLinks(
       ? path.resolve(docsDir, `.${decodedPath}`)
       : path.resolve(path.dirname(currentFile), decodedPath)
 
-    const candidates = targetPath.endsWith('.md')
-      ? [targetPath]
-      : [targetPath, `${targetPath}.md`, path.join(targetPath, 'index.md')]
-
-    if (!candidates.some(candidate => fs.existsSync(candidate))) {
+    const resolved = resolveDocFile(targetPath)
+    if (!resolved) {
       brokenLinks.push(linkUrl)
+      continue
     }
+
+    // The fragment used to be discarded, so a link to a real page with a
+    // heading that does not exist read as healthy.
+    if (fragment && !headingAnchors(resolved).has(fragment))
+      brokenLinks.push(linkUrl)
   }
 
   return brokenLinks
+}
+
+/**
+ * The markdown file serving a link target, or null.
+ *
+ * Each candidate must be a *file*: `/advanced` names both `advanced.md` and an
+ * `advanced/` directory here, and a bare existence check happily returns the
+ * directory, which then reads as a page with no headings at all.
+ */
+function resolveDocFile(target: string): string | null {
+  const candidates = target.endsWith('.md')
+    ? [target]
+    : [target, `${target}.md`, path.join(target, 'index.md')]
+
+  for (const candidate of candidates) {
+    try {
+      if (fs.statSync(candidate).isFile())
+        return candidate
+    }
+    catch {
+      // Missing candidate; try the next shape.
+    }
+  }
+  return null
+}
+
+/**
+ * Every anchor a page offers: one slug per heading, plus any explicit
+ * `{#custom-id}`, matching how the renderer assigns heading ids.
+ */
+const anchorCache = new Map<string, Set<string>>()
+
+export function headingAnchors(file: string): Set<string> {
+  const cached = anchorCache.get(file)
+  if (cached)
+    return cached
+
+  const anchors = new Set<string>()
+  try {
+    const source = stripFencedCode(fs.readFileSync(file, 'utf8'))
+    for (const line of source.split('\n')) {
+      const heading = line.match(/^#{1,6}\s+(.*)$/)
+      if (!heading)
+        continue
+
+      const text = heading[1].trim()
+
+      // An explicit {#id} replaces the generated slug rather than adding to
+      // it, matching the renderer — so the heading text is NOT also an anchor.
+      const custom = text.match(/\{#([\w-]+)\}\s*$/)
+      if (custom) {
+        anchors.add(custom[1])
+        continue
+      }
+
+      const slug = generateSlug(text)
+      if (!slug)
+        continue
+
+      // Repeated headings get -1, -2, … suffixes, so reserve them too rather
+      // than reporting a legitimate deep link as broken.
+      if (!anchors.has(slug)) {
+        anchors.add(slug)
+      }
+      else {
+        let n = 1
+        while (anchors.has(`${slug}-${n}`)) n++
+        anchors.add(`${slug}-${n}`)
+      }
+    }
+  }
+  catch {
+    // An unreadable target is already reported as a broken page link.
+  }
+
+  anchorCache.set(file, anchors)
+  return anchors
 }
 
 /**

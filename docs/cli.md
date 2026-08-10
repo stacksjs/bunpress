@@ -808,16 +808,12 @@ bunpress dev --port 4000
 lsof -i :3000
 ```
 
-See [Troubleshooting Guide](/troubleshooting) for more solutions.
-
 ---
 
 ## Related Documentation
 
 - [Configuration Guide](/config) - Complete configuration reference
 - [Quick Start](/quick-start) - Getting started guide
-- [API Reference](/api) - TypeScript API documentation
-- [Deployment Guide](/deployment) - Deploy your documentation
 
 ---
 

@@ -313,7 +313,7 @@ export default {
 ```
 
 Both `editLink` and `lastUpdated` can be overridden per page in frontmatter —
-see [Frontmatter](/config#frontmatter).
+see [Frontmatter](/config#frontmatter-configuration).
 
 ## Build Options
 

@@ -870,7 +870,7 @@ Monitor:
 
 ### Analytics Integration
 
-See [Configuration Guide](/config#fathom-analytics) for privacy-focused analytics with Fathom.
+See [Configuration Guide](/config#fathom-analytics-configuration) for privacy-focused analytics with Fathom.
 
 ---
 
@@ -878,7 +878,6 @@ See [Configuration Guide](/config#fathom-analytics) for privacy-focused analytic
 
 - [Configuration Guide](/config) - Complete configuration options
 - [CLI Reference](/cli) - `seo:check` command details
-- [Deployment Guide](/deployment) - Deploy with SEO optimization
 - [Best Practices](/best-practices#seo-optimization) - SEO best practices
 
 ---

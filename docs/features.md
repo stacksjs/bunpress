@@ -876,7 +876,7 @@ export default {
 - Real-time analytics
 - Custom events support
 
-See [Configuration Guide](/config#fathom-analytics) for details.
+See [Configuration Guide](/config#fathom-analytics-configuration) for details.
 
 ## Environment Variables
 

@@ -412,10 +412,6 @@ bun run preview
 
 ### API Reference
 
-For complete TypeScript API documentation, see the dedicated [API Reference](/api) page.
-
-### Quick Reference
-
 **Core Functions:**
 
 - `build(options)` - Build documentation
@@ -429,5 +425,3 @@ For complete TypeScript API documentation, see the dedicated [API Reference](/ap
 - `TocConfig` - Table of contents
 - `SitemapConfig` - SEO sitemap
 - `FathomConfig` - Analytics
-
-See [API Reference](/api) for detailed documentation of all interfaces, types, and functions.

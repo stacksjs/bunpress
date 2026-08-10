@@ -63,7 +63,7 @@ export const defaultConfig: BunPressConfig = {
           text: 'SEO & Analytics',
           items: [
             { text: 'SEO Features', link: '/seo' },
-            { text: 'Analytics (Fathom)', link: '/config#fathom-analytics' },
+            { text: 'Analytics (Fathom)', link: '/config#fathom-analytics-configuration' },
           ],
         },
         {

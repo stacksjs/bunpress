@@ -352,7 +352,6 @@ Check out our [Advanced Guide](/advanced) for more.
 
 ### Additional Resources
 
-- [API Documentation](/api)
 - [Best Practices](/best-practices)
 - [Community Discord](https://discord.gg/example)
 - [GitHub Examples](https://github.com/example/examples)

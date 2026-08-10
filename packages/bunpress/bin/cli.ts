@@ -422,7 +422,12 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
  * Styled to match VitePress's NotFound component
  */
 async function generate404Page(outdir: string, bunPressConfig: BunPressConfig): Promise<void> {
-  const { wrapInLayout } = await import('../src/serve')
+  const { getConfiguredBasePath, wrapInLayout } = await import('../src/serve')
+
+  // "Take me home" pointed at a hardcoded /docs/, which is a 404 on every site
+  // that is not mounted there — including this one. Home is the site root,
+  // wherever the site is mounted.
+  const homeHref = `${getConfiguredBasePath(bunPressConfig)}/`
 
   const notFoundContent = `
 <style>
@@ -496,7 +501,7 @@ async function generate404Page(outdir: string, bunPressConfig: BunPressConfig): 
     But if you don't change your direction, and if you keep looking, you may end up where you are heading.
   </blockquote>
   <div class="action">
-    <a class="link" href="/docs/" aria-label="go to home">
+    <a class="link" href="${homeHref}" aria-label="go to home">
       Take me home
     </a>
   </div>
