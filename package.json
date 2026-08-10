@@ -16,20 +16,10 @@
     "url": "https://github.com/stacksjs/bunpress/issues"
   },
   "workspaces": [
-    "packages/*",
-    "../stx/packages/stx",
-    "../stx/packages/desktop",
-    "../stx/packages/sanitizer",
-    "../stx/packages/bun-plugin",
-    "../stx/packages/router",
-    "../../Libraries/ts-syntax-highlighter/packages/ts-syntax-highlighter",
-    "../../Libraries/ts-i18n/packages/ts-i18n"
+    "packages/*"
   ],
   "scripts": {
     "dev": "bun run dev:docs",
-    "deps:owned": "bun scripts/owned-dependencies.ts",
-    "deps:owned:ci": "bun scripts/owned-dependencies.ts --checkout",
-    "deps:owned:check": "bun scripts/owned-dependencies.ts --check",
     "build": "bun run build:bunpress && bun run build:plugin",
     "build:bunpress": "cd packages/bunpress && bun run build",
     "build:plugin": "cd packages/bun-plugin && bun run build",
@@ -60,12 +50,11 @@
     "@stacksjs/bumpx": "^0.2.4",
     "@stacksjs/gitlint": "^0.1.5",
     "@stacksjs/logsmith": "^0.2.1",
-    "@stacksjs/ts-i18n": "workspace:0.1.11",
     "bun-git-hooks": "^0.3.1",
     "bun-plugin-dtsx": "^0.10.4",
     "bun-types": "^1.3.11",
     "bunfig": "^0.15.17",
-    "ts-syntax-highlighter": "workspace:0.2.13",
+    "ts-syntax-highlighter": "^0.2.13",
     "typescript": "^7.0.2"
   },
   "git-hooks": {
