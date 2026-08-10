@@ -7,6 +7,7 @@ import { config, defaultConfig } from './config'
 import { clearDataCache, loadDataFiles } from './data-loader'
 import { getSyntaxHighlightingStyles, highlightCode } from './highlighter'
 import type { ResolvedI18n } from './i18n'
+import { buildEditUrl, formatLastUpdated, resolveLastUpdated } from './page-meta'
 import {
   configForLocale,
   generateHreflangTags,
@@ -1079,17 +1080,83 @@ function resolvePageMeta(
 }
 
 /**
+ * Render the "Edit this page" / "Last updated" strip below a doc page.
+ *
+ * Both halves are opt-in and independent: a site can show provenance without
+ * an edit link, or vice versa, and either can be turned off per page.
+ */
+async function generateDocFooter(
+  config: BunPressConfig,
+  frontmatter: Frontmatter,
+  locale: string,
+  docsDir: string,
+  sourceFile?: string,
+): Promise<string> {
+  const theme = config.themeConfig
+  let editLinkHtml = ''
+  let lastUpdatedHtml = ''
+
+  const editPattern = theme?.editLink?.pattern
+  // Without a source file there is nothing to point at — a 404 edit link is
+  // worse than none.
+  if (editPattern && sourceFile && frontmatter.editLink !== false) {
+    const url = buildEditUrl(editPattern, docsDir, sourceFile)
+    const text = theme?.editLink?.text ?? 'Edit this page'
+    editLinkHtml = `<a class="BPDocFooter-edit" href="${escapeHtmlAttribute(url)}" target="_blank" rel="noopener">`
+      + `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">`
+      + `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>`
+      + `</svg>${escapeHtmlAttribute(text)}</a>`
+  }
+
+  const lastUpdatedConfig = theme?.lastUpdated
+  const enabledForPage = frontmatter.lastUpdated !== false
+  const enabledForSite = lastUpdatedConfig !== undefined && lastUpdatedConfig !== false
+  // A page can opt in on its own, and can also supply the date itself.
+  const explicitDate = typeof frontmatter.lastUpdated === 'string' ? frontmatter.lastUpdated : undefined
+
+  if (enabledForPage && (enabledForSite || frontmatter.lastUpdated === true || explicitDate)) {
+    const iso = explicitDate ?? (sourceFile ? await resolveLastUpdated(docsDir, sourceFile) : null)
+    if (iso) {
+      const settings = typeof lastUpdatedConfig === 'object' ? lastUpdatedConfig : {}
+      const formatted = formatLastUpdated(iso, locale, settings.formatOptions)
+      if (formatted) {
+        const label = settings.text ?? 'Last updated'
+        lastUpdatedHtml = `<p class="BPDocFooter-updated">${escapeHtmlAttribute(label)}: `
+          + `<time datetime="${escapeHtmlAttribute(iso)}">${escapeHtmlAttribute(formatted)}</time></p>`
+      }
+    }
+  }
+
+  if (!editLinkHtml && !lastUpdatedHtml)
+    return ''
+
+  return render('doc-footer', { editLink: editLinkHtml, lastUpdated: lastUpdatedHtml })
+}
+
+/**
  * Wrap content in BunPress documentation layout
  */
+/** Everything the layout needs about the page beyond its rendered content. */
+export interface WrapLayoutOptions {
+  /** Preloaded i18n state; resolved from config when omitted. */
+  i18n?: ResolvedI18n
+  /** Locale to render in. Defaults to the site's default locale. */
+  locale?: string
+  /** Markdown file this page came from, for the edit link and last-updated. */
+  sourceFile?: string
+  /** Docs directory the source file is relative to. @default './docs' */
+  docsDir?: string
+}
+
 export async function wrapInLayout(
   content: string,
   siteConfig: BunPressConfig,
   currentPath: string,
   layout: string = 'doc',
   frontmatter: Frontmatter = {},
-  i18n?: ResolvedI18n,
-  locale?: string,
+  options: WrapLayoutOptions = {},
 ): Promise<string> {
+  const { i18n, locale, sourceFile, docsDir = siteConfig.docsDir || './docs' } = options
   // Resolve i18n up front: the active locale decides which config a page is
   // rendered with, so everything below reads from the merged result.
   const resolvedI18n = i18n ?? await loadI18nTranslations(resolveI18nConfig(siteConfig), siteConfig)
@@ -1209,7 +1276,9 @@ export async function wrapInLayout(
     ? `<img class="BPNavBarTitle-logo" src="${escapeHtmlAttribute(config.themeConfig.logo)}" alt="">`
     : ''
 
-  const navbarFor = async (variant: 'doc' | 'plain'): Promise<string> => render('navbar', {
+  // `navbar: false` in frontmatter drops the whole bar — used for embeds and
+  // standalone pages that supply their own chrome.
+  const navbarFor = async (variant: 'doc' | 'plain'): Promise<string> => frontmatter.navbar === false ? '' : render('navbar', {
     title,
     logo,
     localeSwitcher,
@@ -1287,6 +1356,8 @@ export async function wrapInLayout(
   const crosswindCSS = await generateCrosswindCSSFromHtml(`${docContent}\n${nav}\n${sidebar}`)
   const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}\n${themeOverrideCss}`
 
+  const docFooter = await generateDocFooter(config, frontmatter, activeLocale, docsDir, sourceFile)
+
   const html = await render('layout-doc', {
     htmlClass,
     themeMode,
@@ -1298,8 +1369,11 @@ export async function wrapInLayout(
     customCSS,
     navbar: await navbarFor('doc'),
     search: searchOverlay,
+    docFooter,
     footer,
-    sidebar,
+    // `sidebar: false` in frontmatter renders the page full-width, which is
+    // what a landing or reference page inside the doc layout usually wants.
+    sidebar: frontmatter.sidebar === false ? '' : sidebar,
     content: docContent,
     pageTOC,
   })
@@ -2896,7 +2970,7 @@ export async function startServer(options: {
             const markdown = await mdFile.text()
             const { html, frontmatter } = await markdownToHtml(markdown, root)
             const layout = frontmatter.layout || 'doc'
-            const wrappedHtml = await wrapInLayout(html, bunPressConfig, localePath, layout, frontmatter, i18n, locale)
+            const wrappedHtml = await wrapInLayout(html, bunPressConfig, localePath, layout, frontmatter, { i18n, locale, sourceFile: mdPath, docsDir: root })
             return new Response(wrappedHtml, {
               headers: { 'Content-Type': 'text/html; charset=utf-8' },
             })

@@ -5,7 +5,7 @@
       "name": "@stacksjs/stx",
       "repository": "stacksjs/stx",
       "path": "../stx",
-      "revision": "c215f1b82bdb40b983cf54f0182c7d959587f31d",
+      "revision": "d6f4047878a87a4851b389413e3cca277cf2745b",
       "packages": [
         "packages/stx",
         "packages/desktop",
@@ -28,7 +28,7 @@
       "name": "ts-syntax-highlighter",
       "repository": "stacksjs/ts-syntax-highlighter",
       "path": "../../Libraries/ts-syntax-highlighter",
-      "revision": "38ea140aa4b5c404f5b4e8450a04eb8195293271",
+      "revision": "994dac3d87505da3e999e2769fee1d56e3277363",
       "packages": [
         "packages/ts-syntax-highlighter"
       ],

@@ -1,5 +1,6 @@
 import type { BunPressConfig, Frontmatter } from '../packages/bunpress/src/types'
 import { describe, expect, it } from 'bun:test'
+import { join } from 'node:path'
 import { applyConfigPlugins, defaultConfig } from '../packages/bunpress/src/config'
 import { wrapInLayout } from '../packages/bunpress/src/serve'
 
@@ -221,5 +222,112 @@ describe('config plugins', () => {
     }))
 
     expect(seen).toEqual(['final'])
+  })
+})
+
+describe('doc footer', () => {
+  const withTheme = (themeConfig: BunPressConfig['themeConfig']): BunPressConfig =>
+    ({ ...BASE, themeConfig } as BunPressConfig)
+
+  const SOURCE = join(import.meta.dir, '..', 'docs', 'license.md')
+  const DOCS = join(import.meta.dir, '..', 'docs')
+
+  it('renders nothing when neither half is configured', async () => {
+    const html = await wrapInLayout('<h1>Page</h1>', BASE, '/page', 'doc', {}, { sourceFile: SOURCE, docsDir: DOCS })
+
+    expect(html).not.toContain('BPDocFooter-edit')
+    expect(html).not.toContain('BPDocFooter-updated')
+  })
+
+  it('builds an edit url from the pattern', async () => {
+    const config = withTheme({ editLink: { pattern: 'https://github.com/org/repo/edit/main/docs/:path' } })
+    const html = await wrapInLayout('<h1>Page</h1>', config, '/page', 'doc', {}, { sourceFile: SOURCE, docsDir: DOCS })
+
+    expect(html).toContain('href="https://github.com/org/repo/edit/main/docs/license.md"')
+    expect(html).toContain('Edit this page')
+  })
+
+  it('treats a pattern without :path as a prefix', async () => {
+    const config = withTheme({ editLink: { pattern: 'https://github.com/org/repo/edit/main/docs' } })
+    const html = await wrapInLayout('<h1>Page</h1>', config, '/page', 'doc', {}, { sourceFile: SOURCE, docsDir: DOCS })
+
+    expect(html).toContain('href="https://github.com/org/repo/edit/main/docs/license.md"')
+  })
+
+  it('uses a custom edit link label', async () => {
+    const config = withTheme({ editLink: { pattern: 'https://x.dev/:path', text: 'Suggest a change' } })
+    const html = await wrapInLayout('<h1>Page</h1>', config, '/page', 'doc', {}, { sourceFile: SOURCE, docsDir: DOCS })
+
+    expect(html).toContain('Suggest a change')
+  })
+
+  it('is suppressed by editLink: false in frontmatter', async () => {
+    const config = withTheme({ editLink: { pattern: 'https://x.dev/:path' } })
+    const html = await wrapInLayout('<h1>Page</h1>', config, '/page', 'doc', { editLink: false }, { sourceFile: SOURCE, docsDir: DOCS })
+
+    expect(html).not.toContain('BPDocFooter-edit')
+  })
+
+  it('renders a last-updated date from the source file', async () => {
+    const config = withTheme({ lastUpdated: true })
+    const html = await wrapInLayout('<h1>Page</h1>', config, '/page', 'doc', {}, { sourceFile: SOURCE, docsDir: DOCS })
+
+    expect(html).toContain('BPDocFooter-updated')
+    expect(html).toContain('Last updated')
+    expect(html).toMatch(/<time datetime="\d{4}-\d{2}-\d{2}/)
+  })
+
+  it('lets a page opt in on its own', async () => {
+    const html = await wrapInLayout('<h1>Page</h1>', BASE, '/page', 'doc', { lastUpdated: true }, { sourceFile: SOURCE, docsDir: DOCS })
+
+    expect(html).toContain('BPDocFooter-updated')
+  })
+
+  it('lets a page supply the date itself', async () => {
+    const config = withTheme({ lastUpdated: true })
+    const html = await wrapInLayout('<h1>Page</h1>', config, '/page', 'doc', { lastUpdated: '2024-03-01T00:00:00Z' }, { sourceFile: SOURCE, docsDir: DOCS })
+
+    expect(html).toContain('datetime="2024-03-01T00:00:00Z"')
+  })
+
+  it('is suppressed by lastUpdated: false in frontmatter', async () => {
+    const config = withTheme({ lastUpdated: true })
+    const html = await wrapInLayout('<h1>Page</h1>', config, '/page', 'doc', { lastUpdated: false }, { sourceFile: SOURCE, docsDir: DOCS })
+
+    expect(html).not.toContain('BPDocFooter-updated')
+  })
+
+  it('honours a custom label and format', async () => {
+    const config = withTheme({ lastUpdated: { text: 'Actualizado', formatOptions: { year: 'numeric' } } })
+    const html = await wrapInLayout('<h1>Page</h1>', config, '/page', 'doc', { lastUpdated: '2024-03-01T00:00:00Z' }, { sourceFile: SOURCE, docsDir: DOCS })
+
+    expect(html).toContain('Actualizado')
+    expect(html).toContain('>2024</time>')
+  })
+
+  it('omits the edit link when there is no source file', async () => {
+    // A generated page (the 404, say) has nothing to link to.
+    const config = withTheme({ editLink: { pattern: 'https://x.dev/:path' } })
+    const html = await wrapInLayout('<h1>Page</h1>', config, '/page', 'doc', {})
+
+    expect(html).not.toContain('BPDocFooter-edit')
+  })
+})
+
+describe('frontmatter layout toggles', () => {
+  it('drops the sidebar when sidebar is false', async () => {
+    const withBar = await wrapInLayout('<h1>Page</h1>', BASE, '/page', 'doc', {})
+    const without = await wrapInLayout('<h1>Page</h1>', BASE, '/page', 'doc', { sidebar: false })
+
+    expect(withBar).toContain('class="BPSidebar"')
+    expect(without).not.toContain('class="BPSidebar"')
+  })
+
+  it('drops the nav bar when navbar is false', async () => {
+    const withNav = await wrapInLayout('<h1>Page</h1>', BASE, '/page', 'doc', {})
+    const without = await wrapInLayout('<h1>Page</h1>', BASE, '/page', 'doc', { navbar: false })
+
+    expect(withNav).toContain('class="BPNav"')
+    expect(without).not.toContain('class="BPNav"')
   })
 })

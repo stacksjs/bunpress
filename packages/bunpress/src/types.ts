@@ -1064,6 +1064,33 @@ export interface ThemeConfig {
    * Custom CSS
    */
   css?: string
+
+  /**
+   * "Edit this page" link shown under each doc page.
+   *
+   * `:path` in the pattern is replaced with the page's path relative to the
+   * docs directory. Without a pattern there is nothing to link to, so the
+   * link is not rendered.
+   *
+   * @example
+   * editLink: { pattern: 'https://github.com/org/repo/edit/main/docs/:path' }
+   */
+  editLink?: {
+    pattern: string
+    /** @default 'Edit this page' */
+    text?: string
+  }
+
+  /**
+   * Show when the page was last modified, taken from the file's most recent
+   * git commit and falling back to its filesystem timestamp.
+   */
+  lastUpdated?: boolean | {
+    /** @default 'Last updated' */
+    text?: string
+    /** Passed to `Intl.DateTimeFormat`. */
+    formatOptions?: Intl.DateTimeFormatOptions
+  }
 }
 
 /**

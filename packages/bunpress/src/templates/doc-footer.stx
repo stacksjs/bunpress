@@ -1,0 +1,51 @@
+<div class="BPDocFooter">
+  {!! editLink !!}
+  {!! lastUpdated !!}
+</div>
+
+<style>
+.BPDocFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid var(--bp-c-divider);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.BPDocFooter-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--bp-c-brand-1);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.BPDocFooter-edit:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.BPDocFooter-edit svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.BPDocFooter-edit:focus-visible {
+  outline: 2px solid var(--bp-c-brand-1);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.BPDocFooter-updated {
+  color: var(--bp-c-text-3);
+  /* Pushed to the trailing edge even when the edit link is absent. */
+  margin-left: auto;
+}
+</style>

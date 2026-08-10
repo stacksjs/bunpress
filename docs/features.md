@@ -383,8 +383,10 @@ layout: doc
 - `features`: Feature grid for home layout
 - `sidebar`: Custom sidebar configuration
 - `toc`: Table of contents settings
-- `editLink`: Source file edit link
-- `lastUpdated`: Show last modified date
+- `sidebar`: Set to `false` to render the page without the sidebar
+- `navbar`: Set to `false` to hide the nav bar
+- `editLink`: Set to `false` to hide the edit link on this page
+- `lastUpdated`: `true` to show the last modified date, `false` to hide it, or an ISO date to state it explicitly
 
 #### Home Page Layout
 

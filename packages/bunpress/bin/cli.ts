@@ -334,7 +334,7 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
       const layout = frontmatter.layout || 'doc'
 
       // Wrap in layout (handles navbar, sidebar, SEO, etc.)
-      const fullHtml = await wrapInLayout(html, bunPressConfig, currentPath, layout, frontmatter, i18n, target.locale)
+      const fullHtml = await wrapInLayout(html, bunPressConfig, currentPath, layout, frontmatter, { i18n, locale: target.locale, sourceFile: target.sourceFile, docsDir })
 
       // Determine output path. Emit directory-style (`<path>/index.html`) so the
       // clean, extensionless URLs bunpress links to (`/guide/install`) resolve on

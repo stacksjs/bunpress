@@ -778,8 +778,8 @@ features:
 # Navigation overrides
 sidebar: false  # Disable sidebar for this page
 navbar: true    # Show/hide navbar
-editLink: true  # Show edit link
-lastUpdated: true  # NOT IMPLEMENTED — accepted, ignored
+editLink: false     # Hide the edit link on this page
+lastUpdated: true   # Show the last modified date (or give an ISO date)
 
 # SEO
 head:

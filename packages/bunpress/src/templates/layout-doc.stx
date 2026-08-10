@@ -26,6 +26,7 @@
           <article class="bp-doc">
             {!! content !!}
           </article>
+          {!! docFooter !!}
           {!! footer !!}
         </div>
       </div>

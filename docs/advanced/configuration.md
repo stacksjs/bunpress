@@ -271,21 +271,49 @@ export default {
 ```typescript
 export default {
   themeConfig: {
+    logo: '/logo.svg',
+
     colors: {
       primary: '#3b82f6',
       accent: '#8b5cf6',
     },
+
     fonts: {
-      sans: 'Inter, sans-serif',
+      heading: 'Inter, sans-serif',
+      body: 'Inter, sans-serif',
       mono: 'Fira Code, monospace',
     },
-    darkMode: {
-      enabled: true,
-      default: 'auto',
+
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/org/repo' },
+    ],
+
+    footer: {
+      message: 'Released under the MIT License.',
+      copyright: 'Copyright © 2026',
     },
+
+    // "Edit this page" link. `:path` becomes the page's path under docsDir.
+    editLink: {
+      pattern: 'https://github.com/org/repo/edit/main/docs/:path',
+      text: 'Edit this page',
+    },
+
+    // Last modified date, taken from the file's most recent git commit and
+    // falling back to its filesystem timestamp.
+    lastUpdated: true,
+    // ...or configure it:
+    // lastUpdated: { text: 'Updated', formatOptions: { dateStyle: 'long' } },
+
+    // Escape hatches, applied after the theme so they win.
+    cssVars: { 'bp-sidebar-width': '300px' },
+    css: '.bp-doc h2 { letter-spacing: 0.02em; }',
   },
 }
 ```
+
+Both `editLink` and `lastUpdated` can be overridden per page in frontmatter —
+see [Frontmatter](/config#frontmatter).
 
 ## Build Options
 
