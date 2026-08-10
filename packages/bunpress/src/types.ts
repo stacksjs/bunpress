@@ -38,6 +38,12 @@ export interface BunPressConfig {
   search?: SearchConfig
 
   /**
+   * Multi-language documentation. Omit it, or give a single locale, and the
+   * site renders exactly as it does today.
+   */
+  i18n?: I18nSiteConfig
+
+  /**
    * Source directory containing markdown files
    * @default './docs'
    */
@@ -152,12 +158,6 @@ export interface BunPressConfig {
  * Cloud deployment configuration
  */
 export interface CloudConfig {
-  /**
-   * Cloud provider driver
-   * @default 'aws'
-   */
-  driver?: 'aws'
-
   /**
    * AWS region for deployment
    * @default 'us-east-1'
@@ -303,20 +303,27 @@ export interface MarkdownPluginConfig {
   meta?: Record<string, string>
 
   /**
-   * Custom ts-md parser options
-   * @see https://github.com/stacksjs/ts-md
+   * Options forwarded to the markdown parser (`Bun.markdown`).
+   *
+   * Merged over BunPress's defaults, which enable the full GFM set. Use it to
+   * turn an extension off, or to enable one the defaults do not cover.
+   *
+   * @see https://bun.com/docs/runtime/markdown
+   * @example parserOptions: { tasklists: false }
    */
   parserOptions?: {
-    /** Enable GitHub Flavored Markdown */
-    gfm?: boolean
-    /** Convert line breaks to <br> */
-    breaks?: boolean
-    /** Enable header IDs */
-    headerIds?: boolean
-    /** Prefix for header IDs */
-    headerPrefix?: string
-    /** Enable syntax highlighting */
-    highlight?: (code: string, lang: string) => string
+    /** GFM tables. @default true */
+    tables?: boolean
+    /** GFM `~~strikethrough~~`. @default true */
+    strikethrough?: boolean
+    /** GFM `- [ ]` task lists. @default true */
+    tasklists?: boolean
+    /** Turn bare URLs into links. @default true */
+    autolinks?: boolean
+    /** Treat a single newline as a line break. */
+    hardBreaks?: boolean
+    /** Allow raw HTML through. */
+    unsafeHTML?: boolean
   }
 
   /**
@@ -845,11 +852,6 @@ export interface SearchConfig {
    * must not close over build-time values — reference globals only.
    */
   onSearch?: (query: string, results: SearchResult[]) => void
-
-  /**
-   * Custom search function
-   */
-  searchFn?: (query: string, content: string[]) => SearchResult[]
 }
 
 /** Algolia DocSearch credentials and query parameters. */
@@ -923,6 +925,63 @@ export interface FrontmatterSearchConfig {
   keywords?: string[]
   /** Title used in results, instead of the page's h1. */
   title?: string
+}
+
+/**
+ * Multi-language configuration.
+ *
+ * Translations are loaded by `ts-i18n`, so `localePath` follows its layout:
+ * `<localePath>/<locale>.{yml,ts}` or `<localePath>/<locale>/*.{yml,json,ts}`.
+ */
+export interface I18nSiteConfig {
+  /**
+   * Turn multi-language handling off without deleting the block.
+   * @default true when two or more locales are listed
+   */
+  enabled?: boolean
+
+  /**
+   * Every locale the site publishes. The first entry is used as
+   * `defaultLocale` when that is not set explicitly.
+   */
+  locales: string[]
+
+  /**
+   * The locale served at the site root, with no URL prefix. Every other
+   * locale is served under `/<locale>/`.
+   */
+  defaultLocale?: string
+
+  /** Locale(s) consulted when a key is missing. @default defaultLocale */
+  fallbackLocale?: string | string[]
+
+  /** Directory holding the translation files. @default './locales' */
+  localePath?: string
+
+  /**
+   * Which translation file types to load.
+   * @default ['ts', 'yaml', 'json']
+   */
+  sources?: Array<'ts' | 'yaml' | 'json'>
+
+  /**
+   * Send first-time visitors to the locale their browser asks for. Only ever
+   * redirects from the default locale's root, and remembers a manual choice.
+   * @default false
+   */
+  detectLocale?: boolean
+
+  /**
+   * Per-locale configuration overrides — typically `title`, `description`,
+   * `nav` and `sidebar`. Merged over the site config for that locale.
+   */
+  localeConfig?: Record<string, Partial<BunPressConfig>>
+
+  /**
+   * Human-readable names for the locale switcher.
+   * @default the locale code itself
+   */
+  localeNames?: Record<string, string>
 }
 
 /**
@@ -1015,7 +1074,6 @@ export interface ConfigPlugin {
   extendConfig?: (config: BunPressConfig) => BunPressConfig
   validateConfig?: (config: BunPressConfig) => ConfigValidationResult
   onConfigLoad?: (config: BunPressConfig) => void | Promise<void>
-  onConfigChange?: (newConfig: BunPressConfig, oldConfig: BunPressConfig) => void | Promise<void>
 }
 
 /**

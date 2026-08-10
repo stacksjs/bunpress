@@ -1,6 +1,6 @@
 <aside class="BPDocAside">
   <div class="BPDocAsideOutline">
-    <p class="outline-title">On this page</p>
+    <p class="outline-title">{{ title }}</p>
     <nav class="page-toc">
       <div class="outline-marker"></div>
       {!! items !!}

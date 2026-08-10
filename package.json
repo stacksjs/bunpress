@@ -22,7 +22,8 @@
     "../stx/packages/sanitizer",
     "../stx/packages/bun-plugin",
     "../stx/packages/router",
-    "../../Libraries/ts-syntax-highlighter/packages/ts-syntax-highlighter"
+    "../../Libraries/ts-syntax-highlighter/packages/ts-syntax-highlighter",
+    "../../Libraries/ts-i18n/packages/ts-i18n"
   ],
   "scripts": {
     "dev": "bun run dev:docs",
@@ -59,7 +60,7 @@
     "@stacksjs/bumpx": "^0.2.4",
     "@stacksjs/gitlint": "^0.1.5",
     "@stacksjs/logsmith": "^0.2.1",
-    "@stacksjs/ts-i18n": "^0.0.0",
+    "@stacksjs/ts-i18n": "workspace:0.1.11",
     "bun-git-hooks": "^0.3.1",
     "bun-plugin-dtsx": "^0.10.4",
     "bun-types": "^1.3.11",

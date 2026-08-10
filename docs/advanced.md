@@ -2,80 +2,6 @@
 
 This section covers advanced features and configuration options for power users.
 
-## Custom Templates
-
-::: warning Not implemented
-`markdown.template` is accepted but ignored — pages always render through the
-built-in layouts selected by frontmatter `layout`. Use `themeConfig` and
-`markdown.css` to restyle them.
-:::
-
-BunPress supports custom HTML templates for complete control over output.
-
-### Basic Template
-
-```html
-<!-- custom-template.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{title}}</title>
-  <style>
-    /* Custom styles */
-  </style>
-</head>
-<body>
-  <header>
-    <nav>
-      <!-- Navigation -->
-    </nav>
-  </header>
-
-  <main>
-    {{content}}
-  </main>
-
-  <footer>
-    <!-- Footer content -->
-  </footer>
-
-  <script>
-    // Custom JavaScript
-  </script>
-</body>
-</html>
-```
-
-### Template Configuration
-
-```typescript
-// bunpress.config.ts
-export default {
-  markdown: {
-    template: `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>{{title}}</title>
-  <style>
-    body { font-family: 'Arial', sans-serif; }
-    .content { max-width: 800px; margin: 0 auto; }
-  </style>
-</head>
-<body>
-  <div class="content">
-    {{content}}
-  </div>
-</body>
-</html>
-    `
-  }
-}
-```
-
 ## Plugin System
 
 BunPress uses Bun's plugin system for extensibility.
@@ -140,18 +66,6 @@ BunPress automatically handles code splitting for optimal loading.
 - JavaScript is bundled efficiently
 - Unused code is tree-shaken
 
-### Caching
-
-```typescript
-// Enable caching for better performance
-export default {
-  build: {
-    cache: true,
-    cacheDir: '.cache'
-  }
-}
-```
-
 ## Custom CSS and JavaScript
 
 ### Global Styles
@@ -215,42 +129,6 @@ const highlighted = parseMarkdown(content, {
   breaks: false,
   highlight: (code, lang) => highlightCode(code, lang)
 })
-```
-
-## Build Hooks
-
-::: warning Not implemented
-Build lifecycle hooks are not wired up. `ConfigPlugin`'s config hooks
-(`extendConfig`, `validateConfig`, `onConfigLoad`, `onConfigChange`) do run —
-see [Plugin Development](/guide/plugins) — but the `hooks` config block below
-is accepted and ignored.
-:::
-
-### Pre-build Hook
-
-```typescript
-export default {
-  hooks: {
-    preBuild: async () => {
-      console.log('Starting build...')
-      // Pre-build logic
-    }
-  }
-}
-```
-
-### Post-build Hook
-
-```typescript
-export default {
-  hooks: {
-    postBuild: async (result) => {
-      console.log('Build completed!')
-      // Post-build logic
-      // e.g., deploy to CDN, generate sitemap, etc.
-    }
-  }
-}
 ```
 
 ## Data Loading and Content Management
@@ -527,26 +405,6 @@ export default {
 }
 ```
 
-## Security Considerations
-
-### Content Security Policy
-
-```typescript
-export default {
-  security: {
-    csp: {
-      defaultSrc: ['\'self\''],
-      scriptSrc: ['\'self\'', '\'unsafe-inline\''],
-      styleSrc: ['\'self\'', '\'unsafe-inline\'']
-    }
-  }
-}
-```
-
-### Input Sanitization
-
-BunPress automatically sanitizes user input to prevent XSS attacks.
-
 ## Deployment Options
 
 ### Static Site Generation
@@ -559,33 +417,7 @@ bun run build
 bun run preview
 ```
 
-### Server-Side Rendering
-
-```typescript
-// Enable SSR
-export default {
-  ssr: true,
-  server: {
-    port: 3000,
-    host: '0.0.0.0'
-  }
-}
-```
-
-### CDN Deployment
-
-```typescript
-export default {
-  deploy: {
-    cdn: {
-      provider: 'cloudflare',
-      zone: 'your-zone-id'
-    }
-  }
-}
-```
-
-## API Reference
+### API Reference
 
 For complete TypeScript API documentation, see the dedicated [API Reference](/api) page.
 

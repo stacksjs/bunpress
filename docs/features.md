@@ -929,13 +929,8 @@ import { config } from './bunpress.config'
 
 ## Internationalization (i18n)
 
-::: warning Not implemented
-`i18n` is not wired up yet — the config block below is accepted but ignored,
-and no locale routing or content resolution happens. It is documented here as
-the intended shape, not as working behaviour.
-:::
-
-The planned configuration:
+BunPress publishes a documentation site in several languages, with translations
+loaded by [ts-i18n](https://github.com/stacksjs/ts-i18n).
 
 ```typescript
 // bunpress.config.ts
@@ -943,118 +938,129 @@ export default {
   i18n: {
     locales: ['en', 'es', 'fr', 'de'],
     defaultLocale: 'en',
-    localePath: './locales'
-  }
+    localePath: './locales',
+  },
 }
 ```
 
+The default locale is served at the site root and every other locale under its
+own prefix — `/guide` is English, `/es/guide` is Spanish. A site with a single
+locale, or no `i18n` block at all, renders exactly as before.
+
 ### Localized Content
 
-Create locale-specific markdown files:
+Put each language's pages in a directory named for the locale:
 
-```markdown
-<!-- docs/intro.en.md -->
-# Introduction
-Welcome to our documentation!
-
-<!-- docs/intro.es.md -->
-# Introducción
-¡Bienvenido a nuestra documentación!
-
-<!-- docs/intro.fr.md -->
-# Introduction
-Bienvenue dans notre documentation !
-
-<!-- docs/intro.de.md -->
-# Einführung
-Willkommen zu unserer Dokumentation!
+```text
+docs/
+  guide.md          # en (the default locale)
+  es/
+    guide.md        # /es/guide
+  fr/
+    guide.md        # /fr/guide
 ```
+
+Or suffix individual files, which is handier when only a few pages are
+translated:
+
+```text
+docs/
+  guide.md          # en
+  guide.es.md       # /es/guide
+  guide.fr.md       # /fr/guide
+```
+
+Both layouts work, and you can mix them. **A page that a locale has not
+translated falls back to the default locale's copy**, so adding a language
+never produces broken links.
+
+### Translation Files
+
+UI strings — the search placeholder, the page outline heading — come from
+translation files. `localePath` follows the `ts-i18n` layout, so YAML, JSON and
+TypeScript all work:
+
+```text
+locales/
+  en/
+    ui.yml
+  es/
+    ui.yml
+```
+
+```yaml
+# locales/es/ui.yml
+search:
+  placeholder: Buscar en la documentación
+toc:
+  title: En esta página
+```
+
+Keys may sit at the root of a locale file or under a namespace — `ui.yml` above
+resolves as both `search.placeholder` and `ui.search.placeholder`. Anything you
+do not translate keeps its English default.
+
+Available keys:
+
+| Key | Default |
+|-----|---------|
+| `search.placeholder` | Search documentation |
+| `toc.title` | On this page |
+| `nav.menu` | Menu |
+| `theme.toggle` | Toggle dark mode |
 
 ### Locale Detection
 
-BunPress can automatically detect user locale:
+Send first-time visitors to the language their browser asks for:
 
 ```typescript
 export default {
   i18n: {
     locales: ['en', 'es', 'fr'],
     defaultLocale: 'en',
-    detectLocale: true,          // Auto-detect from browser
-    fallbackLocale: 'en'         // Fallback if locale not found
-  }
+    detectLocale: true,
+    fallbackLocale: 'en',
+  },
 }
 ```
 
-### Translation Files
-
-Structure your translations:
-
-```
-locales/
-├── en/
-│   ├── common.json
-│   └── navigation.json
-├── es/
-│   ├── common.json
-│   └── navigation.json
-└── fr/
-    ├── common.json
-    └── navigation.json
-```
-
-**Example translation file:**
-
-```json
-{
-  "nav": {
-    "home": "Home",
-    "guide": "Guide",
-    "api": "API Reference",
-    "examples": "Examples"
-  },
-  "toc": {
-    "title": "On This Page"
-  },
-  "search": {
-    "placeholder": "Search documentation..."
-  }
-}
-```
+Detection is deliberately conservative: it runs only at the default locale's
+root, only once per browser, and any manual switch is remembered so it never
+overrides a reader who chose a language on purpose.
 
 ### Per-locale Configuration
 
-Override configuration for specific locales:
+Override configuration for a specific locale — typically the title, description
+or navigation:
 
 ```typescript
 export default {
   i18n: {
     locales: ['en', 'es'],
     defaultLocale: 'en',
+    localeNames: { en: 'English', es: 'Español' },
     localeConfig: {
-      en: {
-        title: 'Documentation',
-        description: 'Comprehensive documentation'
-      },
       es: {
         title: 'Documentación',
-        description: 'Documentación completa'
-      }
-    }
-  }
+        description: 'Documentación completa',
+      },
+    },
+  },
 }
 ```
 
-**Features:**
+`localeNames` labels the locale switcher that appears in the nav bar; without
+it the switcher shows the locale codes.
 
-- Multiple language support
-- Automatic locale detection
-- Translation file management
-- Per-locale configuration
-- Fallback locale support
-- URL structure: `/es/guide`, `/fr/api`, etc.
+**What you get:**
 
-> [!NOTE]
-> i18n support is currently in development. Full internationalization features are planned for a future release.
+- URL structure: `/es/guide`, `/fr/api`
+- A locale switcher in the nav bar
+- `<html lang>` set per locale
+- `hreflang` alternates for every locale (needs `sitemap.baseUrl`)
+- Search scoped to the language being read
+- Per-locale `title`, `description`, `nav` and `sidebar`
+- Fallback to the default locale for untranslated pages
 
 ## Performance Metrics
 

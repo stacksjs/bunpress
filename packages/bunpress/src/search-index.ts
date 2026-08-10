@@ -1,6 +1,7 @@
 import type { BunPressConfig, LocalSearchOptions, SearchConfig } from './types'
 import { Glob, YAML } from 'bun'
 import { join } from 'node:path'
+import { localizeUrl, resolveI18nConfig } from './i18n'
 
 /**
  * One searchable record.
@@ -23,6 +24,8 @@ export interface SearchRecord {
   level: number
   /** Frontmatter keywords, so a page can match terms it never spells out. */
   keywords?: string[]
+  /** Locale this record belongs to. Absent on single-language sites. */
+  locale?: string
 }
 
 /** Path the client fetches the index from. */
@@ -89,6 +92,8 @@ export interface SearchRuntimeConfig {
   result: { showDescription: boolean, descriptionLength: number, highlightMatches: boolean, showPath: boolean }
   tokenizeSource: string | null
   onSearchSource: string | null
+  /** Active locale; results from other locales are filtered out. */
+  locale: string | null
 }
 
 /** Default openers: the ⌘K/Ctrl+K convention plus `/`. */
@@ -175,6 +180,7 @@ export function buildSearchRuntimeConfig(config: BunPressConfig | undefined, ind
     },
     tokenizeSource: serializeFunction(search?.options?.tokenize),
     onSearchSource: serializeFunction(search?.onSearch),
+    locale: null,
   }
 }
 
@@ -423,6 +429,30 @@ function applyStoreFields(records: SearchRecord[], options: typeof DEFAULT_LOCAL
   })
 }
 
+/** The page a record belongs to, ignoring its section anchor. */
+function pageKey(url: string): string {
+  return url.split('#')[0]
+}
+
+/**
+ * Work out which locale a source file belongs to, and the page path it
+ * provides, for both documented layouts (`es/guide.md` and `guide.es.md`).
+ */
+function splitLocaleFromSourcePath(relativePath: string, i18n: ReturnType<typeof resolveI18nConfig>): { locale: string, page: string } {
+  if (!i18n.enabled)
+    return { locale: i18n.defaultLocale, page: relativePath }
+
+  const segments = relativePath.split('/')
+  if (segments.length > 1 && i18n.locales.includes(segments[0]) && segments[0] !== i18n.defaultLocale)
+    return { locale: segments[0], page: segments.slice(1).join('/') }
+
+  const suffix = relativePath.match(/^(.*)\.([A-Za-z-]+)(\.md)$/)
+  if (suffix && i18n.locales.includes(suffix[2]))
+    return { locale: suffix[2], page: `${suffix[1]}${suffix[3]}` }
+
+  return { locale: i18n.defaultLocale, page: relativePath }
+}
+
 /**
  * Walk the docs directory and build the client search index.
  */
@@ -430,9 +460,12 @@ export async function buildSearchIndex(docsDir: string, config?: BunPressConfig)
   const search = config?.search ?? config?.markdown?.search
   const options = resolveSearchOptions(search)
 
+  const i18n = resolveI18nConfig(config)
   const excludeMatchers = options.exclude.map(pattern => new Glob(pattern))
   const records: SearchRecord[] = []
   const seen = new Set<string>()
+  const byLocale = new Map<string, Set<string>>()
+  for (const locale of i18n.locales) byLocale.set(locale, new Set())
 
   for (const includePattern of options.include) {
     const glob = new Glob(includePattern)
@@ -450,10 +483,41 @@ export async function buildSearchIndex(docsDir: string, config?: BunPressConfig)
 
       try {
         const source = await Bun.file(join(docsDir, relativePath)).text()
-        records.push(...recordsForDocument(relativePath, source, options))
+        const { locale, page } = splitLocaleFromSourcePath(relativePath, i18n)
+        for (const record of recordsForDocument(page, source, options)) {
+          if (i18n.enabled) {
+            record.locale = locale
+            // Records must point at the URL the locale is actually served at,
+            // not at the default-locale path the file happens to sit under.
+            record.url = localizeUrl(i18n, locale, record.url)
+          }
+          records.push(record)
+          // Tracked per page, not per anchor: a translated page must suppress
+          // the whole default-locale copy, not just the sections whose slugs
+          // happen to collide.
+          byLocale.get(locale)?.add(pageKey(record.url))
+        }
       }
       catch {
         // A file that cannot be read simply does not get indexed.
+      }
+    }
+  }
+
+  // A locale that has not translated a page still serves the default locale's
+  // copy, so the index has to carry it too — otherwise searching in Spanish
+  // silently hides most of the site.
+  if (i18n.enabled) {
+    const fallbackRecords = records.filter(record => record.locale === i18n.defaultLocale)
+    for (const locale of i18n.locales) {
+      if (locale === i18n.defaultLocale)
+        continue
+      const translated = byLocale.get(locale) ?? new Set<string>()
+      for (const record of fallbackRecords) {
+        const url = localizeUrl(i18n, locale, record.url)
+        if (translated.has(pageKey(url)))
+          continue
+        records.push({ ...record, url, locale })
       }
     }
   }

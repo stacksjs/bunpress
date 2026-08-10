@@ -467,6 +467,9 @@
 
     var hits = [];
     for (var i = 0; i < records.length; i++) {
+      // On a multi-language site the index holds every locale, so results are
+      // narrowed to the one being read — otherwise every hit appears N times.
+      if (CONFIG.locale && records[i].locale && records[i].locale !== CONFIG.locale) continue;
       var value = score(records[i], terms);
       if (value > 0) hits.push({ record: records[i], score: value });
     }

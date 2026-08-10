@@ -1,0 +1,115 @@
+<div class="BPLocaleSwitcher">
+  <button class="BPLocaleSwitcher-button" type="button" aria-haspopup="true" aria-expanded="false" aria-label="{{ label }}">
+    <svg class="BPLocaleSwitcher-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M12 3a15 15 0 010 18M12 3a15 15 0 000 18M3 12a9 9 0 1118 0 9 9 0 01-18 0z"></path>
+    </svg>
+    <span class="BPLocaleSwitcher-current">{{ current }}</span>
+  </button>
+  <ul class="BPLocaleSwitcher-menu">
+    {!! options !!}
+  </ul>
+</div>
+
+<style>
+.BPLocaleSwitcher {
+  position: relative;
+}
+
+.BPLocaleSwitcher-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--bp-c-text-2);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.25s, background-color 0.25s;
+}
+
+.BPLocaleSwitcher-button:hover {
+  color: var(--bp-c-text-1);
+  background-color: var(--bp-c-bg-soft);
+}
+
+.BPLocaleSwitcher-button:focus-visible {
+  outline: 2px solid var(--bp-c-brand-1);
+  outline-offset: 2px;
+}
+
+.BPLocaleSwitcher-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.BPLocaleSwitcher-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin: 6px 0 0;
+  padding: 6px 0;
+  min-width: 150px;
+  list-style: none;
+  background: var(--bp-c-bg);
+  border: 1px solid var(--bp-c-divider);
+  border-radius: 8px;
+  box-shadow: var(--bp-shadow-3, 0 12px 32px rgba(0, 0, 0, 0.1));
+  z-index: 40;
+}
+
+/* Hover opens it for pointers; :focus-within does the same for keyboards,
+   so the menu is reachable by Tab without any JavaScript. */
+.BPLocaleSwitcher:hover .BPLocaleSwitcher-menu,
+.BPLocaleSwitcher:focus-within .BPLocaleSwitcher-menu {
+  display: block;
+}
+
+.BPLocaleSwitcher-menu a {
+  display: block;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--bp-c-text-1);
+  text-decoration: none;
+  transition: color 0.25s, background-color 0.25s;
+}
+
+.BPLocaleSwitcher-menu a:hover {
+  color: var(--bp-c-brand-1);
+  background-color: var(--bp-c-bg-soft);
+}
+
+.BPLocaleSwitcher-menu a[aria-current='true'] {
+  color: var(--bp-c-brand-1);
+  font-weight: 600;
+}
+
+/* On phones the code alone is enough — the flag-sized icon plus a two-letter
+   code fits where a full language name would not. */
+@media (max-width: 959px) {
+  .BPLocaleSwitcher-current {
+    display: none;
+  }
+
+  .BPLocaleSwitcher-button {
+    padding: 0 6px;
+  }
+}
+</style>
+
+<script>
+// A manual switch is a deliberate choice, so record it — the detection script
+// must never override it on a later visit.
+document.addEventListener('click', function (e) {
+  var link = e.target.closest('.BPLocaleSwitcher-menu a[data-locale]');
+  if (!link) return;
+  try { localStorage.setItem('bunpress-locale', link.getAttribute('data-locale')); }
+  catch (_) { /* storage unavailable; the navigation still happens */ }
+});
+</script>

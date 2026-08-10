@@ -489,15 +489,23 @@ html {
 }
 
 /**
- * Generate JavaScript for TOC interactions
+ * Generate JavaScript for TOC interactions.
+ *
+ * `smoothScroll`, `activeHighlight` and `collapsible` come straight from
+ * TocConfig — each behaviour is emitted only when it is switched on, so a
+ * site that turns one off does not ship the code for it either.
  */
-export function generateTocScripts(): string {
+export function generateTocScripts(config: Partial<TocConfig> = {}): string {
+  const smoothScroll = config.smoothScroll !== false
+  const activeHighlight = config.activeHighlight !== false
+  const collapsible = config.collapsible !== false
+
   return `
 function initToc() {
   const tocLinks = document.querySelectorAll('.toc-link')
 
   // Smooth scrolling for TOC links
-  tocLinks.forEach(link => {
+  if (${String(smoothScroll)}) tocLinks.forEach(link => {
     link.addEventListener('click', function(e) {
       e.preventDefault()
       const targetId = this.getAttribute('href')?.substring(1)
@@ -517,6 +525,7 @@ function initToc() {
 
   // Active TOC item highlighting on scroll
   function updateActiveTocItem() {
+    if (!${String(activeHighlight)}) return
     const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6')
     const tocLinks = document.querySelectorAll('.toc-link')
 
@@ -560,7 +569,7 @@ function initToc() {
   updateActiveTocItem()
 
   // TOC collapse/expand functionality
-  const expandableItems = document.querySelectorAll('.toc-expand')
+  const expandableItems = ${String(collapsible)} ? document.querySelectorAll('.toc-expand') : []
 
   expandableItems.forEach(item => {
     item.addEventListener('click', function(e) {

@@ -25,19 +25,6 @@ Only rebuild changed files:
 bunpress build --incremental
 ```
 
-### Caching
-
-Enable build caching:
-
-```typescript
-export default {
-  build: {
-    cache: true,
-    cacheDir: '.bunpress/cache',
-  },
-}
-```
-
 ## Asset Optimization
 
 ### Image Optimization
@@ -119,47 +106,6 @@ export default {
   search: {
     prebuilt: true,
     lazy: true, // Load on demand
-  },
-}
-```
-
-## Runtime Performance
-
-### Lazy Loading
-
-```typescript
-export default {
-  runtime: {
-    lazyImages: true,
-    lazyIframes: true,
-    prefetch: true,
-  },
-}
-```
-
-### Prefetching
-
-```typescript
-export default {
-  runtime: {
-    prefetch: {
-      enabled: true,
-      strategy: 'viewport', // 'viewport' | 'hover' | 'load'
-    },
-  },
-}
-```
-
-### Code Splitting
-
-```typescript
-export default {
-  build: {
-    splitChunks: {
-      layout: true,
-      pages: true,
-      components: true,
-    },
   },
 }
 ```

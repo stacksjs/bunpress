@@ -194,6 +194,10 @@ export async function deployCommand(options: DeployOptions = {}): Promise<boolea
           Project: 'BunPress',
           Environment: cloudConfig.environment || 'production',
         },
+        // Forwarded to ts-cloud: both default to true there, so only an
+        // explicit false is passed through.
+        invalidateCache: cloudConfig.invalidateCache,
+        waitForInvalidation: cloudConfig.waitForInvalidation,
         onProgress: createProgressHandler(spinner, verbose),
       }
 
@@ -220,6 +224,10 @@ export async function deployCommand(options: DeployOptions = {}): Promise<boolea
           Project: 'BunPress',
           Environment: cloudConfig.environment || 'production',
         },
+        // Forwarded to ts-cloud: both default to true there, so only an
+        // explicit false is passed through.
+        invalidateCache: cloudConfig.invalidateCache,
+        waitForInvalidation: cloudConfig.waitForInvalidation,
         onProgress: createProgressHandler(spinner, verbose),
       }
 

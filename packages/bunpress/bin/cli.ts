@@ -103,6 +103,83 @@ async function copyStaticAssets(outdir: string, docsDir: string, verbose: boolea
   }
 }
 
+interface RenderTarget {
+  /** Markdown file to render. */
+  sourceFile: string
+  /** Path within the locale, without extension or locale prefix. */
+  relativePath: string
+  /** Locale this page is rendered for. */
+  locale: string
+}
+
+/**
+ * Expand the markdown files into one render target per (locale, page).
+ *
+ * Locale-specific sources are folded into the page they translate rather than
+ * being emitted as pages of their own: without this, `docs/es/guide.md` would
+ * also render at `/es/es/guide` under the default locale, and `guide.es.md`
+ * would render at the nonsense URL `/guide.es`.
+ */
+function buildRenderTargets(markdownFiles: string[], docsDir: string, i18n: any): RenderTarget[] {
+  const normalizedDocsDir = docsDir.replace(/^\.\//, '')
+  const toRelative = (file: string): string => file
+    .replace(/^\.\//, '')
+    .replace(normalizedDocsDir, '')
+    .replace(/^\//, '')
+    .replace(/\.md$/, '')
+
+  if (!i18n.enabled) {
+    return markdownFiles.map(file => ({ sourceFile: file, relativePath: toRelative(file), locale: i18n.defaultLocale }))
+  }
+
+  const locales: string[] = i18n.locales
+  const localeSet = new Set(locales)
+
+  // Index every source by the (locale, page) it provides.
+  const byLocale = new Map<string, Map<string, string>>()
+  for (const locale of locales) byLocale.set(locale, new Map())
+
+  const canonicalPages = new Set<string>()
+
+  for (const file of markdownFiles) {
+    const relative = toRelative(file)
+    const segments = relative.split('/')
+
+    // `<locale>/rest` — a directory per locale.
+    if (segments.length > 1 && localeSet.has(segments[0]) && segments[0] !== i18n.defaultLocale) {
+      const page = segments.slice(1).join('/')
+      byLocale.get(segments[0])!.set(page, file)
+      canonicalPages.add(page)
+      continue
+    }
+
+    // `page.<locale>` — a suffix per file.
+    const suffix = relative.match(/^(.*)\.([A-Za-z-]+)$/)
+    if (suffix && localeSet.has(suffix[2])) {
+      byLocale.get(suffix[2])!.set(suffix[1], file)
+      canonicalPages.add(suffix[1])
+      continue
+    }
+
+    byLocale.get(i18n.defaultLocale)!.set(relative, file)
+    canonicalPages.add(relative)
+  }
+
+  const targets: RenderTarget[] = []
+  for (const locale of locales) {
+    for (const page of canonicalPages) {
+      // An untranslated page renders from the default locale's source, so a
+      // reader browsing in Spanish never hits a 404 mid-site.
+      const sourceFile = byLocale.get(locale)!.get(page) ?? byLocale.get(i18n.defaultLocale)!.get(page)
+      if (!sourceFile)
+        continue
+      targets.push({ sourceFile, relativePath: page, locale })
+    }
+  }
+
+  return targets
+}
+
 /**
  * Write the client search index next to the built pages.
  */
@@ -229,40 +306,49 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
   try {
     // Use the same markdown-to-HTML transformation as the dev server
     const { markdownToHtml, wrapInLayout } = await import('../src/serve')
+    const { loadI18nTranslations, resolveI18nConfig } = await import('../src/i18n')
     const { mkdir: mkdirAsync, writeFile: writeFileAsync } = await import('node:fs/promises')
+
+    const i18n = await loadI18nTranslations(resolveI18nConfig(bunPressConfig), bunPressConfig)
 
     if (verbose) {
       console.log('Transforming markdown to HTML...')
     }
 
-    // Process each markdown file
-    for (const file of markdownFiles) {
-      const markdown = await Bun.file(file).text()
+    // The set of pages to emit. Without i18n this is one entry per markdown
+    // file; with it, one per (locale, page) pair — including pages a locale has
+    // not translated, which fall back to the default locale's source so every
+    // locale is browsable end to end.
+    const renderTargets = buildRenderTargets(markdownFiles, docsDir, i18n)
+
+    for (const target of renderTargets) {
+      const markdown = await Bun.file(target.sourceFile).text()
 
       // Convert markdown to HTML (handles frontmatter, hero, features, etc.)
       const { html, frontmatter } = await markdownToHtml(markdown, docsDir)
 
-      // Determine current path for navigation
-      // Normalize paths to ensure consistent replacement (handle ./docs vs docs)
-      const normalizedFile = file.replace(/^\.\//, '')
-      const normalizedDocsDir = docsDir.replace(/^\.\//, '')
-      const relativePath = normalizedFile.replace(normalizedDocsDir, '').replace(/^\//, '').replace(/\.md$/, '')
+      const relativePath = target.relativePath
       const currentPath = `/${relativePath}`
 
       // Determine layout type
       const layout = frontmatter.layout || 'doc'
 
       // Wrap in layout (handles navbar, sidebar, SEO, etc.)
-      const fullHtml = await wrapInLayout(html, bunPressConfig, currentPath, layout, frontmatter)
+      const fullHtml = await wrapInLayout(html, bunPressConfig, currentPath, layout, frontmatter, i18n, target.locale)
 
       // Determine output path. Emit directory-style (`<path>/index.html`) so the
       // clean, extensionless URLs bunpress links to (`/guide/install`) resolve on
       // directory-rewriting hosts and static servers alike. The homepage and any
       // page already named `index` stay flat.
       const isIndex = relativePath === 'index' || relativePath.endsWith('/index')
+      // Non-default locales live under their own prefix, matching the URLs the
+      // dev server serves and the switcher links to.
+      const outputBase = target.locale && target.locale !== i18n.defaultLocale && i18n.enabled
+        ? join(outdir, target.locale)
+        : outdir
       const outputPath = isIndex
-        ? join(outdir, `${relativePath}.html`)
-        : join(outdir, relativePath, 'index.html')
+        ? join(outputBase, `${relativePath}.html`)
+        : join(outputBase, relativePath, 'index.html')
 
       // Ensure output directory exists
       const outputDir = outputPath.substring(0, outputPath.lastIndexOf('/'))
@@ -279,7 +365,7 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
     }
 
     if (verbose) {
-      console.log(`Processed ${markdownFiles.length} markdown files.`)
+      console.log(`Processed ${markdownFiles.length} markdown files into ${renderTargets.length} pages.`)
     }
 
     // Copy static assets from docs/public to output directory

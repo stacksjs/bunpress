@@ -1,5 +1,6 @@
 import { Glob } from 'bun'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
+import process from 'node:process'
 
 /**
  * Global data files (Eleventy/Hugo style).
@@ -27,15 +28,19 @@ function setNested(target: Record<string, any>, dottedKey: string, value: unknow
 }
 
 /**
- * Load all JSON data files from `<rootDir>/.data` into a single object.
- * Results are cached per root directory.
+ * Load all JSON data files into a single object.
+ *
+ * `overrideDir` comes from `config.dataDir` and is resolved against the
+ * working directory; without it the convention is `<rootDir>/.data`.
+ * Results are cached per resolved directory.
  */
-export async function loadDataFiles(rootDir: string): Promise<Record<string, unknown>> {
-  if (dataCache.has(rootDir))
-    return dataCache.get(rootDir)!
+export async function loadDataFiles(rootDir: string, overrideDir?: string): Promise<Record<string, unknown>> {
+  const dataDir = overrideDir ? resolve(process.cwd(), overrideDir) : join(rootDir, '.data')
+
+  if (dataCache.has(dataDir))
+    return dataCache.get(dataDir)!
 
   const data: Record<string, unknown> = {}
-  const dataDir = join(rootDir, '.data')
 
   try {
     const glob = new Glob('**/*.json')
@@ -56,7 +61,7 @@ export async function loadDataFiles(rootDir: string): Promise<Record<string, unk
     // No .data directory — return empty data object.
   }
 
-  dataCache.set(rootDir, data)
+  dataCache.set(dataDir, data)
   return data
 }
 

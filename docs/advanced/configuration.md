@@ -1,13 +1,5 @@
 # Configuration Deep-Dive
 
-::: info Configuration status
-Not every block on this page is wired up. `docsDir`, `outDir`, `basePath`,
-`markdown`, `nav`, `sidebar`, `themeConfig`, `search`, `sitemap`, `robots`,
-`rss`, `fonts`, `darkMode`, `theme` and `verbose` are honoured. `build`, `dev`,
-`server`, `ssr`, `deploy`, `security`, `runtime`, `cacheDir`, `publicDir`,
-`base`, `head` and `hooks` are accepted but currently ignored.
-:::
-
 
 BunPress supports comprehensive configuration for customizing every aspect of your documentation site.
 
@@ -54,12 +46,18 @@ export default {
   // Output directory
   outDir: './dist',
 
-  // Public assets directory
-  publicDir: './public',
+  // URL prefix when the docs are mounted under a sub-path
+  basePath: '/docs',
 
-  // Cache directory
-  cacheDir: './.bunpress/cache',
+  // Reusable .stx components referenced as PascalCase tags in markdown
+  componentsDir: './docs/.components',
+
+  // Global JSON data exposed to every page as `data`
+  dataDir: './docs/.data',
 }
+
+Static assets are served from `<docsDir>/public` and copied to the output
+directory on build.
 ```
 
 ## Navigation
@@ -291,28 +289,23 @@ export default {
 
 ## Build Options
 
-```typescript
-export default {
-  build: {
-    minify: true,
-    sourcemap: false,
-    clean: true,
-    base: '/',
-  },
-}
+Build behaviour is controlled by CLI flags rather than config:
+
+```bash
+bunpress build --minify --sourcemap
+bunpress build --no-search-index   # skip the search index
+bunpress clean                     # remove build artifacts
 ```
+
+To serve the docs under a URL prefix, set `basePath` (see
+[Directory Configuration](#directory-configuration)).
 
 ## Development Options
 
-```typescript
-export default {
-  dev: {
-    port: 3000,
-    host: 'localhost',
-    open: true,
-    watch: true,
-  },
-}
+The dev server is configured by CLI flags:
+
+```bash
+bunpress dev --port 4000 --dir ./docs --open
 ```
 
 ## Environment Variables

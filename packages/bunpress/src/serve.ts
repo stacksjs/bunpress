@@ -6,6 +6,18 @@ import process from 'node:process'
 import { config, defaultConfig } from './config'
 import { clearDataCache, loadDataFiles } from './data-loader'
 import { getSyntaxHighlightingStyles, highlightCode } from './highlighter'
+import type { ResolvedI18n } from './i18n'
+import {
+  configForLocale,
+  generateHreflangTags,
+  generateLocaleDetectionScript,
+  loadI18nTranslations,
+  localeContentCandidates,
+  localeLabel,
+  localizeUrl,
+  resolveI18nConfig,
+  splitLocaleFromPath,
+} from './i18n'
 import type { SearchRuntimeConfig } from './search-index'
 import { buildSearchIndex, buildSearchRuntimeConfig, SEARCH_INDEX_PATH } from './search-index'
 import { clearComponentCache, resolveStxComponents } from './stx-components'
@@ -61,6 +73,14 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
   return await render('sidebar', {
     sections: sectionsHtml.join(''),
   })
+}
+
+/** Which code-block extras are switched on, from `features.codeBlocks`. */
+export interface CodeBlockFeatures {
+  lineHighlighting: boolean
+  lineNumbers: boolean
+  diffs: boolean
+  errorWarningMarkers: boolean
 }
 
 /** Drawer toggle. Only the doc layout has a sidebar to toggle. */
@@ -169,7 +189,7 @@ function escapeHtmlAttribute(value: string): string {
  * into the content flow for exactly that range; the two are mutually
  * exclusive at the same breakpoint, so only one is ever visible.
  */
-async function generatePageOutline(html: string): Promise<{ aside: string, inline: string }> {
+async function generatePageOutline(html: string, outlineTitle: string = 'On this page'): Promise<{ aside: string, inline: string }> {
   // An inline [[toc]] widget carries its own "Table of Contents" <h2>. Listing
   // that in the outline is circular — it is chrome, not a section of the page —
   // so drop the widget before collecting headings.
@@ -206,8 +226,8 @@ async function generatePageOutline(html: string): Promise<{ aside: string, inlin
   }).join('\n      ')
 
   return {
-    aside: await render('page-toc', { items }),
-    inline: await render('page-outline', { items, count: String(headings.length) }),
+    aside: await render('page-toc', { items, title: outlineTitle }),
+    inline: await render('page-outline', { items, count: String(headings.length), title: outlineTitle }),
   }
 }
 
@@ -618,7 +638,7 @@ function generateSPARouterScript(): string {
  * Supports VitePress-style (themeConfig.nav), markdown.nav, and legacy
  * top-level nav formats.
  */
-function generateNav(config: BunPressConfig): string {
+function generateNav(config: BunPressConfig, currentPath: string = ''): string {
   const navConfig = config.themeConfig?.nav || config.markdown?.nav || config.nav
 
   if (!navConfig || navConfig.length === 0) {
@@ -629,9 +649,31 @@ function generateNav(config: BunPressConfig): string {
     return prefixRootPath(config, link || '/')
   }
 
+  /**
+   * A nav entry is active when its `activeMatch` regex matches the current
+   * path. Without it a top-level "Guide" link pointing at `/install` only
+   * highlights on that exact page, never on the rest of the section.
+   */
+  const isActive = (item: NavItem): boolean => {
+    if (item.activeMatch) {
+      try {
+        return new RegExp(item.activeMatch).test(currentPath)
+      }
+      catch {
+        // A malformed pattern should not break the whole nav.
+        return false
+      }
+    }
+    if (!item.link)
+      return false
+    const link = item.link.split('#')[0].replace(/\/$/, '')
+    return link !== '' && link !== '/' && (currentPath === link || currentPath.startsWith(`${link}/`))
+  }
+
   const links = navConfig.map((item) => {
     if (item.items && item.items.length > 0) {
-      return `<div class="BPNavBarMenu-group">
+      const groupActive = isActive(item) || item.items.some(sub => isActive(sub)) ? ' is-active' : ''
+      return `<div class="BPNavBarMenu-group${groupActive}">
         <button class="BPNavBarMenu-group-button" type="button">
           <span>${item.text}</span>
           <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -645,7 +687,8 @@ function generateNav(config: BunPressConfig): string {
         </div>
       </div>`
     }
-    return `<a class="BPNavBarMenu-link" href="${fixNavLink(item.link)}">${item.text}</a>`
+    const activeClass = isActive(item) ? ' is-active' : ''
+    return `<a class="BPNavBarMenu-link${activeClass}" href="${fixNavLink(item.link)}">${item.text}</a>`
   }).join('')
 
   return links
@@ -1040,11 +1083,20 @@ function resolvePageMeta(
  */
 export async function wrapInLayout(
   content: string,
-  config: BunPressConfig,
+  siteConfig: BunPressConfig,
   currentPath: string,
   layout: string = 'doc',
   frontmatter: Frontmatter = {},
+  i18n?: ResolvedI18n,
+  locale?: string,
 ): Promise<string> {
+  // Resolve i18n up front: the active locale decides which config a page is
+  // rendered with, so everything below reads from the merged result.
+  const resolvedI18n = i18n ?? await loadI18nTranslations(resolveI18nConfig(siteConfig), siteConfig)
+  const activeLocale = locale || resolvedI18n.defaultLocale
+  const config = configForLocale(siteConfig, resolvedI18n, activeLocale)
+  const t = (key: string): string => resolvedI18n.translate(key, activeLocale)
+
   // Support both top-level config (VitePress-style) and markdown.title format
   const title = config.title || config.themeConfig?.siteTitle || config.markdown?.title || 'BunPress Documentation'
 
@@ -1085,8 +1137,10 @@ export async function wrapInLayout(
   // Web fonts: <link> tags (with preconnect) go in <head> via the meta slot;
   // raw @font-face blocks are folded into the stylesheet below.
   const { fontLinks, fontFaceCss } = generateFontTags(config)
+  const hreflangTags = generateHreflangTags(resolvedI18n, config, currentPath)
+
   // Page tags come after the site-wide ones so a page can override them.
-  const allMeta = [basicMeta, canonicalUrl, openGraphTags, twitterCardTags, pageMeta.extraTags, fontLinks].filter(Boolean).join('\n  ')
+  const allMeta = [basicMeta, canonicalUrl, hreflangTags, openGraphTags, twitterCardTags, pageMeta.extraTags, fontLinks].filter(Boolean).join('\n  ')
 
   // Generate analytics scripts
   const fathomScript = generateFathomScript(config)
@@ -1094,10 +1148,11 @@ export async function wrapInLayout(
 
   // Combine custom scripts with analytics and structured data
   const customScripts = config.markdown?.scripts?.map(script => `<script>${script}</script>`).join('\n') || ''
-  const scripts = [structuredData, fathomScript, analyticsScript, customScripts].filter(Boolean).join('\n')
+  const localeDetection = generateLocaleDetectionScript(resolvedI18n)
+  const scripts = [structuredData, fathomScript, analyticsScript, customScripts, localeDetection ? `<script>${localeDetection}</script>` : ''].filter(Boolean).join('\n')
 
   // Pre-generate nav so we can scan all HTML for crosswind utility classes
-  const nav = generateNav(config)
+  const nav = generateNav(config, currentPath)
 
   // One nav bar for every layout. It used to be inlined per layout, so the
   // home and page layouts silently shipped without search, the theme toggle
@@ -1113,6 +1168,10 @@ export async function wrapInLayout(
   // prefixRootRelativeAttributes only rewrites href/src/action attributes, so
   // a basePath has to be applied to the fetch URL here — it lives in a script.
   const searchRuntime = buildSearchRuntimeConfig(config, prefixRootPath(config, SEARCH_INDEX_PATH))
+  // A translated placeholder beats the English default once locales exist.
+  if (!config.search?.placeholder && !config.markdown?.search?.placeholder)
+    searchRuntime.placeholder = t('search.placeholder')
+  searchRuntime.locale = resolvedI18n.enabled ? activeLocale : null
   const searchOverlay = searchEnabled
     ? await render(useAlgolia ? 'search-algolia' : 'search', {
         placeholder: searchRuntime.placeholder,
@@ -1132,6 +1191,20 @@ export async function wrapInLayout(
       })
     : ''
 
+  const localeSwitcher = resolvedI18n.enabled
+    ? await render('locale-switcher', {
+        label: t('nav.menu'),
+        current: localeLabel(resolvedI18n, activeLocale),
+        options: resolvedI18n.locales
+          .map((code) => {
+            const href = localizeUrl(resolvedI18n, code, currentPath === '/index' ? '/' : currentPath)
+            const current = code === activeLocale ? ' aria-current="true"' : ''
+            return `<li><a href="${escapeHtmlAttribute(href)}" data-locale="${escapeHtmlAttribute(code)}"${current}>${escapeHtmlAttribute(localeLabel(resolvedI18n, code))}</a></li>`
+          })
+          .join('\n    '),
+      })
+    : ''
+
   const logo = config.themeConfig?.logo
     ? `<img class="BPNavBarTitle-logo" src="${escapeHtmlAttribute(config.themeConfig.logo)}" alt="">`
     : ''
@@ -1139,6 +1212,7 @@ export async function wrapInLayout(
   const navbarFor = async (variant: 'doc' | 'plain'): Promise<string> => render('navbar', {
     title,
     logo,
+    localeSwitcher,
     nav,
     searchTrigger: searchEnabled ? searchTriggerButton(searchRuntime.placeholder, searchRuntime.shortcuts) : '',
     hamburger: variant === 'doc' ? HAMBURGER_BUTTON : '',
@@ -1165,6 +1239,7 @@ export async function wrapInLayout(
     const html = await render('layout-home', {
       htmlClass,
       themeMode,
+      lang: activeLocale,
       title,
       documentTitle,
       description,
@@ -1186,6 +1261,7 @@ export async function wrapInLayout(
     const html = await render('layout-page', {
       htmlClass,
       themeMode,
+      lang: activeLocale,
       title,
       documentTitle,
       description,
@@ -1203,7 +1279,7 @@ export async function wrapInLayout(
   // The TOC is built before the header is attached so the copy-page control's
   // own markup can never be mistaken for page content.
   const contentWithIds = addHeadingIds(content)
-  const outline = await generatePageOutline(contentWithIds)
+  const outline = await generatePageOutline(contentWithIds, t('toc.title'))
   const sidebar = await generateSidebar(config, currentPath)
   const docContent = attachPageHeader(contentWithIds, await render('copy-page', {}), outline.inline)
   const pageTOC = outline.aside
@@ -1214,6 +1290,7 @@ export async function wrapInLayout(
   const html = await render('layout-doc', {
     htmlClass,
     themeMode,
+    lang: activeLocale,
     title,
     documentTitle,
     description,
@@ -1753,9 +1830,11 @@ function processBadges(content: string): string {
 }
 
 /**
- * Process external links in HTML to add target="_blank" and rel="noreferrer"
+ * Process external links in HTML to add target="_blank" and rel="noreferrer".
+ * `autoTarget` and `autoRel` are the documented sub-toggles; a site that wants
+ * external links to open in place can turn either off independently.
  */
-function processExternalLinksHtml(html: string): string {
+function processExternalLinksHtml(html: string, autoTarget: boolean = true, autoRel: boolean = true): string {
   // Match HTML anchor tags
   return html.replace(/<a\s+href="([^"]+)"([^>]*)>/g, (match, url, rest) => {
     // Skip if already has target attribute
@@ -1766,8 +1845,9 @@ function processExternalLinksHtml(html: string): string {
     const isExternal = url.startsWith('http://') || url.startsWith('https://')
 
     if (isExternal) {
-      // Add external link attributes (icon removed as unused)
-      return `<a href="${url}" target="_blank" rel="noreferrer noopener"${rest}>`
+      const target = autoTarget ? ' target="_blank"' : ''
+      const rel = autoRel ? ' rel="noreferrer noopener"' : ''
+      return `<a href="${url}"${target}${rel}${rest}>`
     }
 
     // Internal link - keep as is
@@ -2225,7 +2305,7 @@ function parseCodeFenceInfo(infoString: string): {
  * Process code blocks with advanced features (line highlighting, line numbers, focus, etc.)
  */
 // eslint-disable-next-line pickier/no-unused-vars
-async function processCodeBlock(lines: string[], startIndex: number): Promise<{ html: string, endIndex: number }> {
+async function processCodeBlock(lines: string[], startIndex: number, codeFeatures: CodeBlockFeatures): Promise<{ html: string, endIndex: number }> {
   const firstLine = lines[startIndex]
 
   // Count the number of backticks in the opening fence (supports 3, 4, 5+ backticks)
@@ -2236,7 +2316,12 @@ async function processCodeBlock(lines: string[], startIndex: number): Promise<{ 
   const infoString = firstLine.substring(fenceLength).trim() // Remove opening backticks
 
   // Parse info string
-  const { lang, highlights, showLineNumbers } = parseCodeFenceInfo(infoString)
+  const parsed = parseCodeFenceInfo(infoString)
+  const lang = parsed.lang
+  // A disabled extra means the marker is simply not acted on; the code itself
+  // still renders, which is what a reader needs either way.
+  const highlights = codeFeatures.lineHighlighting ? parsed.highlights : []
+  const showLineNumbers = codeFeatures.lineNumbers ? parsed.showLineNumbers : false
 
   // Collect code content
   const codeLines: string[] = []
@@ -2313,10 +2398,10 @@ async function processCodeBlock(lines: string[], startIndex: number): Promise<{ 
       const lineNumber = index + 1
       const isHighlighted = highlights.includes(lineNumber)
       const isFocused = focusLines.has(index)
-      const isDiffAdd = diffAddLines.has(index)
-      const isDiffRemove = diffRemoveLines.has(index)
-      const isError = errorLines.has(index)
-      const isWarning = warningLines.has(index)
+      const isDiffAdd = codeFeatures.diffs && diffAddLines.has(index)
+      const isDiffRemove = codeFeatures.diffs && diffRemoveLines.has(index)
+      const isError = codeFeatures.errorWarningMarkers && errorLines.has(index)
+      const isWarning = codeFeatures.errorWarningMarkers && warningLines.has(index)
 
       const classes: string[] = ['line'] // Always include 'line' class
       if (isHighlighted)
@@ -2403,7 +2488,7 @@ function preprocessCustomAnchors(content: string): { content: string, customAnch
  * Extract fenced code blocks, process them with syntax highlighting,
  * and replace with HTML comment placeholders for Bun.markdown
  */
-async function extractAndProcessCodeBlocks(content: string, codeBlockMap: Map<string, string>): Promise<string> {
+async function extractAndProcessCodeBlocks(content: string, codeBlockMap: Map<string, string>, codeFeatures: CodeBlockFeatures): Promise<string> {
   const lines = content.split('\n')
   const result: string[] = []
   let i = 0
@@ -2414,7 +2499,7 @@ async function extractAndProcessCodeBlocks(content: string, codeBlockMap: Map<st
 
     // Check for code block start (3+ backticks at start of line)
     if (line.match(/^`{3,}/)) {
-      const { html, endIndex } = await processCodeBlock(lines, i)
+      const { html, endIndex } = await processCodeBlock(lines, i, codeFeatures)
       const placeholder = `<!--BUNPRESS_CODE_${placeholderIndex++}-->`
       codeBlockMap.set(placeholder, html)
       // Surround with blank lines so Bun.markdown treats it as block-level HTML
@@ -2449,20 +2534,31 @@ function postProcessCustomInline(html: string): string {
 /**
  * Post-process tables to add BunPress-specific enhanced classes and responsive wrapper
  */
-function postProcessTables(html: string): string {
-  // Wrap <table> in responsive div and add enhanced class
-  html = html.replace(/<table>/g, '<div class="table-responsive">\n<table class="enhanced-table">')
-  html = html.replace(/<\/table>/g, '</table>\n</div>')
+function postProcessTables(
+  html: string,
+  enhancedStyling: boolean = true,
+  responsive: boolean = true,
+  alignment: boolean = true,
+): string {
+  // The wrapper is what makes a wide table scrollable, and the class is what
+  // the theme styles — each is a documented toggle in its own right.
+  if (responsive || enhancedStyling) {
+    const openTag = `${responsive ? '<div class="table-responsive">\n' : ''}<table${enhancedStyling ? ' class="enhanced-table"' : ''}>`
+    html = html.replace(/<table>/g, openTag)
+    html = html.replace(/<\/table>/g, responsive ? '</table>\n</div>' : '</table>')
+  }
 
-  // Convert align attributes to inline styles (Bun.markdown uses align="..." on th/td)
-  html = html.replace(/<(th|td) align="(left|center|right)">/g, (_match: string, tag: string, align: string) => {
-    return `<${tag} style="text-align: ${align}">`
-  })
+  if (alignment) {
+    // Convert align attributes to inline styles (Bun.markdown uses align="..." on th/td)
+    html = html.replace(/<(th|td) align="(left|center|right)">/g, (_match: string, tag: string, align: string) => {
+      return `<${tag} style="text-align: ${align}">`
+    })
 
-  // Add default left alignment to cells without alignment
-  html = html.replace(/<(th|td)>/g, (_match: string, tag: string) => {
-    return `<${tag} style="text-align: left">`
-  })
+    // Add default left alignment to cells without alignment
+    html = html.replace(/<(th|td)>/g, (_match: string, tag: string) => {
+      return `<${tag} style="text-align: left">`
+    })
+  }
 
   return html
 }
@@ -2549,6 +2645,20 @@ async function renderMarkdownBody(content: string, frontmatter: any, rootDir: st
     return val === undefined || val === true || (typeof val === 'object' && val !== null)
   }
 
+  /**
+   * Read a sub-toggle such as `features.codeBlocks.lineNumbers`.
+   *
+   * The parent form (`codeBlocks: false`) turns the whole feature off; the
+   * object form turns individual pieces off. Previously an object was only
+   * ever read as "enabled" and every documented sub-toggle was inert.
+   */
+  const featureOption = (key: keyof import('./types').MarkdownFeaturesConfig, option: string): boolean => {
+    if (!featureEnabled(key)) return false
+    const val = features?.[key]
+    if (typeof val !== 'object' || val === null) return true
+    return (val as Record<string, unknown>)[option] !== false
+  }
+
   // Process markdown includes first (before everything else)
   let processedContent = featureEnabled('includes')
     ? await processMarkdownIncludes(content, rootDir)
@@ -2559,7 +2669,7 @@ async function renderMarkdownBody(content: string, frontmatter: any, rootDir: st
   // markdown stx directives, bound component props, and <script server> see.
   const stxContext: Record<string, any> = {
     ...frontmatter,
-    data: await loadDataFiles(rootDir),
+    data: await loadDataFiles(rootDir, (config as BunPressConfig).dataDir),
     site: {
       title: (config as BunPressConfig).title || (config as BunPressConfig).markdown?.title || '',
       description: (config as BunPressConfig).description || (config as BunPressConfig).markdown?.meta?.description || '',
@@ -2647,16 +2757,24 @@ async function renderMarkdownBody(content: string, frontmatter: any, rootDir: st
   // Replace with placeholders so Bun.markdown doesn't interfere
   const codeBlockMap = new Map<string, string>()
   processedContent = featureEnabled('codeBlocks')
-    ? await extractAndProcessCodeBlocks(processedContent, codeBlockMap)
+    ? await extractAndProcessCodeBlocks(processedContent, codeBlockMap, {
+        lineHighlighting: featureOption('codeBlocks', 'lineHighlighting'),
+        lineNumbers: featureOption('codeBlocks', 'lineNumbers'),
+        diffs: featureOption('codeBlocks', 'diffs'),
+        errorWarningMarkers: featureOption('codeBlocks', 'errorWarningMarkers'),
+      })
     : processedContent
 
   // Use Bun's built-in markdown parser for core markdown-to-HTML conversion
   // See: https://bun.com/docs/runtime/markdown
+  // markdown.parserOptions is merged last so a site can turn a GFM extension
+  // off, or enable one this default set does not cover.
   let finalHtml = Bun.markdown.html(processedContent, {
     tables: true,
     strikethrough: true,
     tasklists: true,
     autolinks: true,
+    ...((config as BunPressConfig).markdown?.parserOptions ?? {}),
   })
 
   // Restore code block placeholders with actual highlighted HTML
@@ -2673,7 +2791,7 @@ async function renderMarkdownBody(content: string, frontmatter: any, rootDir: st
 
   // Post-process tables to add enhanced classes and responsive wrapper
   if (featureEnabled('tables')) {
-    finalHtml = postProcessTables(finalHtml)
+    finalHtml = postProcessTables(finalHtml, featureOption('tables', 'enhancedStyling'), featureOption('tables', 'responsive'), featureOption('tables', 'alignment'))
   }
 
   // Post-process headings to add IDs (custom anchors or auto-generated)
@@ -2686,8 +2804,10 @@ async function renderMarkdownBody(content: string, frontmatter: any, rootDir: st
 
   // Process external links and images in the final HTML
   if (featureEnabled('externalLinks')) {
-    finalHtml = processExternalLinksHtml(finalHtml)
-    finalHtml = addExternalLinkIcons(finalHtml)
+    if (featureOption('externalLinks', 'autoTarget') || featureOption('externalLinks', 'autoRel'))
+      finalHtml = processExternalLinksHtml(finalHtml, featureOption('externalLinks', 'autoTarget'), featureOption('externalLinks', 'autoRel'))
+    if (featureOption('externalLinks', 'showIcon'))
+      finalHtml = addExternalLinkIcons(finalHtml)
   }
   if (featureEnabled('imageLazyLoading')) {
     finalHtml = processImagesHtml(finalHtml)
@@ -2709,6 +2829,9 @@ export async function startServer(options: {
   const bunPressConfig = options.config || config as BunPressConfig
   const port = options.port ?? 3000
   const root = options.root || './docs'
+  // Loaded once: translation files do not change per request, and reloading
+  // them on every navigation would dominate dev-server response time.
+  const i18n = await loadI18nTranslations(resolveI18nConfig(bunPressConfig), bunPressConfig)
 
   const server = Bun.serve({
     port,
@@ -2762,7 +2885,10 @@ export async function startServer(options: {
       // Try to serve markdown file. `/guide` resolves to `guide.md`, falling
       // back to `guide/index.md` — a section landing page is the natural way to
       // organize docs, and without the second candidate every one of them 404s.
-      const candidates = [`${root}${path}.md`, `${root}${path}/index.md`]
+      // With i18n on, `/es/guide` resolves the Spanish copy first and the
+      // default-locale copy last, so an untranslated page still renders.
+      const { locale, path: localePath } = splitLocaleFromPath(i18n, path)
+      const candidates = localeContentCandidates(i18n, root, locale, localePath)
       for (const mdPath of candidates) {
         try {
           const mdFile = Bun.file(mdPath)
@@ -2770,7 +2896,7 @@ export async function startServer(options: {
             const markdown = await mdFile.text()
             const { html, frontmatter } = await markdownToHtml(markdown, root)
             const layout = frontmatter.layout || 'doc'
-            const wrappedHtml = await wrapInLayout(html, bunPressConfig, path, layout, frontmatter)
+            const wrappedHtml = await wrapInLayout(html, bunPressConfig, localePath, layout, frontmatter, i18n, locale)
             return new Response(wrappedHtml, {
               headers: { 'Content-Type': 'text/html; charset=utf-8' },
             })

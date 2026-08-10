@@ -3,13 +3,13 @@
     <svg class="bp-local-outline-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h10"></path>
     </svg>
-    <span class="bp-local-outline-label">On this page</span>
+    <span class="bp-local-outline-label">{{ title }}</span>
     <span class="bp-local-outline-count">{{ count }}</span>
     <svg class="bp-local-outline-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
     </svg>
   </summary>
-  <nav class="bp-local-outline-items" aria-label="On this page">
+  <nav class="bp-local-outline-items" aria-label="{{ title }}">
     {!! items !!}
   </nav>
 </details>
