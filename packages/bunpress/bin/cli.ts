@@ -705,7 +705,7 @@ async function generateLlmMarkdown(options: CliOption = {}): Promise<boolean> {
 
 cli
   .command('llm', 'Generate LLM-friendly markdown file from documentation')
-  .option('--dir <dir>', 'Documentation directory', { default: './docs' })
+  .option('--dir <dir>', 'Documentation directory (defaults to config docsDir)')
   .option('--output <output>', 'Output file path', { default: './docs.md' })
   .option('--full', 'Include full content (not just titles and headings)', { default: false })
   .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
@@ -749,6 +749,7 @@ cli
 
 cli
   .command('doctor', 'Run diagnostic checks on the project')
+  .option('--dir <dir>', 'Documentation directory (defaults to config docsDir)')
   .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
   .action(async (options: CliOption) => {
     const success = await doctorCommand(options)
@@ -795,7 +796,7 @@ cli
 
 cli
   .command('stats', 'Show documentation statistics')
-  .option('--dir <dir>', 'Documentation directory', { default: './docs' })
+  .option('--dir <dir>', 'Documentation directory (defaults to config docsDir)')
   .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
   .action(async (options: CliOption) => {
     const success = await statsCommand(options)
@@ -805,7 +806,7 @@ cli
 
 cli
   .command('seo:check', 'Check SEO for all documentation pages')
-  .option('--dir <dir>', 'Documentation directory', { default: './docs' })
+  .option('--dir <dir>', 'Documentation directory (defaults to config docsDir)')
   .option('--fix', 'Automatically fix issues (add missing titles/descriptions)', { default: false })
   .action(async (options: CliOption) => {
     await seoCheck(options)
