@@ -1,0 +1,149 @@
+<details class="bp-local-outline">
+  <summary class="bp-local-outline-summary">
+    <svg class="bp-local-outline-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h10"></path>
+    </svg>
+    <span class="bp-local-outline-label">On this page</span>
+    <span class="bp-local-outline-count">{{ count }}</span>
+    <svg class="bp-local-outline-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+    </svg>
+  </summary>
+  <nav class="bp-local-outline-items" aria-label="On this page">
+    {!! items !!}
+  </nav>
+</details>
+
+<style>
+/* In-content page outline. Fills the range where the fixed .BPDocAside has no
+   room to render — see the 1280px rule at the bottom of this block. Built on
+   <details> so it collapses, is keyboard operable and survives without JS. */
+.bp-local-outline {
+  margin: 0 0 32px;
+  border: 1px solid var(--bp-c-divider);
+  border-radius: 8px;
+  background-color: var(--bp-c-bg-soft);
+  overflow: hidden;
+}
+
+.bp-local-outline-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bp-c-text-1);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  transition: color 0.25s;
+}
+
+/* Suppress the native disclosure triangle in both engines — the chevron on
+   the right is the affordance. */
+.bp-local-outline-summary::-webkit-details-marker {
+  display: none;
+}
+
+.bp-local-outline-summary::marker {
+  content: '';
+}
+
+.bp-local-outline-summary:hover {
+  color: var(--bp-c-brand-1);
+}
+
+.bp-local-outline-summary:focus-visible {
+  outline: 2px solid var(--bp-c-brand-1);
+  outline-offset: -2px;
+}
+
+.bp-local-outline-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--bp-c-text-3);
+}
+
+.bp-local-outline-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.bp-local-outline-count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--bp-c-text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.bp-local-outline-chevron {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--bp-c-text-3);
+  transition: transform 0.2s ease;
+}
+
+.bp-local-outline[open] .bp-local-outline-chevron {
+  transform: rotate(180deg);
+}
+
+.bp-local-outline-items {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0 10px;
+  border-top: 1px solid var(--bp-c-divider);
+  /* A long page must not turn the outline into a wall of links. */
+  max-height: 60vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.bp-local-outline-items a {
+  padding: 6px 14px 6px 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--bp-c-text-2);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: color 0.25s, background-color 0.25s;
+}
+
+.bp-local-outline-items a:hover {
+  color: var(--bp-c-brand-1);
+  background-color: var(--bp-c-default-soft, var(--bp-c-gray-soft));
+}
+
+.bp-local-outline-items a:focus-visible {
+  outline: 2px solid var(--bp-c-brand-1);
+  outline-offset: -2px;
+}
+
+/* Nesting mirrors the aside's indent scale. */
+.bp-local-outline-items a.level-3 {
+  padding-left: 32px;
+}
+
+.bp-local-outline-items a.level-4 {
+  padding-left: 48px;
+}
+
+.bp-local-outline-items a.level-5 {
+  padding-left: 64px;
+}
+
+.bp-local-outline-items a.level-6 {
+  padding-left: 80px;
+}
+
+/* From 1280px the fixed aside takes over, so the inline copy would be a
+   duplicate. Keep this breakpoint in sync with .BPDocAside in page-toc.stx. */
+@media (min-width: 1280px) {
+  .bp-local-outline {
+    display: none;
+  }
+}
+</style>

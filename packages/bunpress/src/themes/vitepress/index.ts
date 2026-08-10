@@ -350,12 +350,16 @@ const varsCSS = `/**
   --bp-custom-block-code-font-size: 13px;
 
   /* The *-border colour is drawn only on the leading edge (see .custom-block),
-   * so it carries the block's identity — hence a solid accent, not transparent. */
-  --bp-custom-block-info-border: var(--bp-c-default-1);
+   * so it carries the block's identity — hence a solid accent, not transparent.
+   * Info/note are neutral, so they take a mid-grey: --bp-c-default-1 is a
+   * near-white tint that vanishes against the block's own soft background. */
+  --bp-custom-block-info-border: var(--bp-c-text-3);
   --bp-custom-block-info-text: var(--bp-c-text-1);
   --bp-custom-block-info-bg: var(--bp-c-default-soft);
   --bp-custom-block-info-code-bg: var(--bp-c-default-soft);
 
+  /* note carries a brand-coloured title and icon, so its rail matches those
+   * rather than the neutral background it shares with info. */
   --bp-custom-block-note-border: var(--bp-c-note-1);
   --bp-custom-block-note-text: var(--bp-c-text-1);
   --bp-custom-block-note-bg: var(--bp-c-default-soft);
@@ -840,6 +844,10 @@ mjx-container > svg {
   position: relative;
   font-weight: 600;
   outline: none;
+  /* Anchor jumps — from the outline, the sidebar or an external deep link —
+   * otherwise land the heading flush against the top edge of the scroll
+   * container, with no separation from the chrome above it. */
+  scroll-margin-top: 24px;
 }
 
 .bp-doc h1 {
@@ -951,6 +959,12 @@ mjx-container > svg {
   transition: color 0.5s;
 }
 
+/* Zeroing every paragraph margin ran a multi-paragraph quote together as if
+ * it were one block of prose. */
+.bp-doc blockquote > p + p {
+  margin-top: 16px;
+}
+
 .bp-doc a {
   font-weight: 500;
   color: var(--bp-c-brand-1);
@@ -1045,16 +1059,29 @@ mjx-container > svg {
   padding-left: 0;
 }
 
+/* A list of task items has checkboxes where the markers would be, so the
+ * marker gutter is dead space. Scoped with :has() so a list that merely
+ * contains one task item keeps its indent for the plain items. */
+.bp-doc ul:has(> .task-list-item) {
+  padding-left: 0;
+  list-style: none;
+}
+
 .bp-doc .task-list-item {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
 }
 
+/* .task-list-item-checkbox is what Bun.markdown emits; .task-list-checkbox is
+ * kept for content that ships its own task-list markup. */
+.bp-doc .task-list-item-checkbox,
 .bp-doc .task-list-checkbox {
-  margin-top: 0.25rem;
+  /* Nudged down to sit on the first line's cap height rather than its top. */
+  margin: 0.3em 0 0;
   width: 1rem;
   height: 1rem;
+  flex-shrink: 0;
   accent-color: var(--bp-c-brand-1);
   cursor: default;
 }
@@ -1237,36 +1264,28 @@ mjx-container > svg {
  * Code blocks
  * -------------------------------------------------------------------------- */
 
+/* Inset, not full-bleed. The old \`margin: 16px -24px\` hard-coded the content
+ * container's padding: once that padding changed on small screens the bleed
+ * overshot it, hanging the block 8px off each edge and leaving the content
+ * pane with a phantom horizontal scroll. Inset also matches how every other
+ * block element here behaves (containers, tables, alerts). */
 .bp-doc div[class*='language-'],
 .bp-doc pre[data-lang],
 .bp-block {
   position: relative;
-  margin: 16px -24px;
+  margin: 16px 0;
+  border-radius: 8px;
   background-color: var(--bp-code-block-bg);
   overflow-x: auto;
   transition: background-color 0.5s;
 }
 
-@media (min-width: 640px) {
-  .bp-doc div[class*='language-'],
-  .bp-doc pre[data-lang],
-  .bp-block {
-    border-radius: 8px;
-    margin: 16px 0;
-  }
-}
-
-@media (max-width: 639px) {
-  .bp-doc li div[class*='language-'],
-  .bp-doc li pre[data-lang] {
-    border-radius: 8px 0 0 8px;
-  }
-}
-
+/* Wrapper divs that belong to one code group are pulled together. Bare
+ * \`pre[data-lang]\` siblings are NOT a group — they are independent examples,
+ * and the negative margin made consecutive blocks overlap into one slab. */
 .bp-doc div[class*='language-'] + div[class*='language-'],
 .bp-doc div[class$='-api'] + div[class*='language-'],
-.bp-doc div[class*='language-'] + div[class$='-api'] > div[class*='language-'],
-.bp-doc pre[data-lang] + pre[data-lang] {
+.bp-doc div[class*='language-'] + div[class$='-api'] > div[class*='language-'] {
   margin-top: -8px;
 }
 
@@ -1283,11 +1302,18 @@ mjx-container > svg {
 .bp-doc pre[data-lang] {
   position: relative;
   z-index: 1;
-  margin: 0;
   padding: 20px 0;
-  background: transparent;
   overflow-x: auto;
   text-align: left;
+}
+
+/* A pre nested in a language wrapper is not the block — the wrapper is — so it
+ * contributes neither margin nor background of its own. A bare pre[data-lang]
+ * IS the block and must keep the margin set above; zeroing it here (the rule
+ * this splits out of) is what let consecutive blocks run together. */
+.bp-doc [class*='language-'] pre {
+  margin: 0;
+  background: transparent;
 }
 
 .bp-doc [class*='language-'] code,
@@ -1752,11 +1778,58 @@ const customBlockCSS = `/**
   margin: 8px 0;
 }
 
-.custom-block.details summary {
-  margin: 0 0 8px;
+/* The native disclosure triangle is unstyleable and sits at a different size
+ * and colour in every engine, so it is replaced with a chevron that matches
+ * the rest of the chrome. */
+.custom-block.details summary,
+.bp-doc .custom-block.details summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
   font-weight: 700;
   cursor: pointer;
   user-select: none;
+  list-style: none;
+}
+
+.custom-block.details summary::-webkit-details-marker {
+  display: none;
+}
+
+.custom-block.details summary::marker {
+  content: '';
+}
+
+.custom-block.details summary::before {
+  content: '';
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  background-color: currentColor;
+  transition: transform 0.2s ease;
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18l6-6-6-6'/%3E%3C/svg%3E");
+  -webkit-mask-image: var(--icon);
+  mask-image: var(--icon);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+.custom-block.details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.custom-block.details summary:focus-visible {
+  outline: 2px solid var(--bp-c-brand-1);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* Body content only gains its top margin once the block is open. */
+.bp-doc .custom-block.details[open] summary {
+  margin-bottom: 8px;
 }
 
 .custom-block.details summary + p {
@@ -1815,21 +1888,27 @@ const customBlockCSS = `/**
  * GitHub-Flavored Alerts (VitePress style)
  * -------------------------------------------------------------------------- */
 
+/* Same box treatment as .custom-block — alerts and containers say the same
+ * kind of thing, so they must not look like two unrelated systems. */
 .github-alert {
-  border: 1px solid transparent;
+  border: 0 solid transparent;
+  border-left-width: 4px;
   border-radius: 8px;
-  padding: 16px 16px 8px;
+  padding: 14px 16px;
   line-height: 24px;
   font-size: var(--bp-custom-block-font-size);
   margin: 16px 0;
 }
 
-.github-alert-title {
+/* The title is a <p>, so .bp-doc's 16px paragraph margins have to be beaten
+ * on specificity — otherwise the label floats half a line above its body. */
+.github-alert-title,
+.bp-doc .github-alert-title {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin: 0 0 6px;
   font-weight: 600;
-  margin-bottom: 8px;
 }
 
 .github-alert-icon {
@@ -1842,12 +1921,22 @@ const customBlockCSS = `/**
   line-height: 24px;
 }
 
-.github-alert-content p {
-  margin: 8px 0;
+.github-alert-content p,
+.bp-doc .github-alert-content p {
+  margin: 0;
 }
 
-.github-alert-content p:first-child {
+.github-alert-content p + p,
+.bp-doc .github-alert-content p + p {
+  margin-top: 12px;
+}
+
+.bp-doc .github-alert-content > :first-child {
   margin-top: 0;
+}
+
+.bp-doc .github-alert-content > :last-child {
+  margin-bottom: 0;
 }
 
 /* Note Alert */
@@ -2027,9 +2116,22 @@ const codeGroupCSS = `/**
   display: block;
 }
 
-.bp-block,
-.code-group-panel {
+.bp-block {
   padding: 20px 24px;
+}
+
+/* The panel is a frame, not a padded box — the code block inside brings its
+ * own padding, background and radius, and stacking the panel's on top of it
+ * rendered a card inside a card with a gap under the tab bar. */
+.code-group-panel {
+  padding: 0;
+}
+
+.bp-doc .code-group-panel > pre,
+.bp-doc .code-group-panel > div[class*='language-'] {
+  margin: 0;
+  border: none;
+  border-radius: 0;
 }
 
 /* Code group container */
@@ -2584,6 +2686,17 @@ export const layoutCSS = `/**
 /**
  * Inline content — badges, external link icons
  * -------------------------------------------------------------------------- */
+
+/* The UA default is pure yellow with forced black text, which is jarring in
+ * light mode and unreadable against a dark page. */
+.bp-doc mark {
+  padding: 1px 3px;
+  border-radius: 3px;
+  background-color: var(--bp-c-warning-soft, rgba(234, 179, 8, 0.28));
+  color: inherit;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
 
 .badge {
   display: inline-block;

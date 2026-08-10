@@ -62,15 +62,28 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
 }
 
 /**
- * Extract headings from HTML content and generate page TOC
+ * Extract headings from HTML content and render the page outline in both of
+ * its forms.
+ *
+ * The fixed aside only has room from 1280px up. Below that it used to be
+ * hidden with nothing in its place, so every reader on a laptop, tablet or
+ * phone lost in-page navigation entirely — on long reference pages that is
+ * the primary way to move around. `inline` is a collapsed disclosure rendered
+ * into the content flow for exactly that range; the two are mutually
+ * exclusive at the same breakpoint, so only one is ever visible.
  */
-async function generatePageTOC(html: string): Promise<string> {
+async function generatePageOutline(html: string): Promise<{ aside: string, inline: string }> {
+  // An inline [[toc]] widget carries its own "Table of Contents" <h2>. Listing
+  // that in the outline is circular — it is chrome, not a section of the page —
+  // so drop the widget before collecting headings.
+  const withoutTocWidgets = html.replace(/<nav class="table-of-contents[\s\S]*?<\/nav>/g, '')
+
   // Extract h2, h3, h4, h5, h6 headings from HTML (h1 is typically the page title)
   const headingRegex = /<h([2-6])([^>]*)>(.*?)<\/h\1>/g
   const headings: Array<{ level: number, text: string, id: string }> = []
 
   let match
-  while ((match = headingRegex.exec(html)) !== null) {
+  while ((match = headingRegex.exec(withoutTocWidgets)) !== null) {
     const level = Number.parseInt(match[1])
     const attributes = match[2]
     let text = match[3]
@@ -86,7 +99,7 @@ async function generatePageTOC(html: string): Promise<string> {
   }
 
   if (headings.length === 0) {
-    return ''
+    return { aside: '', inline: '' }
   }
 
   // Generate TOC items HTML
@@ -95,7 +108,10 @@ async function generatePageTOC(html: string): Promise<string> {
     return `<a href="#${heading.id}" class="${levelClass}">${heading.text}</a>`
   }).join('\n      ')
 
-  return await render('page-toc', { items })
+  return {
+    aside: await render('page-toc', { items }),
+    inline: await render('page-outline', { items, count: String(headings.length) }),
+  }
 }
 
 /**
@@ -148,15 +164,25 @@ function addHeadingIds(html: string): string {
  * anchor the control to, and floating it alone above the body reads as chrome
  * belonging to whatever follows it.
  */
-function attachPageHeader(html: string, copyPageHtml: string): string {
-  if (!copyPageHtml)
+function attachPageHeader(html: string, copyPageHtml: string, inlineOutline = ''): string {
+  if (!copyPageHtml && !inlineOutline)
     return html
 
+  let matched = false
+
   // Non-global regex: only the page's first h1 is the page title.
-  return html.replace(
+  const withHeader = html.replace(
     /<h1(?:\s[^>]*)?>[\s\S]*?<\/h1>/,
-    match => `<div class="bp-page-header">${match}${copyPageHtml}</div>`,
+    (match) => {
+      matched = true
+      return `<div class="bp-page-header">${match}${copyPageHtml}</div>${inlineOutline}`
+    },
   )
+
+  // No h1 to anchor to. The outline still belongs at the top of the page, but
+  // the copy control does not — alone above the body it reads as chrome for
+  // whatever follows it.
+  return matched ? withHeader : `${inlineOutline}${html}`
 }
 
 /**
@@ -854,9 +880,10 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   // The TOC is built before the header is attached so the copy-page control's
   // own markup can never be mistaken for page content.
   const contentWithIds = addHeadingIds(content)
-  const pageTOC = await generatePageTOC(contentWithIds)
+  const outline = await generatePageOutline(contentWithIds)
   const sidebar = await generateSidebar(config, currentPath)
-  const docContent = attachPageHeader(contentWithIds, await render('copy-page', {}))
+  const docContent = attachPageHeader(contentWithIds, await render('copy-page', {}), outline.inline)
+  const pageTOC = outline.aside
 
   const crosswindCSS = await generateCrosswindCSSFromHtml(`${docContent}\n${nav}\n${sidebar}`)
   const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}`
@@ -1180,44 +1207,6 @@ async function generateFeatures(features: any[]): Promise<string> {
 }
 
 /**
- * Process inline markdown formatting
- * Supports: bold, italic, strikethrough, code, links, subscript, superscript, mark
- */
-function processInlineFormatting(text: string): string {
-  return text
-    // Bold - both ** and __
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/__(.+?)__/g, '<strong>$1</strong>')
-    // Strikethrough ~~
-    .replace(/~~(.+?)~~/g, '<del>$1</del>')
-    // Mark/highlight ==
-    .replace(/==(.+?)==/g, '<mark>$1</mark>')
-    // Superscript ^
-    .replace(/\^(.+?)\^/g, '<sup>$1</sup>')
-    // Code ` (before italic to avoid conflicts)
-    .replace(/`(.+?)`/g, '<code>$1</code>')
-    // Italic - both * and _ (single, not double)
-    .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>')
-    .replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, '<em>$1</em>')
-    // Subscript ~ (single, not double like strikethrough)
-    .replace(/(?<!~)~(?!~)(.+?)(?<!~)~(?!~)/g, '<sub>$1</sub>')
-    // Images with optional caption (must be before links to avoid conflicts)
-    // Matches: ![alt](src "caption") or ![alt](src) or ![alt]( src "caption")
-    .replace(/!\[([^\]]*)\]\(\s*([^\s")]+)(?:\s+"([^"]+)")?\)/g, (_match, alt, src, caption) => {
-      if (caption) {
-        // Image with caption - wrap in figure/figcaption
-        return `<figure class="image-figure"><img src="${src}" alt="${alt}" loading="lazy" decoding="async"><figcaption>${caption}</figcaption></figure>`
-      }
-      else {
-        // Regular image without caption
-        return `<img src="${src}" alt="${alt}" loading="lazy" decoding="async">`
-      }
-    })
-    // Links
-    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
-}
-
-/**
  * Process emoji shortcodes like :tada:, :rocket:, etc.
  * Converts emoji shortcodes to their Unicode equivalents
  */
@@ -1533,6 +1522,32 @@ function injectTocHtml(html: string, tocHtml: string): string {
 }
 
 /**
+ * Fence a block's body so the markdown parser still sees it as markdown.
+ *
+ * Containers and alerts are emitted as HTML wrappers into the markdown stream.
+ * CommonMark ends an HTML block at the first blank line, so padding the body
+ * with blank lines leaves it OUTSIDE the wrapper's HTML block — which means
+ * lists, nested code fences, tables and headings inside a `::: tip` or a
+ * `> [!NOTE]` are parsed normally instead of being flattened into one
+ * paragraph per line. Code fences survive too: this runs before
+ * extractAndProcessCodeBlocks, so they still get syntax highlighting.
+ *
+ * Left-trimming each line matters: markdown inside a container is often
+ * indented to match the fence, and four leading spaces would otherwise turn a
+ * paragraph into an indented code block.
+ */
+function asEmbeddedMarkdown(body: string): string {
+  const lines = body.replace(/\s+$/, '').split('\n')
+  const indents = lines
+    .filter(line => line.trim())
+    .map(line => line.match(/^[ \t]*/)![0].length)
+  const commonIndent = indents.length > 0 ? Math.min(...indents) : 0
+  const dedented = lines.map(line => line.slice(commonIndent)).join('\n').trim()
+
+  return dedented ? `\n\n${dedented}\n\n` : ''
+}
+
+/**
  * Process GitHub-flavored alerts like > [!NOTE], > [!TIP], etc.
  */
 async function processGitHubAlerts(content: string): Promise<string> {
@@ -1545,19 +1560,17 @@ async function processGitHubAlerts(content: string): Promise<string> {
     const [fullMatch, type, alertContent] = match
 
     // Remove the > prefix from each line of content
-    const processedContent = alertContent
+    const unquoted = alertContent
       .split('\n')
-      .map(line => line.replace(/^>\s*/, ''))
-      .filter(line => line.trim())
-      .map(line => `<p>${processInlineFormatting(line)}</p>`)
+      .map(line => line.replace(/^>\s?/, ''))
       .join('\n')
 
     const alertType = type.toLowerCase()
     const alertHtml = await render(`blocks/alerts/${alertType}`, {
-      content: processedContent,
+      content: asEmbeddedMarkdown(unquoted),
     })
 
-    result = result.slice(0, match.index) + alertHtml + result.slice(match.index! + fullMatch.length)
+    result = `${result.slice(0, match.index)}\n\n${alertHtml}\n\n${result.slice(match.index! + fullMatch.length)}`
   }
 
   return result
@@ -1830,20 +1843,12 @@ async function processContainers(content: string): Promise<string> {
 
     const title = (customTitle && customTitle.trim()) || defaultTitles[type]
 
-    // Process inner content (convert markdown to HTML)
-    const processedContent = innerContent
-      .trim()
-      .split('\n')
-      .filter(line => line.trim())
-      .map(line => `<p>${processInlineFormatting(line)}</p>`)
-      .join('\n')
-
     const containerHtml = await render(`blocks/containers/${type}`, {
       title,
-      content: processedContent,
+      content: asEmbeddedMarkdown(innerContent),
     })
 
-    result = result.slice(0, match.index) + containerHtml + result.slice(match.index! + fullMatch.length)
+    result = `${result.slice(0, match.index)}\n\n${containerHtml}\n\n${result.slice(match.index! + fullMatch.length)}`
   }
 
   return result
