@@ -784,18 +784,30 @@ export interface TablesConfig {
 export interface SearchConfig {
   /**
    * Enable search functionality
-   * @default false
+   * @default true
    */
   enabled?: boolean
 
   /**
+   * Search backend.
+   * - `local` builds a client-side index from your markdown (default)
+   * - `algolia` hands the UI over to Algolia DocSearch
+   * @default 'local'
+   */
+  provider?: 'local' | 'algolia'
+
+  /** Algolia DocSearch credentials. Required when `provider: 'algolia'`. */
+  algolia?: AlgoliaSearchConfig
+
+  /**
    * Search placeholder text
-   * @default "Search..."
+   * @default "Search documentation"
    */
   placeholder?: string
 
   /**
-   * Maximum number of search results to show
+   * Maximum number of search results to show.
+   * Also settable as `options.maxResults`; the nested form wins.
    * @default 10
    */
   maxResults?: number
@@ -807,9 +819,110 @@ export interface SearchConfig {
   keyboardShortcuts?: boolean
 
   /**
+   * Key(s) that open search, in addition to the always-available Escape to
+   * close. A single printable character (`'/'`) or a chord as parts
+   * (`['ctrl', 'k']`, `['meta', 'k']`).
+   * @default ['meta', 'k'] plus '/'
+   */
+  shortcut?: string | string[]
+
+  /**
+   * Defer loading the index until the dialog is first opened. Turning this
+   * off fetches it right after page load, trading bandwidth for a faster
+   * first search.
+   * @default true
+   */
+  lazy?: boolean
+
+  /** Local index construction and ranking. */
+  options?: LocalSearchOptions
+
+  /** How each result is presented. */
+  resultOptions?: SearchResultOptions
+
+  /**
+   * Called in the browser after every search. Serialized to the page, so it
+   * must not close over build-time values — reference globals only.
+   */
+  onSearch?: (query: string, results: SearchResult[]) => void
+
+  /**
    * Custom search function
    */
   searchFn?: (query: string, content: string[]) => SearchResult[]
+}
+
+/** Algolia DocSearch credentials and query parameters. */
+export interface AlgoliaSearchConfig {
+  appId: string
+  apiKey: string
+  indexName: string
+  /** Forwarded to DocSearch as `searchParameters`. */
+  searchParameters?: Record<string, unknown>
+  /** Placeholder shown in the DocSearch modal. */
+  placeholder?: string
+}
+
+/** Field weights used when ranking a local search hit. */
+export interface SearchBoostConfig {
+  title?: number
+  headings?: number
+  content?: number
+}
+
+/** Which parts of a record are searched and stored. */
+export type SearchField = 'title' | 'content' | 'headings' | 'keywords'
+
+export interface LocalSearchOptions {
+  /** Glob patterns of markdown to index. @default ['**\/*.md'] */
+  include?: string[]
+  /** Glob patterns to skip, applied after `include`. */
+  exclude?: string[]
+  /** Fields a query is matched against. @default all of them */
+  searchFields?: SearchField[]
+  /** Maximum hits rendered. @default 10 */
+  maxResults?: number
+  /** Queries shorter than this return nothing. @default 1 */
+  minQueryLength?: number
+  /** Relative weight per field when scoring. */
+  boost?: SearchBoostConfig
+  /**
+   * Splits both documents and queries into terms. Serialized to the page,
+   * so it must not close over build-time values.
+   */
+  tokenize?: (text: string) => string[]
+  /** Allow approximate matches. @default false */
+  fuzzy?: boolean
+  /** Maximum edit distance when `fuzzy` is on. @default 1 */
+  fuzziness?: number
+  /** Reduce terms to a common stem before matching. */
+  stemmer?: 'english' | 'none'
+  /** Record fields written to the index. Smaller index, less preview. */
+  storeFields?: Array<'title' | 'page' | 'text' | 'url' | 'level' | 'keywords'>
+  /** Characters of prose kept per section. @default 800 */
+  maxContentLength?: number
+}
+
+export interface SearchResultOptions {
+  /** Show the text preview under each hit. @default true */
+  showDescription?: boolean
+  /** Characters of preview text. @default 180 */
+  descriptionLength?: number
+  /** Wrap query terms in `<mark>`. @default true */
+  highlightMatches?: boolean
+  /** Show the containing page above each hit. @default true */
+  showPath?: boolean
+}
+
+/**
+ * Per-page search control, set in frontmatter as `search:`.
+ * `search: false` keeps the page out of the index entirely.
+ */
+export interface FrontmatterSearchConfig {
+  /** Extra terms that should match this page. */
+  keywords?: string[]
+  /** Title used in results, instead of the page's h1. */
+  title?: string
 }
 
 /**

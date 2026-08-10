@@ -1,0 +1,85 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
+
+<style>
+/* DocSearch renders its own button, but the nav already has one styled to
+   match the site — so the built-in trigger stays hidden and ours drives it. */
+#bp-docsearch {
+  display: none;
+}
+
+/* Map DocSearch's palette onto the theme's variables so the modal belongs to
+   the site in both colour schemes instead of shipping its own blue. */
+:root {
+  --docsearch-primary-color: var(--bp-c-brand-1);
+  --docsearch-text-color: var(--bp-c-text-1);
+  --docsearch-muted-color: var(--bp-c-text-2);
+  --docsearch-container-background: rgba(15, 15, 17, 0.55);
+  --docsearch-modal-background: var(--bp-c-bg);
+  --docsearch-modal-shadow: 0 16px 48px rgba(0, 0, 0, 0.24);
+  --docsearch-searchbox-background: var(--bp-c-bg-soft);
+  --docsearch-searchbox-focus-background: var(--bp-c-bg);
+  --docsearch-hit-color: var(--bp-c-text-1);
+  --docsearch-hit-background: var(--bp-c-bg-soft);
+  --docsearch-hit-shadow: none;
+  --docsearch-footer-background: var(--bp-c-bg-soft);
+  --docsearch-footer-shadow: 0 -1px 0 var(--bp-c-divider);
+  --docsearch-key-gradient: var(--bp-c-bg);
+  --docsearch-key-shadow: none;
+}
+</style>
+
+<div id="bp-docsearch"></div>
+
+<script type="application/json" id="bp-search-config">{!! runtimeConfig !!}</script>
+<script src="https://cdn.jsdelivr.net/npm/@docsearch/js@3" defer></script>
+<script>
+(function () {
+  if (window.__bpSearchBound) return;
+  window.__bpSearchBound = true;
+
+  var CONFIG = (function () {
+    try { return JSON.parse(document.getElementById('bp-search-config').textContent); }
+    catch (_) { return {}; }
+  })();
+
+  var started = false;
+
+  function start() {
+    if (started || typeof window.docsearch !== 'function') return;
+    started = true;
+
+    window.docsearch({
+      container: '#bp-docsearch',
+      appId: CONFIG.algolia.appId,
+      apiKey: CONFIG.algolia.apiKey,
+      indexName: CONFIG.algolia.indexName,
+      searchParameters: CONFIG.algolia.searchParameters || {},
+      placeholder: CONFIG.placeholder,
+      // Results are same-origin, so route them through the SPA router instead
+      // of a full page load.
+      navigator: {
+        navigate: function (item) { window.location.assign(item.itemUrl); },
+      },
+    });
+  }
+
+  // DocSearch owns its own dialog and shortcut handling; the nav button just
+  // forwards a click to the trigger it renders.
+  function openDocSearch() {
+    start();
+    var trigger = document.querySelector('#bp-docsearch .DocSearch-Button');
+    if (trigger) trigger.click();
+  }
+
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('.BPNavBarSearch')) {
+      e.preventDefault();
+      openDocSearch();
+    }
+  });
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+  window.addEventListener('load', start);
+})();
+</script>

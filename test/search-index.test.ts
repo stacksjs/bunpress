@@ -1,7 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { buildSearchIndex } from '../packages/bunpress/src/search-index'
+import type { BunPressConfig, SearchConfig } from '../packages/bunpress/src/types'
+import { buildSearchIndex, buildSearchRuntimeConfig } from '../packages/bunpress/src/search-index'
+
+/** Minimal config carrying just a search block. */
+function withSearch(search: SearchConfig): BunPressConfig {
+  return { verbose: false, search } as BunPressConfig
+}
 
 const FIXTURE_DIR = join(import.meta.dir, 'fixtures-search-index')
 
@@ -154,5 +160,133 @@ Hero copy that should not be indexed.
 
     expect(record).toBeDefined()
     expect(record!.url).toBe('/anchored#my-anchor')
+  })
+})
+
+describe('search options', () => {
+  const OPTIONS_DIR = join(import.meta.dir, 'fixtures-search-options')
+
+  beforeAll(async () => {
+    await rm(OPTIONS_DIR, { recursive: true, force: true })
+    await mkdir(OPTIONS_DIR, { recursive: true })
+    await mkdir(join(OPTIONS_DIR, 'draft'), { recursive: true })
+
+    await writeFile(join(OPTIONS_DIR, 'kept.md'), '# Kept\n\nProse that is long enough to be truncated by a small limit.\n')
+    await writeFile(join(OPTIONS_DIR, 'draft', 'wip.md'), '# Draft\n\nDraft prose.\n')
+    await writeFile(
+      join(OPTIONS_DIR, 'keyworded.md'),
+      '---\nsearch:\n  keywords:\n    - alternative name\n  title: Override Title\n---\n\n# Real Title\n\nBody.\n',
+    )
+    await writeFile(join(OPTIONS_DIR, 'hidden.md'), '---\nsearch: false\n---\n\n# Hidden\n\nSecret.\n')
+  })
+
+  afterAll(async () => {
+    await rm(OPTIONS_DIR, { recursive: true, force: true })
+  })
+
+  it('honours exclude patterns', async () => {
+    const index = await buildSearchIndex(OPTIONS_DIR, withSearch({ options: { exclude: ['draft/**'] } }))
+
+    expect(index.some(record => record.page === 'Kept')).toBe(true)
+    expect(index.some(record => record.page === 'Draft')).toBe(false)
+  })
+
+  it('honours include patterns', async () => {
+    const index = await buildSearchIndex(OPTIONS_DIR, withSearch({ options: { include: ['draft/**/*.md'] } }))
+
+    expect(index.every(record => record.page === 'Draft')).toBe(true)
+  })
+
+  it('truncates section text to maxContentLength', async () => {
+    const index = await buildSearchIndex(OPTIONS_DIR, withSearch({ options: { maxContentLength: 10 } }))
+    const kept = index.find(record => record.page === 'Kept')
+
+    expect(kept!.text.length).toBeLessThanOrEqual(10)
+  })
+
+  it('keeps frontmatter keywords and honours a title override', async () => {
+    const index = await buildSearchIndex(OPTIONS_DIR)
+    const record = index.find(r => r.url === '/keyworded')
+
+    expect(record!.title).toBe('Override Title')
+    expect(record!.keywords).toEqual(['alternative name'])
+  })
+
+  it('drops pages marked search: false', async () => {
+    const index = await buildSearchIndex(OPTIONS_DIR)
+
+    expect(index.some(record => record.url === '/hidden')).toBe(false)
+  })
+
+  it('limits stored fields when storeFields is set', async () => {
+    const index = await buildSearchIndex(OPTIONS_DIR, withSearch({ options: { storeFields: ['title'], searchFields: ['title'] } }))
+
+    expect(index.length).toBeGreaterThan(0)
+    for (const record of index) {
+      expect(record.url).toBeDefined()
+      expect(record.title).toBeDefined()
+      // `text` is neither stored nor searched, so it must not bloat the index.
+      expect(record.text).toBeUndefined()
+    }
+  })
+})
+
+describe('search runtime config', () => {
+  it('applies documented defaults', () => {
+    const runtime = buildSearchRuntimeConfig(undefined, '/search-index.json')
+
+    expect(runtime.maxResults).toBe(10)
+    expect(runtime.minQueryLength).toBe(1)
+    expect(runtime.boost).toEqual({ title: 10, headings: 5, content: 1 })
+    expect(runtime.lazy).toBe(true)
+    expect(runtime.result.highlightMatches).toBe(true)
+    expect(runtime.shortcuts.keys.map(k => k.key)).toContain('k')
+    expect(runtime.shortcuts.keys.map(k => k.key)).toContain('/')
+  })
+
+  it('parses a single-key shortcut', () => {
+    const runtime = buildSearchRuntimeConfig(withSearch({ shortcut: '/' }), '/i.json')
+
+    expect(runtime.shortcuts.keys).toEqual([{ key: '/', meta: false, ctrl: false, alt: false, shift: false }])
+  })
+
+  it('parses a chord shortcut', () => {
+    const runtime = buildSearchRuntimeConfig(withSearch({ shortcut: ['ctrl', 'k'] }), '/i.json')
+
+    expect(runtime.shortcuts.keys).toEqual([{ key: 'k', meta: false, ctrl: true, alt: false, shift: false }])
+  })
+
+  it('lets the top-level maxResults stand in for the nested one', () => {
+    const runtime = buildSearchRuntimeConfig(withSearch({ maxResults: 3 }), '/i.json')
+
+    expect(runtime.maxResults).toBe(3)
+    expect(buildSearchRuntimeConfig(withSearch({ maxResults: 3, options: { maxResults: 7 } }), '/i.json').maxResults).toBe(7)
+  })
+
+  it('serializes config functions for the browser', () => {
+    const runtime = buildSearchRuntimeConfig(withSearch({
+      options: { tokenize: (text: string) => text.split(' ') },
+      onSearch: () => {},
+    }), '/i.json')
+
+    expect(runtime.tokenizeSource).toContain('split')
+    expect(runtime.onSearchSource).not.toBeNull()
+  })
+
+  it('carries result and matching options through', () => {
+    const runtime = buildSearchRuntimeConfig(withSearch({
+      options: { fuzzy: true, fuzziness: 2, stemmer: 'english', minQueryLength: 2, boost: { title: 3 } },
+      resultOptions: { showDescription: false, descriptionLength: 40, showPath: false },
+    }), '/i.json')
+
+    expect(runtime.fuzzy).toBe(true)
+    expect(runtime.fuzziness).toBe(2)
+    expect(runtime.stemmer).toBe('english')
+    expect(runtime.minQueryLength).toBe(2)
+    expect(runtime.boost.title).toBe(3)
+    expect(runtime.boost.headings).toBe(5)
+    expect(runtime.result.showDescription).toBe(false)
+    expect(runtime.result.descriptionLength).toBe(40)
+    expect(runtime.result.showPath).toBe(false)
   })
 })

@@ -6,7 +6,8 @@ import process from 'node:process'
 import { config, defaultConfig } from './config'
 import { clearDataCache, loadDataFiles } from './data-loader'
 import { getSyntaxHighlightingStyles, highlightCode } from './highlighter'
-import { buildSearchIndex, SEARCH_INDEX_PATH } from './search-index'
+import type { SearchRuntimeConfig } from './search-index'
+import { buildSearchIndex, buildSearchRuntimeConfig, SEARCH_INDEX_PATH } from './search-index'
 import { clearComponentCache, resolveStxComponents } from './stx-components'
 import { clearTemplateCache, render } from './template-loader'
 import { getThemeCSS } from './themes'
@@ -70,19 +71,53 @@ const HAMBURGER_BUTTON = `<button class="BPNavBarHamburger" type="button" aria-l
           </button>`
 
 /**
+ * Render a shortcut as the hint shown in the nav button, and as the
+ * aria-keyshortcuts value screen readers announce.
+ */
+function formatShortcut(shortcuts: SearchRuntimeConfig['shortcuts']): { hint: string, aria: string } {
+  if (!shortcuts.keyboard || !shortcuts.keys.length)
+    return { hint: '', aria: '' }
+
+  const label = (combo: SearchRuntimeConfig['shortcuts']['keys'][number], symbols: boolean): string => {
+    const parts: string[] = []
+    if (combo.ctrl)
+      parts.push(symbols ? 'Ctrl' : 'Control')
+    if (combo.meta)
+      parts.push(symbols ? '⌘' : 'Meta')
+    if (combo.alt)
+      parts.push(symbols ? '⌥' : 'Alt')
+    if (combo.shift)
+      parts.push('Shift')
+    parts.push(combo.key.length === 1 ? combo.key.toUpperCase() : combo.key)
+    return symbols ? parts.join('') : parts.join('+')
+  }
+
+  return {
+    // One hint only — a button showing every accepted chord is noise.
+    hint: label(shortcuts.keys[0], true),
+    aria: shortcuts.keys.map(combo => label(combo, false)).join(' '),
+  }
+}
+
+/**
  * The nav search affordance is a BUTTON, not an input.
  *
  * It looks like a field but opens the search dialog, where the real input
  * lives. A second focusable text input in the bar would be a decoy: typing
  * into it did nothing, which is exactly how the old markup behaved.
  */
-const SEARCH_TRIGGER_BUTTON = `<button class="BPNavBarSearch" type="button" aria-label="Search documentation" aria-keyshortcuts="Meta+K Control+K">
+function searchTriggerButton(placeholder: string, shortcuts: SearchRuntimeConfig['shortcuts']): string {
+  const { hint, aria } = formatShortcut(shortcuts)
+  const label = escapeHtmlAttribute(placeholder)
+
+  return `<button class="BPNavBarSearch" type="button" aria-label="${label}"${aria ? ` aria-keyshortcuts="${escapeHtmlAttribute(aria)}"` : ''}>
             <svg class="BPNavBarSearch-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
-            <span class="BPNavBarSearch-label">Search</span>
-            <kbd class="BPNavBarSearch-kbd">⌘K</kbd>
+            <span class="BPNavBarSearch-label">${label}</span>
+            ${hint ? `<kbd class="BPNavBarSearch-kbd">${escapeHtmlAttribute(hint)}</kbd>` : ''}
           </button>`
+}
 
 const SOCIAL_ICONS: Record<string, string> = {
   github: '<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>',
@@ -893,16 +928,30 @@ export async function wrapInLayout(content: string, config: BunPressConfig, curr
   // One nav bar for every layout. It used to be inlined per layout, so the
   // home and page layouts silently shipped without search, the theme toggle
   // or the social links that the doc layout had.
-  const searchEnabled = (config.search ?? config.markdown?.search)?.enabled !== false
+  const searchConfig = config.search ?? config.markdown?.search
+  const searchEnabled = searchConfig?.enabled !== false
+  // Algolia needs credentials; without them the provider cannot work, so fall
+  // back to local rather than rendering a dialog that can never return a hit.
+  const algolia = searchConfig?.algolia
+  const useAlgolia = searchConfig?.provider === 'algolia'
+    && !!algolia?.appId && !!algolia?.apiKey && !!algolia?.indexName
+
   // prefixRootRelativeAttributes only rewrites href/src/action attributes, so
   // a basePath has to be applied to the fetch URL here — it lives in a script.
+  const searchRuntime = buildSearchRuntimeConfig(config, prefixRootPath(config, SEARCH_INDEX_PATH))
   const searchOverlay = searchEnabled
-    ? await render('search', { indexUrl: prefixRootPath(config, SEARCH_INDEX_PATH) })
+    ? await render(useAlgolia ? 'search-algolia' : 'search', {
+        placeholder: searchRuntime.placeholder,
+        runtimeConfig: JSON.stringify(
+          useAlgolia ? { ...searchRuntime, algolia } : searchRuntime,
+        ).replace(/</g, '\\u003c'),
+      })
     : ''
+
   const navbarFor = async (variant: 'doc' | 'plain'): Promise<string> => render('navbar', {
     title,
     nav,
-    searchTrigger: searchEnabled ? SEARCH_TRIGGER_BUTTON : '',
+    searchTrigger: searchEnabled ? searchTriggerButton(searchRuntime.placeholder, searchRuntime.shortcuts) : '',
     hamburger: variant === 'doc' ? HAMBURGER_BUTTON : '',
     socialLinks: generateSocialLinks(config),
   })

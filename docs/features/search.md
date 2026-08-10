@@ -60,7 +60,7 @@ export default {
       exclude: ['**/node_modules/**', '**/draft/**'],
 
       // Search fields
-      searchFields: ['title', 'content', 'headings'],
+      searchFields: ['title', 'content', 'headings', 'keywords'],
 
       // Result options
       maxResults: 10,
@@ -69,6 +69,15 @@ export default {
   },
 }
 ```
+
+`searchFields` names map onto each indexed section:
+
+| Field | What it matches |
+|-------|-----------------|
+| `title` | The section's own heading (the page title for the lead section) |
+| `headings` | The title of the page the section belongs to |
+| `content` | The section's prose, with code blocks removed |
+| `keywords` | Terms added in the page's frontmatter |
 
 ### Boosting
 
@@ -128,6 +137,9 @@ export default {
 ```
 
 ## Styling
+
+The dialog exposes both its own `BPSearch-*` classes and the stable aliases
+below. The aliases are what this guide targets, so they are safe to style.
 
 ### Custom CSS
 
@@ -262,6 +274,20 @@ export default {
 }
 ```
 
+`onSearch` and `options.tokenize` run in the browser, so they are serialized
+into the page. They may reference globals that exist there (like `analytics`
+above) but must not close over values from your config module — those do not
+survive the trip.
+
+If you would rather not ship a function, listen for the event the dialog
+dispatches after every search:
+
+```ts
+document.addEventListener('bp:search', (event) => {
+  const { query, results } = event.detail
+})
+```
+
 ## Algolia DocSearch
 
 ### Setup
@@ -320,8 +346,8 @@ export default {
   search: {
     options: {
       // Reduce index size
-      storeFields: ['title', 'path'], // Minimal stored fields
-      maxContentLength: 500, // Limit content per page
+      storeFields: ['title'], // `url` is always kept
+      maxContentLength: 500, // Limit prose per section
     },
   },
 }
@@ -329,10 +355,11 @@ export default {
 
 ### Prebuilt Index
 
-Build search index at build time:
+The index is written to `search-index.json` on every build, alongside the
+generated pages. Skip it when you do not need search in a given build:
 
 ```bash
-bunpress build --search-index
+bunpress build --no-search-index
 ```
 
 ## Accessibility

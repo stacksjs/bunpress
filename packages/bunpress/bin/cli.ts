@@ -46,6 +46,7 @@ interface CliOption {
   template?: string
   title?: string
   force?: boolean
+  searchIndex?: boolean
 }
 
 const defaultOptions = {
@@ -290,7 +291,8 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
 
     // Search index consumed by the nav search dialog. The dev server builds
     // this on demand at the same path; here it becomes a static file.
-    await generateSearchIndex(docsDir, outdir, bunPressConfig, verbose || false)
+    if (options.searchIndex !== false)
+      await generateSearchIndex(docsDir, outdir, bunPressConfig, verbose || false)
 
     // Generate sitemap, robots.txt, and RSS feed
     await generateSeoFiles(docsDir, outdir, verbose || false)
@@ -449,6 +451,7 @@ cli
   .option('--sourcemap', 'Generate source maps', { default: false })
   .option('--manifest <path>', 'Write a deterministic rendered-tree manifest')
   .option('--check-manifest <path>', 'Fail unless the rendered tree matches a checked manifest')
+  .option('--search-index', 'Write the client search index (on by default; --no-search-index skips it)', { default: true })
   .option('--watch', 'Watch for changes and rebuild', { default: false })
   .option('--verbose', 'Enable verbose logging', { default: defaultOptions.verbose })
   .action(async (options: CliOption) => {
