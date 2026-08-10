@@ -543,7 +543,7 @@ module.exports = {
 
 Create an attractive landing page:
 
-```yaml
+````yaml
 ---
 layout: home
 hero:
@@ -610,7 +610,7 @@ bun dev
 ## Sponsors
 
 Special thanks to our sponsors for supporting this project!
-```
+````
 
 ### Documentation Page Layout
 
@@ -699,7 +699,7 @@ All notable changes to this project are documented here.
 
 ### FAQ Page
 
-```markdown
+````markdown
 # Frequently Asked Questions
 
 Common questions and answers about the project.
@@ -779,7 +779,7 @@ Check your TypeScript configuration:
 <<< ./examples/tsconfig.json
 
 :::
-```
+````
 
 ### Comparison Page
 

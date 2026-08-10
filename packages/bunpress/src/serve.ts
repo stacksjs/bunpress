@@ -21,6 +21,7 @@ import {
 } from './i18n'
 import type { SearchRuntimeConfig } from './search-index'
 import { buildSearchIndex, buildSearchRuntimeConfig, SEARCH_INDEX_PATH } from './search-index'
+import { withCodeMasked } from './markdown-fences'
 import { clearComponentCache, resolveStxComponents } from './stx-components'
 import { clearTemplateCache, render } from './template-loader'
 import { getThemeCSS } from './themes'
@@ -2733,9 +2734,14 @@ async function renderMarkdownBody(content: string, frontmatter: any, rootDir: st
     return (val as Record<string, unknown>)[option] !== false
   }
 
-  // Process markdown includes first (before everything else)
+  // Process markdown includes first (before everything else).
+  //
+  // Masked, so a page documenting the include syntax shows the directive
+  // instead of having it fire. Every extension below is masked for the same
+  // reason: they are all plain-text patterns, and a docs page is full of
+  // examples of them.
   let processedContent = featureEnabled('includes')
-    ? await processMarkdownIncludes(content, rootDir)
+    ? await withCodeMasked(content, masked => processMarkdownIncludes(masked, rootDir))
     : content
 
   // Build the stx render context: frontmatter + global data files (.data/*.json,
@@ -2803,23 +2809,22 @@ async function renderMarkdownBody(content: string, frontmatter: any, rootDir: st
   // Process in order: code imports, code groups, GitHub alerts, containers, emoji, badges
   // NOTE: Links and images are processed AFTER HTML conversion to avoid conflicts
   processedContent = featureEnabled('codeImports')
-    ? await processCodeImports(contentWithTocPlaceholder, rootDir)
+    ? await withCodeMasked(contentWithTocPlaceholder, masked => processCodeImports(masked, rootDir))
     : contentWithTocPlaceholder
+
+  // Code groups are deliberately NOT masked: the fences are their payload, so
+  // hiding them would leave nothing to build tabs from.
   processedContent = featureEnabled('codeGroups')
     ? await processCodeGroups(processedContent)
     : processedContent
-  processedContent = featureEnabled('githubAlerts')
-    ? await processGitHubAlerts(processedContent)
-    : processedContent
-  processedContent = featureEnabled('containers')
-    ? await processContainers(processedContent)
-    : processedContent
-  processedContent = featureEnabled('emoji')
-    ? processEmoji(processedContent)
-    : processedContent
-  processedContent = featureEnabled('badges')
-    ? processBadges(processedContent)
-    : processedContent
+
+  processedContent = await withCodeMasked(processedContent, async (masked) => {
+    let result = featureEnabled('githubAlerts') ? await processGitHubAlerts(masked) : masked
+    result = featureEnabled('containers') ? await processContainers(result) : result
+    result = featureEnabled('emoji') ? processEmoji(result) : result
+    result = featureEnabled('badges') ? processBadges(result) : result
+    return result
+  })
 
   // Pre-process custom header anchors ({#custom-id})
   const { content: contentWithoutAnchors, customAnchors } = featureEnabled('customAnchors')

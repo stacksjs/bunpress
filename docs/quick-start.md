@@ -90,7 +90,7 @@ features:
 
 Create `docs/getting-started.md`:
 
-```markdown
+````markdown
 # Getting Started
 
 Welcome to the documentation!
@@ -125,7 +125,7 @@ console.log(result)
 - Feature 2
 - Feature 3
 
-```
+````
 
 ### 4. Configure BunPress
 
@@ -488,7 +488,7 @@ bunx bunpress serve
 
 ### API Documentation Page
 
-```markdown
+````markdown
 ---
 title: API Reference
 description: Complete API documentation
@@ -545,11 +545,11 @@ await connect({
 ```
 
 :::
-```
+````
 
 ### Tutorial Page
 
-```markdown
+````markdown
 ---
 title: Building Your First App
 description: Step-by-step tutorial
@@ -598,7 +598,7 @@ Create your first component:
 - Join our [community](https://discord.gg/example)
 
 :::
-```
+````
 
 ## Next Steps
 

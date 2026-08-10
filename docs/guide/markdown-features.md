@@ -3,6 +3,7 @@ title: Markdown Features
 description: Rich markdown features for beautiful documentation
 ---
 
+```markdown
 - Item 1
 - Item 2
 - Item 3

@@ -84,7 +84,7 @@ Complete documentation for BunPress - a lightning-fast static site generator pow
 
 ### Syntax Cheat Sheet
 
-```markdown
+````markdown
 # Markdown Extensions Quick Reference
 
 ## GitHub Alerts
@@ -130,7 +130,7 @@ Complete documentation for BunPress - a lightning-fast static site generator pow
 
 ## Table of Contents
 [[toc]]
-```
+````
 
 ## Configuration Examples
 

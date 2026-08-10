@@ -3,6 +3,7 @@ title: Table of Contents
 description: Configure automatic table of contents generation
 ---
 
+```markdown
 ## First Section
 
 Content here...

@@ -417,7 +417,7 @@ bunpress llm --dir ./documentation --full
 ```
 
 **Output format:**
-```markdown
+````markdown
 # Documentation
 
 Generated: 2024-10-29T10:30:00Z
@@ -437,7 +437,7 @@ layout: doc
 ## Prerequisites
 ## Installation Methods
 ...
-```
+````
 
 **Use cases:**
 

@@ -2,6 +2,7 @@
 title: SEO Configuration
 description: Optimize your documentation for search engines
 ---
+```typescript
   verbose: false,
 }
 ```

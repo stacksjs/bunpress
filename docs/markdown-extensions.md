@@ -323,7 +323,7 @@ Highlight changes in diff format:
 
 All extensions work seamlessly together:
 
-```markdown
+````markdown
 ::: tip
 Here's a :fire: tip with math: $E = mc^2$
 
@@ -337,7 +337,7 @@ function energy(mass) {
 Try it out! :rocket:
 :::
 
-```
+````
 
 ::: tip
 Here's a :fire: tip with math: $E = mc^2$

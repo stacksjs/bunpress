@@ -101,7 +101,7 @@ docs/
 
 ### Consistent Code Examples
 
-```markdown
+````markdown
 <!-- Bad: Inconsistent formatting -->
 ```js
 function greet(name){
@@ -116,7 +116,7 @@ function greet(name) {
 }
 ```
 
-```
+````
 
 ### Meaningful Code Comments
 
@@ -152,7 +152,7 @@ function processUserData(data) {
 
 ### API Documentation
 
-```markdown
+````markdown
 ## UserService
 
 Manages user operations and authentication.
@@ -191,7 +191,7 @@ const newUser = await userService.createUser({
 - `ValidationError`: When user data is invalid
 - `DuplicateUserError`: When user already exists
 
-```
+````
 
 ### Configuration Examples
 
@@ -389,7 +389,7 @@ console.log(`${greeting}, ${name}!`)
 
 ### Step-by-Step Tutorials
 
-```markdown
+````markdown
 ## Building Your First App
 
 Follow these steps to create your first application:
@@ -444,7 +444,7 @@ node index.js
 - [Explore advanced features](/advanced)
 - [Join our community](https://discord.gg/myproject)
 
-```
+````
 
 ## SEO Optimization
 
@@ -510,7 +510,7 @@ import { build } from 'bunpress'
 
 ### Lazy Loading
 
-```markdown
+````markdown
 <!-- Images -->
 <img loading="lazy" src="large-image.jpg" alt="Large image">
 
@@ -519,7 +519,7 @@ import { build } from 'bunpress'
 // Large code example
 ```
 
-```
+````
 
 ## Accessibility
 
@@ -554,7 +554,7 @@ import { build } from 'bunpress'
 
 ### Keyboard Navigation
 
-```markdown
+````markdown
 <!-- Links and interactive elements -->
 [Learn more about accessibility](/accessibility)
 
@@ -566,7 +566,7 @@ import { build } from 'bunpress'
 npm run dev
 ```
 
-```
+````
 
 ## Internationalization
 

@@ -75,7 +75,7 @@ bun add bunpress
 
 ### File Names as Labels
 
-```markdown
+````markdown
 :::code-group
 
 ```typescript [src/index.ts]
@@ -87,7 +87,7 @@ export const helper = () => {}
 ```
 
 :::
-```
+````
 
 ## Configuration
 

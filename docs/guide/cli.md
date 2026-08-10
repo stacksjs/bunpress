@@ -2,7 +2,6 @@
 title: CLI Commands
 description: Complete reference for BunPress CLI commands
 ---
-```
 
 **Options:**
 

@@ -2,6 +2,7 @@ import type { BunPressConfig, LocalSearchOptions, SearchConfig } from './types'
 import { Glob, YAML } from 'bun'
 import { join } from 'node:path'
 import { localizeUrl, resolveI18nConfig } from './i18n'
+import { createFenceTracker, stripFencedCode } from './markdown-fences'
 
 /**
  * One searchable record.
@@ -182,48 +183,6 @@ export function buildSearchRuntimeConfig(config: BunPressConfig | undefined, ind
     onSearchSource: serializeFunction(search?.onSearch),
     locale: null,
   }
-}
-
-/**
- * Track fenced-code state across a document, one line at a time.
- *
- * A regex pass over the whole file cannot do this: docs commonly wrap example
- * markdown in a four-backtick fence containing three-backtick fences, and
- * naive pairing desyncs on the first one and leaks every code block after it
- * into the index. CommonMark's rule is that the closing fence uses the same
- * character and is at least as long as the opener, which is what this tracks.
- */
-function createFenceTracker(): (line: string) => boolean {
-  let openMarker: string | null = null
-
-  return (line: string): boolean => {
-    const fence = line.match(/^\s{0,3}(`{3,}|~{3,})(.*)$/)
-    if (!fence)
-      return openMarker !== null
-
-    const marker = fence[1]
-    if (openMarker === null) {
-      // An opening fence may carry an info string; a closing one may not.
-      openMarker = marker
-      return true
-    }
-
-    const sameChar = marker[0] === openMarker[0]
-    const longEnough = marker.length >= openMarker.length
-    if (sameChar && longEnough && fence[2].trim() === '')
-      openMarker = null
-
-    return true
-  }
-}
-
-/** Remove fenced code blocks, fences included. */
-function stripFencedCode(markdown: string): string {
-  const isFenced = createFenceTracker()
-  return markdown
-    .split('\n')
-    .filter(line => !isFenced(line))
-    .join('\n')
 }
 
 /**
