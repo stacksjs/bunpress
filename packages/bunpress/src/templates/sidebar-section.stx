@@ -14,7 +14,14 @@
 
 <style>
 .sidebar-section {
-  margin-bottom: 16px;
+  margin-bottom: 4px;
+  padding-bottom: 4px;
+}
+
+.sidebar-section + .sidebar-section {
+  border-top: 1px solid var(--bp-c-divider);
+  padding-top: 10px;
+  margin-top: 10px;
 }
 
 .sidebar-section-toggle {
@@ -22,9 +29,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 24px;
-  font-size: 14px;
-  font-weight: 600;
+  gap: 8px;
+  padding: 6px 20px 6px 22px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   color: var(--bp-c-text-1);
   background: transparent;
   border: none;
@@ -34,20 +43,28 @@
   text-align: left;
 }
 
+.sidebar-section-toggle > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .sidebar-section-toggle:hover {
   color: var(--bp-c-brand-1);
 }
 
 .sidebar-section-toggle .chevron {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
+  color: var(--bp-c-text-3);
   transition: transform 0.2s ease-in-out;
   flex-shrink: 0;
 }
 
 .sidebar-items {
   list-style: none;
-  margin: 4px 0 0 0;
+  margin: 2px 0 0 0;
   padding: 0;
 }
 
@@ -69,25 +86,41 @@
 
 .BPSidebarItem-link {
   display: block;
-  padding: 6px 24px;
+  /* Indented one step past the section title so the hierarchy reads at a
+   * glance; the 2px rail is transparent until active, so the label never
+   * shifts sideways when you navigate to it. */
+  padding: 6px 20px 6px 32px;
   color: var(--bp-c-text-2);
   text-decoration: none;
   font-size: 14px;
   line-height: 1.5;
-  transition: color 0.25s;
+  transition: color 0.25s, background-color 0.25s;
   border-left: 2px solid transparent;
-  margin-left: 0;
+  overflow-wrap: anywhere;
 }
 
 .BPSidebarItem-link:hover {
   color: var(--bp-c-brand-1);
+  background-color: var(--bp-c-default-soft, var(--bp-c-gray-soft));
 }
 
 .BPSidebarItem-link.is-active {
   color: var(--bp-c-brand-1);
   font-weight: 600;
   border-left-color: var(--bp-c-brand-1);
-  padding-left: 22px;
+}
+
+/* Larger rows on touch layouts, where the drawer is the primary navigation. */
+@media (max-width: 959px) {
+  .BPSidebarItem-link {
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+
+  .sidebar-section-toggle {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
 }
 </style>
 

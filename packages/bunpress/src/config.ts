@@ -155,6 +155,11 @@ export const defaultConfig: BunPressConfig = {
       font-size: 14px;
       line-height: 1.7;
       color: #24292f;
+      /* Scroll, never wrap: wrapped code loses its indentation. */
+      white-space: pre;
+      /* fit-content + min-width lets a long line extend the scroll width. */
+      width: fit-content;
+      min-width: 100%;
     }
 
     /* Dark mode code blocks */
@@ -314,67 +319,62 @@ export const defaultConfig: BunPressConfig = {
       margin-bottom: 12px;
     }
 
-    /* List styling with proper indentation */
+    /* List styling. Scoped to a bare article element only: inside .bp-doc the theme owns lists, and duplicating them here produced two competing sets of margins. */
     article ul,
-    article ol,
-    .bp-doc ul,
-    .bp-doc ol {
+    article ol {
       padding-left: 1.5rem;
       margin: 16px 0;
+      list-style-position: outside;
     }
 
-    article ul,
-    .bp-doc ul {
+    article ul {
       list-style-type: disc;
     }
 
-    article ol,
-    .bp-doc ol {
+    article ol {
       list-style-type: decimal;
     }
 
-    article li,
-    .bp-doc li {
-      margin: 8px 0;
-      line-height: 1.7;
+    article li {
+      margin: 6px 0;
+      line-height: 1.75;
     }
 
     /* Nested lists */
     article ul ul,
     article ol ul,
     article ul ol,
-    article ol ol,
-    .bp-doc ul ul,
-    .bp-doc ol ul,
-    .bp-doc ul ol,
-    .bp-doc ol ol {
-      margin: 8px 0;
+    article ol ol {
+      margin: 6px 0 0;
       padding-left: 1.5rem;
     }
 
-    article ul ul,
-    .bp-doc ul ul {
+    article ul ul {
       list-style-type: circle;
     }
 
-    article ul ul ul,
-    .bp-doc ul ul ul {
+    article ul ul ul {
       list-style-type: square;
     }
 
-    /* Enhanced Tables */
+    /* Enhanced tables. The wrapper is the scroll container and owns the frame; the table stays a real table so columns size against the available width. Keep in sync with the .bp-doc table rules in the theme. */
     .table-responsive {
       overflow-x: auto;
-      margin: 16px 0;
+      overscroll-behavior-x: contain;
+      margin: 20px 0;
       border-radius: 8px;
       border: 1px solid var(--bp-c-divider, #e2e2e3);
+      background-color: var(--bp-c-bg, #ffffff);
     }
 
     .enhanced-table {
+      display: table;
       width: 100%;
+      margin: 0;
+      border: none;
       border-collapse: collapse;
       font-size: 14px;
-      background-color: var(--bp-c-bg, #ffffff);
+      line-height: 1.6;
     }
 
     .enhanced-table thead {
@@ -382,17 +382,26 @@ export const defaultConfig: BunPressConfig = {
     }
 
     .enhanced-table th {
-      padding: 12px 16px;
+      padding: 10px 16px;
+      font-size: 13px;
       font-weight: 600;
+      text-align: left;
       color: var(--bp-c-text-2, #67676c);
-      border-bottom: 2px solid var(--bp-c-divider, #e2e2e3);
+      border-bottom: 1px solid var(--bp-c-divider, #e2e2e3);
       white-space: nowrap;
     }
 
     .enhanced-table td {
-      padding: 12px 16px;
+      padding: 10px 16px;
+      vertical-align: top;
       color: var(--bp-c-text-1, #3c3c43);
       border-bottom: 1px solid var(--bp-c-divider, #e2e2e3);
+    }
+
+    /* The wrapper already draws the bottom edge. */
+    .enhanced-table tbody tr:last-child > td,
+    .enhanced-table tbody tr:last-child > th {
+      border-bottom: none;
     }
 
     .enhanced-table tbody tr:nth-child(2n) {
@@ -402,6 +411,29 @@ export const defaultConfig: BunPressConfig = {
     .enhanced-table tbody tr:hover {
       background-color: var(--bp-c-default-soft, rgba(142, 150, 170, 0.14));
       transition: background-color 0.2s ease;
+    }
+
+    /* Long values wrap inside their column rather than dictating its width. 'anywhere' (not 'break-word') also lowers the cell's intrinsic minimum, which is what frees the auto table algorithm to widen the prose column. */
+    .enhanced-table td > code,
+    .enhanced-table th > code {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    /* Narrow screens: hold a readable floor and let the wrapper scroll rather than compressing four columns into one word per line. */
+    @media (max-width: 767px) {
+      .enhanced-table {
+        min-width: 38rem;
+      }
+
+      .enhanced-table th {
+        white-space: normal;
+      }
+
+      .enhanced-table th,
+      .enhanced-table td {
+        padding: 10px 12px;
+      }
     }
 
     /* Image Captions */
@@ -460,12 +492,28 @@ export const defaultConfig: BunPressConfig = {
       gap: 16px;
       position: relative;
       margin-bottom: 16px;
+      /* On narrow screens the button drops below the title instead of squeezing it into a one-word-per-line column. */
+      flex-wrap: wrap;
     }
 
     .bp-page-header h1 {
       margin: 0;
-      flex: 1;
+      flex: 1 1 16rem;
       min-width: 0;
+      /* Break only where there is no other option, never mid-word while the title still has room to wrap between words. */
+      overflow-wrap: break-word;
+      word-break: normal;
+      hyphens: none;
+    }
+
+    @media (max-width: 639px) {
+      .bp-page-header {
+        gap: 12px;
+      }
+
+      .bp-page-header .copy-page-dropdown {
+        margin-top: 0;
+      }
     }
 
     .bp-page-header .copy-page-dropdown {

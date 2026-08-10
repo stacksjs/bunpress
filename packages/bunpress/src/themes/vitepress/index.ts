@@ -349,37 +349,39 @@ const varsCSS = `/**
   --bp-custom-block-font-size: 14px;
   --bp-custom-block-code-font-size: 13px;
 
-  --bp-custom-block-info-border: transparent;
+  /* The *-border colour is drawn only on the leading edge (see .custom-block),
+   * so it carries the block's identity — hence a solid accent, not transparent. */
+  --bp-custom-block-info-border: var(--bp-c-default-1);
   --bp-custom-block-info-text: var(--bp-c-text-1);
   --bp-custom-block-info-bg: var(--bp-c-default-soft);
   --bp-custom-block-info-code-bg: var(--bp-c-default-soft);
 
-  --bp-custom-block-note-border: transparent;
+  --bp-custom-block-note-border: var(--bp-c-note-1);
   --bp-custom-block-note-text: var(--bp-c-text-1);
   --bp-custom-block-note-bg: var(--bp-c-default-soft);
   --bp-custom-block-note-code-bg: var(--bp-c-default-soft);
 
-  --bp-custom-block-tip-border: transparent;
+  --bp-custom-block-tip-border: var(--bp-c-tip-1);
   --bp-custom-block-tip-text: var(--bp-c-text-1);
   --bp-custom-block-tip-bg: var(--bp-c-tip-soft);
   --bp-custom-block-tip-code-bg: var(--bp-c-tip-soft);
 
-  --bp-custom-block-important-border: transparent;
+  --bp-custom-block-important-border: var(--bp-c-important-1);
   --bp-custom-block-important-text: var(--bp-c-text-1);
   --bp-custom-block-important-bg: var(--bp-c-important-soft);
   --bp-custom-block-important-code-bg: var(--bp-c-important-soft);
 
-  --bp-custom-block-warning-border: transparent;
+  --bp-custom-block-warning-border: var(--bp-c-warning-1);
   --bp-custom-block-warning-text: var(--bp-c-text-1);
   --bp-custom-block-warning-bg: var(--bp-c-warning-soft);
   --bp-custom-block-warning-code-bg: var(--bp-c-warning-soft);
 
-  --bp-custom-block-danger-border: transparent;
+  --bp-custom-block-danger-border: var(--bp-c-danger-1);
   --bp-custom-block-danger-text: var(--bp-c-text-1);
   --bp-custom-block-danger-bg: var(--bp-c-danger-soft);
   --bp-custom-block-danger-code-bg: var(--bp-c-danger-soft);
 
-  --bp-custom-block-caution-border: transparent;
+  --bp-custom-block-caution-border: var(--bp-c-caution-1);
   --bp-custom-block-caution-text: var(--bp-c-text-1);
   --bp-custom-block-caution-bg: var(--bp-c-caution-soft);
   --bp-custom-block-caution-code-bg: var(--bp-c-caution-soft);
@@ -969,27 +971,72 @@ mjx-container > svg {
  * Lists
  * -------------------------------------------------------------------------- */
 
+/* Markers hang in the gutter (\`outside\`) so wrapped lines stay flush with the
+ * first line — the single biggest readability win for multi-line bullets. The
+ * indent is wide enough for two-digit ordered markers without clipping. */
 .bp-doc ul,
 .bp-doc ol {
-  padding-left: 1.25rem;
+  padding-left: 1.5rem;
   margin: 16px 0;
+  list-style-position: outside;
 }
 
 .bp-doc ul {
-  list-style: disc;
+  list-style-type: disc;
 }
 
 .bp-doc ol {
-  list-style: decimal;
+  list-style-type: decimal;
 }
 
-.bp-doc li + li {
-  margin-top: 8px;
+.bp-doc li {
+  margin: 6px 0;
+  line-height: 1.75;
 }
 
+.bp-doc li::marker {
+  color: var(--bp-c-text-3);
+}
+
+.bp-doc ol > li::marker {
+  font-variant-numeric: tabular-nums;
+}
+
+/* A nested list belongs to its parent item, so it hugs it rather than
+ * inheriting the full inter-item gap. */
 .bp-doc li > ol,
 .bp-doc li > ul {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
+  padding-left: 1.5rem;
+}
+
+.bp-doc ul ul {
+  list-style-type: circle;
+}
+
+.bp-doc ul ul ul {
+  list-style-type: square;
+}
+
+/* Loose lists (blank lines between items) wrap each item's text in a <p>.
+ * Without this the paragraph's 16px margins double the list's spacing. */
+.bp-doc li > p {
+  margin: 0;
+}
+
+.bp-doc li > p + p {
+  margin-top: 12px;
+}
+
+/* Block content inside an item stays indented with the item, and never
+ * bleeds full-width the way a top-level code block does. */
+.bp-doc li > pre,
+.bp-doc li > div[class*='language-'],
+.bp-doc li > pre[data-lang],
+.bp-doc li > blockquote,
+.bp-doc li > .table-responsive,
+.bp-doc li > .custom-block {
+  margin: 12px 0;
 }
 
 /* Task list styles */
@@ -1021,39 +1068,115 @@ mjx-container > svg {
  * Table
  * -------------------------------------------------------------------------- */
 
-.bp-doc table {
-  display: block;
-  border-collapse: collapse;
+/* The scroll container owns overflow, so the table itself stays a real table.
+ * (\`display: block\` on <table> collapses column sizing — the table shrinks to
+ * its content instead of filling the row, and cell widths stop balancing.) */
+.bp-doc .table-responsive {
   margin: 20px 0;
   overflow-x: auto;
+  overscroll-behavior-x: contain;
+  border: 1px solid var(--bp-c-divider);
+  border-radius: 8px;
+  /* Clip the corner radius against the header's background fill. */
+  background-color: var(--bp-c-bg);
+}
+
+.bp-doc table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Inside a scroll wrapper the wrapper supplies the outer spacing and frame. */
+.bp-doc .table-responsive > table {
+  margin: 0;
+  border: none;
 }
 
 .bp-doc tr {
-  background-color: var(--bp-c-bg);
-  border-top: 1px solid var(--bp-c-divider);
-  transition: background-color 0.5s;
+  background-color: transparent;
+  transition: background-color 0.25s;
 }
 
-.bp-doc tr:nth-child(2n) {
+.bp-doc tbody tr:nth-child(2n) {
   background-color: var(--bp-c-bg-soft);
 }
 
 .bp-doc th,
 .bp-doc td {
-  border: 1px solid var(--bp-c-divider);
-  padding: 8px 16px;
+  /* Row rules only — a full grid double-draws against the wrapper border and
+   * makes dense config tables read as noise. */
+  border-bottom: 1px solid var(--bp-c-divider);
+  padding: 10px 16px;
+  text-align: left;
+  vertical-align: top;
 }
 
-.bp-doc th {
-  text-align: left;
-  font-size: 14px;
+.bp-doc thead th {
+  font-size: 13px;
   font-weight: 600;
+  letter-spacing: 0.01em;
   color: var(--bp-c-text-2);
   background-color: var(--bp-c-bg-soft);
+  border-bottom: 1px solid var(--bp-c-divider);
+  white-space: nowrap;
+}
+
+/* Last row sits flush against the wrapper's own bottom border. */
+.bp-doc tbody tr:last-child > th,
+.bp-doc tbody tr:last-child > td {
+  border-bottom: none;
 }
 
 .bp-doc td {
   font-size: 14px;
+  color: var(--bp-c-text-1);
+}
+
+/* Long identifiers (\`preserveDirectoryStructure\`, \`Record<string, string>\`)
+ * must not dictate column widths. \`anywhere\` — unlike \`break-word\` — also
+ * lowers the cell's intrinsic minimum, which is what lets the auto table
+ * algorithm hand the spare width to the prose column instead. */
+.bp-doc td > code,
+.bp-doc th > code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Narrow screens: a multi-column table squeezed into a phone width degenerates
+ * into one word per line. Give it a readable floor and let the wrapper scroll
+ * horizontally instead — scrolling a table beats shredding it. */
+@media (max-width: 767px) {
+  .bp-doc .table-responsive > table {
+    min-width: 38rem;
+  }
+
+  .bp-doc thead th {
+    white-space: normal;
+  }
+
+  .bp-doc th,
+  .bp-doc td {
+    padding: 10px 12px;
+  }
+}
+
+/* Alignment from GFM's \`:---:\` / \`---:\` syntax must win over the default. */
+.bp-doc th[align='center'],
+.bp-doc td[align='center'],
+.bp-doc th[style*='center'],
+.bp-doc td[style*='center'] {
+  text-align: center;
+}
+
+.bp-doc th[align='right'],
+.bp-doc td[align='right'],
+.bp-doc th[style*='right'],
+.bp-doc td[style*='right'] {
+  text-align: right;
 }
 
 /**
@@ -1080,6 +1203,19 @@ mjx-container > svg {
   padding: 3px 6px;
   background-color: var(--bp-code-bg);
   transition: color 0.25s, background-color 0.5s;
+  /* Without clone, a code span that wraps loses its padding and rounding on
+   * the broken edges, so a wrapped identifier reads as ragged half-boxes. */
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* Inline code sits on a text baseline, so it must not add leading of its own
+ * — otherwise a paragraph containing code is spaced wider than its neighbours. */
+.bp-doc p > code,
+.bp-doc li > code,
+.bp-doc td > code,
+.bp-doc th > code {
+  line-height: 1.4;
 }
 
 .bp-doc a > code {
@@ -1166,14 +1302,21 @@ mjx-container > svg {
   transition: color 0.5s;
 }
 
+/* Marked rows bleed through the code element's 24px gutters so the band spans
+ * the full block, not just the text column. min-width (rather than width) keeps
+ * a line longer than the block from being clipped mid-band when it scrolls. */
+.bp-doc [class*='language-'] code :is(.highlighted, .diff, .diff-add, .diff-remove, .has-error, .has-warning),
+.bp-doc pre[data-lang] code :is(.highlighted, .diff, .diff-add, .diff-remove, .has-error, .has-warning) {
+  display: inline-block;
+  margin: 0 -24px;
+  padding: 0 24px;
+  min-width: calc(100% + 2 * 24px);
+  transition: background-color 0.5s;
+}
+
 .bp-doc [class*='language-'] code .highlighted,
 .bp-doc pre[data-lang] code .highlighted {
   background-color: var(--bp-code-line-highlight-color);
-  transition: background-color 0.5s;
-  margin: 0 -24px;
-  padding: 0 24px;
-  width: calc(100% + 2 * 24px);
-  display: inline-block;
 }
 
 .bp-doc [class*='language-'] code .highlighted.error,
@@ -1186,63 +1329,61 @@ mjx-container > svg {
   background-color: var(--bp-code-line-warning-color);
 }
 
-.bp-doc [class*='language-'] code .diff,
-.bp-doc pre[data-lang] code .diff {
-  transition: background-color 0.5s;
-  margin: 0 -24px;
-  padding: 0 24px;
-  width: calc(100% + 2 * 24px);
-  display: inline-block;
-}
-
-.bp-doc [class*='language-'] code .diff::before,
-.bp-doc pre[data-lang] code .diff::before {
-  position: absolute;
-  left: 10px;
-}
-
-/* Focus lines with blur effect - matches VitePress exactly */
-.bp-doc [class*='language-'] .has-focused-lines .line:not(.has-focus),
-.bp-doc pre[data-lang] .has-focused-lines .line:not(.has-focus) {
+/* Focus lines: unfocused rows blur back until the block is hovered.
+ * The renderer marks them \`.dimmed\` (see processCodeBlock) — the upstream
+ * \`:not(.has-focus)\` form never matched this markup. */
+.bp-doc [class*='language-'] .line.dimmed,
+.bp-doc pre[data-lang] .line.dimmed {
   filter: blur(0.095rem);
-  opacity: 0.4;
-  transition: filter 0.35s, opacity 0.35s;
-}
-
-/* VitePress has a second rule that overrides the opacity to 0.7 */
-.bp-doc [class*='language-'] .has-focused-lines .line:not(.has-focus),
-.bp-doc pre[data-lang] .has-focused-lines .line:not(.has-focus) {
   opacity: 0.7;
   transition: filter 0.35s, opacity 0.35s;
 }
 
-.bp-doc [class*='language-']:hover .has-focused-lines .line:not(.has-focus),
-.bp-doc pre[data-lang]:hover .has-focused-lines .line:not(.has-focus) {
+.bp-doc [class*='language-']:hover .line.dimmed,
+.bp-doc pre[data-lang]:hover .line.dimmed {
   filter: blur(0);
   opacity: 1;
 }
 
-.bp-doc [class*='language-'] code .diff.remove,
-.bp-doc pre[data-lang] code .diff.remove {
+/* Both class spellings: \`.diff.remove\` is the upstream form, \`.diff-remove\`
+ * is what processCodeBlock emits. */
+.bp-doc [class*='language-'] code :is(.diff.remove, .diff-remove),
+.bp-doc pre[data-lang] code :is(.diff.remove, .diff-remove) {
   background-color: var(--bp-code-line-diff-remove-color);
-  opacity: 0.7;
 }
 
-.bp-doc [class*='language-'] code .diff.remove::before,
-.bp-doc pre[data-lang] code .diff.remove::before {
+.bp-doc [class*='language-'] code :is(.diff.remove, .diff-remove)::before,
+.bp-doc pre[data-lang] code :is(.diff.remove, .diff-remove)::before {
   content: '-';
   color: var(--bp-code-line-diff-remove-symbol-color);
 }
 
-.bp-doc [class*='language-'] code .diff.add,
-.bp-doc pre[data-lang] code .diff.add {
+.bp-doc [class*='language-'] code :is(.diff.add, .diff-add),
+.bp-doc pre[data-lang] code :is(.diff.add, .diff-add) {
   background-color: var(--bp-code-line-diff-add-color);
 }
 
-.bp-doc [class*='language-'] code .diff.add::before,
-.bp-doc pre[data-lang] code .diff.add::before {
+.bp-doc [class*='language-'] code :is(.diff.add, .diff-add)::before,
+.bp-doc pre[data-lang] code :is(.diff.add, .diff-add)::before {
   content: '+';
   color: var(--bp-code-line-diff-add-symbol-color);
+}
+
+/* The +/- glyph lives in the 24px gutter the row bleeds into. */
+.bp-doc [class*='language-'] code :is(.diff, .diff-add, .diff-remove)::before,
+.bp-doc pre[data-lang] code :is(.diff, .diff-add, .diff-remove)::before {
+  position: absolute;
+  left: 8px;
+}
+
+.bp-doc [class*='language-'] code :is(.has-error, .highlighted.error),
+.bp-doc pre[data-lang] code :is(.has-error, .highlighted.error) {
+  background-color: var(--bp-code-line-error-color);
+}
+
+.bp-doc [class*='language-'] code :is(.has-warning, .highlighted.warning),
+.bp-doc pre[data-lang] code :is(.has-warning, .highlighted.warning) {
+  background-color: var(--bp-code-line-warning-color);
 }
 
 /* Line numbers */
@@ -1422,9 +1563,13 @@ const customBlockCSS = `/**
  * -------------------------------------------------------------------------- */
 
 .custom-block {
-  border: 1px solid transparent;
+  /* Accent lives on the leading edge only — the other sides stay zero-width so
+   * a variant's \`border-color\` can't paint a full outline. The tint alone is
+   * easy to miss when scanning; a 4px rail reads at any zoom level. */
+  border: 0 solid transparent;
+  border-left-width: 4px;
   border-radius: 8px;
-  padding: 16px 16px 8px;
+  padding: 14px 16px;
   line-height: 24px;
   font-size: var(--bp-custom-block-font-size);
   color: var(--bp-c-text-2);
@@ -1590,7 +1735,17 @@ const customBlockCSS = `/**
 }
 
 .custom-block-title {
-  font-weight: 600;
+  margin-bottom: 6px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* The title supplies the block's leading margin, so the first body paragraph
+ * must not add one on top of it. */
+.custom-block-title + * {
+  margin-top: 0;
 }
 
 .custom-block p + p {
@@ -1952,9 +2107,15 @@ export const layoutCSS = `/**
 }
 
 .BPNavBarTitle {
-  display: inline-flex;
-  align-items: center;
+  /* block (not inline-flex) so text-overflow applies: a long site title must
+   * yield instead of sliding underneath the icons on the right. min-width:0
+   * lets the flex item actually shrink below its content width. */
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 16px;
+  line-height: 1.5;
   font-weight: 750;
   color: var(--bp-c-text-1);
   white-space: nowrap;
@@ -2193,11 +2354,30 @@ export const layoutCSS = `/**
     display: none;
   }
   .BPSocialLinks {
-    padding-left: 12px;
-    gap: 8px;
+    /* The divider separates the nav links from the icons — with the links
+     * hidden it is a rule floating against the title, so drop it. */
+    padding-left: 0;
+    border-left: none;
+    gap: 4px;
   }
   .BPNavBarMenu {
     display: none;
+  }
+  .BPNavBar {
+    padding: 0 16px;
+    gap: 12px;
+  }
+  .BPNavBarStart {
+    gap: 8px;
+  }
+  .BPNavBarEnd {
+    gap: 4px;
+  }
+}
+
+@media (max-width: 419px) {
+  .BPNavBarTitle {
+    font-size: 15px;
   }
 }
 
@@ -2206,7 +2386,7 @@ export const layoutCSS = `/**
  * -------------------------------------------------------------------------- */
 
 .BPHero-name {
-  font-size: 22px;
+  font-size: clamp(18px, 4vw, 24px);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.2;
@@ -2217,34 +2397,27 @@ export const layoutCSS = `/**
   background-clip: text;
 }
 
+/* Fluid rather than stepped: a fixed 48px headline on a 375px phone puts a
+ * single long word (\`documentation\`) wider than the viewport, and a hard
+ * breakpoint only moves the problem to the widths either side of it. */
 .BPHero-text {
-  font-size: 48px;
+  font-size: clamp(30px, 8vw, 56px);
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.1;
   color: var(--bp-c-text-1);
   margin: 0 0 8px;
+  /* Last resort for a word that still cannot fit at the minimum size. */
+  overflow-wrap: break-word;
 }
 
 .BPHero-tagline {
   max-width: 720px;
-  font-size: 18px;
+  font-size: clamp(16px, 2.4vw, 20px);
   font-weight: 400;
   line-height: 1.6;
   color: var(--bp-c-text-2);
   margin: 12px 0 0;
-}
-
-@media (min-width: 960px) {
-  .BPHero-name {
-    font-size: 24px;
-  }
-  .BPHero-text {
-    font-size: 56px;
-  }
-  .BPHero-tagline {
-    font-size: 20px;
-  }
 }
 
 .BPHero-actions {
@@ -2386,6 +2559,13 @@ export const layoutCSS = `/**
  * Wrapped as .BPHome-content > .bp-doc.vp-doc.container by markdownToHtml.
  * -------------------------------------------------------------------------- */
 
+/* The nav is fixed, so the home layout has to reserve its height. Previously
+ * only the hero's own top padding cleared it, which meant any change to that
+ * padding slid the first line of the hero under the bar. */
+.BPHome {
+  padding-top: var(--bp-nav-height, 64px);
+}
+
 .BPHome-content {
   padding: 48px 24px 96px;
 }
@@ -2454,14 +2634,8 @@ export const layoutCSS = `/**
  * -------------------------------------------------------------------------- */
 
 /* Subtle row hover on tables */
-.bp-doc tr:hover {
-  background-color: var(--bp-c-bg-soft);
-}
-
-/* Mobile-safe table scroll */
-.bp-doc table {
-  width: 100%;
-  max-width: 100%;
+.bp-doc tbody tr:hover {
+  background-color: var(--bp-c-default-soft, var(--bp-c-gray-soft));
 }
 
 /* Slightly stronger blockquote with brand-tinted accent */
@@ -2501,17 +2675,20 @@ export const layoutCSS = `/**
 
 .BPNavBarHamburger {
   display: none;
-  width: 32px;
-  height: 32px;
+  /* 40px keeps the hit area at the minimum comfortable touch target even
+   * though the icon itself is 20px. */
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
   background: transparent;
   border: none;
   cursor: pointer;
   align-items: center;
   justify-content: center;
   color: var(--bp-c-text-2);
-  border-radius: 4px;
+  border-radius: 8px;
   padding: 0;
-  margin-left: -4px;
+  margin-left: -8px;
 }
 
 .BPNavBarHamburger:hover {
@@ -2544,7 +2721,13 @@ export const layoutCSS = `/**
 
   .BPSidebar-backdrop {
     position: fixed;
-    inset: 0;
+    /* Starts below the nav: the drawer opens under the bar, so scrimming the
+     * bar too dims the very controls (menu button, theme toggle) that stay
+     * live while the drawer is open. */
+    top: var(--bp-nav-height, 64px);
+    right: 0;
+    bottom: 0;
+    left: 0;
     background-color: rgba(0, 0, 0, 0.32);
     opacity: 0;
     pointer-events: none;
@@ -2559,6 +2742,17 @@ export const layoutCSS = `/**
 
   .BPContent--doc {
     left: 0;
+  }
+
+  .BPDoc {
+    padding: 24px 20px 64px;
+  }
+}
+
+/* Small phones: reclaim horizontal space from the gutters. */
+@media (max-width: 419px) {
+  .BPDoc {
+    padding: 20px 16px 56px;
   }
 }
 `

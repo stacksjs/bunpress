@@ -11,9 +11,16 @@
 </div>
 
 <style>
+/* Spacing only — clearing the fixed nav is .BPHome's job. */
 .BPHomeHero {
   position: relative;
-  padding: 76px 24px 56px;
+  padding: 24px 20px 40px;
+}
+
+@media (min-width: 640px) {
+  .BPHomeHero {
+    padding: 40px 24px 56px;
+  }
 }
 
 .hero-container {
@@ -40,7 +47,7 @@
 
 @media (min-width: 960px) {
   .BPHomeHero {
-    padding: 96px 64px 72px;
+    padding: 56px 64px 72px;
   }
 
   .hero-container {

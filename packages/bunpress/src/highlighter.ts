@@ -227,23 +227,24 @@ export function getSyntaxHighlightingStyles(): string {
 /* Basic syntax highlighting styles for ts-syntax-highlighter */
 /* The actual theme colors are injected by ts-syntax-highlighter */
 
-/* Ensure code blocks have proper styling */
-pre {
+/* Fallback presentation for code blocks that are NOT rendered by a BunPress
+ * theme (a theme owns \`pre[data-lang]\` / \`[class*='language-']\` and styles
+ * them itself). Scoping keeps this sheet from fighting the theme. */
+pre:not([data-lang]):not([class*='language-']) {
   overflow-x: auto;
   padding: 1rem;
   border-radius: 0.5rem;
   background: #f6f8fa;
   color: #24292f;
-  white-space: pre-wrap; /* Preserve whitespace and allow wrapping */
-  word-wrap: break-word;
 }
 
-code {
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 0.875rem;
-  line-height: 1.5;
+/* Code is scrolled, never wrapped: wrapping mid-token destroys indentation
+ * and makes line highlighting/diff markers line up with the wrong rows. */
+pre code {
+  font-family: var(--bp-font-family-mono, 'Consolas', 'Monaco', 'Courier New', monospace);
+  line-height: 1.6;
   color: inherit;
-  white-space: inherit; /* Inherit pre-wrap from pre */
+  white-space: pre;
 }
 
 /* Token spans inherit color from parent or use their inline styles */
@@ -257,9 +258,10 @@ code {
   color: inherit;
 }
 
-/* Dark theme support */
+/* Dark theme support. Gated on html.dark so an explicit light choice (or a
+ * site with darkMode: 'light') is never overridden by the OS preference. */
 @media (prefers-color-scheme: dark) {
-  pre {
+  html.dark pre:not([data-lang]):not([class*='language-']) {
     background: #0d1117;
     color: #e6edf3;
   }
@@ -269,16 +271,31 @@ code {
   }
 }
 
-/* Line highlighting */
+/* Line highlighting
+ * -------------------------------------------------------------------------
+ * Lines are emitted as \`<span class="line">…</span>\\n\` so that the code
+ * element's textContent still round-trips to real source (the copy button
+ * relies on it). The trailing newline is what breaks the line under
+ * \`white-space: pre\` — so .line MUST stay inline, otherwise every row
+ * renders followed by an empty one. Rows that need a full-width background
+ * opt into inline-block instead. */
 .line {
-  display: block;
+  display: inline;
+}
+
+.line.highlighted,
+.line.diff-add,
+.line.diff-remove,
+.line.has-error,
+.line.has-warning {
+  display: inline-block;
+  min-width: 100%;
 }
 
 .line.highlighted {
   background-color: rgba(255, 255, 0, 0.1);
-  border-left: 3px solid #fbbf24;
-  padding-left: 0.5rem;
-  margin-left: -0.5rem;
+  /* Inset shadow instead of a border so the gutter accent never shifts code. */
+  box-shadow: inset 3px 0 #fbbf24;
 }
 
 /* Focus mode */
@@ -294,24 +311,24 @@ code {
 /* Diff highlighting */
 .line.diff-add {
   background-color: rgba(16, 185, 129, 0.1);
-  border-left: 3px solid #10b981;
+  box-shadow: inset 3px 0 #10b981;
 }
 
 .line.diff-remove {
   background-color: rgba(239, 68, 68, 0.1);
-  border-left: 3px solid #ef4444;
+  box-shadow: inset 3px 0 #ef4444;
   text-decoration: line-through;
 }
 
 /* Error and warning indicators */
 .line.has-error {
   background-color: rgba(239, 68, 68, 0.05);
-  border-left: 3px solid #ef4444;
+  box-shadow: inset 3px 0 #ef4444;
 }
 
 .line.has-warning {
   background-color: rgba(245, 158, 11, 0.05);
-  border-left: 3px solid #f59e0b;
+  box-shadow: inset 3px 0 #f59e0b;
 }
 
 /* Line numbers */

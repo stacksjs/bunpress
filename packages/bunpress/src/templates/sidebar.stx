@@ -42,8 +42,17 @@ if (!window.__bpSidebarBound) {
 }
 
 .sidebar-content {
-  width: var(--bp-sidebar-width, 272px);
-  margin-left: auto;
+  width: 100%;
+}
+
+/* Below 960px the sidebar is a drawer: cap it against the viewport so it never
+ * covers the whole screen on a small phone, and leave a visible strip of page
+ * behind it as an affordance for tapping out. */
+@media (max-width: 959px) {
+  .BPSidebar {
+    width: min(var(--bp-sidebar-width, 272px), 84vw);
+    padding: 16px 0 32px;
+  }
 }
 
 /* At 960px+ (tablet), position sidebar normally */
