@@ -11,7 +11,7 @@
         "bun-git-hooks": "^0.3.1",
         "bun-plugin-dtsx": "^0.10.4",
         "bun-types": "^1.3.11",
-        "pickier": "^0.1.54",
+        "pickier": "^0.1.55",
         "typescript": "^7.0.2",
       },
     },
@@ -149,7 +149,7 @@
 
     "data-uri-to-buffer": ["data-uri-to-buffer@6.0.2", "", {}, "sha512-7hvf7/GW8e86rW0ptuwS3OcBGDjIi6SZva7hCyWC0yYry2cOPmLIjXAUHI6DK2HsnwJd9ifmt57i8eV2n4YNpw=="],
 
-    "pickier": ["pickier@0.1.54", "", { "dependencies": { "@stacksjs/clapp": "^0.2.3", "@stacksjs/clarity": "^0.3.24" }, "optionalDependencies": { "@stacksjs/ts-spell-check": "^0.1.0" }, "bin": { "pickier": "./dist/bin/cli.js" } }, "sha512-CeF1tpiaBGHW5nAnQPFs/1ljRRiWmEmBgGwX1c00JlCHRZoH5sTBZrd0GHJai+K7U3mLMONrEOBW3EafiwiBbQ=="],
+    "pickier": ["pickier@0.1.55", "", { "dependencies": { "@stacksjs/clapp": "^0.2.3", "@stacksjs/clarity": "^0.3.24" }, "optionalDependencies": { "@stacksjs/ts-spell-check": "^0.1.0" }, "bin": { "pickier": "./dist/bin/cli.js" } }, "sha512-uIQgu5mLMboSqO7SftpKdQZNpT7FUDKTF4GbHBisYtVBAuCozeYs6ugPGnGpdBQOP+XU11S6FdcbgCeU6WLWKQ=="],
 
     "stx-router": ["stx-router@0.2.173", "", {}, "sha512-xBFYUoKY4LohggXx5IAesLiUg5v5TKzXvf6kI2mIFOxs8tkd7bvkY2INDYoIKtERx7UUAagLJ3t5b0+hZi1jrA=="],
 
