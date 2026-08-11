@@ -3,6 +3,7 @@ import { Glob, YAML } from 'bun'
 import { join } from 'node:path'
 import { localizeUrl, resolveI18nConfig } from './i18n'
 import { createFenceTracker, stripFencedCode } from './markdown-fences'
+import { generateSlug, markdownHeadingText, reserveUniqueSlug } from './toc'
 
 /**
  * One searchable record.
@@ -215,24 +216,6 @@ function toPlainText(markdown: string): string {
     .trim()
 }
 
-/**
- * Slugify a heading the same way the renderer does, so anchors resolve.
- * Kept in step with addHeadingIds in serve.ts.
- */
-function slugify(text: string): string {
-  return text
-    .replace(/`([^`]+)`/g, '$1')
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .replace(/[*_~]/g, '')
-    .trim()
-    .toLowerCase()
-    .replace(/\//g, '-')
-    .replace(/\s+/g, '-')
-    .replace(/[^\w-]/g, '')
-    .replace(/-+/g, '-')
-    .replace(/^-+|-+$/g, '')
-}
-
 function stripFrontmatter(source: string): { body: string, data: Record<string, any> } {
   const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/)
   if (!match)
@@ -296,6 +279,7 @@ function recordsForDocument(
     || (pageTitleMatch ? pageTitleMatch[1].trim() : url)
 
   const records: SearchRecord[] = []
+  const usedAnchors = new Set<string>()
   let current: { title: string, anchor: string, level: number, buffer: string[] } = {
     title: pageTitle,
     anchor: '',
@@ -335,6 +319,13 @@ function recordsForDocument(
     }
 
     const level = heading[1].length
+    const rawTitle = heading[2].replace(/\s*\{#([\w-]+)\}\s*$/, '')
+    const customAnchor = heading[2].match(/\{#([\w-]+)\}\s*$/)
+    const anchor = reserveUniqueSlug(
+      customAnchor ? customAnchor[1] : generateSlug(markdownHeadingText(rawTitle)),
+      usedAnchors,
+    )
+
     // The h1 is the page title, already the lead section's heading.
     if (level === 1) {
       current.buffer.push('')
@@ -342,11 +333,9 @@ function recordsForDocument(
     }
 
     flush()
-    const rawTitle = heading[2].replace(/\s*\{#([\w-]+)\}\s*$/, '')
-    const customAnchor = heading[2].match(/\{#([\w-]+)\}\s*$/)
     current = {
       title: rawTitle,
-      anchor: customAnchor ? customAnchor[1] : slugify(rawTitle),
+      anchor,
       level,
       buffer: [],
     }

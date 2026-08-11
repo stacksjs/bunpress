@@ -25,7 +25,7 @@ import { withCodeMasked } from './markdown-fences'
 import { clearComponentCache, resolveStxComponents } from './stx-components'
 import { clearTemplateCache, render } from './template-loader'
 import { getThemeCSS } from './themes'
-import { buildTocHierarchy, defaultTocConfig, extractHeadings, filterHeadings, generateInlineTocHtml, generateSlug } from './toc'
+import { buildTocHierarchy, defaultTocConfig, extractHeadings, filterHeadings, generateInlineTocHtml, generateSlug, markdownHeadingText, reserveUniqueSlug } from './toc'
 
 /**
  * Generate sidebar HTML from BunPress config
@@ -238,9 +238,14 @@ async function generatePageOutline(html: string, outlineTitle: string = 'On this
  * Supports custom IDs with {#custom-id} syntax
  */
 function addHeadingIds(html: string): string {
+  const usedSlugs = new Set<string>()
+
   return html.replace(/<h([1-6])([^>]*)>(.*?)<\/h\1>/g, (match, level, attributes, text) => {
     // Check if ID already exists
     if (attributes.includes('id=')) {
+      const existingId = attributes.match(/\bid=["']([^"']+)["']/)?.[1]
+      if (existingId)
+        usedSlugs.add(existingId)
       return match
     }
 
@@ -257,13 +262,10 @@ function addHeadingIds(html: string): string {
     else {
       // Generate ID from text
       const plainText = text.replace(/<[^>]*>/g, '')
-      id = plainText.toLowerCase()
-        .replace(/\//g, '-') // Replace slashes with hyphens first
-        .replace(/\s+/g, '-')
-        .replace(/[^\w-]/g, '')
-        .replace(/-+/g, '-') // Remove consecutive hyphens
-        .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+      id = generateSlug(plainText)
     }
+
+    id = reserveUniqueSlug(id, usedSlugs)
 
     return `<h${level}${attributes} id="${id}">${displayText}</h${level}>`
   })
@@ -2539,20 +2541,15 @@ async function processCodeBlock(lines: string[], startIndex: number, codeFeature
  * Pre-process headings to extract custom anchor syntax ({#custom-id})
  * Returns the processed content with {#id} removed and a map of heading text to custom ID
  */
-function preprocessCustomAnchors(content: string): { content: string, customAnchors: Map<string, string> } {
-  const customAnchors = new Map<string, string>()
+function preprocessCustomAnchors(content: string): { content: string, customAnchors: Map<string, string[]> } {
+  const customAnchors = new Map<string, string[]>()
 
   const processed = content.replace(/^(#{1,6})\s+(.*?)\s*\{#([\w-]+)\}\s*$/gm, (_match, hashes, text, id) => {
     // Clean markdown formatting from key so it matches the plain text extracted from HTML
-    const cleanKey = text.trim()
-      .replace(/`([^`]+)`/g, '$1')
-      .replace(/\*\*(.+?)\*\*/g, '$1')
-      .replace(/__(.+?)__/g, '$1')
-      .replace(/\*(.+?)\*/g, '$1')
-      .replace(/_(.+?)_/g, '$1')
-      .replace(/~~(.+?)~~/g, '$1')
-      .trim()
-    customAnchors.set(cleanKey, id)
+    const cleanKey = markdownHeadingText(text)
+    const anchors = customAnchors.get(cleanKey) ?? []
+    anchors.push(id)
+    customAnchors.set(cleanKey, anchors)
     return `${hashes} ${text.trim()}`
   })
 
@@ -2642,7 +2639,7 @@ function postProcessTables(
  * Post-process headings to add ID attributes
  * Uses custom anchors where available, auto-generates slugs otherwise
  */
-function postProcessHeadings(html: string, customAnchors: Map<string, string>): string {
+function postProcessHeadings(html: string, customAnchors: Map<string, string[]>): string {
   const usedSlugs = new Set<string>()
 
   return html.replace(/<h([1-6])([^>]*)>([\s\S]*?)<\/h\1>/g, (match, level, attrs, content) => {
@@ -2653,22 +2650,15 @@ function postProcessHeadings(html: string, customAnchors: Map<string, string>): 
     const plainText = content.replace(/<[^>]+>/g, '').trim()
 
     // Check for custom anchor
-    let id = customAnchors.get(plainText)
+    const anchors = customAnchors.get(plainText)
+    let id = anchors?.shift()
 
     if (!id) {
       // Auto-generate slug from text
       id = generateSlug(plainText)
     }
 
-    // Handle duplicate slugs
-    if (usedSlugs.has(id)) {
-      let counter = 1
-      while (usedSlugs.has(`${id}-${counter}`)) {
-        counter++
-      }
-      id = `${id}-${counter}`
-    }
-    usedSlugs.add(id)
+    id = reserveUniqueSlug(id, usedSlugs)
 
     return `<h${level} id="${id}"${attrs}>${content}</h${level}>`
   })
@@ -2829,7 +2819,7 @@ async function renderMarkdownBody(content: string, frontmatter: any, rootDir: st
   // Pre-process custom header anchors ({#custom-id})
   const { content: contentWithoutAnchors, customAnchors } = featureEnabled('customAnchors')
     ? preprocessCustomAnchors(processedContent)
-    : { content: processedContent, customAnchors: new Map<string, string>() }
+    : { content: processedContent, customAnchors: new Map<string, string[]>() }
   processedContent = contentWithoutAnchors
 
   // Extract and process code blocks with syntax highlighting

@@ -17,6 +17,27 @@ export const defaultTocConfig: Required<TocConfig> = {
 }
 
 /**
+ * Return the text a rendered Markdown heading exposes to the slugger.
+ *
+ * This intentionally does not reuse prose/list cleanup: a heading beginning
+ * with `1.` is numbered text, not an ordered-list marker.
+ */
+export function markdownHeadingText(markdown: string): string {
+  return markdown
+    .replace(/\s*<!-- toc-ignore -->\s*/g, '')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/__(.+?)__/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/_(.+?)_/g, '$1')
+    .replace(/~~(.+?)~~/g, '$1')
+    .replace(/<[^>]*>/g, '')
+    .trim()
+}
+
+/**
  * Generate a URL-safe slug from heading text
  */
 export function generateSlug(text: string): string {
@@ -44,10 +65,12 @@ export function generateSlug(text: string): string {
 }
 
 /**
- * Generate unique slug for heading, handling duplicates
+ * Reserve a unique heading id from an already-normalized slug.
+ *
+ * Custom anchors and generated slugs share one namespace in the rendered
+ * document, so callers must reserve both through the same path.
  */
-export function generateUniqueSlug(text: string, existingSlugs: Set<string>): string {
-  let slug = generateSlug(text)
+export function reserveUniqueSlug(slug: string, existingSlugs: Set<string>): string {
   const originalSlug = slug
   let counter = 1
 
@@ -58,6 +81,13 @@ export function generateUniqueSlug(text: string, existingSlugs: Set<string>): st
 
   existingSlugs.add(slug)
   return slug
+}
+
+/**
+ * Generate unique slug for heading, handling duplicates
+ */
+export function generateUniqueSlug(text: string, existingSlugs: Set<string>): string {
+  return reserveUniqueSlug(generateSlug(text), existingSlugs)
 }
 
 /**
@@ -90,7 +120,7 @@ export function extractHeadings(content: string): TocHeading[] {
     // Add toc-code class if heading contains code
     const hasCode = processedText.includes('<code>')
 
-    const slug = generateUniqueSlug(processedText.replace(/<[^>]*>/g, ''), existingSlugs)
+    const slug = generateUniqueSlug(markdownHeadingText(text), existingSlugs)
 
     headings.push({
       level,

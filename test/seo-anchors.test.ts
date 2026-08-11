@@ -27,6 +27,8 @@ function fixture(): { docsDir: string, currentFile: string } {
     '',
     '## Repeated',
     '',
+    '## Custom Collision {#repeated}',
+    '',
     '```markdown',
     '## Heading In A Fence',
     '```',
@@ -72,6 +74,7 @@ describe('anchor targets', () => {
 
     expect(findBrokenInternalLinks('[x](/config#repeated)', docsDir, currentFile)).toEqual([])
     expect(findBrokenInternalLinks('[x](/config#repeated-1)', docsDir, currentFile)).toEqual([])
+    expect(findBrokenInternalLinks('[x](/config#repeated-2)', docsDir, currentFile)).toEqual([])
   })
 
   it('ignores headings that only appear inside a code fence', () => {

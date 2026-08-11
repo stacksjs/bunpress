@@ -5,7 +5,7 @@ import { colorize, logError, logInfo, logSuccess, logWarning, table } from '../u
 import { config } from '../../src/config'
 import type { BunPressConfig } from '../../src/types'
 import { stripFencedCode } from '../../src/markdown-fences'
-import { generateSlug } from '../../src/toc'
+import { generateSlug, markdownHeadingText, reserveUniqueSlug } from '../../src/toc'
 
 interface SeoIssue {
   type: 'error' | 'warning'
@@ -493,25 +493,11 @@ export function headingAnchors(file: string): Set<string> {
       // An explicit {#id} replaces the generated slug rather than adding to
       // it, matching the renderer — so the heading text is NOT also an anchor.
       const custom = text.match(/\{#([\w-]+)\}\s*$/)
-      if (custom) {
-        anchors.add(custom[1])
-        continue
-      }
-
-      const slug = generateSlug(text)
+      const slug = custom ? custom[1] : generateSlug(markdownHeadingText(text))
       if (!slug)
         continue
 
-      // Repeated headings get -1, -2, … suffixes, so reserve them too rather
-      // than reporting a legitimate deep link as broken.
-      if (!anchors.has(slug)) {
-        anchors.add(slug)
-      }
-      else {
-        let n = 1
-        while (anchors.has(`${slug}-${n}`)) n++
-        anchors.add(`${slug}-${n}`)
-      }
+      reserveUniqueSlug(slug, anchors)
     }
   }
   catch {

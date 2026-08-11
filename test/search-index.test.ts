@@ -3,6 +3,7 @@ import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { BunPressConfig, SearchConfig } from '../packages/bunpress/src/types'
 import { buildSearchIndex, buildSearchRuntimeConfig } from '../packages/bunpress/src/search-index'
+import { markdownToHtml } from '../packages/bunpress/src/serve'
 
 /** Minimal config carrying just a search block. */
 function withSearch(search: SearchConfig): BunPressConfig {
@@ -87,6 +88,28 @@ Hero copy that should not be indexed.
     await write('nested/deep.md', '# Deep Page\n\nDeep prose.\n')
     await write('section/index.md', '# Section Home\n\nSection prose.\n')
     await write('anchored.md', '# Anchored\n\n## Custom Heading {#my-anchor}\n\nAnchored prose.\n')
+    await write('heading-ids.md', `# Version 0.1 domains
+
+## Version 0.1 domains
+
+## Engine: \`src/builtins.zig\`
+
+## AgentGroup (replaces \`g_agent\`)
+
+## [Linked heading](https://example.com)
+
+## Repeated
+
+## Repeated
+
+## Named {#repeated}
+
+## Same text {#first-id}
+
+## Same text {#second-id}
+
+## 1. Numbered heading
+`)
     await write('public/ignored.md', '# Ignored\n\nShould not be indexed.\n')
   })
 
@@ -160,6 +183,32 @@ Hero copy that should not be indexed.
 
     expect(record).toBeDefined()
     expect(record!.url).toBe('/anchored#my-anchor')
+  })
+
+  it('uses the renderer heading ids for punctuation, markup, and collisions', async () => {
+    const index = await buildSearchIndex(FIXTURE_DIR)
+    const urls = index
+      .filter(record => record.page === 'Version 0.1 domains')
+      .map(record => record.url)
+
+    expect(urls).toEqual([
+      '/heading-ids#version-0-1-domains-1',
+      '/heading-ids#engine-src-builtins-zig',
+      '/heading-ids#agentgroup-replaces-g-agent',
+      '/heading-ids#linked-heading',
+      '/heading-ids#repeated',
+      '/heading-ids#repeated-1',
+      '/heading-ids#repeated-2',
+      '/heading-ids#first-id',
+      '/heading-ids#second-id',
+      '/heading-ids#1-numbered-heading',
+    ])
+
+    const source = await Bun.file(join(FIXTURE_DIR, 'heading-ids.md')).text()
+    const { html } = await markdownToHtml(source, FIXTURE_DIR)
+    const renderedIds = [...html.matchAll(/<h[1-6] id="([^"]+)"/g)].map(match => match[1])
+
+    expect(urls.map(url => url.split('#')[1])).toEqual(renderedIds.slice(1))
   })
 })
 
