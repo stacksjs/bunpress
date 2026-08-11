@@ -1,3 +1,29 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.0...v0.2.1)
+
+## 🐛 Bug Fixes
+
+- **lint**: clear every lint warning at its source ([ace04cb](https://github.com/stacksjs/bunpress/commit/ace04cb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **search**: align indexed heading anchors (#527) ([ae928ff](https://github.com/stacksjs/bunpress/commit/ae928ff)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#527](https://github.com/stacksjs/bunpress/issues/527), [#527](https://github.com/stacksjs/bunpress/issues/527))
+- **seo**: validate link anchors and configured nav/sidebar links ([5d7838a](https://github.com/stacksjs/bunpress/commit/5d7838a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **markdown**: stop extensions from firing inside code examples ([bbee559](https://github.com/stacksjs/bunpress/commit/bbee559)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cli**: stop --dir defaults from masking the docsDir config option ([69ab4ef](https://github.com/stacksjs/bunpress/commit/69ab4ef)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **ci**: guard the lockfile version, document the Bun pin ([54ff9ba](https://github.com/stacksjs/bunpress/commit/54ff9ba)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 👷 Build System
+
+- **deps**: pin bun to 1.3.14 exactly and refresh pantry.lock ([c084984](https://github.com/stacksjs/bunpress/commit/c084984)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.1 ([cec7cb9](https://github.com/stacksjs/bunpress/commit/cec7cb9)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.1.21...v0.2.0)
 
 ## ✨ Features
