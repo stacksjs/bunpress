@@ -548,7 +548,7 @@ function initToc() {
         })
 
         // Update URL without page reload
-        history.pushState(null, '', '#' + targetId)
+        history.pushState(null, '', \`#\${targetId}\`)
       }
     })
   })

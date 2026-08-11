@@ -6,7 +6,7 @@ This section provides practical examples and best practices for creating excelle
 
 ### Recommended Directory Structure
 
-```
+```text
 my-docs/
 ├── docs/
 │   ├── index.md                 # Homepage with frontmatter

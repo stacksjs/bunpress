@@ -11,6 +11,7 @@
         "bun-git-hooks": "^0.3.1",
         "bun-plugin-dtsx": "^0.10.4",
         "bun-types": "^1.3.11",
+        "pickier": "^0.1.54",
         "typescript": "^7.0.2",
       },
     },
@@ -148,7 +149,7 @@
 
     "data-uri-to-buffer": ["data-uri-to-buffer@6.0.2", "", {}, "sha512-7hvf7/GW8e86rW0ptuwS3OcBGDjIi6SZva7hCyWC0yYry2cOPmLIjXAUHI6DK2HsnwJd9ifmt57i8eV2n4YNpw=="],
 
-    "pickier": ["pickier@0.1.50", "", { "dependencies": { "@stacksjs/clapp": "^0.2.3", "@stacksjs/clarity": "^0.3.24" }, "optionalDependencies": { "@stacksjs/ts-spell-check": "^0.1.0" }, "bin": { "pickier": "./dist/bin/cli.js" } }, "sha512-qzz/Qn/DcdLpNfhhft/qlJEzrVsBLQVFwYUDKoZKTTLRh1Yes09f6wNExiZ5ifV8uz8Bc2ZldP+/nvVwxAH0Ww=="],
+    "pickier": ["pickier@0.1.54", "", { "dependencies": { "@stacksjs/clapp": "^0.2.3", "@stacksjs/clarity": "^0.3.24" }, "optionalDependencies": { "@stacksjs/ts-spell-check": "^0.1.0" }, "bin": { "pickier": "./dist/bin/cli.js" } }, "sha512-CeF1tpiaBGHW5nAnQPFs/1ljRRiWmEmBgGwX1c00JlCHRZoH5sTBZrd0GHJai+K7U3mLMONrEOBW3EafiwiBbQ=="],
 
     "stx-router": ["stx-router@0.2.173", "", {}, "sha512-xBFYUoKY4LohggXx5IAesLiUg5v5TKzXvf6kI2mIFOxs8tkd7bvkY2INDYoIKtERx7UUAagLJ3t5b0+hZi1jrA=="],
 
@@ -165,5 +166,7 @@
     "typescript": ["typescript@7.0.2", "", { "optionalDependencies": { "@typescript/typescript-aix-ppc64": "7.0.2", "@typescript/typescript-darwin-arm64": "7.0.2", "@typescript/typescript-darwin-x64": "7.0.2", "@typescript/typescript-freebsd-arm64": "7.0.2", "@typescript/typescript-freebsd-x64": "7.0.2", "@typescript/typescript-linux-arm": "7.0.2", "@typescript/typescript-linux-arm64": "7.0.2", "@typescript/typescript-linux-loong64": "7.0.2", "@typescript/typescript-linux-mips64el": "7.0.2", "@typescript/typescript-linux-ppc64": "7.0.2", "@typescript/typescript-linux-riscv64": "7.0.2", "@typescript/typescript-linux-s390x": "7.0.2", "@typescript/typescript-linux-x64": "7.0.2", "@typescript/typescript-netbsd-arm64": "7.0.2", "@typescript/typescript-netbsd-x64": "7.0.2", "@typescript/typescript-openbsd-arm64": "7.0.2", "@typescript/typescript-openbsd-x64": "7.0.2", "@typescript/typescript-sunos-x64": "7.0.2", "@typescript/typescript-win32-arm64": "7.0.2", "@typescript/typescript-win32-x64": "7.0.2" }, "bin": { "tsc": "bin/tsc" } }, "sha512-8FYau96o3NKOhbjKi/qNvG/W5jhzxkbdm5sj9AbZ/5T5sWqn3hJgLfGx27sRKZWTvyzCP8dLRBTf5tBTSRVUNA=="],
 
     "undici-types": ["undici-types@8.3.0", "", {}, "sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ=="],
+
+    "@stacksjs/logsmith/pickier": ["pickier@0.1.50", "", { "dependencies": { "@stacksjs/clapp": "^0.2.3", "@stacksjs/clarity": "^0.3.24" }, "optionalDependencies": { "@stacksjs/ts-spell-check": "^0.1.0" }, "bin": { "pickier": "./dist/bin/cli.js" } }, "sha512-qzz/Qn/DcdLpNfhhft/qlJEzrVsBLQVFwYUDKoZKTTLRh1Yes09f6wNExiZ5ifV8uz8Bc2ZldP+/nvVwxAH0Ww=="],
   }
 }

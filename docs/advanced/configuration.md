@@ -1,6 +1,5 @@
 # Configuration Deep-Dive
 
-
 BunPress supports comprehensive configuration for customizing every aspect of your documentation site.
 
 ## Configuration File
