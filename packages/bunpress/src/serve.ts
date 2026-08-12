@@ -939,11 +939,19 @@ function generateFontTags(config: BunPressConfig): { fontLinks: string, fontFace
  * never read by anything, so setting a brand colour changed nothing. Each maps
  * onto the `--bp-*` variables the stylesheet already keys off, emitted after
  * the theme so it overrides rather than fights it.
+ *
+ * `markdown.themeConfig` is read as well, the same way `search` is. The type
+ * has always allowed both, and the config that ships with Stacks nests it
+ * under `markdown`, so reading only the top-level one made a whole themed
+ * palette a silent no-op in exactly the projects most likely to set one.
+ *
+ * Merged per key with the top-level form winning, rather than `top ?? nested`:
+ * the default config always supplies a top-level `themeConfig` (it carries the
+ * project's own social links), so a coalesce can never reach the nested one
+ * and the fallback would do nothing at all.
  */
 function generateThemeOverrideCss(config: BunPressConfig): string {
-  const theme = config.themeConfig
-  if (!theme)
-    return ''
+  const theme = { ...config.markdown?.themeConfig, ...config.themeConfig }
 
   const vars: string[] = []
   const set = (name: string, value?: string): void => {
