@@ -780,6 +780,80 @@ function toggleTheme() {
   });
 })();
 
+// Nav dropdowns and mega menus.
+//
+// The panels open on :hover and :focus-within in CSS, so they work with no
+// JavaScript and with the keyboard. This adds the two things CSS cannot do:
+// a real click/tap toggle (a touch device has no hover to rely on) and an
+// accurate aria-expanded for screen readers.
+function closeNavGroups(except) {
+  document.querySelectorAll('.BPNavBarMenu-group.is-open').forEach(function (group) {
+    if (group === except) return;
+    group.classList.remove('is-open');
+    const button = group.querySelector('.BPNavBarMenu-group-button');
+    if (button) button.setAttribute('aria-expanded', 'false');
+  });
+}
+
+function toggleNavScreen(force) {
+  const screen = document.getElementById('bp-nav-screen');
+  const toggle = document.querySelector('.BPNavToggle');
+  if (!screen) return;
+  const open = typeof force === 'boolean' ? force : screen.hasAttribute('hidden');
+  if (open) screen.removeAttribute('hidden');
+  else screen.setAttribute('hidden', '');
+  document.documentElement.classList.toggle('bp-nav-screen-open', open);
+  if (toggle) toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+(function () {
+  document.addEventListener('click', function (event) {
+    const button = event.target.closest ? event.target.closest('.BPNavBarMenu-group-button') : null;
+    if (button) {
+      const group = button.parentElement;
+      const open = !group.classList.contains('is-open');
+      closeNavGroups(group);
+      group.classList.toggle('is-open', open);
+      button.setAttribute('aria-expanded', open ? 'true' : 'false');
+      return;
+    }
+    // A click anywhere else dismisses an open panel, including a click on one
+    // of its own links (which navigates, but SPA routing keeps the DOM).
+    closeNavGroups(null);
+    const screen = document.getElementById('bp-nav-screen');
+    if (screen && !screen.hasAttribute('hidden') && !event.target.closest('.BPNav')) {
+      toggleNavScreen(false);
+    }
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key !== 'Escape') return;
+    closeNavGroups(null);
+    toggleNavScreen(false);
+  });
+
+  // A link inside the stacked nav navigates; leaving the panel open over the
+  // new page would hide it.
+  document.addEventListener('click', function (event) {
+    if (event.target.closest && event.target.closest('.BPNavScreen a')) toggleNavScreen(false);
+  });
+})();
+
+// Hero code panel tabs. The panels are all server-rendered; this only swaps
+// which one is visible, so the samples are in the HTML with or without JS.
+function switchHeroCodeTab(button, index) {
+  const panel = button.closest('.BPHeroCode');
+  if (!panel) return;
+  panel.querySelectorAll('.BPHeroCode-tab').forEach(function (tab, i) {
+    tab.classList.toggle('is-active', i === index);
+    tab.setAttribute('aria-selected', i === index ? 'true' : 'false');
+  });
+  panel.querySelectorAll('.BPHeroCode-panel').forEach(function (body, i) {
+    if (i === index) body.removeAttribute('hidden');
+    else body.setAttribute('hidden', '');
+  });
+}
+
 function switchCodeTab(groupId, panelIndex) {
   const group = document.getElementById(groupId);
   if (!group) return;
@@ -1367,6 +1441,35 @@ export function applyConfigPlugins(loaded: BunPressConfig): BunPressConfig {
 
   return resolved
 }
+
+/**
+ * Config is resolved by name (`bunpress`) with `docs` as an alias, and each of
+ * those has a root and a `.config/` form. When a project has more than one,
+ * exactly one wins and the others are silently ignored, which reads as "my
+ * edits do nothing" rather than as a config problem. Say so once at startup.
+ */
+async function warnOnShadowedConfigs(): Promise<void> {
+  const candidates = [
+    'bunpress.config.ts',
+    'bunpress.config.js',
+    '.config/bunpress.ts',
+    'docs.config.ts',
+    '.config/docs.ts',
+  ]
+
+  const present: string[] = []
+  for (const candidate of candidates) {
+    if (await Bun.file(candidate).exists())
+      present.push(candidate)
+  }
+
+  if (present.length > 1) {
+    const [winner, ...shadowed] = present
+    console.warn(`[bunpress] Multiple config files found. Using ${winner}; ignoring ${shadowed.join(', ')}.`)
+  }
+}
+
+await warnOnShadowedConfigs()
 
 // Load and export the resolved configuration
 export const config: BunPressConfig = applyConfigPlugins(await loadConfig({

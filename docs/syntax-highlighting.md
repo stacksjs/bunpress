@@ -250,20 +250,39 @@ bun add bunpress
 
 See [Code Groups](/examples#code-groups-example) for more details.
 
+## Language Aliases
+
+If you document your own language, its fences have no grammar and render as
+flat escaped text. Point the fence language at the closest grammar and it gets
+real tokens, while keeping its own name in `data-lang` and the copy button:
+
+```typescript
+export default {
+  markdown: {
+    languageAliases: {
+      home: 'rust',
+      hm: 'rust',
+    },
+  },
+}
+```
+
+With that in place, `home` fences are tokenized with the Rust
+grammar. Pick the target by syntax similarity rather than by lineage: what
+matters is whether the keywords, string forms and comment style line up.
+
 ## Themes
 
 BunPress uses a light theme by default with automatic dark mode support:
 
 - **Light theme**: Clean, GitHub-inspired colors
-- **Dark theme**: Automatically applied based on system preferences
+- **Dark theme**: Applied when the site is in dark mode
 
-The theme switching uses CSS media queries:
-
-```css
-@media (prefers-color-scheme: dark) {
-  /* Dark theme styles applied here */
-}
-```
+The highlighter resolves one theme at build time and writes the result as an
+inline style on every token, so dark mode is handled by a correction sheet
+that re-tints tokens by their TextMate scope. That is what keeps string
+literals readable on a dark ground instead of leaving them at the light
+theme's navy.
 
 > [!NOTE]
 > Custom theme support is planned for future versions.

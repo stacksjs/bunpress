@@ -293,6 +293,19 @@ export interface MarkdownPluginConfig {
   scripts?: string[]
 
   /**
+   * Map fence languages the highlighter has no grammar for onto ones it does.
+   *
+   * A project documenting its own language writes ```mylang fences, and every
+   * one of them renders as flat escaped text because no grammar matches.
+   * Aliasing to the closest grammar gets real tokens, while the fence keeps
+   * its own name in `data-lang` and in the copy button.
+   *
+   * @example
+   * languageAliases: { home: 'rust', hm: 'rust' }
+   */
+  languageAliases?: Record<string, string>
+
+  /**
    * Default title for HTML documents (uses h1 from content if not provided)
    */
   title?: string
@@ -392,14 +405,46 @@ export interface SidebarItem {
 }
 
 /**
- * Navigation bar item
+ * Navigation bar item.
+ *
+ * An item with `items` renders a dropdown. The dropdown upgrades itself to a
+ * multi-column mega menu as soon as the content asks for one: when any child
+ * carries a `description`, when children are nested one level deeper into
+ * groups, or when `mega` is set explicitly. A flat list of bare links keeps
+ * rendering as the compact flyout it always did.
  */
 export interface NavItem {
   text: string
   link?: string
+  /** Inline SVG, an `<img>` tag, or an emoji. Rendered in mega-menu items. */
   icon?: string
+  /** One-line explainer. Rendered under the item title in a mega menu. */
+  description?: string
   items?: NavItem[]
   activeMatch?: string
+  /**
+   * Force the mega-menu panel (or force it off with `false`) instead of
+   * letting the shape of `items` decide.
+   */
+  mega?: boolean
+  /**
+   * Column count for the mega panel at desktop width. Defaults to the number
+   * of groups, clamped to 4. Ignored by the compact flyout.
+   */
+  columns?: number
+  /** Optional link rendered as a footer strip across the bottom of the panel. */
+  footer?: NavItemFooter
+}
+
+/**
+ * Footer strip at the bottom of a mega-menu panel. Use it for the "see
+ * everything" link that would otherwise be one more item in a column.
+ */
+export interface NavItemFooter {
+  text: string
+  link: string
+  /** Short muted line before the link, e.g. "New in 0.4". */
+  note?: string
 }
 
 /**
@@ -417,13 +462,40 @@ export interface HeroAction {
 }
 
 /**
+ * A code sample rendered as the hero's visual, highlighted by the same
+ * highlighter that renders markdown fences.
+ */
+export interface HeroCode {
+  /** Fence language id, e.g. `ts`, `rust`, `bash`. Defaults to `ts`. */
+  lang?: string
+  /** Filename shown above the sample, or the tab label when there are several. */
+  file?: string
+  content: string
+}
+
+/**
+ * Small link above the hero headline: a release note, a launch post, a
+ * "what changed" pointer.
+ */
+export interface HeroAnnouncement {
+  text: string
+  link: string
+  /** Short leading chip, e.g. a version number. */
+  tag?: string
+}
+
+/**
  * Hero section configuration
  */
 export interface Hero {
   name?: string
   text: string
   tagline?: string
+  /** Image visual. Ignored when `code` is set. */
   image?: string
+  /** Code visual. One sample, or several for a tabbed panel. */
+  code?: HeroCode | HeroCode[]
+  announcement?: HeroAnnouncement
   actions?: HeroAction[]
 }
 
@@ -434,6 +506,12 @@ export interface Feature {
   title: string
   icon?: string
   details: string
+  /** Turns the card into a link. */
+  link?: string
+  /** Label for the link affordance on a linked card. Defaults to "Learn more". */
+  linkText?: string
+  /** Columns this cell claims at desktop width (1-3), turning a grid into a bento. */
+  span?: number
 }
 
 /**

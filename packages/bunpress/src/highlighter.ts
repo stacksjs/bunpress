@@ -60,19 +60,38 @@ function getLanguageIndex(): Map<string, string> {
 }
 
 /**
+ * Site-declared aliases from `markdown.languageAliases`, mapping a fence
+ * language the highlighter has no grammar for onto one it does.
+ *
+ * A project documenting its own language writes ```mylang fences, and without
+ * a grammar every one of them renders as flat escaped text. Pointing the
+ * alias at the closest grammar gets real tokens; the fence keeps its own name
+ * everywhere it is displayed.
+ */
+let languageAliases: Record<string, string> = {}
+
+export function setLanguageAliases(aliases: Record<string, string> | undefined): void {
+  languageAliases = {}
+  for (const [from, to] of Object.entries(aliases ?? {}))
+    languageAliases[from.toLowerCase().trim()] = to.toLowerCase().trim()
+}
+
+/**
  * Normalizes a language identifier to its canonical id.
  * Unknown identifiers are returned as-is so the caller can report them.
  */
 export function normalizeLanguage(lang: string): string {
   const normalized = lang.toLowerCase().trim()
-  return getLanguageIndex().get(normalized) ?? normalized
+  const aliased = languageAliases[normalized] ?? normalized
+  return getLanguageIndex().get(aliased) ?? aliased
 }
 
 /**
  * Checks if a language is supported by ts-syntax-highlighter
  */
 export function isLanguageSupported(lang: string): boolean {
-  return getLanguageIndex().has(lang.toLowerCase().trim())
+  const normalized = lang.toLowerCase().trim()
+  return getLanguageIndex().has(languageAliases[normalized] ?? normalized)
 }
 
 /**
@@ -277,15 +296,75 @@ pre code {
 
 /* Dark theme support. Gated on html.dark so an explicit light choice (or a
  * site with darkMode: 'light') is never overridden by the OS preference. */
-@media (prefers-color-scheme: dark) {
-  html.dark pre:not([data-lang]):not([class*='language-']) {
-    background: #0d1117;
-    color: #e6edf3;
-  }
+html.dark pre:not([data-lang]):not([class*='language-']) {
+  background: #0d1117;
+  color: #e6edf3;
+}
 
-  .token:not([style*="color"]) {
-    color: inherit;
-  }
+.token:not([style*="color"]) {
+  color: inherit;
+}
+
+/* Dark-mode token colours.
+ * -------------------------------------------------------------------------
+ * The highlighter resolves one theme at build time and writes the result as
+ * an INLINE style on every token. That theme is a light one, so in dark mode
+ * every code block was rendering light-theme colours on a dark ground:
+ * string literals at #0a3069 (navy) on a near-black panel is about 1.4:1,
+ * which is unreadable, and the default token colour #24292f is worse.
+ *
+ * Inline styles cannot be beaten by specificity, so this sheet corrects them
+ * with !important. Tokens carry TextMate scope names as classes
+ * (\`token string-quoted-double-rust\`, \`token keyword-control-ts\`), and the
+ * language suffix varies per grammar, so the scopes are matched by substring
+ * rather than enumerated. Palette is GitHub Dark, which is designed for this
+ * ground and clears WCAG AA on all of it.
+ *
+ * Rules run general to specific: a scope like \`support-function-builtin\`
+ * matches more than one selector, and the later, more specific one wins.
+ * The default rule below deliberately stays at one class + one type so every
+ * scope rule under it (which adds an attribute selector) outranks it. */
+html.dark .token {
+  color: #e6edf3 !important;
+}
+
+html.dark .token[class*='variable'] {
+  color: #ffa657 !important;
+}
+
+html.dark .token[class*='entity-name-type'],
+html.dark .token[class*='support-type'],
+html.dark .token[class*='support-class'] {
+  color: #7ee787 !important;
+}
+
+html.dark .token[class*='entity-name-function'],
+html.dark .token[class*='support-function'],
+html.dark .token[class*='entity-name-tag'] {
+  color: #d2a8ff !important;
+}
+
+html.dark .token[class*='constant'],
+html.dark .token[class*='entity-other-attribute'] {
+  color: #79c0ff !important;
+}
+
+html.dark .token[class*='keyword'],
+html.dark .token[class*='storage'] {
+  color: #ff7b72 !important;
+}
+
+html.dark .token[class*='string'],
+html.dark .token[class*='markup-inserted'] {
+  color: #a5d6ff !important;
+}
+
+html.dark .token[class*='comment'] {
+  color: #8b949e !important;
+}
+
+html.dark .token[class*='invalid'] {
+  color: #ffa198 !important;
 }
 
 /* Line highlighting

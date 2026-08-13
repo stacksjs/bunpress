@@ -1,6 +1,7 @@
 <div class="BPHomeHero">
   <div class="hero-container">
     <div class="hero-content">
+      {!! announcement !!}
       {!! name !!}
       {!! text !!}
       {!! tagline !!}
@@ -45,6 +46,15 @@
   height: auto;
 }
 
+/* A code panel is a full column, not a logo slot: it stacks under the copy on
+ * narrow screens and takes the right half from 960px up. min-width:0 is what
+ * lets its own <pre> scroll instead of stretching the flex row. */
+.hero-container > .BPHeroCode {
+  margin-top: 32px;
+  min-width: 0;
+  width: 100%;
+}
+
 @media (min-width: 960px) {
   .BPHomeHero {
     padding: 56px 64px 72px;
@@ -52,6 +62,7 @@
 
   .hero-container {
     flex-direction: row;
+    align-items: center;
     text-align: left;
     gap: 64px;
   }
@@ -67,6 +78,17 @@
 
   .hero-image img {
     max-width: 280px;
+  }
+
+  .hero-container > .BPHeroCode {
+    margin-top: 0;
+    flex: 0 1 46%;
+  }
+
+  /* Without a visual the copy is the whole hero, so it keeps its measure
+   * rather than running the full 1152px. */
+  .hero-container > .hero-content:only-child {
+    max-width: 780px;
   }
 }
 </style>

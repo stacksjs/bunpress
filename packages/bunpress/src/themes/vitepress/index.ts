@@ -2284,27 +2284,51 @@ export const layoutCSS = `/**
   transition: transform 0.25s;
 }
 
-.BPNavBarMenu-group:hover > .BPNavBarMenu-group-button .chevron {
+.BPNavBarMenu-group:hover > .BPNavBarMenu-group-button .chevron,
+.BPNavBarMenu-group:focus-within > .BPNavBarMenu-group-button .chevron,
+.BPNavBarMenu-group.is-open > .BPNavBarMenu-group-button .chevron {
   transform: rotate(180deg);
 }
 
+/* The button sits at the top of the bar and the panel hangs below it. The
+ * gap between them used to be margin, so the pointer left the group on the
+ * way down and the panel closed underneath it. It is padding on the panel
+ * now: the same visual offset, but the space belongs to the hover target. */
 .BPNavBarMenu-group-items {
-  display: none;
   position: absolute;
   right: 0;
   top: 100%;
-  margin-top: 8px;
-  padding: 8px 0;
+  padding-top: 8px;
   min-width: 192px;
-  background: var(--bp-c-bg);
-  border: 1px solid var(--bp-c-divider);
-  border-radius: 8px;
-  box-shadow: var(--bp-shadow-3, 0 12px 32px rgba(0, 0, 0, 0.1));
-  z-index: 10;
+  z-index: 30;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
 }
 
-.BPNavBarMenu-group:hover > .BPNavBarMenu-group-items {
-  display: block;
+.BPNavBarMenu-group:hover > .BPNavBarMenu-group-items,
+.BPNavBarMenu-group:focus-within > .BPNavBarMenu-group-items,
+.BPNavBarMenu-group.is-open > .BPNavBarMenu-group-items {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* The surface itself, so the 8px hover bridge above stays transparent. */
+.BPNavBarMenu-group-items::before {
+  content: "";
+  position: absolute;
+  inset: 8px 0 0;
+  background: var(--bp-c-bg);
+  border: 1px solid var(--bp-c-divider);
+  border-radius: 12px;
+  box-shadow: var(--bp-shadow-3, 0 12px 32px rgba(0, 0, 0, 0.1));
+  z-index: -1;
+}
+
+.BPNavBarMenu-group-items > * {
+  position: relative;
 }
 
 .BPNavBarMenu-group-items a {
@@ -2316,9 +2340,323 @@ export const layoutCSS = `/**
   transition: color 0.25s, background-color 0.25s;
 }
 
-.BPNavBarMenu-group-items a:hover {
+.BPNavBarMenu-group-items:not(.BPMega) {
+  padding-bottom: 8px;
+}
+
+.BPNavBarMenu-group-items:not(.BPMega) a:first-of-type {
+  margin-top: 8px;
+}
+
+.BPNavBarMenu-group-items a:hover,
+.BPNavBarMenu-group-items a.is-active {
   color: var(--bp-c-brand-1);
   background-color: var(--bp-c-bg-soft);
+}
+
+/**
+ * Mega menu — a nav item whose children carry descriptions or nest into
+ * groups. Anchored to the bar rather than to the button, so a wide panel
+ * stays inside the viewport no matter which item opened it.
+ * -------------------------------------------------------------------------- */
+
+/* A mega panel is anchored to the bar, not to the button that opens it: a
+ * 900px panel centred on a nav item near the right edge would hang off the
+ * viewport. Going position:static hands the absolute positioning up to .BPNav.
+ * Stretching the group to full bar height also keeps the pointer inside the
+ * hover target on its way down to the panel. */
+.BPNavBarMenu-group.is-mega {
+  position: static;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+
+.BPMega {
+  --bp-mega-columns: 3;
+  right: auto;
+  left: 50%;
+  width: max-content;
+  max-width: min(920px, calc(100vw - 32px));
+  transform: translate(-50%, -4px);
+}
+
+.BPNavBarMenu-group:hover > .BPMega,
+.BPNavBarMenu-group:focus-within > .BPMega,
+.BPNavBarMenu-group.is-open > .BPMega {
+  transform: translate(-50%, 0);
+}
+
+.BPMega-columns {
+  display: grid;
+  grid-template-columns: repeat(var(--bp-mega-columns), minmax(200px, 1fr));
+  gap: 4px 8px;
+  padding: 16px;
+}
+
+.BPMega-group-title {
+  margin: 4px 0 8px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bp-c-text-3, var(--bp-c-text-2));
+}
+
+.BPNavBarMenu .BPMega-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--bp-c-text-1);
+}
+
+.BPNavBarMenu .BPMega-item:hover,
+.BPNavBarMenu .BPMega-item.is-active {
+  background-color: var(--bp-c-bg-soft);
+  color: var(--bp-c-text-1);
+}
+
+.BPMega-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  margin-top: 1px;
+  border-radius: 7px;
+  background: var(--bp-c-bg-soft);
+  color: var(--bp-c-brand-1);
+  font-size: 13px;
+}
+
+.BPMega-item:hover .BPMega-item-icon {
+  background: var(--bp-c-brand-soft, var(--bp-c-bg-alt));
+}
+
+.BPMega-item-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.BPMega-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.BPMega-item-title {
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.BPMega-item:hover .BPMega-item-title,
+.BPMega-item.is-active .BPMega-item-title {
+  color: var(--bp-c-brand-1);
+}
+
+.BPMega-item-desc {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--bp-c-text-2);
+}
+
+.BPMega-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 26px;
+  border-top: 1px solid var(--bp-c-divider);
+  background: var(--bp-c-bg-soft);
+  border-radius: 0 0 12px 12px;
+  font-size: 12px;
+}
+
+.BPMega-footer-note {
+  color: var(--bp-c-text-2);
+}
+
+.BPNavBarMenu .BPMega-footer-link {
+  padding: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bp-c-brand-1);
+  background: none;
+}
+
+.BPNavBarMenu .BPMega-footer-link:hover {
+  background: none;
+  text-decoration: underline;
+}
+
+@media (max-width: 1100px) {
+  .BPMega-columns {
+    grid-template-columns: repeat(min(var(--bp-mega-columns), 2), minmax(190px, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .BPNavBarMenu-group-items,
+  .BPMega,
+  .BPNavBarMenu-group-button .chevron {
+    transition: none;
+  }
+}
+
+/**
+ * Stacked nav for narrow viewports. The bar hides its links below 960px, and
+ * the home and page layouts have no sidebar hamburger to fall back on.
+ * -------------------------------------------------------------------------- */
+
+.BPNavToggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--bp-c-text-2);
+  cursor: pointer;
+  transition: color 0.25s, background-color 0.25s;
+}
+
+.BPNavToggle:hover {
+  color: var(--bp-c-text-1);
+  background-color: var(--bp-c-bg-soft);
+}
+
+.BPNavToggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+.BPNavToggle .BPNavToggle-close,
+.BPNavToggle[aria-expanded="true"] .BPNavToggle-open {
+  display: none;
+}
+
+.BPNavToggle[aria-expanded="true"] .BPNavToggle-close {
+  display: block;
+}
+
+.BPNavScreen {
+  display: none;
+}
+
+.BPNavScreen-nav {
+  padding: 8px 16px 24px;
+}
+
+.BPNavScreen-section {
+  border-bottom: 1px solid var(--bp-c-divider);
+}
+
+.BPNavScreen-section:last-child {
+  border-bottom: none;
+}
+
+.BPNavScreen-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--bp-c-text-1);
+  cursor: pointer;
+  list-style: none;
+}
+
+.BPNavScreen-summary::-webkit-details-marker {
+  display: none;
+}
+
+.BPNavScreen-summary .chevron {
+  width: 14px;
+  height: 14px;
+  color: var(--bp-c-text-3, var(--bp-c-text-2));
+  transition: transform 0.2s ease;
+}
+
+.BPNavScreen-section[open] > .BPNavScreen-summary .chevron {
+  transform: rotate(180deg);
+}
+
+.BPNavScreen-items {
+  padding: 0 0 12px 4px;
+}
+
+.BPNavScreen-subtitle {
+  margin: 12px 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bp-c-text-3, var(--bp-c-text-2));
+}
+
+.BPNavScreen-link {
+  display: block;
+  padding: 8px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--bp-c-text-2);
+  text-decoration: none;
+}
+
+.BPNavScreen-section > .BPNavScreen-link {
+  padding: 12px 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--bp-c-text-1);
+}
+
+.BPNavScreen-link:hover,
+.BPNavScreen-link.is-active {
+  color: var(--bp-c-brand-1);
+}
+
+@media (max-width: 959px) {
+  .BPNavToggle {
+    display: inline-flex;
+  }
+
+  /* Absolute, not fixed. .BPNav sets a backdrop-filter, which makes it the
+   * containing block for fixed-position descendants, so a fixed panel
+   * measured its top/bottom against the 64px bar and collapsed to nothing.
+   * Anchoring to the bar's own bottom edge is what was meant anyway. */
+  .BPNavScreen {
+    display: block;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: calc(100dvh - var(--bp-nav-height, 64px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--bp-c-bg);
+    border-bottom: 1px solid var(--bp-c-divider);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+    z-index: 40;
+  }
+
+  .BPNavScreen[hidden] {
+    display: none;
+  }
+
+  html.bp-nav-screen-open,
+  html.bp-nav-screen-open body {
+    overflow: hidden;
+  }
 }
 
 /* Search trigger. A button that looks like a field: the real input lives in
@@ -2514,6 +2852,127 @@ export const layoutCSS = `/**
  * Hero (home layout) — used by hero.stx + serve.ts generateHero
  * -------------------------------------------------------------------------- */
 
+.BPHero-announcement {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 20px;
+  padding: 5px 14px 5px 6px;
+  border: 1px solid var(--bp-c-divider);
+  border-radius: 999px;
+  background: var(--bp-c-bg-soft);
+  font-size: 13px;
+  color: var(--bp-c-text-2);
+  text-decoration: none;
+  transition: border-color 0.25s, color 0.25s;
+}
+
+.BPHero-announcement:hover {
+  border-color: var(--bp-c-brand-1);
+  color: var(--bp-c-text-1);
+}
+
+.BPHero-announcement-tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bp-c-brand-soft, var(--bp-c-bg-alt));
+  color: var(--bp-c-brand-1);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.BPHero-announcement-arrow {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.25s;
+}
+
+.BPHero-announcement:hover .BPHero-announcement-arrow {
+  transform: translateX(2px);
+}
+
+/**
+ * Hero code panel — the visual for a tool people evaluate by reading code.
+ * -------------------------------------------------------------------------- */
+
+.BPHeroCode {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--bp-c-divider);
+  border-radius: 12px;
+  background: var(--bp-code-block-bg, var(--bp-c-bg-alt));
+  overflow: hidden;
+}
+
+.BPHeroCode-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 38px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--bp-c-divider);
+}
+
+.BPHeroCode-head:empty {
+  display: none;
+}
+
+.BPHeroCode-file {
+  font-family: var(--bp-font-family-mono, ui-monospace, monospace);
+  font-size: 12px;
+  color: var(--bp-c-text-3, var(--bp-c-text-2));
+}
+
+.BPHeroCode-tabs {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+}
+
+.BPHeroCode-tab {
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font-family: var(--bp-font-family-mono, ui-monospace, monospace);
+  font-size: 12px;
+  color: var(--bp-c-text-2);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.25s, border-color 0.25s;
+}
+
+.BPHeroCode-tab:hover {
+  color: var(--bp-c-text-1);
+}
+
+.BPHeroCode-tab.is-active {
+  color: var(--bp-c-text-1);
+  border-bottom-color: var(--bp-c-brand-1);
+}
+
+.BPHeroCode-body pre {
+  margin: 0;
+  padding: 18px 20px;
+  overflow-x: auto;
+  background: transparent;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* The head already names the sample, and the fence language is often a
+ * stand-in for a grammar the highlighter does not ship. Printing it in the
+ * corner of the panel labels the code as the wrong language. */
+.BPHeroCode pre[data-lang]::before {
+  content: none;
+}
+
+.BPHeroCode-body code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
 .BPHero-name {
   font-size: clamp(18px, 4vw, 24px);
   font-weight: 700;
@@ -2631,7 +3090,9 @@ export const layoutCSS = `/**
 }
 
 .BPFeature {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   padding: 26px;
   background-color: var(--bp-c-bg-soft, var(--bp-c-bg-alt));
   border: 1px solid var(--bp-c-divider);
@@ -2641,9 +3102,53 @@ export const layoutCSS = `/**
   color: inherit;
 }
 
+/* A cell can claim extra columns, turning the equal grid into a bento. Only
+ * from 640px up, where there is more than one column to claim. */
+@media (min-width: 640px) {
+  .BPFeature {
+    grid-column: span min(var(--bp-feature-span, 1), 2);
+  }
+}
+
+@media (min-width: 960px) {
+  .BPFeature {
+    grid-column: span var(--bp-feature-span, 1);
+  }
+}
+
 .BPFeature:hover {
   border-color: var(--bp-c-brand-1);
   box-shadow: 0 2px 12px rgba(86, 114, 205, 0.08);
+}
+
+/* The affordance that says a card navigates. Pushed to the bottom so it lines
+ * up across a row of cards with different amounts of body copy. */
+.BPFeature-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: auto;
+  padding-top: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bp-c-brand-1);
+}
+
+.BPFeature-link svg {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.25s;
+}
+
+.BPFeature.is-linked:hover .BPFeature-link svg {
+  transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .BPFeature-link svg,
+  .BPHero-announcement-arrow {
+    transition: none;
+  }
 }
 
 .BPFeature-icon {

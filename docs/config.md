@@ -76,9 +76,56 @@ export default {
 |----------|------|-------------|
 | `text` | `string` | Display text for the navigation item |
 | `link` | `string` | URL or path for the link |
-| `icon` | `string` | Optional icon (emoji or icon name) |
-| `items` | `NavItem[]` | Nested navigation items (creates dropdown) |
+| `icon` | `string` | Inline SVG, an `<img>` tag, or an emoji. Shown in mega menus |
+| `description` | `string` | One-line explainer under the item title in a mega menu |
+| `items` | `NavItem[]` | Nested navigation items (creates a dropdown) |
 | `activeMatch` | `string` | Pattern to match for active state |
+| `mega` | `boolean` | Force the mega panel on or off instead of inferring it |
+| `columns` | `number` | Column count for the mega panel (1-4) |
+| `footer` | `{ text, link, note? }` | Link strip across the bottom of the mega panel |
+
+### Mega Menus
+
+A dropdown upgrades itself to a multi-column mega panel as soon as its content
+needs the room: when any child carries a `description`, when children are
+nested one level deeper into groups, or when `mega: true` is set. A flat list
+of bare links keeps rendering as the compact flyout, so existing configs are
+unchanged.
+
+```typescript
+export default {
+  themeConfig: {
+    nav: [
+      {
+        text: 'Features',
+        activeMatch: '^/features/',
+        columns: 2,
+        footer: { text: 'See everything', link: '/features', note: 'The full list.' },
+        items: [
+          {
+            text: 'Language',
+            items: [
+              { text: 'Types', link: '/features/types', description: 'Inference and unions.' },
+              { text: 'Macros', link: '/features/macros', description: 'Hygienic, over the AST.' },
+            ],
+          },
+          {
+            text: 'Toolchain',
+            items: [
+              { text: 'CLI', link: '/features/cli', description: 'One binary for everything.' },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+```
+
+Below 960px the bar hides its links, and the same tree renders as a stacked
+disclosure panel behind a menu button. That panel ships on the `home` and
+`page` layouts, which have no sidebar to fall back on; the `doc` layout keeps
+using its sidebar hamburger.
 
 ## Sidebar Configuration
 
@@ -752,6 +799,21 @@ hero:
   text: Tagline
   tagline: Subheading
   image: /logo.png
+
+  # Small link above the headline: a release note, a launch post
+  announcement:
+    tag: v2
+    text: Read the release notes
+    link: /blog/v2
+
+  # Code visual, highlighted by the same highlighter as a markdown fence.
+  # Takes the place of `image`. Give a list for a tabbed panel.
+  code:
+    - file: server.ts
+      lang: ts
+      content: |
+        export default { fetch: () => new Response('hi') }
+
   actions:
 
     - theme: brand
@@ -770,6 +832,9 @@ features:
   - title: Feature 1
 
     details: Description of feature 1
+    link: /features/one          # turns the card into a link
+    linkText: Read the guide     # label for the link affordance
+    span: 2                      # columns this cell claims (1-3), for a bento
 
   - title: Feature 2
 

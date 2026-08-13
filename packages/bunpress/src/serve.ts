@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { config, defaultConfig } from './config'
 import { clearDataCache, loadDataFiles } from './data-loader'
-import { getSyntaxHighlightingStyles, highlightCode } from './highlighter'
+import { getSyntaxHighlightingStyles, highlightCode, setLanguageAliases } from './highlighter'
 import type { ResolvedI18n } from './i18n'
 import { buildEditUrl, formatLastUpdated, resolveLastUpdated } from './page-meta'
 import {
@@ -85,12 +85,29 @@ export interface CodeBlockFeatures {
   errorWarningMarkers: boolean
 }
 
+// Fence-language aliases are a property of the site, and the highlighter is a
+// module-level singleton, so they are handed over once as the module loads.
+setLanguageAliases((config as BunPressConfig).markdown?.languageAliases)
+
 /** Drawer toggle. Only the doc layout has a sidebar to toggle. */
 const HAMBURGER_BUTTON = `<button class="BPNavBarHamburger" type="button" aria-label="Toggle navigation" onclick="toggleSidebar()">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
             </svg>
           </button>`
+
+/**
+ * Opens the stacked nav on narrow viewports. Sits at the end of the bar on the
+ * layouts that have no sidebar hamburger to borrow.
+ */
+const NAV_TOGGLE_BUTTON = `<button class="BPNavToggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="bp-nav-screen" onclick="toggleNavScreen()">
+        <svg class="BPNavToggle-open" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16"></path>
+        </svg>
+        <svg class="BPNavToggle-close" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 6l12 12M18 6L6 18"></path>
+        </svg>
+      </button>`
 
 /**
  * Render a shortcut as the hint shown in the nav button, and as the
@@ -637,15 +654,53 @@ function generateSPARouterScript(): string {
 <` + `/script>`
 }
 
+const NAV_CHEVRON = `<svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+</svg>`
+
+/** Resolve the configured nav, whichever of the three shapes it was written in. */
+function resolveNavConfig(config: BunPressConfig): NavItem[] {
+  return (config.themeConfig?.nav || config.markdown?.nav || config.nav || []) as NavItem[]
+}
+
+/**
+ * A dropdown becomes a mega panel when its content needs the room: explicit
+ * `mega`, per-item descriptions, or children nested into groups. A plain list
+ * of links stays the compact flyout, so existing configs render unchanged.
+ */
+function isMegaMenu(item: NavItem): boolean {
+  if (typeof item.mega === 'boolean')
+    return item.mega
+  return (item.items ?? []).some(sub => !!sub.description || (sub.items?.length ?? 0) > 0)
+}
+
+/**
+ * Normalize a mega item's children into columns. Authors can either nest one
+ * level (each child is a titled group) or write a flat list, which becomes a
+ * single untitled group.
+ */
+function megaGroups(item: NavItem): { text?: string, items: NavItem[] }[] {
+  const children = item.items ?? []
+  const grouped = children.filter(sub => (sub.items?.length ?? 0) > 0)
+  if (grouped.length === 0)
+    return [{ items: children }]
+
+  // A mixed list (some groups, some loose links) keeps the loose links
+  // together in a leading column rather than dropping them.
+  const loose = children.filter(sub => (sub.items?.length ?? 0) === 0)
+  const columns = grouped.map(group => ({ text: group.text, items: group.items ?? [] }))
+  return loose.length > 0 ? [{ items: loose }, ...columns] : columns
+}
+
 /**
  * Generate navigation HTML from BunPress config
  * Supports VitePress-style (themeConfig.nav), markdown.nav, and legacy
  * top-level nav formats.
  */
 function generateNav(config: BunPressConfig, currentPath: string = ''): string {
-  const navConfig = config.themeConfig?.nav || config.markdown?.nav || config.nav
+  const navConfig = resolveNavConfig(config)
 
-  if (!navConfig || navConfig.length === 0) {
+  if (navConfig.length === 0) {
     return ''
   }
 
@@ -653,49 +708,138 @@ function generateNav(config: BunPressConfig, currentPath: string = ''): string {
     return prefixRootPath(config, link || '/')
   }
 
-  /**
-   * A nav entry is active when its `activeMatch` regex matches the current
-   * path. Without it a top-level "Guide" link pointing at `/install` only
-   * highlights on that exact page, never on the rest of the section.
-   */
-  const isActive = (item: NavItem): boolean => {
-    if (item.activeMatch) {
-      try {
-        return new RegExp(item.activeMatch).test(currentPath)
-      }
-      catch {
-        // A malformed pattern should not break the whole nav.
-        return false
-      }
-    }
-    if (!item.link)
-      return false
-    const link = item.link.split('#')[0].replace(/\/$/, '')
-    return link !== '' && link !== '/' && (currentPath === link || currentPath.startsWith(`${link}/`))
+  const isActive = (item: NavItem): boolean => isNavItemActive(item, currentPath)
+
+  /** Any descendant matching marks the whole top-level entry active. */
+  const isBranchActive = (item: NavItem): boolean =>
+    isActive(item) || (item.items ?? []).some(sub => isBranchActive(sub))
+
+  const megaItem = (sub: NavItem): string => {
+    const icon = sub.icon ? `<span class="BPMega-item-icon" aria-hidden="true">${sub.icon}</span>` : ''
+    const desc = sub.description ? `<span class="BPMega-item-desc">${sub.description}</span>` : ''
+    const active = isActive(sub) ? ' is-active' : ''
+    return `<a class="BPMega-item${active}" href="${escapeHtmlAttribute(fixNavLink(sub.link))}">
+            ${icon}
+            <span class="BPMega-item-body">
+              <span class="BPMega-item-title">${sub.text}</span>
+              ${desc}
+            </span>
+          </a>`
   }
+
+  const megaPanel = (item: NavItem): string => {
+    const groups = megaGroups(item)
+    // Author-set column count wins; otherwise one column per group, capped so
+    // a six-group menu wraps instead of shrinking every column to nothing.
+    const columns = Math.max(1, Math.min(item.columns ?? groups.length, 4))
+    const body = groups.map((group) => {
+      const title = group.text ? `<p class="BPMega-group-title">${group.text}</p>` : ''
+      return `<div class="BPMega-group">
+          ${title}
+          ${group.items.map(megaItem).join('\n          ')}
+        </div>`
+    }).join('\n        ')
+
+    const footer = item.footer
+      ? `<div class="BPMega-footer">
+          ${item.footer.note ? `<span class="BPMega-footer-note">${item.footer.note}</span>` : ''}
+          <a class="BPMega-footer-link" href="${escapeHtmlAttribute(fixNavLink(item.footer.link))}">${item.footer.text}</a>
+        </div>`
+      : ''
+
+    return `<div class="BPMega BPNavBarMenu-group-items" style="--bp-mega-columns:${columns}">
+        <div class="BPMega-columns">
+        ${body}
+        </div>
+        ${footer}
+      </div>`
+  }
+
+  const flyoutPanel = (item: NavItem): string =>
+    `<div class="BPNavBarMenu-group-items">
+          ${(item.items ?? []).map(sub =>
+            `<a href="${escapeHtmlAttribute(fixNavLink(sub.link))}"${isActive(sub) ? ' class="is-active"' : ''}>${sub.text}</a>`,
+          ).join('')}
+        </div>`
 
   const links = navConfig.map((item) => {
     if (item.items && item.items.length > 0) {
-      const groupActive = isActive(item) || item.items.some(sub => isActive(sub)) ? ' is-active' : ''
-      return `<div class="BPNavBarMenu-group${groupActive}">
-        <button class="BPNavBarMenu-group-button" type="button">
+      const mega = isMegaMenu(item)
+      const groupActive = isBranchActive(item) ? ' is-active' : ''
+      return `<div class="BPNavBarMenu-group${mega ? ' is-mega' : ''}${groupActive}">
+        <button class="BPNavBarMenu-group-button" type="button" aria-expanded="false" aria-haspopup="true">
           <span>${item.text}</span>
-          <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-          </svg>
+          ${NAV_CHEVRON}
         </button>
-        <div class="BPNavBarMenu-group-items">
-          ${item.items.map(subItem =>
-            `<a href="${fixNavLink(subItem.link)}">${subItem.text}</a>`,
-          ).join('')}
-        </div>
+        ${mega ? megaPanel(item) : flyoutPanel(item)}
       </div>`
     }
     const activeClass = isActive(item) ? ' is-active' : ''
-    return `<a class="BPNavBarMenu-link${activeClass}" href="${fixNavLink(item.link)}">${item.text}</a>`
+    return `<a class="BPNavBarMenu-link${activeClass}" href="${escapeHtmlAttribute(fixNavLink(item.link))}">${item.text}</a>`
   }).join('')
 
   return links
+}
+
+/**
+ * A nav entry is active when its `activeMatch` regex matches the current
+ * path. Without it a top-level "Guide" link pointing at `/install` only
+ * highlights on that exact page, never on the rest of the section.
+ */
+function isNavItemActive(item: NavItem, currentPath: string): boolean {
+  if (item.activeMatch) {
+    try {
+      return new RegExp(item.activeMatch).test(currentPath)
+    }
+    catch {
+      // A malformed pattern should not break the whole nav.
+      return false
+    }
+  }
+  if (!item.link)
+    return false
+  const link = item.link.split('#')[0].replace(/\/$/, '')
+  return link !== '' && link !== '/' && (currentPath === link || currentPath.startsWith(`${link}/`))
+}
+
+/**
+ * The stacked nav for narrow viewports. The desktop bar hides its links below
+ * 960px, which on the home and page layouts (no sidebar, no hamburger) left
+ * phones with no site navigation at all. This renders the same tree as a
+ * disclosure panel behind the menu button in the nav bar.
+ */
+function generateNavScreen(config: BunPressConfig, currentPath: string = ''): string {
+  const navConfig = resolveNavConfig(config)
+  if (navConfig.length === 0)
+    return ''
+
+  const fixNavLink = (link: string | undefined): string => prefixRootPath(config, link || '/')
+  const isActive = (item: NavItem): boolean => isNavItemActive(item, currentPath)
+
+  const leaf = (item: NavItem, cls: string): string =>
+    `<a class="${cls}${isActive(item) ? ' is-active' : ''}" href="${escapeHtmlAttribute(fixNavLink(item.link))}">${item.text}</a>`
+
+  const sections = navConfig.map((item) => {
+    if (!item.items || item.items.length === 0)
+      return `<div class="BPNavScreen-section">${leaf(item, 'BPNavScreen-link')}</div>`
+
+    const groups = isMegaMenu(item) ? megaGroups(item) : [{ items: item.items }]
+    const body = groups.map((group) => {
+      const title = group.text ? `<p class="BPNavScreen-subtitle">${group.text}</p>` : ''
+      return `${title}${group.items.map(sub => leaf(sub, 'BPNavScreen-link')).join('')}`
+    }).join('')
+
+    // <details> gives keyboard support, screen-reader semantics, and
+    // open/close state without a line of JavaScript.
+    return `<details class="BPNavScreen-section"${(item.items ?? []).some(sub => isActive(sub)) ? ' open' : ''}>
+      <summary class="BPNavScreen-summary">${item.text}${NAV_CHEVRON}</summary>
+      <div class="BPNavScreen-items">${body}</div>
+    </details>`
+  }).join('')
+
+  return `<div class="BPNavScreen" id="bp-nav-screen" hidden>
+    <nav class="BPNavScreen-nav" aria-label="Site">${sections}</nav>
+  </div>`
 }
 
 export function getConfiguredBasePath(config: BunPressConfig): string {
@@ -1287,6 +1431,11 @@ export async function wrapInLayout(
     ? `<img class="BPNavBarTitle-logo" src="${escapeHtmlAttribute(config.themeConfig.logo)}" alt="">`
     : ''
 
+  // The stacked nav for narrow viewports. The doc layout already has a
+  // hamburger opening the sidebar, which carries the same destinations, so it
+  // only ships on the layouts that would otherwise lose their navigation.
+  const navScreen = generateNavScreen(config, currentPath)
+
   // `navbar: false` in frontmatter drops the whole bar — used for embeds and
   // standalone pages that supply their own chrome.
   const navbarFor = async (variant: 'doc' | 'plain'): Promise<string> => frontmatter.navbar === false ? '' : render('navbar', {
@@ -1294,6 +1443,8 @@ export async function wrapInLayout(
     logo,
     localeSwitcher,
     nav,
+    navScreen: variant === 'doc' ? '' : navScreen,
+    navToggle: variant === 'doc' || !navScreen ? '' : NAV_TOGGLE_BUTTON,
     searchTrigger: searchEnabled ? searchTriggerButton(searchRuntime.placeholder, searchRuntime.shortcuts) : '',
     hamburger: variant === 'doc' ? HAMBURGER_BUTTON : '',
     socialLinks: generateSocialLinks(config),
@@ -1635,17 +1786,79 @@ async function generateHero(hero: any): Promise<string> {
     actions = `<div class="BPHero-actions">${actionButtons}</div>`
   }
 
-  const image = hero.image
-    ? `<div class="hero-image"><img src="${hero.image}" alt="${hero.name || ''}" /></div>`
+  // A small link above the headline: the release note, the launch post, the
+  // "what changed" pointer. It is the one label a hero gets, so it renders
+  // instead of an eyebrow rather than alongside one.
+  const announcement = hero.announcement
+    ? `<a class="BPHero-announcement" href="${escapeHtmlAttribute(hero.announcement.link || '#')}">
+      ${hero.announcement.tag ? `<span class="BPHero-announcement-tag">${hero.announcement.tag}</span>` : ''}
+      <span class="BPHero-announcement-text">${hero.announcement.text || ''}</span>
+      <svg class="BPHero-announcement-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+    </a>`
     : ''
 
+  // The hero visual. A tool that people read code to evaluate is better
+  // served by a real, highlighted sample than by a logo: `hero.code` renders
+  // through the same highlighter as a markdown fence, so it is real code with
+  // real tokens rather than a picture of code.
+  const heroImage = hero.image
+    ? `<div class="hero-image"><img src="${escapeHtmlAttribute(hero.image)}" alt="${escapeHtmlAttribute(hero.name || '')}" /></div>`
+    : ''
+  // `code` wins over `image` when it has something to show. If every sample
+  // turned out to be blank, a configured image is still better than a hero
+  // with a hole where its visual was.
+  const image = (hero.code ? await generateHeroCode(hero.code) : '') || heroImage
+
   return await render('hero', {
+    announcement,
     name,
     text,
     tagline,
     actions,
     image,
   })
+}
+
+/**
+ * Render `hero.code` as a titled code panel.
+ *
+ * Accepts a single sample, or a list of them for a tabbed panel:
+ *
+ *   hero:
+ *     code:
+ *       lang: ts
+ *       file: server.ts
+ *       content: |
+ *         export default { fetch: () => new Response('hi') }
+ */
+async function generateHeroCode(code: any): Promise<string> {
+  const samples: any[] = Array.isArray(code) ? code : [code]
+  const usable = samples.filter(sample => typeof sample?.content === 'string' && sample.content.trim())
+  if (usable.length === 0)
+    return ''
+
+  const panels = await Promise.all(usable.map(async (sample, index) => {
+    const lang = sample.lang || 'ts'
+    const highlighted = await highlightCode(sample.content.replace(/\n+$/, ''), lang)
+    return `<div class="BPHeroCode-panel" data-index="${index}"${index === 0 ? '' : ' hidden'}>
+        <pre data-lang="${escapeHtmlAttribute(lang)}"><code class="language-${escapeHtmlAttribute(lang)}">${highlighted}</code></pre>
+      </div>`
+  }))
+
+  // One sample gets a filename caption; several get tabs. Both live in the
+  // same strip so the panel keeps one silhouette either way.
+  const head = usable.length > 1
+    ? `<div class="BPHeroCode-tabs" role="tablist">${usable.map((sample, index) =>
+      `<button class="BPHeroCode-tab${index === 0 ? ' is-active' : ''}" type="button" role="tab" aria-selected="${index === 0}" onclick="switchHeroCodeTab(this, ${index})">${sample.file || sample.lang || `Example ${index + 1}`}</button>`,
+    ).join('')}</div>`
+    : usable[0].file
+      ? `<span class="BPHeroCode-file">${usable[0].file}</span>`
+      : ''
+
+  return `<div class="BPHeroCode">
+    <div class="BPHeroCode-head">${head}</div>
+    <div class="BPHeroCode-body">${panels.join('')}</div>
+  </div>`
 }
 
 /**
@@ -1680,12 +1893,23 @@ async function generateFeatures(features: any[]): Promise<string> {
     const iconHtml = icon ? `<div class="BPFeature-icon">${icon}</div>` : ''
     const link = feature.link
     const tag = link ? 'a' : 'div'
-    const linkAttr = link ? ` href="${link}"` : ''
+    const linkAttr = link ? ` href="${escapeHtmlAttribute(link)}"` : ''
+    // A `span` lets a grid of equal tiles become a bento: the cell claims that
+    // many columns at desktop width and collapses back to one on narrow
+    // screens with the rest of the grid.
+    const span = Number(feature.span) > 1 ? ` style="--bp-feature-span:${Math.min(Math.trunc(Number(feature.span)), 3)}"` : ''
+    const linkClass = link ? ' is-linked' : ''
+    // A card that navigates says so. Without it a linked card and a static one
+    // are indistinguishable until the pointer is already on them.
+    const cta = link
+      ? `<span class="BPFeature-link">${feature.linkText || 'Learn more'}<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></span>`
+      : ''
     return `
-    <${tag} class="BPFeature"${linkAttr}>
+    <${tag} class="BPFeature${linkClass}"${linkAttr}${span}>
       ${iconHtml}
       <h3 class="BPFeature-title">${feature.title || ''}</h3>
       <p class="BPFeature-details">${feature.details || ''}</p>
+      ${cta}
     </${tag}>`
   }).join('')
 
