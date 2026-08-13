@@ -1,3 +1,25 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.1...v0.2.2)
+
+## ✨ Features
+
+- **nav**: mega menus, a stacked nav for phones, and richer home blocks ([9f70dd9](https://github.com/stacksjs/bunpress/commit/9f70dd9)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#0](https://github.com/stacksjs/bunpress/issues/0))
+
+## 🐛 Bug Fixes
+
+- **theme**: read themeConfig from markdown too, so nested config themes the site ([72ed1f1](https://github.com/stacksjs/bunpress/commit/72ed1f1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 👷 Build System
+
+- **deps**: track pickier 0.1.55 ([b842817](https://github.com/stacksjs/bunpress/commit/b842817)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.2 ([42b38d0](https://github.com/stacksjs/bunpress/commit/42b38d0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.0...v0.2.1)
 
 ## 🐛 Bug Fixes
