@@ -112,13 +112,12 @@ jobs:
     needs: [lint, typecheck, test]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     concurrency:
       group: bunpress-org-production
       cancel-in-progress: false
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: us-east-1
 
     steps:
       - uses: actions/checkout@v6
@@ -133,6 +132,26 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Configure short-lived AWS credentials
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::923076644019:role/github-actions-bunpress-deploy
+
+      - name: Load encrypted production environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          trap 'rm -f .env.keys' EXIT
+
+          aws ssm get-parameter \
+            --name /bunpress/production/env-key \
+            --with-decryption \
+            --query Parameter.Value \
+            --output text > .env.keys
+          chmod 600 .env.keys
+          bun run env:production
+
       - name: Build documentation
         run: bun run build:docs
 
@@ -141,19 +160,9 @@ jobs:
         run: |
           set -euo pipefail
 
-          distribution_id="$(
-            aws cloudfront list-distributions --output json \
-              | jq -r '[.DistributionList.Items[] | select((.Aliases.Items // []) | index("bunpress.org")) | .Id][0] // empty'
-          )"
-
-          if [[ -z "$distribution_id" ]]; then
-            echo "Could not find the CloudFront distribution for bunpress.org." >&2
-            exit 1
-          fi
-
-          aws s3 sync dist/.bunpress s3://bunpress-org \
+          aws s3 sync "dist/.bunpress" "s3://${AWS_S3_BUCKET}" \
             --delete \
             --cache-control 'max-age=3600, public'
           aws cloudfront create-invalidation \
-            --distribution-id "$distribution_id" \
+            --distribution-id "$AWS_CLOUDFRONT_DISTRIBUTION_ID" \
             --paths '/*'

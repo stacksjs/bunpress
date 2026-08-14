@@ -20,5 +20,7 @@ test/use-cases/**/output/**
 test/use-cases/**/.gitignore
 docs/.bunpress/
 .env
+.env.keys
+!.env.production
 /pantry
 pantry
