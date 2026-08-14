@@ -43,11 +43,13 @@
     "dev:docs": "bun packages/bunpress/bin/cli.ts dev",
     "build:docs": "bun packages/bunpress/bin/cli.ts build --outdir ./dist",
     "preview:docs": "bun packages/bunpress/bin/cli.ts preview --outdir ./dist",
+    "env:production": "bun scripts/export-production-env.ts",
     "typecheck": "bun --bun tsc --noEmit",
     "bench": "cd benchmark && bun run bench:all"
   },
   "devDependencies": {
     "@stacksjs/bumpx": "^0.2.4",
+    "@stacksjs/env": "^0.70.371",
     "@stacksjs/gitlint": "^0.1.5",
     "@stacksjs/logsmith": "^0.2.1",
     "bun-git-hooks": "^0.3.1",
