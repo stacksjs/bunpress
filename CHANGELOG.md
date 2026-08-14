@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.4...v0.2.5)
+
+## 🐛 Bug Fixes
+
+- **toc**: re-aim a deep link once late layout stops moving the page ([0df559a](https://github.com/stacksjs/bunpress/commit/0df559a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.5 ([5986c26](https://github.com/stacksjs/bunpress/commit/5986c26)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.3...v0.2.4)
 
 ## 🐛 Bug Fixes
