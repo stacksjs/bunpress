@@ -333,7 +333,7 @@ const varsCSS = `/**
   --bp-code-tab-text-color: var(--bp-c-text-2);
   --bp-code-tab-bg: var(--bp-code-block-bg);
   --bp-code-tab-hover-text-color: var(--bp-c-text-1);
-  --bp-code-tab-active-text-color: var(--bp-c-text-1);
+  --bp-code-tab-active-text-color: var(--bp-c-brand-1);
   --bp-code-tab-active-bar-color: var(--bp-c-brand-1);
 }
 

@@ -61,4 +61,12 @@ describe('themeConfig to CSS', () => {
 
     expect(html).not.toContain('--bp-c-brand-1: #')
   })
+
+  it('renders one branded active-tab treatment', async () => {
+    const html = await render(BASE)
+
+    expect(html.match(/\.code-group-tab\.active\s*\{/g)).toHaveLength(1)
+    expect(html).toContain('--bp-code-tab-active-text-color: var(--bp-c-brand-1);')
+    expect(html).not.toContain('border-bottom-color: #3451b2;')
+  })
 })

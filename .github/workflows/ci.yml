@@ -106,3 +106,54 @@ jobs:
         run: pantry publish:commit './packages/*'
         env:
           PANTRY_REGISTRY_TOKEN: ${{ secrets.PANTRY_TOKEN }}
+
+  deploy-docs:
+    name: deploy bunpress.org
+    needs: [lint, typecheck, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: bunpress-org-production
+      cancel-in-progress: false
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: us-east-1
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Pantry
+        uses: pantry-pm/pantry/packages/action@9f797da1ed073df7839cb6a9a7db6181ba33f0b7
+        with:
+          version: 0.11.12
+          packages: bun.sh@1.3.14
+          install: 'false'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build documentation
+        run: bun run build:docs
+
+      - name: Publish site and invalidate CloudFront
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          distribution_id="$(
+            aws cloudfront list-distributions --output json \
+              | jq -r '[.DistributionList.Items[] | select((.Aliases.Items // []) | index("bunpress.org")) | .Id][0] // empty'
+          )"
+
+          if [[ -z "$distribution_id" ]]; then
+            echo "Could not find the CloudFront distribution for bunpress.org." >&2
+            exit 1
+          fi
+
+          aws s3 sync dist/.bunpress s3://bunpress-org \
+            --delete \
+            --cache-control 'max-age=3600, public'
+          aws cloudfront create-invalidation \
+            --distribution-id "$distribution_id" \
+            --paths '/*'

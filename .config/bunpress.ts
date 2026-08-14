@@ -1,5 +1,5 @@
-import type { BunPressOptions } from '../src/types'
-import { defaultConfig } from '../src/config'
+import type { BunPressOptions } from '../packages/bunpress/src/types'
+import { defaultConfig } from '../packages/bunpress/src/config'
 
 const config: BunPressOptions = {
   ...defaultConfig,

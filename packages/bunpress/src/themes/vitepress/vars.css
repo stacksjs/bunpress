@@ -285,7 +285,7 @@
   --vp-code-tab-text-color: var(--vp-c-text-2);
   --vp-code-tab-bg: var(--vp-code-block-bg);
   --vp-code-tab-hover-text-color: var(--vp-c-text-1);
-  --vp-code-tab-active-text-color: var(--vp-c-text-1);
+  --vp-code-tab-active-text-color: var(--vp-c-brand-1);
   --vp-code-tab-active-bar-color: var(--vp-c-brand-1);
 }
 
