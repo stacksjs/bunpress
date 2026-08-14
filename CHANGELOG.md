@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.2...v0.2.3)
+
+## 🐛 Bug Fixes
+
+- **seo**: address a nested directory index by its directory, not /index ([f18951c](https://github.com/stacksjs/bunpress/commit/f18951c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.3 ([67a3b62](https://github.com/stacksjs/bunpress/commit/67a3b62)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.1...v0.2.2)
 
 ## ✨ Features
