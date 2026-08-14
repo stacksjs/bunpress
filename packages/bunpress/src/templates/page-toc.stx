@@ -203,6 +203,16 @@ function initPageTOC() {
       activeId = headingPositions[0].id;
     }
 
+    // At the bottom of the page the remaining headings can never reach the top
+    // of the viewport, so the rule above freezes on whichever one got there
+    // last. The reader is looking at the final section, so mark it: without
+    // this, the last few entries are unreachable and clicking one visibly
+    // snaps the highlight back to an earlier heading.
+    const atBottom = scrollY + scrollContainer.clientHeight >= scrollContainer.scrollHeight - 2;
+    if (atBottom && headingPositions.length > 0) {
+      activeId = headingPositions[headingPositions.length - 1].id;
+    }
+
     // Activate the link
     activateLink(activeId ? '#' + activeId : null);
   }
@@ -229,6 +239,14 @@ function initPageTOC() {
 
         // Update URL without page reload
         history.pushState(null, '', '#' + targetId);
+
+        // Clicking the entry for a heading near the end of the page cannot
+        // scroll far enough to make that heading the topmost one, so the
+        // scroll handler would settle on an earlier entry and the click would
+        // appear to jump to the wrong place. Mark the clicked one, then let
+        // the settle pass reconcile once the scroll finishes.
+        activateLink('#' + targetId);
+        settleActiveLink();
       }
     });
   });
@@ -240,6 +258,26 @@ function initPageTOC() {
   }
   scrollContainer.__bpTocScroll = onScroll;
   scrollContainer.addEventListener('scroll', onScroll);
+
+  /**
+   * Recompute the highlight once a programmatic scroll has come to rest.
+   *
+   * A scroll this code starts itself cannot be relied on to drive the scroll
+   * listener. When the browser has already jumped to the anchor on its own,
+   * the scrollTo below asks for the position the container is ALREADY at, no
+   * scroll event fires at all, and nothing recomputes the highlight. Prefer
+   * the real `scrollend` event and fall back to a timer where it is missing.
+   */
+  function settleActiveLink() {
+    if ('onscrollend' in window) {
+      scrollContainer.addEventListener('scrollend', setActiveLink, { once: true });
+      // scrollend never arrives when the scroll was a no-op, so still arm a
+      // fallback; setActiveLink is idempotent, so running twice is harmless.
+      setTimeout(setActiveLink, 400);
+      return;
+    }
+    setTimeout(setActiveLink, 400);
+  }
 
   // Handle URL hash on page load
   if (window.location.hash) {
@@ -255,9 +293,23 @@ function initPageTOC() {
           top: scrollTo,
           behavior: 'smooth'
         });
+
+        // The initial update below runs ~16ms in, long before this 100ms-
+        // deferred jump, so without this the highlight stayed on whatever
+        // heading was on screen at scroll position 0 — every deep link
+        // arrived with the wrong entry marked.
+        settleActiveLink();
       }
     }, 100);
   }
+
+  // A hash change that this script did not initiate (back/forward, or a link
+  // elsewhere on the page) scrolls without passing through the click handler.
+  if (window.__bpTocHashChange) {
+    window.removeEventListener('hashchange', window.__bpTocHashChange);
+  }
+  window.__bpTocHashChange = settleActiveLink;
+  window.addEventListener('hashchange', settleActiveLink);
 
   // Initial update
   requestAnimationFrame(setActiveLink);
