@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.3...v0.2.4)
+
+## 🐛 Bug Fixes
+
+- **toc**: highlight the right heading when a page opens on a deep link ([395f349](https://github.com/stacksjs/bunpress/commit/395f349)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.4 ([26e36b9](https://github.com/stacksjs/bunpress/commit/26e36b9)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.2...v0.2.3)
 
 ## 🐛 Bug Fixes
