@@ -279,28 +279,46 @@ function initPageTOC() {
     setTimeout(setActiveLink, 400);
   }
 
+  /** Scroll the container so the hash target sits just below the nav. */
+  function scrollToHashTarget(behavior) {
+    if (!window.location.hash) return;
+    const targetId = decodeURIComponent(window.location.hash.substring(1));
+    const targetElement = document.getElementById(targetId);
+    if (!targetElement) return;
+
+    const containerRect = scrollContainer.getBoundingClientRect();
+    const targetRect = targetElement.getBoundingClientRect();
+
+    scrollContainer.scrollTo({
+      top: targetRect.top - containerRect.top + scrollContainer.scrollTop - 80,
+      behavior: behavior
+    });
+
+    // The initial update runs ~16ms in, long before this, so without this the
+    // highlight stayed on whatever heading was on screen at scroll position
+    // zero and every deep link arrived with the wrong entry marked.
+    settleActiveLink();
+  }
+
+  // Once the reader takes over, this script stops moving the page under them.
+  let userScrolled = false;
+  ['wheel', 'touchstart', 'keydown'].forEach((evt) => {
+    scrollContainer.addEventListener(evt, () => { userScrolled = true; }, { once: true, passive: true });
+  });
+
   // Handle URL hash on page load
   if (window.location.hash) {
-    setTimeout(() => {
-      const targetId = window.location.hash.substring(1);
-      const targetElement = document.getElementById(targetId);
-      if (targetElement) {
-        const containerRect = scrollContainer.getBoundingClientRect();
-        const targetRect = targetElement.getBoundingClientRect();
-        const scrollTo = targetRect.top - containerRect.top + scrollContainer.scrollTop - 80;
+    setTimeout(() => scrollToHashTarget('smooth'), 100);
 
-        scrollContainer.scrollTo({
-          top: scrollTo,
-          behavior: 'smooth'
-        });
-
-        // The initial update below runs ~16ms in, long before this 100ms-
-        // deferred jump, so without this the highlight stayed on whatever
-        // heading was on screen at scroll position 0 — every deep link
-        // arrived with the wrong entry marked.
-        settleActiveLink();
-      }
-    }, 100);
+    // Every offset above is measured against the layout as it stands right
+    // then. Web fonts and late-loading media reflow the document afterwards,
+    // and on a long page the scroll computed against the OLD layout can end up
+    // past the new maximum — the browser clamps it, and the reader lands at
+    // the foot of the page instead of at their heading, with the outline
+    // faithfully highlighting the last entry. So re-aim once things settle.
+    const reaim = () => { if (!userScrolled) scrollToHashTarget('auto'); };
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(reaim);
+    window.addEventListener('load', reaim, { once: true });
   }
 
   // A hash change that this script did not initiate (back/forward, or a link
