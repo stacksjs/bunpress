@@ -331,3 +331,25 @@ describe('frontmatter layout toggles', () => {
     expect(without).not.toContain('class="BPNav"')
   })
 })
+
+describe('directory index URLs', () => {
+  it('addresses a nested section index by its directory, not /index', async () => {
+    const html = await wrapInLayout('<h1>Docs</h1>', BASE, '/docs/index', 'doc')
+
+    expect(html).toContain('<link rel="canonical" href="https://docs.example.com/docs">')
+    expect(html).toContain('<meta property="og:url" content="https://docs.example.com/docs">')
+    expect(html).not.toContain('/docs/index"')
+  })
+
+  it('still collapses the root index to /', async () => {
+    const html = await wrapInLayout('<h1>Home</h1>', BASE, '/index', 'home')
+
+    expect(html).toContain('<link rel="canonical" href="https://docs.example.com/">')
+  })
+
+  it('leaves a page that merely ends in "index" alone', async () => {
+    const html = await wrapInLayout('<h1>Reindex</h1>', BASE, '/guide/reindex', 'doc')
+
+    expect(html).toContain('<link rel="canonical" href="https://docs.example.com/guide/reindex">')
+  })
+})

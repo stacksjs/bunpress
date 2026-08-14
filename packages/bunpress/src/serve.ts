@@ -896,6 +896,20 @@ function prefixRootRelativeAttributes(html: string, config: BunPressConfig): str
 }
 
 /**
+ * The public path for a page, as a canonical URL / og:url / JSON-LD id.
+ *
+ * A directory index is addressed by its directory, so the `/index` suffix is
+ * dropped: `/index` is `/`, and `/docs/index` is `/docs`. Only the root case
+ * was handled before, so every nested section index advertised a canonical URL
+ * (`/docs/index`) that no link on the site pointed at, splitting it from the
+ * `/docs` the sitemap listed and crawlers actually followed.
+ */
+function publicPath(currentPath: string): string {
+  if (currentPath === '/index') return '/'
+  return currentPath.endsWith('/index') ? currentPath.slice(0, -'/index'.length) : currentPath
+}
+
+/**
  * Generate canonical URL for the current page
  */
 function generateCanonicalUrl(config: BunPressConfig, currentPath: string, override?: string): string {
@@ -910,7 +924,7 @@ function generateCanonicalUrl(config: BunPressConfig, currentPath: string, overr
   }
 
   const cleanBaseUrl = baseUrl.replace(/\/$/, '')
-  const cleanPath = currentPath === '/index' ? '/' : currentPath
+  const cleanPath = publicPath(currentPath)
   return `<link rel="canonical" href="${cleanBaseUrl}${cleanPath}">`
 }
 
@@ -930,7 +944,7 @@ function generateOpenGraphTags(
   }
 
   const cleanBaseUrl = baseUrl.replace(/\/$/, '')
-  const cleanPath = currentPath === '/index' ? '/' : currentPath
+  const cleanPath = publicPath(currentPath)
   const url = `${cleanBaseUrl}${cleanPath}`
 
   const siteName = config.title || config.markdown?.title || title
@@ -998,7 +1012,7 @@ function generateStructuredData(
   }
 
   const cleanBaseUrl = baseUrl.replace(/\/$/, '')
-  const cleanPath = currentPath === '/index' ? '/' : currentPath
+  const cleanPath = publicPath(currentPath)
   const url = `${cleanBaseUrl}${cleanPath}`
 
   // WebSite schema for home page
@@ -1419,7 +1433,7 @@ export async function wrapInLayout(
         current: localeLabel(resolvedI18n, activeLocale),
         options: resolvedI18n.locales
           .map((code) => {
-            const href = localizeUrl(resolvedI18n, code, currentPath === '/index' ? '/' : currentPath)
+            const href = localizeUrl(resolvedI18n, code, publicPath(currentPath))
             const current = code === activeLocale ? ' aria-current="true"' : ''
             return `<li><a href="${escapeHtmlAttribute(href)}" data-locale="${escapeHtmlAttribute(code)}"${current}>${escapeHtmlAttribute(localeLabel(resolvedI18n, code))}</a></li>`
           })
