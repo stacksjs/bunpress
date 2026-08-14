@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@9f797da1ed073df7839cb6a9a7db6181ba33f0b7
@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@9f797da1ed073df7839cb6a9a7db6181ba33f0b7
@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@9f797da1ed073df7839cb6a9a7db6181ba33f0b7
@@ -83,7 +83,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -121,7 +121,7 @@ jobs:
       AWS_DEFAULT_REGION: us-east-1
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@9f797da1ed073df7839cb6a9a7db6181ba33f0b7
