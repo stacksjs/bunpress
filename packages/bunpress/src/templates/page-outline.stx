@@ -117,6 +117,12 @@
   background-color: var(--bp-c-default-soft, var(--bp-c-gray-soft));
 }
 
+.bp-local-outline-items a.active {
+  color: var(--bp-c-brand-1);
+  background-color: var(--bp-c-brand-soft);
+  border-left-color: var(--bp-c-brand-1);
+}
+
 .bp-local-outline-items a:focus-visible {
   outline: 2px solid var(--bp-c-brand-1);
   outline-offset: -2px;
