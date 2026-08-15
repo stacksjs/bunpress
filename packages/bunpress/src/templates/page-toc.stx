@@ -116,7 +116,7 @@
 function initPageTOC() {
   const tocContainer = document.querySelector('.page-toc');
   const marker = document.querySelector('.outline-marker');
-  const tocLinks = document.querySelectorAll('.page-toc a');
+  const tocLinks = document.querySelectorAll('.page-toc a, .bp-local-outline-items a');
   const headings = Array.from(document.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]'));
   const scrollContainer = document.querySelector('.BPContent');
 
@@ -144,18 +144,42 @@ function initPageTOC() {
     };
   }
 
-  // Activate a TOC link by hash
+  // Keep the active entry inside whichever outline is currently visible. On
+  // long pages the marker used to continue moving below the fixed aside while
+  // the aside itself remained at scrollTop 0, making a working scrollspy look
+  // completely dead once the reader passed the first screen of headings.
+  function keepActiveLinkVisible(activeLink) {
+    const outlineViewport = activeLink.closest('.BPDocAside') || activeLink.closest('.bp-local-outline-items');
+    if (!outlineViewport || outlineViewport.clientHeight === 0) return;
+
+    const linkRect = activeLink.getBoundingClientRect();
+    const viewportRect = outlineViewport.getBoundingClientRect();
+    const inset = 24;
+
+    if (linkRect.top < viewportRect.top + inset) {
+      outlineViewport.scrollTop += linkRect.top - viewportRect.top - inset;
+    } else if (linkRect.bottom > viewportRect.bottom - inset) {
+      outlineViewport.scrollTop += linkRect.bottom - viewportRect.bottom + inset;
+    }
+  }
+
+  // Activate matching links in both the fixed desktop outline and the
+  // collapsible in-content outline used at narrower widths.
   function activateLink(hash) {
     // Remove previous active class
     tocLinks.forEach(link => link.classList.remove('active'));
 
     if (hash) {
-      // Find and activate new link
-      const activeLink = tocContainer.querySelector('a[href="' + decodeURIComponent(hash) + '"]');
+      const decodedHash = decodeURIComponent(hash);
+      const activeLinks = Array.from(tocLinks).filter(link => link.getAttribute('href') === decodedHash);
+      const activeLink = tocContainer.querySelector('a[href="' + decodedHash + '"]');
+
+      activeLinks.forEach(link => {
+        link.classList.add('active');
+        keepActiveLinkVisible(link);
+      });
 
       if (activeLink) {
-        activeLink.classList.add('active');
-
         // Position the marker at the active link
         const linkRect = activeLink.getBoundingClientRect();
         const containerRect = tocContainer.getBoundingClientRect();
@@ -328,6 +352,16 @@ function initPageTOC() {
   }
   window.__bpTocHashChange = settleActiveLink;
   window.addEventListener('hashchange', settleActiveLink);
+
+  // Opening the responsive outline does not move the page and therefore does
+  // not emit a scroll event. Re-run once it becomes visible so its active
+  // entry and internal scroll position immediately match the current section.
+  const inlineOutline = document.querySelector('.bp-local-outline');
+  if (inlineOutline) {
+    inlineOutline.addEventListener('toggle', () => {
+      if (inlineOutline.open) requestAnimationFrame(setActiveLink);
+    });
+  }
 
   // Initial update
   requestAnimationFrame(setActiveLink);
