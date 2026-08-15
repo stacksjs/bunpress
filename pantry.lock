@@ -19,7 +19,7 @@
     },
     "packages/bun-plugin": {
       "name": "bun-plugin-bunpress",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "devDependencies": {
         "bun-plugin-dtsx": "^0.10.4",
         "typescript": "^7.0.2"
@@ -27,7 +27,7 @@
     },
     "packages/bunpress": {
       "name": "@stacksjs/bunpress",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "dependencies": {
         "@cwcss/crosswind": "^0.2.16",
         "@stacksjs/clapp": "^0.2.0",

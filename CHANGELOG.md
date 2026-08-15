@@ -1,3 +1,19 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.5...v0.2.6)
+
+## 🐛 Bug Fixes
+
+- **toc**: keep active outline entry visible (#83) ([0b3c329](https://github.com/stacksjs/bunpress/commit/0b3c329)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#83](https://github.com/stacksjs/bunpress/issues/83), [#83](https://github.com/stacksjs/bunpress/issues/83))
+- **ci**: deploy with encrypted production env (#82) ([8937a59](https://github.com/stacksjs/bunpress/commit/8937a59)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#82](https://github.com/stacksjs/bunpress/issues/82), [#82](https://github.com/stacksjs/bunpress/issues/82))
+- **docs**: deploy corrected active tabs (#81) ([fc290b6](https://github.com/stacksjs/bunpress/commit/fc290b6)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#81](https://github.com/stacksjs/bunpress/issues/81), [#81](https://github.com/stacksjs/bunpress/issues/81))
+
+## 🔧 Chores
+
+- release v0.2.6 ([001b46d](https://github.com/stacksjs/bunpress/commit/001b46d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.4...v0.2.5)
 
 ## 🐛 Bug Fixes
