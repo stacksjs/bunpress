@@ -962,6 +962,24 @@ function generateOpenGraphTags(
 
   if (ogImage) {
     tags.push(`<meta property="og:image" content="${ogImage}">`)
+
+    /*
+     * The card's shape, when the site has declared it.
+     *
+     * A scraper that has not fetched the image yet - or cannot - has nothing
+     * to reserve layout with, so it either draws a small thumbnail or leaves
+     * the slot empty until the fetch lands. These four keys were dropped on
+     * the floor: `basicMeta` filters everything starting with `og:` out of the
+     * arbitrary meta block on the assumption this function handles it, and
+     * this function only ever handled `og:image` itself. Declaring
+     * `og:image:width` in config produced no tag and no complaint.
+     */
+    const meta = config.markdown?.meta ?? {}
+    for (const key of ['og:image:width', 'og:image:height', 'og:image:type', 'og:image:alt'] as const) {
+      const value = meta[key]
+      if (value !== undefined && value !== null && value !== '')
+        tags.push(`<meta property="${key}" content="${value}">`)
+    }
   }
 
   return tags.join('\n  ')
@@ -978,7 +996,20 @@ function generateTwitterCardTags(
 ): string {
   const twitterCard = config.markdown?.meta?.['twitter:card'] || config.markdown?.meta?.twitterCard || 'summary'
   const twitterSite = config.markdown?.meta?.['twitter:site'] || config.markdown?.meta?.twitterSite
-  const twitterImage = pageImage || config.markdown?.meta?.['twitter:image'] || config.markdown?.meta?.twitterImage
+  /*
+   * The Open Graph image is the last fallback.
+   *
+   * A site that declares `og:image` and nothing else got a Twitter card with
+   * no image on it. X does fall back to `og:image` itself, so this was not
+   * visibly broken there - but the tags are read by more than X, and a site
+   * that has said which image represents it should not have to say it twice
+   * to be believed.
+   */
+  const twitterImage = pageImage
+    || config.markdown?.meta?.['twitter:image']
+    || config.markdown?.meta?.twitterImage
+    || config.markdown?.meta?.['og:image']
+    || config.markdown?.meta?.ogImage
 
   const tags = [
     `<meta name="twitter:card" content="${twitterCard}">`,
@@ -992,6 +1023,12 @@ function generateTwitterCardTags(
 
   if (twitterImage) {
     tags.push(`<meta name="twitter:image" content="${twitterImage}">`)
+
+    // Dropped for the same reason `og:image:alt` was: `basicMeta` filters
+    // `twitter:` keys out and this function did not pick them up.
+    const alt = config.markdown?.meta?.['twitter:image:alt'] ?? config.markdown?.meta?.['og:image:alt']
+    if (alt !== undefined && alt !== null && alt !== '')
+      tags.push(`<meta name="twitter:image:alt" content="${alt}">`)
   }
 
   return tags.join('\n  ')

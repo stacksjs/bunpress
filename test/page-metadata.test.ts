@@ -62,6 +62,39 @@ describe('per-page metadata', () => {
     expect(html).toContain('<meta name="twitter:image" content="/preview.png">')
   })
 
+  it('declares the card shape a scraper needs before it fetches the image', async () => {
+    const html = await render('<h1>Page</h1>', {}, {
+      ...BASE,
+      markdown: {
+        ...BASE.markdown,
+        meta: {
+          'og:image': 'https://docs.example.com/social/og.png',
+          'og:image:type': 'image/png',
+          'og:image:width': '1200',
+          'og:image:height': '630',
+          'og:image:alt': 'A card',
+          'twitter:card': 'summary_large_image',
+        },
+      },
+    } as BunPressConfig)
+
+    expect(html).toContain('<meta property="og:image:type" content="image/png">')
+    expect(html).toContain('<meta property="og:image:width" content="1200">')
+    expect(html).toContain('<meta property="og:image:height" content="630">')
+    expect(html).toContain('<meta property="og:image:alt" content="A card">')
+    // Falls back to the Open Graph alt rather than going without one.
+    expect(html).toContain('<meta name="twitter:image:alt" content="A card">')
+  })
+
+  it('omits the card shape when the site has not declared an image', async () => {
+    const html = await render('<h1>Page</h1>', {}, {
+      ...BASE,
+      markdown: { ...BASE.markdown, meta: { 'og:image:width': '1200' } },
+    } as BunPressConfig)
+
+    expect(html).not.toContain('og:image:width')
+  })
+
   it('honours an explicit canonical url', async () => {
     const html = await render('<h1>Page</h1>', { canonical: 'https://elsewhere.example/page' })
 
