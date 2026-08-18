@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.6...v0.2.7)
+
+## 🐛 Bug Fixes
+
+- **seo**: stop dropping the card's shape from the head ([317fe13](https://github.com/stacksjs/bunpress/commit/317fe13)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.7 ([8738fdc](https://github.com/stacksjs/bunpress/commit/8738fdc)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.5...v0.2.6)
 
 ## 🐛 Bug Fixes
