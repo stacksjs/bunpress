@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.8...v0.2.9)
+
+## 🐛 Bug Fixes
+
+- **seo**: let a site say its URL once, and make the SEO output follow ([790db0d](https://github.com/stacksjs/bunpress/commit/790db0d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.9 ([1ac346c](https://github.com/stacksjs/bunpress/commit/1ac346c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.7...v0.2.8)
 
 ## ✨ Features
