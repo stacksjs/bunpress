@@ -99,3 +99,40 @@ describe('a top-level sidebar', () => {
     expect(html).toContain('The Guide')
   })
 })
+
+/**
+ * `collectEndpoint` is the path the tracker posts to. It used to be hardcoded as
+ * `/collect` in the generated client, which is the one part of a first-party
+ * request a content blocker can match - so a self-hosted setup could be
+ * configured correctly and still be filtered.
+ */
+describe('analytics collectEndpoint', () => {
+  const base = { verbose: false, markdown: {}, title: 'Docs' }
+  const analytics = { enabled: true, siteId: 'abc', apiEndpoint: 'https://a.example.com' }
+
+  test('defaults to /collect', async () => {
+    const { wrapInLayout } = await import('../packages/bunpress/src/serve')
+    const html = await wrapInLayout('<p>x</p>', { ...base, analytics }, '/index')
+    expect(html).toContain('/collect')
+    expect(html).not.toContain('data-collect')
+  })
+
+  test('posts to the configured path instead', async () => {
+    const { wrapInLayout } = await import('../packages/bunpress/src/serve')
+    const html = await wrapInLayout('<p>x</p>', {
+      ...base,
+      analytics: { ...analytics, collectEndpoint: '/t' },
+    }, '/index')
+    expect(html).toContain('data-collect="/t"')
+    expect(html).toContain('send(api+collect,data)')
+  })
+
+  test('tolerates a path written without its leading slash', async () => {
+    const { wrapInLayout } = await import('../packages/bunpress/src/serve')
+    const html = await wrapInLayout('<p>x</p>', {
+      ...base,
+      analytics: { ...analytics, collectEndpoint: 't' },
+    }, '/index')
+    expect(html).toContain('data-collect="/t"')
+  })
+})

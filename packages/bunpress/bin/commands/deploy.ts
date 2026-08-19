@@ -108,6 +108,15 @@ export async function deployCommand(options: DeployOptions = {}): Promise<boolea
   const cloudConfig = bunPressConfig.cloud || {}
   const verbose = options.verbose ?? bunPressConfig.verbose ?? false
 
+  // Everything below is CloudFormation, S3 and CloudFront. Someone who writes a
+  // different driver has asked for something this command cannot do, and the
+  // useful answer is to say so - not to deploy to AWS anyway and let them find
+  // out from the bill.
+  if (cloudConfig.driver && cloudConfig.driver !== 'aws') {
+    logError(`Unsupported cloud driver: ${cloudConfig.driver}. Only 'aws' is implemented.`)
+    return false
+  }
+
   // Merge options with config
   const region = options.region || cloudConfig.region || 'us-east-1'
   const domain = options.domain || cloudConfig.domain

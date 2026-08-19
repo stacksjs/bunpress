@@ -206,6 +206,17 @@ export interface BunPressConfig {
  */
 export interface CloudConfig {
   /**
+   * Which cloud the `deploy` command targets.
+   *
+   * @default 'aws'
+   *
+   * Only AWS is implemented - the deploy path is CloudFormation, S3 and
+   * CloudFront throughout. It is declared, and checked, so that asking for
+   * anything else fails with that sentence rather than quietly deploying to AWS.
+   */
+  driver?: 'aws'
+
+  /**
    * AWS region for deployment
    * @default 'us-east-1'
    */
@@ -1557,6 +1568,20 @@ export interface AnalyticsConfig {
    * Example: 'https://api.example.com/analytics'
    */
   apiEndpoint?: string
+
+  /**
+   * Path the tracker posts to, appended to {@link apiEndpoint}.
+   *
+   * @default '/collect'
+   *
+   * On a self-hosted first-party endpoint the path is the part a content
+   * blocker can still match, so `/collect` is worth being able to change:
+   *
+   *     analytics: { apiEndpoint: 'https://a.example.com', collectEndpoint: '/t' }
+   *
+   * A leading slash is optional.
+   */
+  collectEndpoint?: string
 
   /**
    * Load an external, first-party tracker instead of inlining the built-in

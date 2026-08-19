@@ -1720,14 +1720,24 @@ catch (err){l('Outbound error',err);}});`
   /* eslint-enable pickier/no-unused-vars */
 
   const dataApiAttr = apiEndpoint ? ` data-api="${apiEndpoint}"` : ''
+  // The path the client posts to, appended to `apiEndpoint`. It was hardcoded
+  // as `/collect`, which is the one part of the request a content blocker can
+  // match on a first-party domain - so a self-hosted setup could do everything
+  // right and still be filtered. Emitted only when it differs from the default,
+  // to keep the common case a byte shorter.
+  const collectPath = analytics.collectEndpoint
+    ? `/${analytics.collectEndpoint.replace(/^\/+/, '')}`
+    : '/collect'
+  const dataCollectAttr = collectPath === '/collect' ? '' : ` data-collect="${escapeAttr(collectPath)}"`
 
   /* eslint-disable pickier/no-unused-vars, prefer-const, general/prefer-template */
   return `<!-- ts-analytics: privacy-first analytics -->
-<script data-site="${siteId}"${dataApiAttr} defer>
+<script data-site="${siteId}"${dataApiAttr}${dataCollectAttr} defer>
 (function(){
 'use strict';
 var d=document,w=window,n=navigator,ss=w.sessionStorage,s=d.currentScript;
 var site=s.dataset.site,api=s.dataset.api||w.ANALYTICS_API_ENDPOINT||'/api/analytics';
+var collect=s.dataset.collect||'/collect';
 var debug=w.ANALYTICS_DEBUG||false;
 function l(){if(debug&&w.console)console.log.apply(console,['[Analytics]'].concat([].slice.call(arguments)));}
 try{
@@ -1764,7 +1774,7 @@ function t(e,p){
 try{
 var data={s:site,sid:sid,e:e,p:p||{},u:location.href,r:d.referrer||'',t:d.title||'',sw:screen.width,sh:screen.height,ts:Date.now()};
 if(vid)data.vid=vid;
-send(api+'/collect',data);
+send(api+collect,data);
 }
 catch(err){l('Track error',err);}
 }
