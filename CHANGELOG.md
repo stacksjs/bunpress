@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.11...v0.2.12)
+
+## ✨ Features
+
+- **config**: declare collectEndpoint and driver, and act on both ([78b4b26](https://github.com/stacksjs/bunpress/commit/78b4b26)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.12 ([6b2826b](https://github.com/stacksjs/bunpress/commit/6b2826b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.10...v0.2.11)
 
 ## 🐛 Bug Fixes
