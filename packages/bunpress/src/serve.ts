@@ -1263,26 +1263,45 @@ function resolvePageMeta(
 
   // VitePress-shaped `head: [[tag, attrs], ...]`, for anything the keys above
   // do not cover (preloads, verification tokens, alternate links).
-  if (Array.isArray(frontmatter.head)) {
-    for (const entry of frontmatter.head) {
-      if (!Array.isArray(entry) || typeof entry[0] !== 'string')
-        continue
-      const [tag, attrs] = entry as [string, Record<string, unknown> | undefined]
-      // Only void metadata elements — a page must not be able to inject a
-      // <script> into the document head through its own frontmatter.
-      if (!['meta', 'link', 'base'].includes(tag.toLowerCase()))
-        continue
-      const rendered = Object.entries(attrs ?? {})
-        .map(([key, value]) => `${escapeHtmlAttribute(key)}="${escapeHtmlAttribute(String(value))}"`)
-        .join(' ')
-      push(`<${tag.toLowerCase()}${rendered ? ` ${rendered}` : ''}>`)
-    }
-  }
+  for (const tag of renderHeadEntries(frontmatter.head))
+    push(tag)
 
   const image = typeof frontmatter.image === 'string' ? frontmatter.image : undefined
   const canonical = typeof frontmatter.canonical === 'string' ? frontmatter.canonical : undefined
 
   return { documentTitle, pageTitle, description, image, canonical, extraTags: tags.join('\n  ') }
+}
+
+/**
+ * Render a VitePress-shaped `head` list into tags.
+ *
+ * One function for the site-wide list and the per-page one, so the rule about
+ * what may go in a document head is written once. Only `meta`, `link` and
+ * `base`: a `<script>` is not metadata, and a page must not be able to put one
+ * in the head through its own frontmatter.
+ */
+function renderHeadEntries(entries: unknown): string[] {
+  if (!Array.isArray(entries))
+    return []
+
+  const rendered: string[] = []
+
+  for (const entry of entries) {
+    if (!Array.isArray(entry) || typeof entry[0] !== 'string')
+      continue
+
+    const [tag, attrs] = entry as [string, Record<string, unknown> | undefined]
+    if (!['meta', 'link', 'base'].includes(tag.toLowerCase()))
+      continue
+
+    const attributes = Object.entries(attrs ?? {})
+      .map(([key, value]) => `${escapeHtmlAttribute(key)}="${escapeHtmlAttribute(String(value))}"`)
+      .join(' ')
+
+    rendered.push(`<${tag.toLowerCase()}${attributes ? ` ${attributes}` : ''}>`)
+  }
+
+  return rendered
 }
 
 /**
@@ -1412,8 +1431,13 @@ export async function wrapInLayout(
   const { fontLinks, fontFaceCss } = generateFontTags(config)
   const hreflangTags = generateHreflangTags(resolvedI18n, config, currentPath)
 
+  // The site's own `head` list: favicons, preloads, verification tokens.
+  // Early, so a page's frontmatter `head` (inside `pageMeta.extraTags`) comes
+  // after it and wins.
+  const siteHead = renderHeadEntries(config.head).join('\n  ')
+
   // Page tags come after the site-wide ones so a page can override them.
-  const allMeta = [basicMeta, canonicalUrl, hreflangTags, openGraphTags, twitterCardTags, pageMeta.extraTags, fontLinks].filter(Boolean).join('\n  ')
+  const allMeta = [basicMeta, siteHead, canonicalUrl, hreflangTags, openGraphTags, twitterCardTags, pageMeta.extraTags, fontLinks].filter(Boolean).join('\n  ')
 
   // Generate analytics scripts
   const fathomScript = generateFathomScript(config)

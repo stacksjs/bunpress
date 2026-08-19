@@ -95,6 +95,33 @@ describe('per-page metadata', () => {
     expect(html).not.toContain('og:image:width')
   })
 
+  it('renders the site-wide head list on every page', async () => {
+    // The only way to declare a favicon: nothing else here emits
+    // `<link rel="icon">`, so a site without this ships the browser's
+    // blank-page glyph in every tab.
+    const html = await render('<h1>Page</h1>', {}, {
+      ...BASE,
+      head: [
+        ['link', { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' }],
+        ['link', { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' }],
+      ],
+    } as BunPressConfig)
+
+    expect(html).toContain('<link rel="icon" href="/favicon.svg" type="image/svg+xml">')
+    expect(html).toContain('<link rel="apple-touch-icon" href="/apple-touch-icon.png">')
+  })
+
+  it('refuses a script in the site-wide head list', async () => {
+    // Same rule the per-page form carries: a script is not metadata.
+    const html = await render('<h1>Page</h1>', {}, {
+      ...BASE,
+      head: [['script', { src: '/evil.js' }], ['meta', { name: 'ok', content: 'yes' }]],
+    } as BunPressConfig)
+
+    expect(html).not.toContain('/evil.js')
+    expect(html).toContain('<meta name="ok" content="yes">')
+  })
+
   it('honours an explicit canonical url', async () => {
     const html = await render('<h1>Page</h1>', { canonical: 'https://elsewhere.example/page' })
 

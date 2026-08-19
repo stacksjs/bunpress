@@ -12,6 +12,26 @@ export interface BunPressConfig {
   description?: string
 
   /**
+   * Tags added to the `<head>` of every page, VitePress-shaped.
+   *
+   * The escape hatch for anything the typed keys do not cover, and the only
+   * way to declare a favicon: nothing here emitted `<link rel="icon">`, so
+   * every documentation site built with this shipped the browser's blank-page
+   * glyph in its tabs.
+   *
+   *     head: [
+   *       ['link', { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' }],
+   *       ['link', { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' }],
+   *     ]
+   *
+   * A page's own frontmatter `head` is rendered after these, so a page can
+   * override what the site declares. Only `meta`, `link` and `base` are
+   * allowed, the same restriction the per-page form carries: a `<script>` in
+   * the head is not metadata.
+   */
+  head?: Array<[string, Record<string, string | number | boolean>?]>
+
+  /**
    * Force the docs color theme. `'dark'`/`'light'` (or `true`/`false`) render
    * that theme with no JS and no flash-of-wrong-theme, and for crawlers;
    * `'auto'` (default) follows the OS preference and the theme toggle. A forced
