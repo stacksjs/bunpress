@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.7...v0.2.8)
+
+## ✨ Features
+
+- **config**: a site-wide head list, so a site can declare its favicon ([335049e](https://github.com/stacksjs/bunpress/commit/335049e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.8 ([2b0775b](https://github.com/stacksjs/bunpress/commit/2b0775b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.6...v0.2.7)
 
 ## 🐛 Bug Fixes
