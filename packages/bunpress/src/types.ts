@@ -145,6 +145,15 @@ export interface BunPressConfig {
   nav?: NavItem[]
 
   /**
+   * Sidebar navigation, either one list for the whole site or a map of path
+   * prefix to list.
+   *
+   * `themeConfig.sidebar` and `markdown.sidebar` are both read first, matching
+   * how `nav` resolves.
+   */
+  sidebar?: SidebarItem[] | Record<string, SidebarItem[]>
+
+  /**
    * Plugin configuration
    */
   plugins?: ConfigPlugin[]

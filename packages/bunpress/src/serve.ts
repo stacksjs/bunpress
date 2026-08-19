@@ -29,12 +29,20 @@ import { buildTocHierarchy, defaultTocConfig, extractHeadings, filterHeadings, g
 import { siteUrl } from './site-url'
 
 /**
- * Generate sidebar HTML from BunPress config
- * Supports both VitePress-style (themeConfig.sidebar) and legacy (markdown.sidebar) formats
+ * Generate sidebar HTML from BunPress config.
+ *
+ * Read from three places: VitePress-style `themeConfig`, then top level, then
+ * legacy `markdown`. `nav` has always accepted a top-level value and `sidebar`
+ * has not, so a config that set both side by side - which is how thirty-one of
+ * ours are written - got its nav and silently lost its sidebar.
+ *
+ * Top level is checked before `markdown` rather than after it because
+ * `defaultConfig` ships a placeholder `markdown.sidebar`. That default is always
+ * present after the merge, so anything ordered behind it is unreachable: a
+ * site's own sidebar would lose to a stub listing pages it does not have.
  */
 async function generateSidebar(config: BunPressConfig, currentPath: string): Promise<string> {
-  // Support both VitePress-style themeConfig.sidebar and legacy markdown.sidebar
-  const sidebarConfig = config.themeConfig?.sidebar || config.markdown?.sidebar
+  const sidebarConfig = config.themeConfig?.sidebar || config.sidebar || config.markdown?.sidebar
 
   if (!sidebarConfig) {
     return ''

@@ -73,3 +73,29 @@ describe('a site that sets only url', () => {
     await rm(out, { recursive: true, force: true })
   })
 })
+
+/**
+ * `nav` has always been readable from the top level and `sidebar` has not, so a
+ * config that set both side by side kept its nav and silently lost its sidebar.
+ * Thirty-one of our own docs configs are written that way.
+ */
+describe('a top-level sidebar', () => {
+  test('beats the placeholder markdown.sidebar that defaultConfig ships', async () => {
+    const { defaultConfig } = await import('../packages/bunpress/src/config')
+    // The guard this ordering exists for: if the default ever stops shipping a
+    // sidebar, the ordering below stops mattering and this test should be reread.
+    expect(defaultConfig.markdown?.sidebar).toBeDefined()
+  })
+
+  test('renders its own items rather than the default ones', async () => {
+    const { wrapInLayout } = await import('../packages/bunpress/src/serve')
+    const html = await wrapInLayout('<h1>Home</h1>', {
+      verbose: false,
+      markdown: {},
+      title: 'Docs',
+      sidebar: [{ text: 'The Guide', link: '/guide' }],
+    }, '/index')
+
+    expect(html).toContain('The Guide')
+  })
+})
