@@ -1,5 +1,11 @@
 export interface BunPressConfig {
-  verbose: boolean
+  /**
+   * Optional, like everything else here, because this type describes what an
+   * author writes as well as what the loader hands the renderer. `defaultConfig`
+   * supplies both this and `markdown`, so requiring them meant no hand-written
+   * config could satisfy its own annotation - fourteen of ours did not.
+   */
+  verbose?: boolean
 
   /**
    * Site title
@@ -137,7 +143,7 @@ export interface BunPressConfig {
   /**
    * Configuration for the markdown-to-html plugin
    */
-  markdown: MarkdownPluginConfig
+  markdown?: MarkdownPluginConfig
 
   /**
    * Navigation configuration
