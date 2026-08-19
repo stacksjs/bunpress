@@ -136,3 +136,33 @@ describe('analytics collectEndpoint', () => {
     expect(html).toContain('data-collect="/t"')
   })
 })
+
+/**
+ * `<html lang>` is what a screen reader uses to pick a voice and what a search
+ * engine uses to decide who to show a page to. It was fed only by `i18n`, so a
+ * single-locale site had no way to say it was not in English.
+ */
+describe('site language', () => {
+  const base = { verbose: false, markdown: {}, title: 'Docs' }
+
+  test('defaults to en', async () => {
+    const { wrapInLayout } = await import('../packages/bunpress/src/serve')
+    expect(await wrapInLayout('<p>x</p>', base, '/index')).toContain('<html lang="en"')
+  })
+
+  test('uses the configured lang', async () => {
+    const { wrapInLayout } = await import('../packages/bunpress/src/serve')
+    const html = await wrapInLayout('<p>x</p>', { ...base, lang: 'de' }, '/index')
+    expect(html).toContain('<html lang="de"')
+  })
+
+  test('i18n still wins, since a multi-locale site renders per locale', async () => {
+    const { wrapInLayout } = await import('../packages/bunpress/src/serve')
+    const html = await wrapInLayout('<p>x</p>', {
+      ...base,
+      lang: 'de',
+      i18n: { locales: ['fr', 'es'], defaultLocale: 'fr' },
+    }, '/index')
+    expect(html).toContain('<html lang="fr"')
+  })
+})

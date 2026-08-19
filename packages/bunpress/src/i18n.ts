@@ -41,7 +41,10 @@ export interface ResolvedI18n {
 export function resolveI18nConfig(config: BunPressConfig | undefined): ResolvedI18n {
   const i18n: I18nSiteConfig | undefined = config?.i18n
   const locales = (i18n?.locales ?? []).filter(Boolean)
-  const defaultLocale = i18n?.defaultLocale || locales[0] || 'en'
+  // `lang` is where a single-locale site says what language it is in - it is the
+  // only thing that reaches `<html lang>`, and hardcoding 'en' there tells every
+  // screen reader and search engine the wrong thing about a site that is not.
+  const defaultLocale = i18n?.defaultLocale || locales[0] || config?.lang || 'en'
 
   // A single locale needs no prefixes, no switcher and no fallbacks — the
   // machinery would only add URLs that redirect to themselves.

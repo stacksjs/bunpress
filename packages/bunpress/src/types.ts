@@ -18,6 +18,17 @@ export interface BunPressConfig {
   description?: string
 
   /**
+   * The site's language, as a BCP 47 tag - `'en-US'`, `'de'`, `'pt-BR'`.
+   *
+   * @default 'en'
+   *
+   * Rendered as `<html lang>`, which is what screen readers use to pick a voice
+   * and search engines use to decide who to show the page to. A multi-locale
+   * site sets `i18n.locales` instead and this is ignored.
+   */
+  lang?: string
+
+  /**
    * The site's absolute base URL, e.g. `'https://bunpress.sh'`.
    *
    * Used to turn page paths into absolute URLs for the sitemap, the RSS feed,
