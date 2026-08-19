@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.12...v0.2.13)
+
+## ✨ Features
+
+- **config**: let a single-locale site declare its language ([46123a7](https://github.com/stacksjs/bunpress/commit/46123a7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.13 ([ee1ce21](https://github.com/stacksjs/bunpress/commit/ee1ce21)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.11...v0.2.12)
 
 ## ✨ Features
