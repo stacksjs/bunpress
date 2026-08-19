@@ -18,7 +18,7 @@
     },
     "packages/bun-plugin": {
       "name": "bun-plugin-bunpress",
-      "version": "0.2.9",
+      "version": "0.2.10",
       "devDependencies": {
         "bun-plugin-dtsx": "^0.10.4",
         "typescript": "^7.0.2",
@@ -26,7 +26,7 @@
     },
     "packages/bunpress": {
       "name": "@stacksjs/bunpress",
-      "version": "0.2.9",
+      "version": "0.2.10",
       "bin": {
         "bunpress": "./dist/bin/cli.js",
       },

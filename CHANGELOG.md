@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.9...v0.2.10)
+
+## 🐛 Bug Fixes
+
+- **config**: read a top-level sidebar, and let it beat the default one ([9abfbeb](https://github.com/stacksjs/bunpress/commit/9abfbeb)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.10 ([73dbd8f](https://github.com/stacksjs/bunpress/commit/73dbd8f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.8...v0.2.9)
 
 ## 🐛 Bug Fixes
