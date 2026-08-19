@@ -1,6 +1,7 @@
 import type { BunPressConfig, SitemapChangefreq, SitemapEntry } from './types'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { siteUrl } from './site-url'
 
 /**
  * Collect + transform sitemap entries for a docs directory. Shared by
@@ -27,11 +28,11 @@ async function sitemapEntriesFor(docsDir: string, config: BunPressConfig, baseUr
  * Use this to serve a sitemap dynamically from a request handler; use
  * {@link generateSitemap} to write it to disk during a static build.
  *
- * `config.sitemap.baseUrl` is prefixed onto every `<loc>` and may include a
+ * The site's base URL (`url`, or `sitemap.baseUrl`) is prefixed onto every `<loc>` and may include a
  * path (e.g. `https://example.com/blog`).
  */
 export async function buildSitemap(docsDir: string, config: BunPressConfig): Promise<string> {
-  const baseUrl = (config.sitemap?.baseUrl || '').replace(/\/$/, '')
+  const baseUrl = siteUrl(config)
   const entries = await sitemapEntriesFor(docsDir, config, baseUrl)
   return generateSitemapXml(entries, baseUrl)
 }
@@ -53,17 +54,17 @@ export async function generateSitemap(
   }
 
   // Require baseUrl
-  if (!sitemapConfig?.baseUrl) {
+  if (!siteUrl(config)) {
     if (config.verbose) {
       console.warn('⚠️  Sitemap generation skipped: baseUrl not configured')
     }
     return
   }
 
-  const baseUrl = sitemapConfig.baseUrl.replace(/\/$/, '') // Remove trailing slash
-  const filename = sitemapConfig.filename || 'sitemap.xml'
-  const maxUrlsPerFile = sitemapConfig.maxUrlsPerFile || 50000
-  const useSitemapIndex = sitemapConfig.useSitemapIndex || false
+  const baseUrl = siteUrl(config)
+  const filename = sitemapConfig?.filename || 'sitemap.xml'
+  const maxUrlsPerFile = sitemapConfig?.maxUrlsPerFile || 50000
+  const useSitemapIndex = sitemapConfig?.useSitemapIndex || false
 
   const transformedEntries = await sitemapEntriesFor(docsDir, config, baseUrl)
 

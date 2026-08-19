@@ -26,6 +26,7 @@ import { clearComponentCache, resolveStxComponents } from './stx-components'
 import { clearTemplateCache, render } from './template-loader'
 import { getThemeCSS } from './themes'
 import { buildTocHierarchy, defaultTocConfig, extractHeadings, filterHeadings, generateInlineTocHtml, generateSlug, markdownHeadingText, reserveUniqueSlug } from './toc'
+import { siteUrl } from './site-url'
 
 /**
  * Generate sidebar HTML from BunPress config
@@ -850,7 +851,7 @@ export function getConfiguredBasePath(config: BunPressConfig): string {
     return normalized.startsWith('/') ? normalized : `/${normalized}`
   }
 
-  const baseUrl = config.sitemap?.baseUrl
+  const baseUrl = siteUrl(config)
   if (!baseUrl) {
     return ''
   }
@@ -918,12 +919,11 @@ function generateCanonicalUrl(config: BunPressConfig, currentPath: string, overr
   if (override)
     return `<link rel="canonical" href="${escapeHtmlAttribute(override)}">`
 
-  const baseUrl = config.sitemap?.baseUrl
-  if (!baseUrl) {
+  const cleanBaseUrl = siteUrl(config)
+  if (!cleanBaseUrl) {
     return ''
   }
 
-  const cleanBaseUrl = baseUrl.replace(/\/$/, '')
   const cleanPath = publicPath(currentPath)
   return `<link rel="canonical" href="${cleanBaseUrl}${cleanPath}">`
 }
@@ -938,12 +938,11 @@ function generateOpenGraphTags(
   currentPath: string,
   pageImage?: string,
 ): string {
-  const baseUrl = config.sitemap?.baseUrl
-  if (!baseUrl) {
+  const cleanBaseUrl = siteUrl(config)
+  if (!cleanBaseUrl) {
     return ''
   }
 
-  const cleanBaseUrl = baseUrl.replace(/\/$/, '')
   const cleanPath = publicPath(currentPath)
   const url = `${cleanBaseUrl}${cleanPath}`
 
@@ -1043,12 +1042,11 @@ function generateStructuredData(
   config: BunPressConfig,
   currentPath: string,
 ): string {
-  const baseUrl = config.sitemap?.baseUrl
-  if (!baseUrl) {
+  const cleanBaseUrl = siteUrl(config)
+  if (!cleanBaseUrl) {
     return ''
   }
 
-  const cleanBaseUrl = baseUrl.replace(/\/$/, '')
   const cleanPath = publicPath(currentPath)
   const url = `${cleanBaseUrl}${cleanPath}`
 

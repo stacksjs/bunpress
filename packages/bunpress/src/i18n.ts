@@ -1,4 +1,5 @@
 import type { BunPressConfig, I18nSiteConfig } from './types'
+import { siteUrl } from './site-url'
 
 /**
  * Multi-language support, backed by `ts-i18n`.
@@ -222,7 +223,7 @@ export function generateHreflangTags(i18n: ResolvedI18n, config: BunPressConfig,
   if (!i18n.enabled)
     return ''
 
-  const baseUrl = config.sitemap?.baseUrl?.replace(/\/$/, '')
+  const baseUrl = siteUrl(config)
   if (!baseUrl)
     return ''
 

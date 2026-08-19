@@ -2,6 +2,7 @@ import type { BunPressConfig } from './types'
 import { YAML } from 'bun'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { siteUrl } from './site-url'
 
 export interface RssFeedConfig {
   /**
@@ -69,7 +70,7 @@ interface RssItem {
  * string. Use this to serve a feed dynamically from a request handler; use
  * {@link generateRssFeed} to write it to disk during a static build.
  *
- * `config.sitemap.baseUrl` is the absolute link base, and may include a path
+ * The site's base URL (`url`, or `sitemap.baseUrl`) is the absolute link base, and may include a path
  * prefix (e.g. `https://example.com/blog`).
  */
 export async function buildRssFeed(
@@ -77,7 +78,7 @@ export async function buildRssFeed(
   config: BunPressConfig,
   rssConfig?: RssFeedConfig,
 ): Promise<string> {
-  const baseUrl = config.sitemap?.baseUrl || ''
+  const baseUrl = siteUrl(config)
   const feedTitle = rssConfig?.title || config.title || config.markdown?.title || 'Documentation Feed'
   const feedDescription = rssConfig?.description || config.description || config.markdown?.meta?.description || 'Documentation updates'
   const feedAuthor = rssConfig?.author || 'Documentation Team'
@@ -115,7 +116,7 @@ export async function generateRssFeed(
     return
   }
 
-  if (!config.sitemap?.baseUrl) {
+  if (!siteUrl(config)) {
     if (config.verbose) {
       console.warn('⚠️  RSS feed generation skipped: baseUrl not configured')
     }

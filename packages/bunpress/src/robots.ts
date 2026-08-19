@@ -1,6 +1,7 @@
 import type { BunPressConfig, RobotsRule } from './types'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { siteUrl } from './site-url'
 
 /**
  * Generate robots.txt file
@@ -61,10 +62,10 @@ function generateRobotsContent(config: BunPressConfig): string {
     }
     lines.push('')
   }
-  else if (config.sitemap?.enabled !== false && config.sitemap?.baseUrl) {
+  else if (config.sitemap?.enabled !== false && siteUrl(config)) {
     // Auto-add sitemap if sitemap generation is enabled
-    const sitemapFilename = config.sitemap.filename || 'sitemap.xml'
-    const sitemapUrl = `${config.sitemap.baseUrl.replace(/\/$/, '')}/${sitemapFilename}`
+    const sitemapFilename = config.sitemap?.filename || 'sitemap.xml'
+    const sitemapUrl = `${siteUrl(config)}/${sitemapFilename}`
     lines.push(`Sitemap: ${sitemapUrl}`)
     lines.push('')
   }

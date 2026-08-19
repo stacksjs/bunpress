@@ -12,6 +12,7 @@ import { generateRobotsTxt } from '../src/robots'
 import { generateRssFeed } from '../src/rss'
 import { buildSearchIndex, SEARCH_INDEX_PATH } from '../src/search-index'
 import { generateSitemap } from '../src/sitemap'
+import { siteUrl } from '../src/site-url'
 import { verifyBuildManifest, writeBuildManifest } from '../src/build-manifest'
 import { cleanCommand } from './commands/clean'
 import { configInitCommand, configShowCommand, configValidateCommand } from './commands/config'
@@ -204,12 +205,21 @@ async function generateSearchIndex(docsDir: string, outdir: string, bunPressConf
 /**
  * Generate SEO files (sitemap, robots.txt, RSS feed)
  */
-async function generateSeoFiles(docsDir: string, outdir: string, verbose: boolean): Promise<void> {
+async function generateSeoFiles(
+  docsDir: string,
+  outdir: string,
+  bunPressConfig: BunPressConfig,
+  verbose: boolean,
+): Promise<void> {
   try {
-    const bunPressConfig = await config as BunPressConfig
+    // The caller's already-resolved config, not the one bunfig discovered at
+    // import time: those differ whenever `--config` is passed, and a repo that
+    // keeps its config under `docs/` only ever reaches bunpress that way. Every
+    // page rendered with the right config while the sitemap, feed and robots.txt
+    // were generated from the defaults, so they silently came out empty.
 
     // Generate sitemap
-    if (bunPressConfig.sitemap?.enabled !== false && bunPressConfig.sitemap?.baseUrl) {
+    if (bunPressConfig.sitemap?.enabled !== false && siteUrl(bunPressConfig)) {
       await generateSitemap(docsDir, outdir, bunPressConfig)
     }
 
@@ -383,7 +393,7 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
       await generateSearchIndex(docsDir, outdir, bunPressConfig, verbose || false)
 
     // Generate sitemap, robots.txt, and RSS feed
-    await generateSeoFiles(docsDir, outdir, verbose || false)
+    await generateSeoFiles(docsDir, outdir, bunPressConfig, verbose || false)
 
     if (options.checkManifest)
       await verifyBuildManifest(outdir, options.checkManifest, version)

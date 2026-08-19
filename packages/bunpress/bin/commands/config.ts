@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { colorize, logError, logInfo, logSuccess } from '../utils'
+import { colorize, logError, logInfo, logSuccess, logWarning} from '../utils'
+import { siteUrl } from '../../src/site-url'
 
 interface ConfigOptions {
   verbose?: boolean
@@ -82,8 +83,12 @@ export async function configValidateCommand(options: ConfigOptions = {}): Promis
       return false
     }
 
-    // Basic validation
+    // Two channels, because they mean different things. `issues` are malformed
+    // config — a shape the loader cannot use — and they fail validation.
+    // `warnings` are config that loads fine but will quietly under-deliver, and
+    // failing on those would make a perfectly good internal docs site "invalid".
     const issues: string[] = []
+    const warnings: string[] = []
 
     // Check markdown config
     if (config.markdown) {
@@ -112,11 +117,13 @@ export async function configValidateCommand(options: ConfigOptions = {}): Promis
       }
     }
 
-    // Check sitemap config
-    if (config.sitemap) {
-      if (!config.sitemap.hostname) {
-        issues.push('sitemap.hostname is required for SEO')
-      }
+    // The site's absolute base URL. Without one there is no sitemap, no feed,
+    // no canonical link and no Open Graph tags, so a shared link renders with
+    // no preview card. Worth saying whether or not a `sitemap` block is present
+    // — which is exactly the case the old check missed, on top of naming a
+    // `sitemap.hostname` key that has never existed.
+    if (!siteUrl(config)) {
+      warnings.push('no `url` set: sitemap, RSS, canonical links and Open Graph tags are all skipped without an absolute base URL')
     }
 
     if (issues.length > 0) {
@@ -125,6 +132,10 @@ export async function configValidateCommand(options: ConfigOptions = {}): Promis
         console.log(`  • ${issue}`)
       }
       return false
+    }
+
+    for (const warning of warnings) {
+      logWarning(warning)
     }
 
     logSuccess('Configuration is valid ✓')

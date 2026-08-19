@@ -12,6 +12,18 @@ export interface BunPressConfig {
   description?: string
 
   /**
+   * The site's absolute base URL, e.g. `'https://bunpress.sh'`.
+   *
+   * Used to turn page paths into absolute URLs for the sitemap, the RSS feed,
+   * robots.txt, `<link rel="canonical">` and the Open Graph tags. Without it a
+   * site gets none of those, so a shared link renders as a bare URL with no
+   * preview card.
+   *
+   * `sitemap.baseUrl` overrides it, for a sitemap that lives somewhere else.
+   */
+  url?: string
+
+  /**
    * Tags added to the `<head>` of every page, VitePress-shaped.
    *
    * The escape hatch for anything the typed keys do not cover, and the only
