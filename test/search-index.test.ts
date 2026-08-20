@@ -177,6 +177,15 @@ Hero copy that should not be indexed.
     expect(index.some(record => record.url === '/nested/deep')).toBe(true)
   })
 
+  it('orders documents independently of filesystem enumeration', async () => {
+    const index = await buildSearchIndex(FIXTURE_DIR)
+    const pageUrls = index
+      .filter(record => !record.url.includes('#'))
+      .map(record => record.url)
+
+    expect(pageUrls).toEqual([...pageUrls].sort())
+  })
+
   it('honours custom heading anchors', async () => {
     const index = await buildSearchIndex(FIXTURE_DIR)
     const record = index.find(r => r.title === 'Custom Heading')

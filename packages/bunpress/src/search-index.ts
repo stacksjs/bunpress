@@ -411,7 +411,7 @@ export async function buildSearchIndex(docsDir: string, config?: BunPressConfig)
   const i18n = resolveI18nConfig(config)
   const excludeMatchers = options.exclude.map(pattern => new Glob(pattern))
   const records: SearchRecord[] = []
-  const seen = new Set<string>()
+  const sourcePaths = new Set<string>()
   const byLocale = new Map<string, Set<string>>()
   for (const locale of i18n.locales) byLocale.set(locale, new Set())
 
@@ -420,35 +420,37 @@ export async function buildSearchIndex(docsDir: string, config?: BunPressConfig)
 
     for await (const rawPath of glob.scan(docsDir)) {
       const relativePath = rawPath.replace(/\\/g, '/')
-
-      // Overlapping include patterns must not index a file twice.
-      if (seen.has(relativePath))
-        continue
       if (excludeMatchers.some(matcher => matcher.match(relativePath)))
         continue
 
-      seen.add(relativePath)
+      // Overlapping include patterns must not index a file twice.
+      sourcePaths.add(relativePath)
+    }
+  }
 
-      try {
-        const source = await Bun.file(join(docsDir, relativePath)).text()
-        const { locale, page } = splitLocaleFromSourcePath(relativePath, i18n)
-        for (const record of recordsForDocument(page, source, options)) {
-          if (i18n.enabled) {
-            record.locale = locale
-            // Records must point at the URL the locale is actually served at,
-            // not at the default-locale path the file happens to sit under.
-            record.url = localizeUrl(i18n, locale, record.url)
-          }
-          records.push(record)
-          // Tracked per page, not per anchor: a translated page must suppress
-          // the whole default-locale copy, not just the sections whose slugs
-          // happen to collide.
-          byLocale.get(locale)?.add(pageKey(record.url))
+  // Glob enumeration order follows the host filesystem. Sorting normalized
+  // paths before reading documents keeps the serialized index identical on
+  // macOS and Linux while preserving section order within each document.
+  for (const relativePath of [...sourcePaths].sort()) {
+    try {
+      const source = await Bun.file(join(docsDir, relativePath)).text()
+      const { locale, page } = splitLocaleFromSourcePath(relativePath, i18n)
+      for (const record of recordsForDocument(page, source, options)) {
+        if (i18n.enabled) {
+          record.locale = locale
+          // Records must point at the URL the locale is actually served at,
+          // not at the default-locale path the file happens to sit under.
+          record.url = localizeUrl(i18n, locale, record.url)
         }
+        records.push(record)
+        // Tracked per page, not per anchor: a translated page must suppress
+        // the whole default-locale copy, not just the sections whose slugs
+        // happen to collide.
+        byLocale.get(locale)?.add(pageKey(record.url))
       }
-      catch {
-        // A file that cannot be read simply does not get indexed.
-      }
+    }
+    catch {
+      // A file that cannot be read simply does not get indexed.
     }
   }
 
