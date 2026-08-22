@@ -44,7 +44,7 @@
     "typecheck": "bun --bun tsc --noEmit"
   },
   "devDependencies": {
-    "bun-plugin-dtsx": "^0.10.4",
+    "bun-plugin-dtsx": "^0.11.10",
     "typescript": "^7.0.2"
   }
 }
