@@ -1467,6 +1467,40 @@ async function warnOnShadowedConfigs(): Promise<void> {
     const [winner, ...shadowed] = present
     console.warn(`[bunpress] Multiple config files found. Using ${winner}; ignoring ${shadowed.join(', ')}.`)
   }
+
+  await warnOnUnreachableConfigs(present.length > 0)
+}
+
+/**
+ * Config is discovered relative to the working directory, so the file authors
+ * most often reach for — `docs/bunpress.config.ts`, sitting next to the pages
+ * it configures — is never loaded. The build then succeeds with default nav,
+ * default title and no theme, which reads as "bunpress ignored my settings"
+ * rather than as a misplaced file. Name it.
+ *
+ * @param haveRootConfig - Whether a discoverable config was already found, which
+ * changes the advice from "move it" to "merge it".
+ */
+async function warnOnUnreachableConfigs(haveRootConfig: boolean): Promise<void> {
+  const docsDirs = ['docs', 'documentation', 'site']
+  const names = ['bunpress.config.ts', 'bunpress.config.js', 'docs.config.ts']
+
+  for (const dir of docsDirs) {
+    for (const name of names) {
+      const path = `${dir}/${name}`
+      if (!(await Bun.file(path).exists()))
+        continue
+
+      const advice = haveRootConfig
+        ? `merge it into the config at the project root, or pass --config ${path}`
+        : `move it to ./${name}, or pass --config ${path}`
+
+      console.warn(
+        `[bunpress] ${path} is never loaded: config is discovered from the working directory, not the docs directory. To use it, ${advice}.`,
+      )
+      return
+    }
+  }
 }
 
 await warnOnShadowedConfigs()
