@@ -58,35 +58,35 @@ export async function previewCommand(options: PreviewOptions = {}): Promise<void
           if (pathname === '' || pathname === '/')
             pathname = 'index.html'
 
-          // Construct full path
-          const filePath = join(buildDir, pathname)
+          // A page builds to `<route>/index.html`, so a request for `/guide/intro`
+          // only resolves once the directory-index form is tried. Without it the
+          // preview server answered 404 for every page but the home page, which
+          // read as a broken build rather than a broken server.
+          const candidates = [
+            pathname,
+            `${pathname}.html`,
+            join(pathname, 'index.html'),
+          ]
 
-          // Try to serve the file
-          const file = Bun.file(filePath)
-          const exists = await file.exists()
+          for (const candidate of candidates) {
+            const file = Bun.file(join(buildDir, candidate))
+            if (await file.exists()) {
+              return new Response(file, {
+                headers: { 'Content-Type': getContentType(candidate) },
+              })
+            }
+          }
 
-          if (exists) {
-            return new Response(file, {
-              headers: {
-                'Content-Type': getContentType(pathname),
-              },
+          // Serve the generated 404 page when there is one, so a wrong link looks
+          // the way it will in production rather than like a server fault.
+          const notFound = Bun.file(join(buildDir, '404.html'))
+          if (await notFound.exists()) {
+            return new Response(notFound, {
+              status: 404,
+              headers: { 'Content-Type': 'text/html' },
             })
           }
 
-          // Try adding .html if not found
-          const htmlPath = `${filePath}.html`
-          const htmlFile = Bun.file(htmlPath)
-          const htmlExists = await htmlFile.exists()
-
-          if (htmlExists) {
-            return new Response(htmlFile, {
-              headers: {
-                'Content-Type': 'text/html',
-              },
-            })
-          }
-
-          // 404 response
           return new Response('404 - Not Found', { status: 404 })
         },
       })
@@ -122,21 +122,32 @@ function getContentType(pathname: string): string {
   const ext = pathname.split('.').pop()?.toLowerCase()
 
   const types: Record<string, string> = {
-    html: 'text/html',
-    css: 'text/css',
-    js: 'application/javascript',
-    json: 'application/json',
+    html: 'text/html; charset=utf-8',
+    css: 'text/css; charset=utf-8',
+    js: 'application/javascript; charset=utf-8',
+    mjs: 'application/javascript; charset=utf-8',
+    json: 'application/json; charset=utf-8',
+    map: 'application/json; charset=utf-8',
+    // A sitemap or RSS feed served as text/plain is not read as a feed at all.
+    xml: 'application/xml; charset=utf-8',
+    txt: 'text/plain; charset=utf-8',
+    webmanifest: 'application/manifest+json',
     png: 'image/png',
     jpg: 'image/jpeg',
     jpeg: 'image/jpeg',
     gif: 'image/gif',
+    webp: 'image/webp',
+    avif: 'image/avif',
     svg: 'image/svg+xml',
     ico: 'image/x-icon',
     woff: 'font/woff',
     woff2: 'font/woff2',
     ttf: 'font/ttf',
+    otf: 'font/otf',
     eot: 'application/vnd.ms-fontobject',
   }
 
-  return types[ext || ''] || 'text/plain'
+  // An unknown type is a download, not text: guessing text/plain renders
+  // binaries as mojibake in the browser.
+  return types[ext || ''] || 'application/octet-stream'
 }
