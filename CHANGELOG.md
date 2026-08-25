@@ -1,3 +1,22 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.13...v0.2.14)
+
+## 🐛 Bug Fixes
+
+- **code**: let code blocks inherit the panel's colour, and never centre them ([9f2324c](https://github.com/stacksjs/bunpress/commit/9f2324c)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#24292](https://github.com/stacksjs/bunpress/issues/24292))
+- **config**: warn when a config sits in the docs directory, where it is never read ([a219f36](https://github.com/stacksjs/bunpress/commit/a219f36)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **preview**: serve directory indexes, so pages other than the home page load ([d527381](https://github.com/stacksjs/bunpress/commit/d527381)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **search**: stabilize index order across filesystems (#85) ([d248efd](https://github.com/stacksjs/bunpress/commit/d248efd)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#85](https://github.com/stacksjs/bunpress/issues/85), [#85](https://github.com/stacksjs/bunpress/issues/85), [#631](https://github.com/stacksjs/bunpress/issues/631))
+
+## 🔧 Chores
+
+- release v0.2.14 ([26e4f2f](https://github.com/stacksjs/bunpress/commit/26e4f2f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: dtsx 0.11.10 ([b07a7d2](https://github.com/stacksjs/bunpress/commit/b07a7d2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: dtsx 0.11.8, for declarations that parse ([fe2fc5e](https://github.com/stacksjs/bunpress/commit/fe2fc5e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.12...v0.2.13)
 
 ## ✨ Features
