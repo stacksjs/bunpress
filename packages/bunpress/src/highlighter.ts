@@ -275,12 +275,16 @@ pre:not([data-lang]):not([class*='language-']) {
 }
 
 /* Code is scrolled, never wrapped: wrapping mid-token destroys indentation
- * and makes line highlighting/diff markers line up with the wrong rows. */
+ * and makes line highlighting/diff markers line up with the wrong rows. And it
+ * is never centred or justified: a code block nested in a centred container
+ * (ASCII art in \`<div align="center">\`, say) would otherwise have each line
+ * centred on its own, which is exactly what the alignment was carrying. */
 pre code {
   font-family: var(--bp-font-family-mono, 'Consolas', 'Monaco', 'Courier New', monospace);
   line-height: 1.6;
   color: inherit;
   white-space: pre;
+  text-align: left;
 }
 
 /* Token spans inherit color from parent or use their inline styles */

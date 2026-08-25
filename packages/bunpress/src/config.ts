@@ -139,6 +139,10 @@ export const defaultConfig: BunPressConfig = {
     .bp-doc pre {
       position: relative;
       background-color: #f6f6f7 !important;
+      /* The panel owns the foreground and the code element inherits it. Set
+       * here rather than on the code element so a theme that repaints the
+       * panel repaints the text along with it. */
+      color: #24292f;
       border-radius: 8px;
       margin: 16px 0;
       overflow-x: auto;
@@ -154,9 +158,19 @@ export const defaultConfig: BunPressConfig = {
       background: transparent !important;
       font-size: 14px;
       line-height: 1.7;
-      color: #24292f;
+      /* Inherited from the panel, not hard-coded: a theme is free to paint code
+       * blocks dark in BOTH colour modes, and this rule used to force the
+       * light-mode foreground on top of that. Highlighted blocks survived it
+       * because every token carries an inline colour — but a fence with no
+       * language has no tokens, so #24292f landed on a dark panel and the code
+       * became near-black on near-black. */
+      color: inherit;
       /* Scroll, never wrap: wrapped code loses its indentation. */
       white-space: pre;
+      /* Code is never centred or justified, whatever it is nested in. ASCII art
+       * inside <div align="center"> was having every line centred individually,
+       * which destroys the alignment that makes it art. */
+      text-align: left;
       /* fit-content + min-width lets a long line extend the scroll width. */
       width: fit-content;
       min-width: 100%;
@@ -170,8 +184,10 @@ export const defaultConfig: BunPressConfig = {
       background-color: #161618 !important;
     }
 
-    html.dark pre code,
-    html.dark pre[data-lang] code {
+    html.dark pre,
+    html.dark pre[data-lang],
+    html.dark article pre,
+    html.dark .bp-doc pre {
       color: #e6edf3;
     }
 
