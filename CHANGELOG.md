@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.15...v0.2.16)
+
+## ✨ Features
+
+- **sidebar**: nested groups, and the current page stays marked under a base path ([e711641](https://github.com/stacksjs/bunpress/commit/e711641)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.16 ([0f22916](https://github.com/stacksjs/bunpress/commit/0f22916)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.14...v0.2.15)
 
 ## 🐛 Bug Fixes
