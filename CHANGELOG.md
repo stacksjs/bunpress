@@ -1,3 +1,19 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.14...v0.2.15)
+
+## 🐛 Bug Fixes
+
+- **deps**: require the stx BunPress is built and tested with ([9c6101e](https://github.com/stacksjs/bunpress/commit/9c6101e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.15 ([ddd6314](https://github.com/stacksjs/bunpress/commit/ddd6314)) _(by Chris <chrisbreuer93@gmail.com>)_
+- run @stacksjs/logsmith, not the unrelated npm 'logsmith' ([1442f90](https://github.com/stacksjs/bunpress/commit/1442f90)) _(by Chris <chrisbreuer93@gmail.com>)_
+- release through @stacksjs/bumpx, not the unrelated npm 'bumpx' ([a9ea9ce](https://github.com/stacksjs/bunpress/commit/a9ea9ce)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.13...v0.2.14)
 
 ## 🐛 Bug Fixes
