@@ -1,6 +1,6 @@
 import { bench, group, run } from 'mitata'
 import { buildDocs } from '../bin/cli'
-import { cleanupFiles, countFiles, formatBytes, formatDuration, generateMarkdownFiles, getDirectorySize, measureMemory } from './utils'
+import { cleanupFiles, countFiles, formatBytes, generateMarkdownFiles, getDirectorySize, measureMemory } from './utils'
 
 /**
  * Build Performance Benchmarks
