@@ -1,3 +1,18 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.16...v0.2.17)
+
+## 💚 Continuous Integration
+
+- pantry 0.11.71, which confirms a publish before calling it failed ([e373fec](https://github.com/stacksjs/bunpress/commit/e373fec)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.17 ([8c5eae0](https://github.com/stacksjs/bunpress/commit/8c5eae0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: lint with current pickier ([c6ba331](https://github.com/stacksjs/bunpress/commit/c6ba331)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.15...v0.2.16)
 
 ## ✨ Features
