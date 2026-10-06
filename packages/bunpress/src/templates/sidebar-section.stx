@@ -68,28 +68,32 @@
   padding: 0;
 }
 
+/* Animates to the section's own height. A max-height of 1000px cut off any
+ * section longer than that, which nested groups make easy to reach. */
 .sidebar-items-wrapper {
-  overflow: hidden;
-  transition: max-height 0.3s ease-in-out, opacity 0.2s ease-in-out;
-  max-height: 1000px;
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.3s ease-in-out, opacity 0.2s ease-in-out;
   opacity: 1;
 }
 
-.sidebar-section.collapsed .sidebar-items-wrapper {
-  max-height: 0;
+.sidebar-items-wrapper > .sidebar-items { overflow: hidden; min-height: 0; }
+
+.sidebar-section.collapsed > .sidebar-items-wrapper {
+  grid-template-rows: 0fr;
   opacity: 0;
 }
 
-.sidebar-section.collapsed .sidebar-section-toggle .chevron {
+.sidebar-section.collapsed > .sidebar-section-toggle .chevron {
   transform: rotate(-90deg);
 }
 
 .BPSidebarItem-link {
   display: block;
   /* Indented one step past the section title so the hierarchy reads at a
-   * glance; the 2px rail is transparent until active, so the label never
-   * shifts sideways when you navigate to it. */
-  padding: 6px 20px 6px 32px;
+   * glance, and one more step per nested group; the 2px rail is transparent
+   * until active, so the label never shifts sideways when you navigate to it. */
+  padding: 6px 20px 6px calc(32px + var(--bp-sidebar-depth, 0) * 14px);
   color: var(--bp-c-text-2);
   text-decoration: none;
   font-size: 14px;
@@ -110,6 +114,70 @@
   border-left-color: var(--bp-c-brand-1);
 }
 
+/* A nested group: its title at the level of its siblings, its items one step
+ * further in, folding the way a section does. */
+.BPSidebarGroup-head {
+  display: flex;
+  align-items: center;
+}
+
+.BPSidebarGroup-link,
+.BPSidebarGroup-text {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 4px 6px calc(32px + var(--bp-sidebar-depth, 0) * 14px);
+  color: var(--bp-c-text-1);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  overflow-wrap: anywhere;
+}
+
+.BPSidebarGroup-link:hover { color: var(--bp-c-brand-1); }
+.BPSidebarGroup-link.is-active { color: var(--bp-c-brand-1); border-left-color: var(--bp-c-brand-1); }
+
+.BPSidebarGroup-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  margin-right: 12px;
+  padding: 0;
+  color: var(--bp-c-text-3);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.BPSidebarGroup-toggle:hover { color: var(--bp-c-brand-1); background-color: var(--bp-c-default-soft, var(--bp-c-gray-soft)); }
+
+.BPSidebarGroup-toggle .chevron {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Rows that animate to their content's own height, however long the group:
+ * a fixed max-height clipped a long group and lagged on a short one. */
+.BPSidebarGroup-items {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.25s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+.BPSidebarGroup-items > .sidebar-items { overflow: hidden; min-height: 0; margin: 0; }
+.BPSidebarGroup.collapsed > .BPSidebarGroup-items { grid-template-rows: 0fr; opacity: 0; }
+.BPSidebarGroup.collapsed > .BPSidebarGroup-head .chevron { transform: rotate(-90deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .BPSidebarGroup-items, .BPSidebarGroup-toggle .chevron { transition: none; }
+}
+
 /* Larger rows on touch layouts, where the drawer is the primary navigation. */
 @media (max-width: 959px) {
   .BPSidebarItem-link {
@@ -127,5 +195,11 @@
 <script>
 function toggleSection(section) {
   section.classList.toggle('collapsed');
+}
+function toggleSidebarGroup(button) {
+  var group = button.closest('.BPSidebarGroup');
+  if (!group) return;
+  var collapsed = group.classList.toggle('collapsed');
+  button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
 }
 </script>

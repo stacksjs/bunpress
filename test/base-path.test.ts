@@ -78,3 +78,61 @@ describe('mounted base path output', () => {
     }
   })
 })
+
+describe('nested sidebar groups', () => {
+  const config = (collapsed: boolean): any => ({
+    verbose: false,
+    title: 'Docs',
+    markdown: {},
+    themeConfig: {
+      sidebar: {
+        '/': [{
+          text: 'Page reference',
+          items: [
+            { text: 'Overview', link: '/pages/' },
+            { text: 'Phone app', collapsed, items: [
+              { text: 'Today', link: '/pages/phone/today' },
+              { text: 'Player', link: '/pages/phone/player' },
+            ] },
+            { text: 'Coach', link: '/pages/coach/', collapsed: true, items: [{ text: 'Plans', link: '/pages/coach/plans' }] },
+          ],
+        }],
+      },
+    },
+  })
+
+  it('draws a group\'s own items, one step further in', async () => {
+    const html = await wrapInLayout('<p>x</p>', config(false), '/pages/')
+    expect(html).toContain('href="/pages/phone/today"')
+    expect(html).toContain('href="/pages/phone/player"')
+    expect(html).toContain('class="BPSidebarGroup"')
+    expect(html).toMatch(/<li style="--bp-sidebar-depth:1"><a class="BPSidebarItem-link" href="\/pages\/phone\/today">/)
+  })
+
+  it('makes a group with a link a link itself', async () => {
+    const html = await wrapInLayout('<p>x</p>', config(false), '/pages/')
+    expect(html).toContain('<a class="BPSidebarGroup-link" href="/pages/coach/">Coach</a>')
+  })
+
+  it('opens a collapsed group holding the page being read, and keeps the others folded', async () => {
+    const html = await wrapInLayout('<p>x</p>', config(true), '/pages/phone/player')
+    expect(html).toContain('class="BPSidebarGroup has-active"')
+    expect(html).toContain('class="BPSidebarItem-link is-active" href="/pages/phone/player"')
+    expect(html).toContain('class="BPSidebarGroup collapsed"')
+  })
+})
+
+describe('the client router under a base path', () => {
+  it('compares paths with the mount point taken off, so the server\'s active link survives', async () => {
+    const html = await wrapInLayout('<p>x</p>', {
+      verbose: false,
+      title: 'Docs',
+      markdown: {},
+      sitemap: { enabled: true, baseUrl: 'https://example.com/docs' },
+      themeConfig: { sidebar: { '/': [{ text: 'Guide', items: [{ text: 'Intro', link: '/guide/intro' }] }] } },
+    } as any, '/guide/intro')
+    expect(html).toContain('var basePath = "/docs";')
+    expect(html).toContain('var path = sitePath(location.pathname);')
+    expect(html).toContain('class="BPSidebarItem-link is-active" href="/docs/guide/intro"')
+  })
+})

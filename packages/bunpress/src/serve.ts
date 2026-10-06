@@ -64,26 +64,61 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
   }
 
   const sectionsHtml = await Promise.all(sidebarSections.map(async (section) => {
-    const itemsHtml = section.items
-      ? section.items.map((item: SidebarItem) => {
-          const link = item.link || '/'
-          const href = prefixRootPath(config, link)
-          const isActive = link === currentPath || item.link === currentPath
-          const cls = isActive ? 'BPSidebarItem-link is-active' : 'BPSidebarItem-link'
-          return `<li><a class="${cls}" href="${href}">${item.text}</a></li>`
-        }).join('')
-      : ''
+    const { html, active } = section.items
+      ? renderSidebarItems(config, section.items, currentPath, 0)
+      : { html: '', active: false }
 
     return await render('sidebar-section', {
       title: section.text,
-      items: itemsHtml,
-      collapsedClass: section.collapsed ? ' collapsed' : '',
+      items: html,
+      // A section holding the page being read opens, whatever its config says:
+      // a reader who followed a link into it should see where they are.
+      collapsedClass: section.collapsed && !active ? ' collapsed' : '',
     })
   }))
 
   return await render('sidebar', {
     sections: sectionsHtml.join(''),
   })
+}
+
+/**
+ * A sidebar's items, to any depth.
+ *
+ * An item with `items` of its own is a group: its title (a link too, when it
+ * has one) and its items one step further in, collapsible like a section. Only
+ * the first level used to be drawn, so a group's items never appeared at all,
+ * and a site with more pages than one flat list can hold had to split them into
+ * sibling sections. A group holding the page being read opens even when it is
+ * configured `collapsed`.
+ *
+ * Returns the markup and whether the current page is somewhere inside.
+ */
+function renderSidebarItems(config: BunPressConfig, items: SidebarItem[], currentPath: string, depth: number): { html: string, active: boolean } {
+  let anyActive = false
+  const html = items.map((item) => {
+    const isPage = !!item.link && item.link === currentPath
+    if (item.items?.length) {
+      const inner = renderSidebarItems(config, item.items, currentPath, depth + 1)
+      const active = isPage || inner.active
+      anyActive ||= active
+      const collapsed = item.collapsed && !active
+      const title = item.link
+        ? `<a class="BPSidebarGroup-link${isPage ? ' is-active' : ''}" href="${prefixRootPath(config, item.link)}">${item.text}</a>`
+        : `<span class="BPSidebarGroup-text">${item.text}</span>`
+      return `<li class="BPSidebarGroup${collapsed ? ' collapsed' : ''}${active ? ' has-active' : ''}" style="--bp-sidebar-depth:${depth}">`
+        + `<div class="BPSidebarGroup-head">${title}`
+        + `<button class="BPSidebarGroup-toggle" type="button" aria-expanded="${collapsed ? 'false' : 'true'}" aria-label="Toggle ${item.text.replace(/"/g, '&quot;')}" onclick="toggleSidebarGroup(this)">`
+        + '<svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>'
+        + '</button></div>'
+        + `<div class="BPSidebarGroup-items"><ul class="sidebar-items">${inner.html}</ul></div></li>`
+    }
+    anyActive ||= isPage
+    const href = prefixRootPath(config, item.link || '/')
+    const cls = isPage ? 'BPSidebarItem-link is-active' : 'BPSidebarItem-link'
+    return `<li style="--bp-sidebar-depth:${depth}"><a class="${cls}" href="${href}">${item.text}</a></li>`
+  }).join('')
+  return { html, active: anyActive }
 }
 
 /** Which code-block extras are switched on, from `features.codeBlocks`. */
@@ -336,8 +371,8 @@ function attachPageHeader(html: string, copyPageHtml: string, inlineOutline = ''
  * Inject the SPA router script before </body> in rendered HTML.
  * Done post-render to avoid stx's template pipeline consuming the script.
  */
-function injectSPARouter(html: string): string {
-  const script = generateSPARouterScript()
+function injectSPARouter(html: string, basePath = ''): string {
+  const script = generateSPARouterScript(basePath)
   const idx = html.lastIndexOf('</body>')
   if (idx === -1) return html + script
   return html.slice(0, idx) + script + html.slice(idx)
@@ -358,9 +393,16 @@ function injectScripts(html: string, scripts: string): string {
  * Intercepts internal link clicks, fetches pages, swaps content, and handles
  * browser back/forward. No framework dependencies.
  */
-function generateSPARouterScript(): string {
+function generateSPARouterScript(basePath = ''): string {
   return `<script data-bp-router="1">
 (function(){
+  // The site's mount point ('/docs'). Links are written with it; the page can
+  // be reached without it (the dev server answers both), so paths are compared
+  // with it taken off.
+  var basePath = ${JSON.stringify(basePath)};
+  function sitePath(p) {
+    return basePath && (p === basePath || p.indexOf(basePath + '/') === 0) ? (p.slice(basePath.length) || '/') : p;
+  }
   if (history.scrollRestoration) history.scrollRestoration = 'manual';
 
   var cache = Object.create(null);
@@ -424,7 +466,7 @@ function generateSPARouterScript(): string {
   }
 
   function updateActiveLinks() {
-    var path = location.pathname;
+    var path = sitePath(location.pathname);
     document.querySelectorAll('a.is-active').forEach(function(a) {
       a.classList.remove('is-active');
     });
@@ -434,7 +476,7 @@ function generateSPARouterScript(): string {
       var u;
       try { u = new URL(href, location.origin); } catch(_) { return; }
       if (u.origin !== location.origin) return;
-      var p = u.pathname;
+      var p = sitePath(u.pathname);
       // eslint-disable-next-line general/prefer-template -- inner JS string; template literals would clash with the outer TS template
       if (p === path || (p !== '/' && (path === p || path.startsWith(p + '/')))) {
         a.classList.add('is-active');
@@ -1562,7 +1604,7 @@ export async function wrapInLayout(
       footer,
       content,
     })
-    return prefixRootRelativeAttributes(injectSPARouter(injectScripts(html, scripts)), config)
+    return prefixRootRelativeAttributes(injectSPARouter(injectScripts(html, scripts), getConfiguredBasePath(config)), config)
   }
 
   // Page layout - nav bar, full-width content, no sidebar, no TOC
@@ -1584,7 +1626,7 @@ export async function wrapInLayout(
       footer,
       content,
     })
-    return prefixRootRelativeAttributes(injectSPARouter(injectScripts(html, scripts)), config)
+    return prefixRootRelativeAttributes(injectSPARouter(injectScripts(html, scripts), getConfiguredBasePath(config)), config)
   }
 
   // Documentation layout (default) - with sidebar and TOC
@@ -1621,7 +1663,7 @@ export async function wrapInLayout(
     pageTOC,
   })
 
-  return prefixRootRelativeAttributes(injectSPARouter(injectScripts(html, scripts)), config)
+  return prefixRootRelativeAttributes(injectSPARouter(injectScripts(html, scripts), getConfiguredBasePath(config)), config)
 }
 
 let _crosswindModule: any = null
