@@ -21,6 +21,16 @@ describe('per-page metadata', () => {
     expect(html).toContain('<title>Getting Started | My Site</title>')
   })
 
+  it('escapes a title from an h1 once, not twice', async () => {
+    // The heading is already HTML: `# Raster & heatmap` renders as `Raster &amp; heatmap`.
+    const html = await render('<h1>Raster &amp; heatmap <code>&lt;Map&gt;</code> &#8212; it&#39;s &quot;live&quot;</h1>')
+
+    expect(html).toContain('<title>Raster &amp; heatmap &lt;Map&gt; — it&#39;s &quot;live&quot; | My Site</title>')
+    // In a double-quoted attribute an apostrophe needs no escaping.
+    expect(html).toContain('<meta property="og:title" content="Raster &amp; heatmap &lt;Map&gt; — it\'s &quot;live&quot;">')
+    expect(html).not.toContain('&amp;amp;')
+  })
+
   it('prefers a frontmatter title over the h1', async () => {
     const html = await render('<h1>Ignored</h1>', { title: 'Explicit' })
 

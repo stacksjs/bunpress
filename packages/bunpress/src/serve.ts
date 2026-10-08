@@ -233,6 +233,22 @@ function generateSocialLinks(config: BunPressConfig): string {
     .join('\n            ')
 }
 
+/**
+ * Text from HTML back to text: `Raster &amp; heatmap` to `Raster & heatmap`.
+ * A page title is read from its rendered `<h1>`, and is escaped again where
+ * it is written; left encoded, `&` came out as `&amp;amp;` in the tab.
+ */
+export function decodeHtmlEntities(value: string): string {
+  const named: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: '\'', nbsp: '\u00A0' }
+  return value.replace(/&(#x[\da-f]+|#\d+|[a-z]+);/gi, (whole, entity: string) => {
+    if (entity[0] === '#') {
+      const code = entity[1] === 'x' || entity[1] === 'X' ? Number.parseInt(entity.slice(2), 16) : Number.parseInt(entity.slice(1), 10)
+      return Number.isFinite(code) && code > 0 && code <= 0x10FFFF ? String.fromCodePoint(code) : whole
+    }
+    return named[entity.toLowerCase()] ?? whole
+  })
+}
+
 function escapeHtmlAttribute(value: string): string {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -1004,9 +1020,9 @@ function generateOpenGraphTags(
   const tags = [
     `<meta property="og:type" content="website">`,
     `<meta property="og:url" content="${url}">`,
-    `<meta property="og:title" content="${title}">`,
-    `<meta property="og:description" content="${description}">`,
-    `<meta property="og:site_name" content="${siteName}">`,
+    `<meta property="og:title" content="${escapeHtmlAttribute(title)}">`,
+    `<meta property="og:description" content="${escapeHtmlAttribute(description)}">`,
+    `<meta property="og:site_name" content="${escapeHtmlAttribute(siteName)}">`,
   ]
 
   if (ogImage) {
@@ -1062,8 +1078,8 @@ function generateTwitterCardTags(
 
   const tags = [
     `<meta name="twitter:card" content="${twitterCard}">`,
-    `<meta name="twitter:title" content="${title}">`,
-    `<meta name="twitter:description" content="${description}">`,
+    `<meta name="twitter:title" content="${escapeHtmlAttribute(title)}">`,
+    `<meta name="twitter:description" content="${escapeHtmlAttribute(description)}">`,
   ]
 
   if (twitterSite) {
@@ -1263,7 +1279,7 @@ function resolvePageMeta(
   } {
   const headingMatch = html.match(/<h1(?:\s[^>]*)?>([\s\S]*?)<\/h1>/)
   const headingText = headingMatch
-    ? headingMatch[1].replace(/<[^>]+>/g, '').trim()
+    ? decodeHtmlEntities(headingMatch[1].replace(/<[^>]+>/g, '')).trim()
     : ''
 
   const pageTitle = (typeof frontmatter.title === 'string' && frontmatter.title.trim())
