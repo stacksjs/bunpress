@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.17...v0.2.18)
+
+## 🐛 Bug Fixes
+
+- **meta**: escape a page title once, not twice ([70d4384](https://github.com/stacksjs/bunpress/commit/70d4384)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.18 ([85138eb](https://github.com/stacksjs/bunpress/commit/85138eb)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.16...v0.2.17)
 
 ## 💚 Continuous Integration
