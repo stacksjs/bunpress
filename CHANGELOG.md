@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.18...v0.2.19)
+
+## ✨ Features
+
+- render email and sms fences as message previews ([b539a80](https://github.com/stacksjs/bunpress/commit/b539a80)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.19 ([fc34e45](https://github.com/stacksjs/bunpress/commit/fc34e45)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.17...v0.2.18)
 
 ## 🐛 Bug Fixes
