@@ -24,6 +24,7 @@ import { buildSearchIndex, buildSearchRuntimeConfig, SEARCH_INDEX_PATH } from '.
 import { withCodeMasked } from './markdown-fences'
 import { clearComponentCache, resolveStxComponents } from './stx-components'
 import { clearTemplateCache, render } from './template-loader'
+import { messagePreviewCSS, renderMessagePreview } from './message-previews'
 import { getThemeCSS } from './themes'
 import { buildTocHierarchy, defaultTocConfig, extractHeadings, filterHeadings, generateInlineTocHtml, generateSlug, markdownHeadingText, reserveUniqueSlug } from './toc'
 import { siteUrl } from './site-url'
@@ -127,6 +128,8 @@ export interface CodeBlockFeatures {
   lineNumbers: boolean
   diffs: boolean
   errorWarningMarkers: boolean
+  /** Render ```email and ```sms fences as the message (see message-previews.ts). */
+  messagePreviews?: boolean
 }
 
 // Fence-language aliases are a property of the site, and the highlighter is a
@@ -1604,7 +1607,7 @@ export async function wrapInLayout(
   // Home layout - nav bar + hero/features/body, no sidebar
   if (layout === 'home') {
     const crosswindCSS = await generateCrosswindCSSFromHtml(`${content}\n${nav}`)
-    const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}\n${themeOverrideCss}`
+    const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${messagePreviewCSS}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}\n${themeOverrideCss}`
 
     const html = await render('layout-home', {
       htmlClass,
@@ -1626,7 +1629,7 @@ export async function wrapInLayout(
   // Page layout - nav bar, full-width content, no sidebar, no TOC
   if (layout === 'page') {
     const crosswindCSS = await generateCrosswindCSSFromHtml(`${content}\n${nav}`)
-    const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}\n${themeOverrideCss}`
+    const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${messagePreviewCSS}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}\n${themeOverrideCss}`
 
     const html = await render('layout-page', {
       htmlClass,
@@ -1655,7 +1658,7 @@ export async function wrapInLayout(
   const pageTOC = outline.aside
 
   const crosswindCSS = await generateCrosswindCSSFromHtml(`${docContent}\n${nav}\n${sidebar}`)
-  const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}\n${themeOverrideCss}`
+  const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${messagePreviewCSS}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}\n${themeOverrideCss}`
 
   const docFooter = await generateDocFooter(config, frontmatter, activeLocale, docsDir, sourceFile)
 
@@ -2796,6 +2799,12 @@ async function processCodeBlock(lines: string[], startIndex: number, codeFeature
     endIndex++
   }
 
+  if (codeFeatures.messagePreviews) {
+    const preview = renderMessagePreview(lang, codeLines.join('\n'))
+    if (preview !== null)
+      return { html: preview, endIndex }
+  }
+
   // Detect focus, diff, error, warning, and other markers
   const focusLines = new Set<number>()
   const diffAddLines = new Set<number>()
@@ -3212,6 +3221,7 @@ async function renderMarkdownBody(content: string, frontmatter: any, rootDir: st
         lineNumbers: featureOption('codeBlocks', 'lineNumbers'),
         diffs: featureOption('codeBlocks', 'diffs'),
         errorWarningMarkers: featureOption('codeBlocks', 'errorWarningMarkers'),
+        messagePreviews: featureEnabled('messagePreviews'),
       })
     : processedContent
 

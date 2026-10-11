@@ -430,6 +430,100 @@ Available in <Badge type="tip" text="v2.0+" />
 
 ## New Feature <Badge type="tip" text="2.0+" />
 
+## Email and SMS Previews
+
+Product docs often need the exact copy a system sends. An `email` or `sms` code fence renders as the message itself: an email as a mail-client card, an SMS thread as phone bubbles with a character and segment count. The copy stays in the search index.
+
+### Email
+
+````md
+```email
+from: Acme <hello@acme.com>
+to: The new member
+subject: Welcome to Acme, {firstName}
+preheader: Your account is ready
+
+---
+
+Hi {firstName},
+
+Your coach **{coachName}** added you to Acme.
+
+[Set your password](https://acme.com/reset?token={token})
+
+---
+
+You get this email because you joined Acme. [Unsubscribe](https://acme.com/unsubscribe)
+```
+````
+
+```email
+from: Acme <hello@acme.com>
+to: The new member
+subject: Welcome to Acme, {firstName}
+preheader: Your account is ready
+
+---
+
+Hi {firstName},
+
+Your coach **{coachName}** added you to Acme.
+
+[Set your password](https://acme.com/reset?token={token})
+
+---
+
+You get this email because you joined Acme. [Unsubscribe](https://acme.com/unsubscribe)
+```
+
+- Header lines (`key: value`) come before the first `---`. `subject` and `preheader` get their own rows; `from`, `to`, `cc`, `bcc`, `reply-to` and any other key are listed as headers.
+- In the body, blank lines separate paragraphs. A line that is only a link renders as a button. `- ` lines make a list, `> ` lines a quote, and another `---` a divider, with smaller text after it for a footer.
+- `{name}` and `{{ name }}` placeholders are highlighted as variables. A placeholder inside a link's URL stays literal.
+
+### SMS
+
+````md
+```sms
+from: Acme
+to: The member's phone
+
+---
+
+Acme: Spin with {coachName} starts at {time}. Reply STOP to opt out.
+
+---
+
+> STOP
+
+---
+
+Acme: You're unsubscribed and will get no more texts.
+```
+````
+
+```sms
+from: Acme
+to: The member's phone
+
+---
+
+Acme: Spin with {coachName} starts at {time}. Reply STOP to opt out.
+
+---
+
+> STOP
+
+---
+
+Acme: You're unsubscribed and will get no more texts.
+```
+
+- Each `---` after the headers starts another message in the thread.
+- A message whose lines all start with `> ` is a reply from the recipient.
+- Under each message is its length and how many SMS segments it costs: 160 characters in one segment (153 a segment after that) for the GSM-7 alphabet, 70 (then 67) once any other character, such as an emoji, makes it Unicode. Placeholders are left out of the count, so with them it is a minimum.
+
+Turn the previews off with `markdown.features.messagePreviews: false`, which renders these fences as plain code blocks.
+
 ## Code Groups
 
 Create tabbed code blocks to show multiple language examples or alternative implementations.

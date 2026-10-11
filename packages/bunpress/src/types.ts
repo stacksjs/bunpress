@@ -721,6 +721,13 @@ export interface MarkdownFeaturesConfig {
   codeGroups?: boolean
 
   /**
+   * Render `email` and `sms` code fences as message previews: an email as a
+   * mail-client card, an SMS thread as phone bubbles with a segment count.
+   * @default true
+   */
+  messagePreviews?: boolean
+
+  /**
    * Enable code imports from files (<<< @/filepath)
    * @default true
    */

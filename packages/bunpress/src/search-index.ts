@@ -3,6 +3,7 @@ import { Glob, YAML } from 'bun'
 import { join } from 'node:path'
 import { localizeUrl, resolveI18nConfig } from './i18n'
 import { createFenceTracker, stripFencedCode } from './markdown-fences'
+import { unwrapMessageFences } from './message-previews'
 import { generateSlug, markdownHeadingText, reserveUniqueSlug } from './toc'
 
 /**
@@ -194,7 +195,7 @@ export function buildSearchRuntimeConfig(config: BunPressConfig | undefined, ind
  * the words inside it stay searchable.
  */
 function toPlainText(markdown: string): string {
-  return stripFencedCode(markdown)
+  return stripFencedCode(unwrapMessageFences(markdown))
     // Container fences and GitHub alert markers are syntax, not prose — left
     // in, `[!NOTE]` shows up in result previews.
     .replace(/^:::.*$/gm, ' ')
