@@ -118,6 +118,9 @@ export interface BunPressConfig {
    */
   componentsDir?: string
 
+  /** Shared STX components used by docs examples, relative to the project root. */
+  fallbackComponentsDir?: string
+
   /**
    * Directory holding global JSON data files exposed to every page's stx
    * context under the `data` object (e.g. `.data/stats.json` -> `data.stats`).

@@ -18,7 +18,15 @@ import { join } from 'node:path'
  * Fenced code blocks and inline code spans are masked before resolution so
  * documentation that shows `<Component />` literally is never touched.
  */
-const componentCache = new Map<string, string | null>()
+interface ComponentSource { source: string, path: string }
+
+export interface ComponentRenderOptions {
+  fallbackComponentsDir?: string
+  /** Keep compiled client output opaque while Markdown is processed. */
+  rendered?: Map<string, string>
+}
+
+const componentCache = new Map<string, ComponentSource | null>()
 
 // Sentinels use NUL bytes so they can never collide with real document text
 // and survive stx rendering untouched.
@@ -26,7 +34,7 @@ const MASK_PREFIX = '\u0000BPCODE'
 const MASK_SUFFIX = '\u0000'
 
 /** Load a component's source by PascalCase name. Returns null if not found. */
-async function loadComponent(componentsDir: string, name: string): Promise<string | null> {
+async function loadComponent(componentsDir: string, name: string): Promise<ComponentSource | null> {
   const cacheKey = join(componentsDir, name)
   if (componentCache.has(cacheKey))
     return componentCache.get(cacheKey)!
@@ -36,11 +44,11 @@ async function loadComponent(componentsDir: string, name: string): Promise<strin
     join(componentsDir, name, 'index.stx'),
   ]
 
-  let src: string | null = null
+  let src: ComponentSource | null = null
   for (const path of candidates) {
     const file = Bun.file(path)
     if (await file.exists()) {
-      src = await file.text()
+      src = { source: await file.text(), path }
       break
     }
   }
@@ -107,6 +115,7 @@ export async function resolveStxComponents(
   content: string,
   componentsDir: string,
   context: Record<string, unknown>,
+  options: ComponentRenderOptions = {},
   depth = 0,
 ): Promise<string> {
   if (depth > 10 || !content.includes('<'))
@@ -138,6 +147,7 @@ export async function resolveStxComponents(
     const selfClose = m[3]
 
     const src = await loadComponent(componentsDir, name)
+      ?? (options.fallbackComponentsDir ? await loadComponent(options.fallbackComponentsDir, name) : null)
     if (src == null)
       continue // Not a known component — leave the tag untouched.
 
@@ -162,8 +172,21 @@ export async function resolveStxComponents(
       // Import the renderer entry point directly. The package root initializes
       // unrelated browser, image, and application subsystems whose platform
       // dependencies must not decide whether static component rendering works.
-      const { renderString } = await import('@stacksjs/stx/render')
-      rendered = await renderString(src, { ...context, ...props, slot }, { injectCSS: false, templateOnly: true })
+      const { renderTemplateString } = await import('@stacksjs/stx/render')
+      // Interactive components use the canonical STX client compiler, including
+      // nested components. Never send TypeScript or uncompiled signals to a browser.
+      const interactive = /<script\b[^>]*\bclient\b/.test(src.source)
+      rendered = await renderTemplateString(src.source, src.path, {
+        context: { ...context, ...props, slot },
+        options: { componentsDir, fallbackComponentsDir: options.fallbackComponentsDir },
+        injectCSS: interactive,
+        templateOnly: !interactive,
+      })
+      if (interactive && options.rendered) {
+        const token = `BPLIVECOMPONENT${options.rendered.size}END`
+        options.rendered.set(token, rendered)
+        rendered = `\n\n${token}\n\n`
+      }
     }
     catch (error) {
       const detail = error instanceof Error ? error.message : String(error)
@@ -181,7 +204,7 @@ export async function resolveStxComponents(
 
   // Components may themselves emit component tags — resolve again.
   if (changed)
-    return resolveStxComponents(result, componentsDir, context, depth + 1)
+    return resolveStxComponents(result, componentsDir, context, options, depth + 1)
 
   return result
 }

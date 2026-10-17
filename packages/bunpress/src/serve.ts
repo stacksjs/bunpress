@@ -1,7 +1,7 @@
 import type { BunPressConfig, Frontmatter, NavItem, SidebarItem } from './types'
 import { Glob, YAML } from 'bun'
 import { stat } from 'node:fs/promises'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import process from 'node:process'
 import { config, defaultConfig } from './config'
 import { clearDataCache, loadDataFiles } from './data-loader'
@@ -3143,7 +3143,12 @@ async function renderMarkdownBody(content: string, frontmatter: any, rootDir: st
   const componentsDir = (config as BunPressConfig).componentsDir
     ? join(process.cwd(), (config as BunPressConfig).componentsDir as string)
     : join(rootDir, '.components')
-  processedContent = await resolveStxComponents(processedContent, componentsDir, stxContext)
+  const renderedComponents = new Map<string, string>()
+  const fallbackComponentsDir = (config as BunPressConfig).fallbackComponentsDir
+  processedContent = await resolveStxComponents(processedContent, componentsDir, stxContext, {
+    fallbackComponentsDir: fallbackComponentsDir ? resolve(fallbackComponentsDir) : undefined,
+    rendered: renderedComponents,
+  })
 
   // Process stx template syntax in markdown (@if, @foreach, {{ }}, <script server>, etc.)
   // This allows dynamic content generation in .md files using stx directives.
@@ -3273,6 +3278,12 @@ async function renderMarkdownBody(content: string, frontmatter: any, rootDir: st
     finalHtml = processImagesHtml(finalHtml)
   }
 
+  // Restore compiled client scripts/styles only after all Markdown transforms.
+  // Backticks, template literals and CSS must never be parsed as prose.
+  for (const [token, component] of renderedComponents) {
+    finalHtml = finalHtml.replace(`<p>${token}</p>`, () => component)
+    finalHtml = finalHtml.replace(token, () => component)
+  }
   return finalHtml
 }
 

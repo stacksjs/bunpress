@@ -370,3 +370,13 @@ Made with 💙
 
 <!-- [codecov-src]: https://img.shields.io/codecov/c/gh/stacksjs/bunpress/main?style=flat-square
 [codecov-href]: https://codecov.io/gh/stacksjs/bunpress -->
+
+
+### Interactive STX examples
+
+Components in `docs/.components` can use `<script client>` with STX signals and
+composables. BunPress compiles the client runtime and styles, and preserves the
+result through Markdown processing. Static components continue to render without
+a client runtime. Set `fallbackComponentsDir` in your docs config to reuse shared
+STX components in your examples, for example
+`fallbackComponentsDir: './resources/components'`.

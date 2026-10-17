@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { config } from '../../../packages/bunpress/src/config'
 import { clearDataCache, loadDataFiles } from '../../../packages/bunpress/src/data-loader'
 import { markdownToHtml } from '../../../packages/bunpress/src/serve'
 import { clearComponentCache, resolveStxComponents } from '../../../packages/bunpress/src/stx-components'
@@ -31,6 +32,15 @@ beforeAll(async () => {
     join(ROOT, '.data/stats.json'),
     JSON.stringify({ pct: 79.1, passing: 19582, total: 24750 }),
   )
+
+  await writeFile(join(ROOT, '.components/Counter.stx'), `<script client>
+    const clicks = state(0)
+  </script>
+  <button @click="clicks.set(clicks() + 1)" :text="clicks" class="p-4">Replay</button>`)
+
+  await mkdir(join(ROOT, '.shared'), { recursive: true })
+  await writeFile(join(ROOT, '.shared/Shared.stx'), '<span data-shared-component>Shared identity</span>')
+  await writeFile(join(ROOT, '.components/NestedLive.stx'), '<script client>const ready = state(true)</script><div :if="ready"><Shared /></div>')
 
   clearComponentCache()
   clearDataCache()
@@ -141,5 +151,32 @@ describe('Home layout body rendering', () => {
     expect(html).toContain('BPHome-content')
     expect(html).toContain('We pass 19582 tests.')
     expect(html).toContain('Status')
+  })
+})
+
+
+describe('Interactive STX examples', () => {
+  it('resolves shared components inside a compiled interactive example', async () => {
+    const previous = config.fallbackComponentsDir
+    config.fallbackComponentsDir = join(ROOT, '.shared')
+    try {
+      const { html } = await markdownToHtml('<NestedLive />', ROOT)
+      expect(html.includes('data-shared-component')).toBe(true)
+      expect(html.includes('<Shared')).toBe(false)
+      expect(html.includes('<script client>')).toBe(false)
+    }
+    finally {
+      config.fallbackComponentsDir = previous
+    }
+  })
+  it('compiles signals and preserves scripts through the complete markdown pipeline', async () => {
+    const { html } = await markdownToHtml('# Replay\n\n<Counter />\n\nAfterwards.', ROOT)
+    expect(html).toContain('Afterwards.')
+    expect(html).toContain('data-stx')
+    expect(html).toContain('<script')
+    expect(html).not.toContain('<script client>')
+    expect(html).not.toContain('BPLIVECOMPONENT')
+    expect(html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '')).not.toContain('<code>')
+    expect(html).toContain('data-css="generated"')
   })
 })
