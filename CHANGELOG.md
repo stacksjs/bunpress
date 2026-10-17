@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.19...v0.2.20)
+
+## ✨ Features
+
+- compile interactive STX components in documentation ([82546e5](https://github.com/stacksjs/bunpress/commit/82546e5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.20 ([d5c4fd4](https://github.com/stacksjs/bunpress/commit/d5c4fd4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.18...v0.2.19)
 
 ## ✨ Features
