@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.20...v0.2.21)
+
+## 🐛 Bug Fixes
+
+- hydrate interactive STX examples after docs navigation ([802b3b3](https://github.com/stacksjs/bunpress/commit/802b3b3)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.21 ([433315a](https://github.com/stacksjs/bunpress/commit/433315a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.19...v0.2.20)
 
 ## ✨ Features
