@@ -586,6 +586,12 @@ function generateSPARouterScript(basePath = ''): string {
     if (newCanonical && curCanonical) curCanonical.setAttribute('href', newCanonical.getAttribute('href') || '');
     else if (newCanonical && !curCanonical) document.head.appendChild(newCanonical.cloneNode(true));
 
+    // Let STX retain the outgoing page's cleanup callbacks before incoming
+    // scripts register theirs. The docs router owns this content swap.
+    if (window.stx && typeof window.stx._beginSwap === 'function') {
+      window.stx._beginSwap();
+    }
+
     var curLayout = detectLayout(document);
     var newLayout = detectLayout(doc);
 
@@ -642,6 +648,8 @@ function generateSPARouterScript(basePath = ''): string {
     // handler had added to it (code copy buttons, for one). Announce the swap
     // so those enhancements can re-apply — DOMContentLoaded fires only once.
     document.dispatchEvent(new CustomEvent('bp:navigated', { detail: { path: target.pathname } }));
+    // Compiled STX examples must bind the new DOM after their setup scripts run.
+    window.dispatchEvent(new CustomEvent('stx:load'));
 
     if (typeof opts.restoreScroll === 'number') {
       applyScroll(opts.restoreScroll);
