@@ -1,3 +1,10 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.21...v0.2.22)
+
+## 🐛 Bug Fixes
+
+- Resolve source-relative Markdown links in native builds and dev serving, retain locale and included-file origins, preserve literal code, and safely publish complete outputs under concurrent or failed builds. ([fc7bb3c](https://github.com/stacksjs/bunpress/commit/fc7bb3ce58ac052aa5eb1e3e76bd5d4f2cea78a1))
+- Explicitly refuse unsupported reference definitions combined with includes. Full cross-file reference support is tracked in [#88](https://github.com/stacksjs/bunpress/issues/88).
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.20...v0.2.21)
 
 ## 🐛 Bug Fixes
