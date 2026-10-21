@@ -3372,7 +3372,7 @@ export async function startServer(options: {
       }
 
       // Try to serve static files first (images, css, js, etc.)
-      const staticExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.css', '.js', '.ico', '.woff', '.woff2', '.ttf']
+      const staticExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.avif', '.svg', '.css', '.js', '.ico', '.woff', '.woff2', '.ttf']
       if (staticExtensions.some(ext => path.endsWith(ext))) {
         try {
           // Try root/public first

@@ -452,3 +452,41 @@ test('include reference validation refuses excessive candidates without publishi
   try { expect((await fetch(`${url}/docs/guides/start`)).status).toBe(500) }
   finally { stop() }
 }, 30000)
+
+test('native dev serves WebP and AVIF bytes from public and docs roots under the docs mount', async () => {
+  const f = await fixture()
+  await mkdir(join(f.docs, 'public/assets'), { recursive: true })
+  await mkdir(join(f.docs, 'assets'), { recursive: true })
+  const assets = [
+    { name: 'public.webp', type: 'image/webp', directory: 'public/assets' },
+    { name: 'public.avif', type: 'image/avif', directory: 'public/assets' },
+    { name: 'root.webp', type: 'image/webp', directory: 'assets' },
+    { name: 'root.avif', type: 'image/avif', directory: 'assets' },
+  ]
+  // The HTTP server transports opaque original bytes; decoding belongs to the browser.
+  const bytes = new Uint8Array([0, 1, 255, 128, 82, 73, 70, 70, 0])
+  for (const asset of assets)
+    await writeFile(join(f.docs, asset.directory, asset.name), bytes)
+  await writeFile(join(f.docs, 'assets/public.webp'), 'shadowed root bytes')
+  const { url, stop } = await startServer({ port: 0, root: f.docs, watch: false, quiet: true, config })
+  try {
+    for (const asset of assets) {
+      for (const prefix of ['', '/docs']) {
+        const response = await fetch(`${url}${prefix}/assets/${asset.name}`)
+        const actual = new Uint8Array(await response.arrayBuffer())
+        expect({ name: asset.name, prefix, status: response.status }).toEqual({ name: asset.name, prefix, status: 200 })
+        expect(response.headers.get('content-type')).toBe(asset.type)
+        expect(actual).toEqual(bytes)
+      }
+    }
+    const missing = await fetch(`${url}/docs/assets/missing.webp`)
+    expect(missing.status).toBe(404)
+    const page = await fetch(`${url}/docs/guides/start`)
+    expect(page.status).toBe(200)
+    await assertLinks(await page.text())
+  }
+  finally { stop() }
+  expect(await buildDocs({ dir: f.docs, outdir: f.out, config: f.configFile, searchIndex: false })).toBe(true)
+  for (const asset of assets.filter(asset => asset.directory === 'public/assets'))
+    expect(new Uint8Array(await Bun.file(join(f.out, '.bunpress/assets', asset.name)).arrayBuffer())).toEqual(bytes)
+}, 30000)
