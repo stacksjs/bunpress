@@ -1,5 +1,8 @@
+import type { MarkdownLinkOrigins, MarkdownPageContext } from './markdown-pages'
+import { createMarkdownPageCatalog, findMarkdownFiles, rewriteMarkdownSourceLinks } from './markdown-pages'
 import type { BunPressConfig, Frontmatter, NavItem, SidebarItem } from './types'
 import { Glob, YAML } from 'bun'
+import { randomUUID } from 'node:crypto'
 import { stat } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import process from 'node:process'
@@ -13,7 +16,6 @@ import {
   generateHreflangTags,
   generateLocaleDetectionScript,
   loadI18nTranslations,
-  localeContentCandidates,
   localeLabel,
   localizeUrl,
   resolveI18nConfig,
@@ -28,6 +30,9 @@ import { messagePreviewCSS, renderMessagePreview } from './message-previews'
 import { getThemeCSS } from './themes'
 import { buildTocHierarchy, defaultTocConfig, extractHeadings, filterHeadings, generateInlineTocHtml, generateSlug, markdownHeadingText, reserveUniqueSlug } from './toc'
 import { siteUrl } from './site-url'
+import { decodeHtmlEntities, escapeHtmlAttribute } from './html-entities'
+
+export { decodeHtmlEntities } from './html-entities'
 
 /**
  * Generate sidebar HTML from BunPress config.
@@ -234,30 +239,6 @@ function generateSocialLinks(config: BunPressConfig): string {
       return `<a href="${escapeHtmlAttribute(link)}" target="_blank" rel="noopener external" aria-label="${escapeHtmlAttribute(label)}">${glyph}</a>`
     })
     .join('\n            ')
-}
-
-/**
- * Text from HTML back to text: `Raster &amp; heatmap` to `Raster & heatmap`.
- * A page title is read from its rendered `<h1>`, and is escaped again where
- * it is written; left encoded, `&` came out as `&amp;amp;` in the tab.
- */
-export function decodeHtmlEntities(value: string): string {
-  const named: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: '\'', nbsp: '\u00A0' }
-  return value.replace(/&(#x[\da-f]+|#\d+|[a-z]+);/gi, (whole, entity: string) => {
-    if (entity[0] === '#') {
-      const code = entity[1] === 'x' || entity[1] === 'X' ? Number.parseInt(entity.slice(2), 16) : Number.parseInt(entity.slice(1), 10)
-      return Number.isFinite(code) && code > 0 && code <= 0x10FFFF ? String.fromCodePoint(code) : whole
-    }
-    return named[entity.toLowerCase()] ?? whole
-  })
-}
-
-function escapeHtmlAttribute(value: string): string {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
 }
 
 /**
@@ -2552,7 +2533,7 @@ async function processCodeImports(content: string, rootDir: string): Promise<str
  * Process markdown file inclusion
  * Syntax: <!--@include: ./filepath.md--> or <!--@include: ./filepath.md{10-20}--> or <!--@include: ./filepath.md{#region}-->
  */
-async function processMarkdownIncludes(content: string, rootDir: string, processedFiles = new Set<string>()): Promise<string> {
+async function processMarkdownIncludes(content: string, rootDir: string, processedFiles = new Set<string>(), pageContext?: MarkdownPageContext, origins?: MarkdownLinkOrigins): Promise<string> {
   const includeRegex = /<!--@include:\s*([^\s{]+)(?:\{(\d+)-(\d+)\}|\{#([\w-]+)\})?\s*-->/g
   const matches = Array.from(content.matchAll(includeRegex))
 
@@ -2561,6 +2542,12 @@ async function processMarkdownIncludes(content: string, rootDir: string, process
     const [fullMatch, filepath, startLine, endLine, regionName] = match
 
     try {
+      if (pageContext) {
+        const before = content.slice(0, match.index)
+        const after = content.slice(match.index! + fullMatch.length)
+        if (!/(?:^|\n) {0,3}$/.test(before) || !/^[ \t]*(?:\r?\n|$)/.test(after))
+          throw new Error('Source-aware Markdown includes must be on their own line')
+      }
       // Resolve file path relative to root directory
       const { join, resolve } = await import('node:path')
       const fullPath = resolve(join(rootDir, filepath))
@@ -2613,11 +2600,22 @@ async function processMarkdownIncludes(content: string, rootDir: string, process
       newProcessedFiles.add(fullPath)
 
       // Recursively process includes in the included file
-      includedContent = await processMarkdownIncludes(includedContent, rootDir, newProcessedFiles)
+      includedContent = await withCodeMasked(includedContent, masked => processMarkdownIncludes(masked, rootDir, newProcessedFiles, pageContext, origins))
+
+      if (pageContext && origins) {
+        // Parser-preserved comments delimit origins without parsing authored
+        // Markdown links ourselves. Unique markers cannot alias author text.
+        const token = `bunpress-source-${randomUUID()}`
+        origins.set(`${token}:start`, { ...pageContext.page, sourceFile: fullPath })
+        origins.set(`${token}:end`, null)
+        includedContent = `\n<!--${token}:start-->\n\n${includedContent}\n\n<!--${token}:end-->\n`
+      }
 
       result = result.slice(0, match.index) + includedContent + result.slice(match.index! + fullMatch.length)
     }
     catch (error) {
+      if (pageContext)
+        throw error
       console.error(`Error including markdown from ${filepath}:`, error)
     }
   }
@@ -3066,7 +3064,7 @@ function postProcessHeadings(html: string, customAnchors: Map<string, string[]>)
  * Convert markdown to HTML using Bun's built-in markdown parser
  * See: https://bun.com/docs/runtime/markdown
  */
-export async function markdownToHtml(markdown: string, rootDir: string = './docs'): Promise<{ html: string, frontmatter: any }> {
+export async function markdownToHtml(markdown: string, rootDir: string = './docs', pageContext?: MarkdownPageContext): Promise<{ html: string, frontmatter: any }> {
   // Parse frontmatter
   const { frontmatter, content } = parseFrontmatter(markdown)
 
@@ -3077,7 +3075,7 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
     const heroHtml = await generateHero(frontmatter.hero)
     const featuresHtml = await generateFeatures(frontmatter.features)
     const bodyHtml = content.trim()
-      ? await renderMarkdownBody(content, frontmatter, rootDir)
+      ? await renderMarkdownBody(content, frontmatter, rootDir, pageContext)
       : ''
     const body = bodyHtml
       ? `<div class="BPHome-content"><div class="container bp-doc vp-doc">${bodyHtml}</div></div>`
@@ -3088,7 +3086,7 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
     }
   }
 
-  const html = await renderMarkdownBody(content, frontmatter, rootDir)
+  const html = await renderMarkdownBody(content, frontmatter, rootDir, pageContext)
   return { html, frontmatter }
 }
 
@@ -3098,7 +3096,8 @@ export async function markdownToHtml(markdown: string, rootDir: string = './docs
  * highlighting, and HTML post-processing. Shared by every layout (doc, page,
  * and the body of a home page).
  */
-async function renderMarkdownBody(content: string, frontmatter: any, rootDir: string): Promise<string> {
+async function renderMarkdownBody(content: string, frontmatter: any, rootDir: string, pageContext?: MarkdownPageContext): Promise<string> {
+  const includeOrigins: MarkdownLinkOrigins = new Map()
   // Resolve feature toggles from config (all default to true)
   const features = (config as BunPressConfig).markdown?.features
   const featureEnabled = (key: keyof import('./types').MarkdownFeaturesConfig): boolean => {
@@ -3129,7 +3128,7 @@ async function renderMarkdownBody(content: string, frontmatter: any, rootDir: st
   // reason: they are all plain-text patterns, and a docs page is full of
   // examples of them.
   let processedContent = featureEnabled('includes')
-    ? await withCodeMasked(content, masked => processMarkdownIncludes(masked, rootDir))
+    ? await withCodeMasked(content, masked => processMarkdownIncludes(masked, rootDir, new Set(pageContext ? [pageContext.page.sourceFile] : []), pageContext, includeOrigins))
     : content
 
   // Build the stx render context: frontmatter + global data files (.data/*.json,
@@ -3242,13 +3241,47 @@ async function renderMarkdownBody(content: string, frontmatter: any, rootDir: st
   // See: https://bun.com/docs/runtime/markdown
   // markdown.parserOptions is merged last so a site can turn a GFM extension
   // off, or enable one this default set does not cover.
-  let finalHtml = Bun.markdown.html(processedContent, {
+  const parserOptions = {
     tables: true,
     strikethrough: true,
     tasklists: true,
     autolinks: true,
     ...((config as BunPressConfig).markdown?.parserOptions ?? {}),
-  })
+  }
+  if (includeOrigins.size) {
+    // Reference bindings span the entire expanded document. The parser does
+    // not expose definition locations, so boundary markers cannot identify
+    // their destination's source. Ask the native parser whether a candidate
+    // label actually binds, using the same unmasked content as final parsing.
+    // The probe precedes the content so an unclosed trailing HTML block
+    // cannot hide it. Candidate discovery does not parse or rewrite links.
+    const labels = new Set<string>()
+    for (let end = processedContent.indexOf(']:'); end !== -1; end = processedContent.indexOf(']:', end + 2)) {
+      for (let start = processedContent.lastIndexOf('[', end - 1); start !== -1; start = start === 0 ? -1 : processedContent.lastIndexOf('[', start - 1)) {
+        const label = processedContent.slice(start + 1, end)
+        if (labels.has(label))
+          continue
+        labels.add(label)
+        if (labels.size > 256)
+          throw new Error('Markdown include reference validation exceeded 256 candidate labels. Split the document or use inline links.')
+        const probe = `bunpress-reference-${randomUUID()}`
+        let bound = false
+        Bun.markdown.render(`[${probe}][${label}]\n\n${processedContent}`, {
+          link(children) {
+            if (children === probe)
+              bound = true
+            return ''
+          },
+        }, parserOptions)
+        if (bound)
+          throw new Error('Markdown includes cannot be combined with reference definitions. Use inline links instead.')
+      }
+    }
+  }
+  let finalHtml = Bun.markdown.html(processedContent, parserOptions)
+
+  if (pageContext)
+    finalHtml = await rewriteMarkdownSourceLinks(finalHtml, pageContext, includeOrigins)
 
   // Restore code block placeholders with actual highlighted HTML
   for (const [placeholder, codeHtml] of codeBlockMap) {
@@ -3367,23 +3400,21 @@ export async function startServer(options: {
       // With i18n on, `/es/guide` resolves the Spanish copy first and the
       // default-locale copy last, so an untranslated page still renders.
       const { locale, path: localePath } = splitLocaleFromPath(i18n, path)
-      const candidates = localeContentCandidates(i18n, root, locale, localePath)
-      for (const mdPath of candidates) {
-        try {
-          const mdFile = Bun.file(mdPath)
-          if (await mdFile.exists()) {
-            const markdown = await mdFile.text()
-            const { html, frontmatter } = await markdownToHtml(markdown, root)
-            const layout = frontmatter.layout || 'doc'
-            const wrappedHtml = await wrapInLayout(html, bunPressConfig, localePath, layout, frontmatter, { i18n, locale, sourceFile: mdPath, docsDir: root })
-            return new Response(wrappedHtml, {
-              headers: { 'Content-Type': 'text/html; charset=utf-8' },
-            })
-          }
+      try {
+        const catalog = createMarkdownPageCatalog(await findMarkdownFiles(root), root, i18n)
+        const page = catalog.findPage(locale, localePath)
+        if (page) {
+          const markdown = await Bun.file(page.sourceFile).text()
+          const { html, frontmatter } = await markdownToHtml(markdown, root, { page, catalog })
+          const layout = frontmatter.layout || 'doc'
+          const wrappedHtml = await wrapInLayout(html, bunPressConfig, localePath, layout, frontmatter, { i18n, locale, sourceFile: page.sourceFile, docsDir: root })
+          return new Response(wrappedHtml, {
+            headers: { 'Content-Type': 'text/html; charset=utf-8' },
+          })
         }
-        catch {
-          // Try the next candidate, then fall through to 404.
-        }
+      }
+      catch {
+        return new Response('Documentation page could not be rendered', { status: 500 })
       }
 
       // 404 response

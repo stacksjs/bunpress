@@ -294,6 +294,20 @@ Content here...
 <!--@include: ./shared/footer.md-->
 ```
 
+Put each include directive on its own line. Include paths are relative to the
+documentation root. Links inside included content resolve from that included
+file's directory, including recursive includes, while keeping the rendered
+page's locale. Inline includes are refused because their source boundaries
+cannot be preserved reliably through Markdown parsing.
+
+Use inline links in documents that expand includes. Reference definitions can
+bind uses across file boundaries, and the Markdown parser does not expose the
+definition's source location. These documents refuse reference definitions;
+literal examples in code spans, fenced blocks and HTML code remain supported.
+Reference validation is bounded to 256 candidate labels per expanded document.
+Split a document that exceeds this limit. Documents without includes continue
+to support reference-style links.
+
 ## Images
 
 ### Basic Images
@@ -309,6 +323,40 @@ Content here...
 ```
 
 Images are automatically lazy-loaded for better performance.
+
+## Documentation Links
+
+Use source-relative Markdown links so authored files also work on GitHub:
+
+```markdown
+[Overview](../overview.md#configuration)
+[This section](index.md)
+[Reference](README.md)
+[Named reference][guide]
+
+[guide]: ../guide.md?example=1#setup
+```
+
+Native builds and dev serving map these destinations to the generated page
+routes and apply the configured base path. For example, a page in `docs/guide/`
+linking to `../overview.md` becomes `/overview`, or `/docs/overview` with
+`basePath: '/docs'`. `index.md` uses its directory route; `README.md` keeps a
+`README` route. Query strings and fragments stay attached to the destination.
+
+Unqualified sources use the current rendered locale, including fallback
+content. An explicit language suffix such as `guide.en.md` selects that language
+even when the referring page uses another locale.
+
+External URLs, image destinations, links outside the documentation source tree,
+and literal code examples stay unchanged. Use explicit repository URLs for
+source and evidence references that should open on GitHub.
+
+A missing linked Markdown source or two sources sharing one output route
+refuses the build. A failed rebuild keeps the previous complete output. Builds
+in one process queue for the same output; another process holding that output's
+lock causes a clear refusal. Before manually removing a stale `.bunpress.lock`
+directory, inspect its `owner.json` and verify that the recorded builder has
+stopped.
 
 ## External Links
 
