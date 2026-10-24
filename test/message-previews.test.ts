@@ -50,6 +50,20 @@ describe('message previews', () => {
     expect(renderSmsPreview('<b>hi</b>')).not.toContain('<b>hi</b>')
   })
 
+  it('renders unsafe links as text in email buttons, bodies, headers and SMS', () => {
+    for (const href of ['javascript:alert%281%29', 'JaVaScRiPt:alert%281%29', 'data:text/html,unsafe', 'vbscript:msgbox%281%29']) {
+      const email = renderEmailPreview(`subject: [Header](${href})\n---\n[Button](${href})\n\nInline [body](${href}) text`)
+      const sms = renderSmsPreview(`Inline [body](${href}) text`)
+      expect(email).not.toContain('href=')
+      expect(sms).not.toContain('href=')
+      expect(email).toContain('Button')
+      expect(email).toContain('Inline body text')
+    }
+
+    for (const href of ['https://example.com/{token}', '/reset?token={token}', '#account', 'mailto:help@example.com', 'tel:+15555550123'])
+      expect(renderEmailPreview(`[Continue](${href})`)).toContain(`href="${href}"`)
+  })
+
   it('renders an SMS thread with segment counts and replies', () => {
     const html = renderSmsPreview('from: Acme\nto: The member\n---\nYour class starts at {time}. Reply STOP to opt out.\n---\n> STOP\n---\nYou are unsubscribed.')
     expect(html).toContain('class="bp-message bp-sms"')

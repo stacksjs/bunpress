@@ -58,6 +58,21 @@ const LINK = /\[([^\]]+)\]\(([^)\s]+)\)|(https?:\/\/[^\s<>()]+[^\s<>().,;:!?'"])
  * Inline markdown for one line. Links are split out first so a placeholder in
  * a URL stays literal in the href instead of becoming markup inside it.
  */
+function safeLink(href: string): boolean {
+  // URL parsing discards tabs and newlines; reject them before inspecting
+  // the protocol so an obfuscated executable scheme cannot pass.
+  if (/[\u0000-\u0020\u007f]/.test(href))
+    return false
+
+  try {
+    const url = new URL(href, 'https://preview.invalid/')
+    return ['https:', 'http:', 'mailto:', 'tel:'].includes(url.protocol)
+  }
+  catch {
+    return false
+  }
+}
+
 function formatInline(text: string): string {
   let html = ''
   let last = 0
@@ -65,7 +80,9 @@ function formatInline(text: string): string {
     html += formatText(text.slice(last, match.index))
     const href = match[2] ?? match[3]
     const label = match[1] ?? match[3]
-    html += `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${formatText(label)}</a>`
+    html += safeLink(href)
+      ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${formatText(label)}</a>`
+      : formatText(label)
     last = match.index! + match[0].length
   }
   return html + formatText(text.slice(last))
@@ -153,6 +170,8 @@ function renderEmailBody(lines: string[]): string {
     if (block.every(line => BUTTON.test(line))) {
       const buttons = block.map((line) => {
         const [, label, href] = line.match(BUTTON)!
+        if (!safeLink(href))
+          return formatText(label)
         return `<a class="bp-email-button" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${formatText(label)}</a>`
       })
       return `<p class="bp-email-actions">${buttons.join('')}</p>`
