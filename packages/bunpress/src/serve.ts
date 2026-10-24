@@ -470,7 +470,9 @@ function generateSPARouterScript(basePath = ''): string {
   }
 
   function isInternalNavigable(u) {
-    return u.origin === location.origin && !u.pathname.match(/\\.[a-z]+$/i);
+    return u.origin === location.origin
+      && (!basePath || u.pathname === basePath || u.pathname.indexOf(basePath + '/') === 0)
+      && !u.pathname.match(/\\.[a-z]+$/i);
   }
 
   function updateActiveLinks() {
@@ -532,6 +534,10 @@ function generateSPARouterScript(basePath = ''): string {
   async function navigate(href, opts) {
     opts = opts || {};
     var target = new URL(href, location.origin);
+    if (!isInternalNavigable(target)) {
+      location.href = target.href;
+      return;
+    }
     var key = target.pathname + target.search;
 
     if (opts.push) {
