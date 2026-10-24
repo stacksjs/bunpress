@@ -362,6 +362,14 @@ generated pages. Skip it when you do not need search in a given build:
 bunpress build --no-search-index
 ```
 
+## Deployment under a path
+
+Local search results use the same deployment path as rendered pages. With
+`basePath: '/docs'`, a result for `guide.md` opens `/docs/guide`; section anchors
+and locale paths retain that prefix. When no explicit base path is set, the
+pathname of `sitemap.baseUrl` or `url` supplies it, matching the page renderer.
+Root-hosted sites retain their existing paths.
+
 ## Accessibility
 
 Search is accessible by default:

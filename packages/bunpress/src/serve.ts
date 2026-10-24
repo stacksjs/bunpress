@@ -29,7 +29,9 @@ import { clearTemplateCache, render } from './template-loader'
 import { messagePreviewCSS, renderMessagePreview } from './message-previews'
 import { getThemeCSS } from './themes'
 import { buildTocHierarchy, defaultTocConfig, extractHeadings, filterHeadings, generateInlineTocHtml, generateSlug, markdownHeadingText, reserveUniqueSlug } from './toc'
-import { siteUrl } from './site-url'
+import { getConfiguredBasePath, siteUrl } from './site-url'
+
+export { getConfiguredBasePath } from './site-url'
 import { decodeHtmlEntities, escapeHtmlAttribute } from './html-entities'
 
 export { decodeHtmlEntities } from './html-entities'
@@ -899,28 +901,6 @@ function generateNavScreen(config: BunPressConfig, currentPath: string = ''): st
   return `<div class="BPNavScreen" id="bp-nav-screen" hidden>
     <nav class="BPNavScreen-nav" aria-label="Site">${sections}</nav>
   </div>`
-}
-
-export function getConfiguredBasePath(config: BunPressConfig): string {
-  if (config.basePath) {
-    const normalized = config.basePath.trim().replace(/\/+$/, '')
-    if (!normalized || normalized === '/')
-      return ''
-    return normalized.startsWith('/') ? normalized : `/${normalized}`
-  }
-
-  const baseUrl = siteUrl(config)
-  if (!baseUrl) {
-    return ''
-  }
-
-  try {
-    const pathname = new URL(baseUrl).pathname.replace(/\/+$/, '')
-    return pathname === '/' ? '' : pathname
-  }
-  catch {
-    return ''
-  }
 }
 
 export function stripConfiguredBasePath(config: BunPressConfig, pathname: string): string {

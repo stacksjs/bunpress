@@ -2,6 +2,7 @@ import type { BunPressConfig, LocalSearchOptions, SearchConfig } from './types'
 import { Glob, YAML } from 'bun'
 import { join } from 'node:path'
 import { localizeUrl, resolveI18nConfig } from './i18n'
+import { getConfiguredBasePath } from './site-url'
 import { createFenceTracker, stripFencedCode } from './markdown-fences'
 import { unwrapMessageFences } from './message-previews'
 import { generateSlug, markdownHeadingText, reserveUniqueSlug } from './toc'
@@ -471,6 +472,13 @@ export async function buildSearchIndex(docsDir: string, config?: BunPressConfig)
         records.push({ ...record, url, locale })
       }
     }
+  }
+
+  // Apply the deployment prefix after locale fallback has compared page keys.
+  // Every record is still docs-relative here, including a real `docs/` directory.
+  const basePath = config ? getConfiguredBasePath(config) : ''
+  if (basePath) {
+    for (const record of records) record.url = `${basePath}${record.url}`
   }
 
   return applyStoreFields(records, options)

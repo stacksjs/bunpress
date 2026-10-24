@@ -17,3 +17,26 @@ import type { BunPressConfig } from './types'
 export function siteUrl(config: BunPressConfig): string {
   return (config.sitemap?.baseUrl || config.url || '').replace(/\/$/, '')
 }
+
+/** Shared deployment prefix for rendered pages and generated navigation data. */
+export function getConfiguredBasePath(config: BunPressConfig): string {
+  if (config.basePath) {
+    const normalized = config.basePath.trim().replace(/\/+$/, '')
+    if (!normalized || normalized === '/')
+      return ''
+    return normalized.startsWith('/') ? normalized : `/${normalized}`
+  }
+
+  const baseUrl = siteUrl(config)
+  if (!baseUrl) {
+    return ''
+  }
+
+  try {
+    const pathname = new URL(baseUrl).pathname.replace(/\/+$/, '')
+    return pathname === '/' ? '' : pathname
+  }
+  catch {
+    return ''
+  }
+}
