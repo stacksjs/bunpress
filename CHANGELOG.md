@@ -1,3 +1,13 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.24...v0.2.25)
+
+## 🔧 Chores
+
+- release v0.2.25 ([ca834b6](https://github.com/stacksjs/bunpress/commit/ca834b6)) _(by Chris Breuer <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris Breuer <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.21...v0.2.22)
 
 ## 🐛 Bug Fixes
