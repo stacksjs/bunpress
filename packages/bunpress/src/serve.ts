@@ -72,12 +72,18 @@ async function generateSidebar(config: BunPressConfig, currentPath: string): Pro
   }
 
   const sectionsHtml = await Promise.all(sidebarSections.map(async (section) => {
+    // A top-level page is a destination, not an empty collapsible section.
+    // Linked groups also retain their destination through the recursive renderer.
+    if (section.link) {
+      const { html } = renderSidebarItems(config, [section], currentPath, 0)
+      return await render('sidebar-section', { heading: '', items: html, collapsedClass: '' })
+    }
     const { html, active } = section.items
       ? renderSidebarItems(config, section.items, currentPath, 0)
       : { html: '', active: false }
 
     return await render('sidebar-section', {
-      title: section.text,
+      heading: await render('sidebar-section-heading', { title: section.text }),
       items: html,
       // A section holding the page being read opens, whatever its config says:
       // a reader who followed a link into it should see where they are.
