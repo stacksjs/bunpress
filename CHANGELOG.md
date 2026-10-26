@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.27...v0.2.28)
+
+## 🐛 Bug Fixes
+
+- keep fence modifiers separate from language names ([b21c9b1](https://github.com/stacksjs/bunpress/commit/b21c9b1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.28 ([72cb0c9](https://github.com/stacksjs/bunpress/commit/72cb0c9)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.26...v0.2.27)
 
 ## 🐛 Bug Fixes
