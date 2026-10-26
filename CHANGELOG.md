@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.26...v0.2.27)
+
+## 🐛 Bug Fixes
+
+- preserve hyphenated markdown fence languages ([c57d368](https://github.com/stacksjs/bunpress/commit/c57d368)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.27 ([8641389](https://github.com/stacksjs/bunpress/commit/8641389)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.25...v0.2.26)
 
 ## ✨ Features
