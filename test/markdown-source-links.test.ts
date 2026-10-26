@@ -4,6 +4,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { buildDocs } from '../packages/bunpress/bin/cli'
+import { createMarkdownPageCatalog, findMarkdownFiles } from '../packages/bunpress/src/markdown-pages'
 import { decodeHtmlEntities, startServer } from '../packages/bunpress/src/serve'
 
 const temporary: string[] = []
@@ -129,6 +130,36 @@ test('a missing linked source refuses rebuild without replacing the previous com
     expect(await response.text()).toBe('Documentation page could not be rendered')
   }
   finally { stop() }
+}, 30000)
+
+test('a refused link names the document it was authored in', async () => {
+  const f = await fixture()
+  await writeFile(join(f.docs, 'guides/start.md'), '# Start\n\n[gone](../adr/absent.md)\n')
+  const files = await findMarkdownFiles(f.docs)
+  const catalog = createMarkdownPageCatalog(files, f.docs, { enabled: false, locales: ['en'], defaultLocale: 'en' } as never)
+  const page = catalog.findPage('en', '/guides/start')!
+  expect(page).toBeDefined()
+
+  // The destination is the part that is missing, so naming it alone leaves the
+  // reader grepping for whichever of their documents holds the link. The path
+  // is relative to the documentation root: an absolute temporary directory is
+  // noise in a build log.
+  expect(() => catalog.resolveLink(page, '../adr/absent.md')).toThrow('guides/start.md: Markdown link has no documentation source: ../adr/absent.md')
+}, 30000)
+
+test('a refused link inside an include names the included file, not its host', async () => {
+  const f = await fixture()
+  await mkdir(join(f.docs, 'parts'), { recursive: true })
+  await writeFile(join(f.docs, 'parts/snippet.md'), '[gone](./absent.md)\n')
+  const files = await findMarkdownFiles(f.docs)
+  const catalog = createMarkdownPageCatalog(files, f.docs, { enabled: false, locales: ['en'], defaultLocale: 'en' } as never)
+  const included = catalog.findPage('en', '/parts/snippet')!
+
+  // `rewriteMarkdownSourceLinks` hands `resolveLink` the innermost origin on
+  // its include stack, so the file named here is where the link was written
+  // rather than whichever document pulled it in. That is the one a person has
+  // to open, and the two differ exactly when the message matters most.
+  expect(() => catalog.resolveLink(included, './absent.md')).toThrow('parts/snippet.md: Markdown link has no documentation source: ./absent.md')
 }, 30000)
 
 test('canonical output collisions refuse publication', async () => {

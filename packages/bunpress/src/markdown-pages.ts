@@ -40,6 +40,22 @@ function routeFor(path: string): string {
   return `/${encodePath(route)}`
 }
 
+/**
+ * The document a link was authored in, for a message somebody has to act on.
+ *
+ * Both link failures below name the destination, which is not enough to find
+ * the link: the destination is what is missing, and the file holding it is
+ * what has to be edited. Relative to the documentation root, because an
+ * absolute temporary path is noise in a build log.
+ *
+ * Under an include, `resolveLink` is handed the innermost origin rather than
+ * the host page, so this names the file the link was actually written in.
+ */
+function authoredIn(page: MarkdownPage, root: string): string {
+  const within = relative(root, page.sourceFile)
+  return within && !within.startsWith('..') && !isAbsolute(within) ? within.split(sep).join('/') : page.sourceFile
+}
+
 function routeKey(path: string): string {
   const encoded = path.split('/').map(segment => encodeURIComponent(decodeURIComponent(segment))).join('/')
   return encoded.replace(/\/+$/, '') || '/'
@@ -124,11 +140,11 @@ export function createMarkdownPageCatalog(markdownFiles: readonly string[], docs
         return destination
       const source = sources.get(target)
       if (!source)
-        throw new Error(`Markdown link has no documentation source: ${rawPath}`)
+        throw new Error(`${authoredIn(page, root)}: Markdown link has no documentation source: ${rawPath}`)
       const locale = source.explicitLocale ? source.locale : page.locale
       const selected = byPage.get(`${locale}\0${source.path}`)
       if (!selected)
-        throw new Error(`Markdown link has no rendered page: ${rawPath}`)
+        throw new Error(`${authoredIn(page, root)}: Markdown link has no rendered page: ${rawPath}`)
       return `${localizeUrl(language, locale, routeFor(selected.relativePath))}${suffix}`
     },
   })
