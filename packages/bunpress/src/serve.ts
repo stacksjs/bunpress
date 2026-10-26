@@ -2731,7 +2731,7 @@ function parseCodeFenceInfo(infoString: string): {
   showLineNumbers: boolean
 } {
   // Extract language (everything before { or :)
-  const langMatch = infoString.match(/^(\w+)/)
+  const langMatch = infoString.match(/^([^\s{]+)/)
   const lang = langMatch ? langMatch[1] : ''
 
   // Extract line highlights

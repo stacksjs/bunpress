@@ -126,3 +126,11 @@ it('embeds actual email HTML as escaped srcdoc without adding active elements to
   expect(html).not.toContain('<script>')
   expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;')
 })
+
+
+it('renders email-html through the complete Markdown fence parser', async () => {
+  const { html } = await markdownToHtml('```email-html\nsubject: Training\n---\n<!DOCTYPE html><html><body><h1>Tempo</h1></body></html>\n```', process.cwd())
+  expect(html).toContain('class="bp-email-rendered"')
+  expect(html).toContain('srcdoc="&lt;!DOCTYPE html&gt;')
+  expect(html).not.toContain('bp-email-body')
+})
