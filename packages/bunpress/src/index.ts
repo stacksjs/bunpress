@@ -11,3 +11,4 @@ export { buildSearchIndex, buildSearchRuntimeConfig, SEARCH_INDEX_PATH } from '.
 export * from './serve'
 export * from './toc'
 export * from './types'
+export * from './untrusted'
