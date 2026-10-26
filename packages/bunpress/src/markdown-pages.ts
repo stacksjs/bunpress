@@ -13,12 +13,32 @@ export interface MarkdownPage {
 export interface MarkdownPageCatalog {
   readonly pages: readonly MarkdownPage[]
   findPage: (locale: string, path: string) => MarkdownPage | undefined
-  resolveLink: (page: MarkdownPage, destination: string) => string
+  resolveLink: (page: MarkdownPage, destination: string, collect?: MarkdownLinkCollector) => string
 }
+
+/** A link that named no document, reported rather than thrown. */
+export interface MarkdownLinkFailure {
+  /** The authoring document, relative to the documentation root. */
+  readonly sourceFile: string
+  /** The destination exactly as it was written. */
+  readonly destination: string
+  readonly reason: 'no-documentation-source' | 'no-rendered-page'
+}
+
+export type MarkdownLinkCollector = (failure: MarkdownLinkFailure) => void
 
 export interface MarkdownPageContext {
   readonly page: MarkdownPage
   readonly catalog: MarkdownPageCatalog
+  /**
+   * Where to put a refused link instead of throwing on the first one.
+   *
+   * Absent by default, which keeps the single-page callers failing fast: the
+   * dev server renders one page on request and has no later point to report
+   * at, so a throw is the whole answer there. A build renders every page and
+   * can say how many are broken, which is the difference this exists for.
+   */
+  readonly collectLinkFailures?: MarkdownLinkCollector
 }
 
 /** Per-render boundaries for authored content expanded from another file. */
@@ -116,13 +136,32 @@ export function createMarkdownPageCatalog(markdownFiles: readonly string[], docs
     }
   }
 
+  /**
+   * Report the link, or throw on it when nobody is collecting.
+   *
+   * Returning the destination untouched is safe precisely because a collecting
+   * caller does not publish: the build throws once it has rendered everything,
+   * so this HTML is discarded. Leaving it alone rather than substituting a
+   * placeholder also keeps the failing page readable while it is inspected.
+   */
+  function refuse(page: MarkdownPage, rawPath: string, destination: string, reason: MarkdownLinkFailure['reason'], collect?: MarkdownLinkCollector): string {
+    const sourceFile = authoredIn(page, root)
+    const message = reason === 'no-documentation-source'
+      ? `${sourceFile}: Markdown link has no documentation source: ${rawPath}`
+      : `${sourceFile}: Markdown link has no rendered page: ${rawPath}`
+    if (!collect)
+      throw new Error(message)
+    collect({ sourceFile, destination: rawPath, reason })
+    return destination
+  }
+
   return Object.freeze({
     pages: Object.freeze(pages),
     findPage(locale: string, path: string): MarkdownPage | undefined {
       const key = `${locale}\0${routeKey(path)}`
       return byRoute.get(key) ?? aliases.get(key)
     },
-    resolveLink(page: MarkdownPage, destination: string): string {
+    resolveLink(page: MarkdownPage, destination: string, collect?: MarkdownLinkCollector): string {
       if (!destination || /^(?:[a-z][a-z\d+.-]*:|\/|#|\?)/i.test(destination))
         return destination
       const boundary = destination.search(/[?#]/)
@@ -140,14 +179,46 @@ export function createMarkdownPageCatalog(markdownFiles: readonly string[], docs
         return destination
       const source = sources.get(target)
       if (!source)
-        throw new Error(`${authoredIn(page, root)}: Markdown link has no documentation source: ${rawPath}`)
+        return refuse(page, rawPath, destination, 'no-documentation-source', collect)
       const locale = source.explicitLocale ? source.locale : page.locale
       const selected = byPage.get(`${locale}\0${source.path}`)
       if (!selected)
-        throw new Error(`${authoredIn(page, root)}: Markdown link has no rendered page: ${rawPath}`)
+        return refuse(page, rawPath, destination, 'no-rendered-page', collect)
       return `${localizeUrl(language, locale, routeFor(selected.relativePath))}${suffix}`
     },
   })
+}
+
+/**
+ * One message for every refused link, in the order they were rendered.
+ *
+ * Grouped by document and destination with a count, because the same dead
+ * destination written three times in one file is three identical lines
+ * otherwise. There is no line number: by the time links are resolved the
+ * markdown has already become HTML, so the authored position is gone, and a
+ * fabricated one would be worse than none.
+ */
+export function describeLinkFailures(failures: readonly MarkdownLinkFailure[]): string {
+  const groups = new Map<string, { failure: MarkdownLinkFailure, count: number }>()
+  for (const failure of failures) {
+    const key = `${failure.sourceFile}\0${failure.destination}\0${failure.reason}`
+    const seen = groups.get(key)
+    if (seen)
+      seen.count += 1
+    else
+      groups.set(key, { failure, count: 1 })
+  }
+
+  const lines = [...groups.values()].map(({ failure, count }) => {
+    const reason = failure.reason === 'no-documentation-source' ? 'no documentation source' : 'no rendered page'
+    const times = count > 1 ? ` (${count} times)` : ''
+    return `  ${failure.sourceFile}  ${failure.destination}  (${reason})${times}`
+  })
+
+  const total = failures.length
+  const heading = total === 1 ? '1 Markdown link could not be resolved:' : `${total} Markdown links could not be resolved:`
+
+  return [heading, ...lines].join('\n')
 }
 
 /** Parse actual anchor attributes; code text, images and external destinations stay intact. */
@@ -174,7 +245,7 @@ export async function rewriteMarkdownSourceLinks(html: string, context: Markdown
   }).on('a[href]', {
     element(element) {
       const href = decodeHtmlEntities(element.getAttribute('href')!)
-      const destination = context.catalog.resolveLink(stack[stack.length - 1], href)
+      const destination = context.catalog.resolveLink(stack[stack.length - 1], href, context.collectLinkFailures)
       if (destination !== href)
         element.setAttribute('href', escapeHtmlAttribute(destination))
     },

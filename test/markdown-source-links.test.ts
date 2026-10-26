@@ -4,7 +4,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { buildDocs } from '../packages/bunpress/bin/cli'
-import { createMarkdownPageCatalog, findMarkdownFiles } from '../packages/bunpress/src/markdown-pages'
+import { createMarkdownPageCatalog, describeLinkFailures, findMarkdownFiles } from '../packages/bunpress/src/markdown-pages'
 import { decodeHtmlEntities, startServer } from '../packages/bunpress/src/serve'
 
 const temporary: string[] = []
@@ -161,6 +161,53 @@ test('a refused link inside an include names the included file, not its host', a
   // to open, and the two differ exactly when the message matters most.
   expect(() => catalog.resolveLink(included, './absent.md')).toThrow('parts/snippet.md: Markdown link has no documentation source: ./absent.md')
 }, 30000)
+
+test('one build reports every refused link, not the first', async () => {
+  const f = await fixture()
+  await writeFile(join(f.docs, 'guides/start.md'), '# Start\n\n[one](./absent-one.md) and [again](./absent-one.md)\n')
+  await writeFile(join(f.docs, 'guides/second.md'), '# Second\n\n[two](./absent-two.md)\n')
+
+  const reported: string[] = []
+  const error = console.error
+  console.error = (...parts: unknown[]) => { reported.push(parts.map(String).join(' ')) }
+  try {
+    expect(await buildDocs({ dir: f.docs, outdir: f.out, config: f.configFile, searchIndex: false })).toBe(false)
+  }
+  finally { console.error = error }
+
+  // Both documents in a single run. Throwing on the first meant a set with N
+  // dead links took N builds, each one a full build, with no way to know how
+  // many were left until the last passed.
+  const text = reported.join('\n')
+  expect(text).toContain('3 Markdown links could not be resolved')
+  expect(text).toContain('guides/start.md')
+  expect(text).toContain('./absent-one.md')
+  expect(text).toContain('guides/second.md')
+  expect(text).toContain('./absent-two.md')
+}, 30000)
+
+test('a destination repeated in one document is counted rather than repeated', () => {
+  // The real case this came from was three links to one missing file in a
+  // single document. Listed one per line they are three identical rows, since
+  // the authored line number is already gone by the time links resolve.
+  const summary = describeLinkFailures([
+    { sourceFile: 'todo/12-api.md', destination: './09-ci-cd.md', reason: 'no-documentation-source' },
+    { sourceFile: 'todo/12-api.md', destination: './09-ci-cd.md', reason: 'no-documentation-source' },
+    { sourceFile: 'todo/12-api.md', destination: './09-ci-cd.md', reason: 'no-documentation-source' },
+    { sourceFile: 'todo/13-mirror.md', destination: './gone.md', reason: 'no-rendered-page' },
+  ])
+
+  expect(summary).toContain('4 Markdown links could not be resolved')
+  expect(summary).toContain('todo/12-api.md  ./09-ci-cd.md  (no documentation source) (3 times)')
+  expect(summary).toContain('todo/13-mirror.md  ./gone.md  (no rendered page)')
+  expect(summary.split('\n')).toHaveLength(3)
+})
+
+test('a single refused link still reads as one', () => {
+  expect(describeLinkFailures([
+    { sourceFile: 'guides/start.md', destination: './absent.md', reason: 'no-documentation-source' },
+  ])).toStartWith('1 Markdown link could not be resolved:')
+})
 
 test('canonical output collisions refuse publication', async () => {
   const f = await fixture()

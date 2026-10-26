@@ -13,7 +13,8 @@ import { generateRssFeed } from '../src/rss'
 import { buildSearchIndex, SEARCH_INDEX_PATH } from '../src/search-index'
 import { generateSitemap } from '../src/sitemap'
 import { siteUrl } from '../src/site-url'
-import { createMarkdownPageCatalog, findMarkdownFiles } from '../src/markdown-pages'
+import type { MarkdownLinkFailure } from '../src/markdown-pages'
+import { createMarkdownPageCatalog, describeLinkFailures, findMarkdownFiles } from '../src/markdown-pages'
 import { withBuildOutput } from '../src/build-output'
 import { verifyBuildManifest, writeBuildManifest } from '../src/build-manifest'
 import { cleanCommand } from './commands/clean'
@@ -224,11 +225,28 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
       const catalog = createMarkdownPageCatalog(markdownFiles, docsDir, i18n)
       const renderTargets = catalog.pages
 
+      /*
+       * Every refused link, not the first one.
+       *
+       * Throwing on the first meant a documentation set with N dead links took
+       * N builds to clean up: fix one, rebuild, learn the next. Each run is a
+       * full build, and the count is unknowable until the last one passes.
+       * That is felt most on the first build after adopting the check, when a
+       * set that has never been link-checked is checked all at once.
+       *
+       * Collecting changes nothing about what is published. The throw below
+       * still happens inside `withBuildOutput`, before anything is moved into
+       * place, so a build with a dead link still refuses and still leaves the
+       * previous complete output alone.
+       */
+      const linkFailures: MarkdownLinkFailure[] = []
+      const collectLinkFailures = (failure: MarkdownLinkFailure): void => { linkFailures.push(failure) }
+
       for (const target of renderTargets) {
         const markdown = await Bun.file(target.sourceFile).text()
 
         // Convert markdown to HTML (handles frontmatter, hero, features, etc.)
-        const { html, frontmatter } = await markdownToHtml(markdown, docsDir, { page: target, catalog })
+        const { html, frontmatter } = await markdownToHtml(markdown, docsDir, { page: target, catalog, collectLinkFailures })
 
         const relativePath = target.relativePath
         const currentPath = `/${relativePath}`
@@ -266,6 +284,11 @@ export async function buildDocs(options: CliOption = {}): Promise<boolean> {
           console.log(`Generated: ${outputPath}`)
         }
       }
+
+      // Reported together, and only once every page has had its turn, so the
+      // list is the whole truth rather than the first thing encountered.
+      if (linkFailures.length > 0)
+        throw new Error(describeLinkFailures(linkFailures))
 
       if (verbose) {
         console.log(`Processed ${markdownFiles.length} markdown files into ${renderTargets.length} pages.`)
