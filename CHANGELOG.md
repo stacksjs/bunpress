@@ -1,3 +1,21 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.25...v0.2.26)
+
+## ✨ Features
+
+- preview rendered email templates in documentation ([49734c3](https://github.com/stacksjs/bunpress/commit/49734c3)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- reject executable links in message previews ([6a81ad2](https://github.com/stacksjs/bunpress/commit/6a81ad2)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.26 ([ba2c42b](https://github.com/stacksjs/bunpress/commit/ba2c42b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.24...v0.2.25)
 
 ## 🔧 Chores
