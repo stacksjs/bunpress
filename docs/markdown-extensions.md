@@ -763,3 +763,12 @@ All syntax highlighting features are designed with accessibility in mind:
 - Line numbers are properly associated with their content
 - Color schemes follow WCAG guidelines for contrast
 - Screen reader friendly markup structure
+
+### Rendered email templates
+
+Use an `email-html` fence to show a rendered template in the email component.
+Put the mail headers above `---` and the full HTML document below it. The
+preview uses an iframe with `sandbox=""` and `referrerpolicy="no-referrer"`;
+scripts, forms and navigation cannot run inside the documentation page.
+The HTML is stored with the Markdown, so private documentation needs no public
+preview files or unauthenticated asset endpoint.

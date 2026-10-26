@@ -23,11 +23,16 @@
  * In an `sms` fence every later `---` starts another message in the thread,
  * and a message whose lines all start with `> ` is a reply from the recipient.
  * In an `email` fence a later `---` is a divider (above a footer, say).
+ * `email-html` fences accept rendered HTML after their headers and show it
+ * in a script-free sandbox. This keeps a real template preview self-contained.
+ * `preview: /email-previews/welcome.html` embeds an actual rendered static email
+ * in a sandboxed iframe, with the text copy kept in a disclosure underneath.
+ * Preview paths must be same-site absolute HTML paths without parent segments.
  * `{name}` and `{{ name }}` placeholders are highlighted as variables.
  */
 
 /** The fence languages rendered as message previews. */
-export const MESSAGE_PREVIEW_LANGS: readonly string[] = ['email', 'sms']
+export const MESSAGE_PREVIEW_LANGS: readonly string[] = ['email', 'email-html', 'sms']
 
 export function isMessagePreviewLang(lang: string): boolean {
   return MESSAGE_PREVIEW_LANGS.includes(lang.toLowerCase())
@@ -204,12 +209,15 @@ function labelOf(key: string): string {
   return HEADER_LABELS[key] ?? key.replace(/[-_]/g, ' ').replace(/^\w/, c => c.toUpperCase())
 }
 
-export function renderEmailPreview(source: string): string {
+export function renderEmailPreview(source: string, renderedHtml?: string): string {
   const { headers, parts } = parseMessage(source, false)
   const subject = headers.find(h => h.key === 'subject')?.value
   const preheader = headers.find(h => h.key === 'preheader')?.value
+  const preview = headers.find(h => h.key === 'preview')?.value
+  // Only same-site static HTML. The sandbox denies scripts, forms and navigation.
+  const previewPath = preview && /^\/(?!\/)[a-z0-9_./-]+\.html$/i.test(preview) && !preview.split('/').includes('..') ? preview : undefined
   const rows = headers
-    .filter(h => h.key !== 'subject' && h.key !== 'preheader')
+    .filter(h => !['subject', 'preheader', 'preview'].includes(h.key))
     .map(h => `<div><dt>${escapeHtml(labelOf(h.key))}</dt><dd>${formatInline(h.value)}</dd></div>`)
     .join('')
 
@@ -219,7 +227,9 @@ export function renderEmailPreview(source: string): string {
     subject ? `<div class="bp-email-subject">${formatInline(subject)}</div>` : '',
     rows ? `<dl class="bp-email-headers">${rows}</dl>` : '',
     preheader ? `<div class="bp-email-preheader"><span>Preview text</span> ${formatInline(preheader)}</div>` : '',
-    `<div class="bp-email-body">${renderEmailBody(parts[0] ?? [])}</div>`,
+    renderedHtml ? `<iframe class="bp-email-rendered" srcdoc="${escapeHtml(renderedHtml)}" title="${escapeHtml(subject || 'Rendered email preview')}" sandbox="" loading="lazy" referrerpolicy="no-referrer"></iframe>` : '',
+    previewPath ? `<iframe class="bp-email-rendered" src="${escapeHtml(previewPath)}" title="${escapeHtml(subject || 'Rendered email preview')}" sandbox="" loading="lazy" referrerpolicy="no-referrer"></iframe>` : '',
+    renderedHtml ? '' : previewPath ? `<details class="bp-email-copy"><summary>Message copy</summary><div class="bp-email-body">${renderEmailBody(parts[0] ?? [])}</div></details>` : `<div class="bp-email-body">${renderEmailBody(parts[0] ?? [])}</div>`,
     `</figure>`,
   ].join('')
 }
@@ -322,6 +332,10 @@ export function renderMessagePreview(lang: string, source: string): string | nul
   switch (lang.toLowerCase()) {
     case 'email':
       return renderEmailPreview(source)
+    case 'email-html': {
+      const { parts } = parseMessage(source, false)
+      return renderEmailPreview(source, (parts[0] ?? []).join('\n'))
+    }
     case 'sms':
       return renderSmsPreview(source)
     default:
@@ -387,6 +401,8 @@ export const messagePreviewCSS: string = `
   background: var(--bp-c-bg-elv, #fff);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.05);
 }
+.bp-email-rendered { display: block; width: 100%; height: 720px; border: 0; background: #f0f2f1; }
+.bp-email-copy > summary { padding: 12px 24px; cursor: pointer; font-size: 13px; border-top: 1px solid var(--bp-c-divider); }
 .bp-email-bar {
   display: flex;
   align-items: center;

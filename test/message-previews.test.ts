@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { countSmsSegments, parseMessage, renderEmailPreview, renderSmsPreview, unwrapMessageFences } from '../packages/bunpress/src/message-previews'
+import { countSmsSegments, parseMessage, renderEmailPreview, renderMessagePreview, renderSmsPreview, unwrapMessageFences } from '../packages/bunpress/src/message-previews'
 import { markdownToHtml } from '../packages/bunpress/src/serve'
 
 const EMAIL = [
@@ -97,4 +97,32 @@ describe('message previews', () => {
     expect(html).toContain('bp-sms-bubble')
     expect(html).toContain('language-ts')
   })
+})
+
+
+describe('rendered email previews', () => {
+  it('embeds same-site HTML in an inert sandbox and retains accessible message copy', () => {
+    const html = renderEmailPreview('subject: Today: intervals\npreview: /email-previews/today.html\n---\nYour session\n\n[View](https://example.com/workout/7)')
+    expect(html).toContain('src="/email-previews/today.html"')
+    expect(html).toContain('sandbox=""')
+    expect(html).toContain('referrerpolicy="no-referrer"')
+    expect(html).toContain('<summary>Message copy</summary>')
+    expect(html).toContain('Your session')
+    expect(html).not.toContain('<dt>Preview</dt>')
+  })
+
+  it('rejects external, executable, parent, encoded and backslash paths', () => {
+    for (const path of ['https://example.com/email.html', '//example.com/email.html', 'javascript:alert(1)', '/../secret.html', '/previews/../secret.html', '/%2e%2e/secret.html', '/a\\b.html', '/a.html?redirect=1']) {
+      expect(renderEmailPreview(`preview: ${path}\n---\nSafe copy`)).not.toContain('<iframe')
+    }
+  })
+})
+
+
+it('embeds actual email HTML as escaped srcdoc without adding active elements to the docs page', () => {
+  const html = renderMessagePreview('email-html', 'subject: Today\n---\n<!DOCTYPE html><html><body><h1>Training</h1><script>alert(1)</script></body></html>')!
+  expect(html).toContain('srcdoc="&lt;!DOCTYPE html&gt;')
+  expect(html).toContain('sandbox=""')
+  expect(html).not.toContain('<script>')
+  expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;')
 })
