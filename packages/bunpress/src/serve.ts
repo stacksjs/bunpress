@@ -4,7 +4,7 @@ import type { BunPressConfig, Frontmatter, NavItem, SidebarItem } from './types'
 import { Glob, YAML } from 'bun'
 import { randomUUID } from 'node:crypto'
 import { stat } from 'node:fs/promises'
-import { join, resolve } from 'node:path'
+import { join, resolve, sep } from 'node:path'
 import process from 'node:process'
 import { config, defaultConfig } from './config'
 import { clearDataCache, loadDataFiles } from './data-loader'
@@ -3341,6 +3341,8 @@ export async function startServer(options: {
     port,
     async fetch(req) {
       const url = new URL(req.url)
+      try { decodeURIComponent(url.pathname) }
+      catch { return new Response('Malformed path', { status: 400 }) }
       let path = stripConfiguredBasePath(bunPressConfig, url.pathname)
 
       // Serve root as index
@@ -3363,27 +3365,36 @@ export async function startServer(options: {
         })
       }
 
-      // Try to serve static files first (images, css, js, etc.)
+      // Public artifacts must behave like the copied production files, including
+      // standalone HTML diagrams and their JSON sources. Keep all lookups inside
+      // their declared root; the new formats are served only from public/.
       const staticExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.avif', '.svg', '.css', '.js', '.ico', '.woff', '.woff2', '.ttf']
-      if (staticExtensions.some(ext => path.endsWith(ext))) {
-        try {
-          // Try root/public first
-          const publicPath = `${root}/public${path}`
-          const publicFile = Bun.file(publicPath)
-          if (await publicFile.exists()) {
-            return new Response(publicFile)
+      try {
+        const decodedPath = decodeURIComponent(stripConfiguredBasePath(bunPressConfig, url.pathname))
+        if (!decodedPath.split('/').some(segment => segment.startsWith('.'))) {
+          const publicRoot = resolve(root, 'public')
+          const publicPath = resolve(publicRoot, `.${decodedPath}`)
+          if (publicPath.startsWith(`${publicRoot}${sep}`)) {
+            const candidates = /\.[^/]+$/.test(decodedPath) ? [publicPath] : [join(publicPath, 'index.html')]
+            for (const candidate of candidates) {
+              const file = Bun.file(candidate)
+              if (await file.exists() && (await stat(candidate)).isFile())
+                return new Response(file)
+            }
           }
-
-          // Try root directly
-          const rootPath = `${root}${path}`
-          const rootFile = Bun.file(rootPath)
-          if (await rootFile.exists()) {
-            return new Response(rootFile)
+          if (staticExtensions.some(ext => decodedPath.endsWith(ext))) {
+            const sourceRoot = resolve(root)
+            const sourcePath = resolve(sourceRoot, `.${decodedPath}`)
+            if (sourcePath.startsWith(`${sourceRoot}${sep}`)) {
+              const file = Bun.file(sourcePath)
+              if (await file.exists() && (await stat(sourcePath)).isFile())
+                return new Response(file)
+            }
           }
         }
-        catch {
-          // Continue to 404
-        }
+      }
+      catch {
+        // A missing or malformed asset continues to the normal docs response.
       }
 
       // Try to serve markdown file. `/guide` resolves to `guide.md`, falling
