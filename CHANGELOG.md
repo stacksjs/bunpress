@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.29...v0.2.30)
+
+## 🐛 Bug Fixes
+
+- serve standalone public docs artifacts in development ([19a6066](https://github.com/stacksjs/bunpress/commit/19a6066)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.30 ([719cca8](https://github.com/stacksjs/bunpress/commit/719cca8)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.27...v0.2.28)
 
 ## 🐛 Bug Fixes
