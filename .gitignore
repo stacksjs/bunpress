@@ -24,3 +24,4 @@ docs/.bunpress/
 !.env.production
 /pantry
 pantry
+/.stx/cache
