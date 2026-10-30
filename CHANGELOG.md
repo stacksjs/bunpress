@@ -1,3 +1,18 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.30...v0.2.31)
+
+## 🐛 Bug Fixes
+
+- **theme**: the colours both themes actually computed ([e96789f](https://github.com/stacksjs/bunpress/commit/e96789f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.31 ([f44509c](https://github.com/stacksjs/bunpress/commit/f44509c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- ignore the stx cache directory ([c0c443a](https://github.com/stacksjs/bunpress/commit/c0c443a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.29...v0.2.30)
 
 ## 🐛 Bug Fixes
