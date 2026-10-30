@@ -187,8 +187,13 @@ const x = 42`
     it('should include dark theme support', () => {
       const styles = getSyntaxHighlightingStyles()
 
-      // Should contain dark theme media query
-      expect(styles).toContain('@media (prefers-color-scheme: dark)')
+      // Keyed on html.dark, not on the media query. BunPress resolves the
+      // theme to a class, so a sheet that switched on the OS preference would
+      // disagree with the toggle - which is what one rule in here used to do,
+      // and what this assertion used to require. The no-script mirror of the
+      // dark rules is generated separately, in dark-mode-fallback.ts.
+      expect(styles).toContain('html.dark')
+      expect(styles).not.toContain('@media (prefers-color-scheme: dark)')
     })
 
     it('should include line highlighting styles', () => {

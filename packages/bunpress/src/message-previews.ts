@@ -367,7 +367,7 @@ export const messagePreviewCSS: string = `
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--bp-c-text-3, #929295);
+  color: var(--bp-c-text-3, #6e6e73);
 }
 /* A message's links are part of its copy, not links out of the docs. */
 .bp-message .external-link-icon {
@@ -383,7 +383,7 @@ export const messagePreviewCSS: string = `
 .bp-message dt {
   flex: none;
   min-width: 64px;
-  color: var(--bp-c-text-3, #929295);
+  color: var(--bp-c-text-3, #6e6e73);
 }
 .bp-message dd {
   margin: 0;
@@ -436,12 +436,12 @@ export const messagePreviewCSS: string = `
 .bp-email-preheader {
   padding: 8px 20px;
   font-size: 13px;
-  color: var(--bp-c-text-2, #67676c);
+  color: var(--bp-c-text-2, #5c5c62);
   border-bottom: 1px solid var(--bp-c-divider, #e2e2e3);
 }
 .bp-email-preheader span {
   margin-right: 6px;
-  color: var(--bp-c-text-3, #929295);
+  color: var(--bp-c-text-3, #6e6e73);
 }
 .bp-email-body {
   padding: 20px;
@@ -465,7 +465,7 @@ export const messagePreviewCSS: string = `
 .bp-email-body blockquote {
   padding: 4px 0 4px 14px;
   border-left: 3px solid var(--bp-c-divider, #e2e2e3);
-  color: var(--bp-c-text-2, #67676c);
+  color: var(--bp-c-text-2, #5c5c62);
 }
 .bp-email-body hr {
   margin: 18px 0;
@@ -474,7 +474,7 @@ export const messagePreviewCSS: string = `
 }
 .bp-email-body hr ~ p {
   font-size: 13px;
-  color: var(--bp-c-text-2, #67676c);
+  color: var(--bp-c-text-2, #5c5c62);
 }
 .bp-email-body a {
   color: var(--bp-c-brand-1, #3451b2);
@@ -492,7 +492,7 @@ export const messagePreviewCSS: string = `
   line-height: 1.3;
   text-decoration: none;
   color: var(--bp-button-brand-text, #fff);
-  background: var(--bp-button-brand-bg, var(--bp-c-brand-3, #5672cd));
+  background: var(--bp-button-brand-bg, var(--bp-c-brand-1, #3451b2));
 }
 .bp-email-body a.bp-email-button:hover {
   background: var(--bp-button-brand-hover-bg, var(--bp-c-brand-2, #3a5ccc));
@@ -525,8 +525,11 @@ export const messagePreviewCSS: string = `
   border-radius: 50%;
   font-size: 14px;
   font-weight: 600;
-  color: var(--bp-c-white, #fff);
-  background: var(--bp-c-text-3, #929295);
+  /* The initial is text on a fill, so the pair has to invert with the palette:
+   * white on the grey worked in the light theme and gave 3.2:1 in the dark
+   * one, where the greys are the light end of the ramp. */
+  color: var(--bp-c-bg, #fff);
+  background: var(--bp-c-text-2, #5c5c62);
 }
 .bp-sms-who {
   display: flex;
@@ -541,7 +544,7 @@ export const messagePreviewCSS: string = `
 }
 .bp-sms-to {
   font-size: 13px;
-  color: var(--bp-c-text-2, #67676c);
+  color: var(--bp-c-text-2, #5c5c62);
 }
 .bp-sms-details {
   padding: 8px 16px;
@@ -578,7 +581,9 @@ export const messagePreviewCSS: string = `
 .bp-sms-reply .bp-sms-bubble {
   border-radius: 18px 18px 4px 18px;
   color: #fff;
-  background: #0b84ff;
+  /* iMessage blue, taken down far enough to read white on. The real
+   * #0b84ff gives 3.65:1, and an SMS preview exists to be read. */
+  background: #0a6cd4;
 }
 .bp-sms-reply .bp-message-var {
   color: #fff;
@@ -587,7 +592,7 @@ export const messagePreviewCSS: string = `
 .bp-sms-meta {
   padding-left: 6px;
   font-size: 11px;
-  color: var(--bp-c-text-3, #929295);
+  color: var(--bp-c-text-3, #6e6e73);
 }
 `
 

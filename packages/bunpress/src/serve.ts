@@ -8,6 +8,7 @@ import { join, resolve, sep } from 'node:path'
 import process from 'node:process'
 import { config, defaultConfig } from './config'
 import { clearDataCache, loadDataFiles } from './data-loader'
+import { darkModeFallbackCSS } from './dark-mode-fallback'
 import { getSyntaxHighlightingStyles, highlightCode, setLanguageAliases } from './highlighter'
 import type { ResolvedI18n } from './i18n'
 import { buildEditUrl, formatLastUpdated, resolveLastUpdated } from './page-meta'
@@ -394,6 +395,29 @@ function injectScripts(html: string, scripts: string): string {
   const idx = html.lastIndexOf('</body>')
   if (idx === -1) return html + scripts
   return html.slice(0, idx) + scripts + html.slice(idx)
+}
+
+/**
+ * The reader's stored light/dark choice, applied before the first paint.
+ *
+ * The theme script that owns the toggle is injected before `</body>`, which on
+ * a page of any length is tens of thousands of bytes after the browser has
+ * already painted: a reader who has chosen dark watched every page load start
+ * white and then turn. The media query added beside the dark palette covers
+ * the OS preference with no script at all, so what is left for this one is the
+ * case CSS cannot answer - a stored choice that disagrees with the machine -
+ * and it has to run in the head, blocking, to answer it in time.
+ *
+ * `data-bp-theme` is the handshake: it records that script has decided, which
+ * is what stands the media query down. Deliberately tiny, deliberately
+ * wrapped - a throwing head script would block the rest of the document.
+ */
+const THEME_BOOTSTRAP = `<script>try{var m=document.documentElement.getAttribute('data-theme-mode');if(m!=='dark'&&m!=='light'){var t=localStorage.getItem('bunpress-theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-bp-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark')}}}catch(e){}</script>`
+
+function injectThemeBootstrap(html: string): string {
+  const idx = html.indexOf('</head>')
+  if (idx === -1) return html
+  return html.slice(0, idx) + THEME_BOOTSTRAP + html.slice(idx)
 }
 
 /**
@@ -1588,7 +1612,8 @@ export async function wrapInLayout(
   // Home layout - nav bar + hero/features/body, no sidebar
   if (layout === 'home') {
     const crosswindCSS = await generateCrosswindCSSFromHtml(`${content}\n${nav}`)
-    const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${messagePreviewCSS}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}\n${themeOverrideCss}`
+    const themedCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${messagePreviewCSS}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}\n${themeOverrideCss}`
+    const customCSS = `${themedCSS}\n${darkModeFallbackCSS(themedCSS)}`
 
     const html = await render('layout-home', {
       htmlClass,
@@ -1604,13 +1629,14 @@ export async function wrapInLayout(
       footer,
       content,
     })
-    return prefixRootRelativeAttributes(injectSPARouter(injectScripts(html, scripts), getConfiguredBasePath(config)), config)
+    return prefixRootRelativeAttributes(injectSPARouter(injectThemeBootstrap(injectScripts(html, scripts)), getConfiguredBasePath(config)), config)
   }
 
   // Page layout - nav bar, full-width content, no sidebar, no TOC
   if (layout === 'page') {
     const crosswindCSS = await generateCrosswindCSSFromHtml(`${content}\n${nav}`)
-    const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${messagePreviewCSS}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}\n${themeOverrideCss}`
+    const themedCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${messagePreviewCSS}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}\n${themeOverrideCss}`
+    const customCSS = `${themedCSS}\n${darkModeFallbackCSS(themedCSS)}`
 
     const html = await render('layout-page', {
       htmlClass,
@@ -1626,7 +1652,7 @@ export async function wrapInLayout(
       footer,
       content,
     })
-    return prefixRootRelativeAttributes(injectSPARouter(injectScripts(html, scripts), getConfiguredBasePath(config)), config)
+    return prefixRootRelativeAttributes(injectSPARouter(injectThemeBootstrap(injectScripts(html, scripts)), getConfiguredBasePath(config)), config)
   }
 
   // Documentation layout (default) - with sidebar and TOC
@@ -1639,7 +1665,8 @@ export async function wrapInLayout(
   const pageTOC = outline.aside
 
   const crosswindCSS = await generateCrosswindCSSFromHtml(`${docContent}\n${nav}\n${sidebar}`)
-  const customCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${messagePreviewCSS}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}\n${themeOverrideCss}`
+  const themedCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${messagePreviewCSS}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}\n${themeOverrideCss}`
+  const customCSS = `${themedCSS}\n${darkModeFallbackCSS(themedCSS)}`
 
   const docFooter = await generateDocFooter(config, frontmatter, activeLocale, docsDir, sourceFile)
 
@@ -1663,7 +1690,7 @@ export async function wrapInLayout(
     pageTOC,
   })
 
-  return prefixRootRelativeAttributes(injectSPARouter(injectScripts(html, scripts), getConfiguredBasePath(config)), config)
+  return prefixRootRelativeAttributes(injectSPARouter(injectThemeBootstrap(injectScripts(html, scripts)), getConfiguredBasePath(config)), config)
 }
 
 let _crosswindModule: any = null

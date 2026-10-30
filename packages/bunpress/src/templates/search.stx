@@ -111,7 +111,9 @@
   font-weight: 600;
   color: var(--bp-c-text-3);
   background-color: var(--bp-c-bg-soft);
-  border: 1px solid var(--bp-c-divider);
+  /* The control edge, not the content hairline: see Colors: Borders in the
+   * theme. At the hairline's 1.29:1 the Esc button had no visible shape. */
+  border: 1px solid var(--bp-c-border);
   border-radius: 5px;
   cursor: pointer;
   transition: color 0.2s, border-color 0.2s;
@@ -223,7 +225,7 @@
   text-align: center;
   color: var(--bp-c-text-2);
   background-color: var(--bp-c-bg);
-  border: 1px solid var(--bp-c-divider);
+  border: 1px solid var(--bp-c-border);
   border-radius: 4px;
 }
 

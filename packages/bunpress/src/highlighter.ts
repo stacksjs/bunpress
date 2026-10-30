@@ -371,6 +371,43 @@ html.dark .token[class*='invalid'] {
   color: #ffa198 !important;
 }
 
+/* Light-mode token corrections.
+ * -------------------------------------------------------------------------
+ * Same mechanism as the dark block above, for a smaller reason. The resolved
+ * theme is GitHub Light, whose palette is specified against
+ * \`editor.background: #ffffff\` - and a code block here is drawn on
+ * --bp-c-bg-alt, a shade below white, with a line-highlight wash a shade
+ * below that. Three of its colours have no room for either:
+ *
+ *   comment  #6e7781  4.55:1 on white, 4.21:1 on the block, 3.74:1 on a
+ *                     highlighted line
+ *   function #8250df  5.05 / 4.67 / 4.15
+ *   keyword  #cf222e  5.36 / 4.96 / 4.40
+ *
+ * Darkening the three is what fits: the alternative is putting code blocks on
+ * white, which is the palette's own ground but leaves the block with no edge
+ * against the page. Every other token in the theme clears 4.5:1 on the
+ * block, the highlighted line, the diff washes and a <mark>, so they are
+ * left exactly as the theme wrote them.
+ *
+ * Unguarded selectors, deliberately: every dark rule above carries
+ * \`html.dark\`, which outranks a bare class whatever the order, so the dark
+ * palette wins in the dark without a \`:not(.dark)\` on each of these - and
+ * without one more place where the two halves can fall out of step. */
+.token[class*='comment'] {
+  color: #5c636b !important;
+}
+
+.token[class*='entity-name-function'],
+.token[class*='support-function'] {
+  color: #7a3fd0 !important;
+}
+
+.token[class*='keyword'],
+.token[class*='storage'] {
+  color: #c5141f !important;
+}
+
 /* Line highlighting
  * -------------------------------------------------------------------------
  * Lines are emitted as \`<span class="line">…</span>\\n\` so that the code
@@ -403,9 +440,11 @@ html.dark .token[class*='invalid'] {
   filter: none;
 }
 
+/* The fallback for a page without the theme sheet's focus rules. Desaturated
+ * rather than faded: grayscale moves the hue and leaves the luminance, so the
+ * row still reads. opacity: 0.5 here put every token under 3:1. */
 .line.dimmed {
-  opacity: 0.5;
-  filter: grayscale(50%);
+  filter: grayscale(100%);
 }
 
 /* Diff highlighting */
@@ -431,13 +470,22 @@ html.dark .token[class*='invalid'] {
   box-shadow: inset 3px 0 #f59e0b;
 }
 
-/* Line numbers */
+/* Line numbers
+ * -------------------------------------------------------------------------
+ * Keyed off html.dark like everything else in this sheet. It used to key off
+ * the OS preference, which is the one switch that disagrees with the rest: an
+ * explicit light choice on a dark machine put #9ca3af on a light block
+ * (2.2:1), and an explicit dark choice on a light machine left #6b7280 on a
+ * dark one (2.6:1) - the two cases a theme toggle exists to produce.
+ *
+ * #6b7280 also only managed 4.48:1 on the block and 3.97:1 on a highlighted
+ * line, so the light value came down with it. */
 .line-number {
   display: inline-block;
   width: 2.5rem;
   text-align: right;
   padding-right: 1rem;
-  color: #6b7280;
+  color: #5b6270;
   user-select: none;
 }
 
@@ -445,10 +493,8 @@ html.dark .token[class*='invalid'] {
   padding-left: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  .line-number {
-    color: #9ca3af;
-  }
+html.dark .line-number {
+  color: #9ca3af;
 }
 `
 }

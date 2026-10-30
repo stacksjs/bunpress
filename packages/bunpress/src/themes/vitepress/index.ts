@@ -97,6 +97,10 @@ const varsCSS = `/**
   --bp-c-red-2: #f14158;
   --bp-c-red-3: #b62a3c;
   --bp-c-red-soft: rgba(244, 63, 94, 0.16);
+
+  /* The sponsor pink had one value for both palettes, and it is drawn as the
+   * sponsor button's label and border: 4.60:1 on white and 3.74:1 here. */
+  --bp-c-sponsor: #f06ba7;
 }
 
 /**
@@ -119,35 +123,63 @@ const varsCSS = `/**
 
 /**
  * Colors: Borders
+ *
+ * Two jobs, deliberately two tokens, and they are not interchangeable.
+ *
+ * --bp-c-divider is a hairline between pieces of content: a rule under a
+ * heading, the line between table rows. Nothing depends on seeing it, so it
+ * stays faint.
+ *
+ * --bp-c-border is the edge of a control - the search field, a secondary
+ * button, an input. WCAG 1.4.11 asks 3:1 of anything that tells you where a
+ * control is and what state it is in, so this one is measured against every
+ * background a control sits on (--bp-c-bg, --bp-c-bg-alt, --bp-c-bg-elv) and
+ * clears it on all of them. The old #c2c2c4 managed 1.78:1 and the old
+ * #3c3f44 managed 1.62:1, which is a boundary you can only find with a
+ * cursor - but neither value was ever the one at fault, because this token was
+ * declared and then never used: every control in the theme borrowed the
+ * hairline instead. The uses were moved; the values follow.
  * -------------------------------------------------------------------------- */
 
 :root {
-  --bp-c-border: #c2c2c4;
+  --bp-c-border: #8e8e92;
   --bp-c-divider: #e2e2e3;
   --bp-c-gutter: #e2e2e3;
 }
 
 .dark {
-  --bp-c-border: #3c3f44;
+  --bp-c-border: #696c76;
   --bp-c-divider: #2e2e32;
   --bp-c-gutter: #000000;
 }
 
 /**
  * Colors: Text
- * Note: Using solid colors like VitePress for better consistency
+ *
+ * Three steps, and all three are text, so all three clear 4.5:1 against every
+ * background they are drawn on. VitePress calls the third step a placeholder
+ * colour and WCAG has no exemption for placeholders, so the ramp is sized from
+ * the bottom up: text-3 first, at the floor, then text-2 and text-1 spaced far
+ * enough above it to read as a hierarchy rather than as three greys.
+ *
+ * text-3 was #929295 (2.87:1 on --bp-c-bg-alt) and #6a6a71 (2.99:1 on
+ * --bp-c-bg-elv), and it is the colour of the search trigger's own label, the
+ * email preview's headers and the SMS character count - real text, not
+ * decoration. text-2 moved with it: at 5.21:1 against text-3's new 4.70:1 the
+ * two were a tenth of a step apart, and two tokens that look the same are
+ * worse than one.
  * -------------------------------------------------------------------------- */
 
 :root {
   --bp-c-text-1: #3c3c43;
-  --bp-c-text-2: #67676c;
-  --bp-c-text-3: #929295;
+  --bp-c-text-2: #5c5c62;
+  --bp-c-text-3: #6e6e73;
 }
 
 .dark {
   --bp-c-text-1: #dfdfd6;
-  --bp-c-text-2: #98989f;
-  --bp-c-text-3: #6a6a71;
+  --bp-c-text-2: #a3a3aa;
+  --bp-c-text-3: #8a8a92;
 }
 
 /**
@@ -263,6 +295,24 @@ const varsCSS = `/**
   --bp-header-anchor-symbol: '#';
 }
 
+:root {
+  --bp-mark-bg: rgba(234, 179, 8, 0.14);
+}
+
+.dark {
+  --bp-mark-bg: rgba(234, 179, 8, 0.10);
+}
+
+:root {
+  --bp-hero-name-from: var(--bp-c-brand-1);
+  --bp-hero-name-to: var(--bp-c-brand-2);
+}
+
+.dark {
+  --bp-hero-name-from: var(--bp-c-brand-1);
+  --bp-hero-name-to: #8d97f0;
+}
+
 /**
  * Component: Code
  * -------------------------------------------------------------------------- */
@@ -293,9 +343,9 @@ const varsCSS = `/**
   --bp-code-line-warning-color: var(--bp-c-warning-soft);
   --bp-code-line-error-color: var(--bp-c-danger-soft);
 
-  --bp-code-copy-code-border-color: var(--bp-c-divider);
+  --bp-code-copy-code-border-color: var(--bp-c-border);
   --bp-code-copy-code-bg: var(--bp-c-bg-soft);
-  --bp-code-copy-code-hover-border-color: var(--bp-c-divider);
+  --bp-code-copy-code-hover-border-color: var(--bp-c-border);
   --bp-code-copy-code-hover-bg: var(--bp-c-bg);
   --bp-code-copy-code-active-text: var(--bp-c-text-2);
   --bp-code-copy-copied-text-content: 'Copied';
@@ -313,15 +363,24 @@ const varsCSS = `/**
  * -------------------------------------------------------------------------- */
 
 :root {
-  --bp-button-brand-border: transparent;
+  /* The filled button. These tokens are what a site overrides, so the rule
+   * below reads them rather than reaching past them for --bp-c-brand-1 - which
+   * is what it used to do, leaving --bp-button-brand-bg declared and dead and
+   * anyone who set it wondering why nothing moved.
+   *
+   * The ramp reverses between the two palettes: in the light one brand-1 is
+   * the deep end and carries white text, in the dark one it is the pale end
+   * and carries none. Which is why the dark half overrides the text colour -
+   * white on #a8b1ff is 2.02:1, a button you can see and cannot read. */
+  --bp-button-brand-border: var(--bp-button-brand-bg);
   --bp-button-brand-text: var(--bp-c-white);
-  --bp-button-brand-bg: var(--bp-c-brand-3);
-  --bp-button-brand-hover-border: transparent;
-  --bp-button-brand-hover-text: var(--bp-c-white);
+  --bp-button-brand-bg: var(--bp-c-brand-1);
+  --bp-button-brand-hover-border: var(--bp-button-brand-hover-bg);
+  --bp-button-brand-hover-text: var(--bp-button-brand-text);
   --bp-button-brand-hover-bg: var(--bp-c-brand-2);
-  --bp-button-brand-active-border: transparent;
-  --bp-button-brand-active-text: var(--bp-c-white);
-  --bp-button-brand-active-bg: var(--bp-c-brand-1);
+  --bp-button-brand-active-border: var(--bp-button-brand-active-bg);
+  --bp-button-brand-active-text: var(--bp-button-brand-text);
+  --bp-button-brand-active-bg: var(--bp-c-brand-2);
 
   --bp-button-alt-border: transparent;
   --bp-button-alt-text: var(--bp-c-text-1);
@@ -342,6 +401,23 @@ const varsCSS = `/**
   --bp-button-sponsor-active-border: var(--bp-c-sponsor);
   --bp-button-sponsor-active-text: var(--bp-c-sponsor);
   --bp-button-sponsor-active-bg: transparent;
+}
+
+.dark {
+  /* Dark text on the pale fill, because the ramp reverses between the two
+   * palettes: in the light one brand-1 is the deep end and carries white, in
+   * the dark one it is the pale end and carries none.
+   *
+   * brand-2 reverses with it, and that is the subtler half. It is the hover
+   * state - of a link, of inline code, of the filled button - and in the dark
+   * indigo ramp every step below brand-1 is darker, so hovering a link took it
+   * from #a8b1ff to #5c73e7 at 4.14:1, and hovering the button took the fill
+   * and its text down together. A dark-mode accent brightens on hover. The
+   * two tints are written out because the ramp has no step above its first;
+   * everything that hovers reads them from here. */
+  --bp-button-brand-text: var(--bp-c-bg);
+  --bp-c-brand-2: #c0c6ff;
+  --bp-button-brand-active-bg: #c8cdff;
 }
 
 /**
@@ -1360,18 +1436,38 @@ mjx-container > svg {
 
 /* Focus lines: unfocused rows blur back until the block is hovered.
  * The renderer marks them \`.dimmed\` (see processCodeBlock) — the upstream
- * \`:not(.has-focus)\` form never matched this markup. */
+ * \`:not(.has-focus)\` form never matched this markup.
+ *
+ * The blur alone, with no opacity under it. The pair used to be
+ * blur + opacity: 0.7, and opacity on text composites it toward whatever is
+ * behind - which took the comment token to 3.52:1 in the dark palette and
+ * 3.01:1 in the light one. Opacity high enough to clear 4.5:1 is 0.9, which
+ * is not a dim anybody would notice, so it was never the thing doing the
+ * work: the blur is. Dimmed code is still code, and the reader is meant to be
+ * able to see what the focused lines were lifted out of. */
 .bp-doc [class*='language-'] .line.dimmed,
 .bp-doc pre[data-lang] .line.dimmed {
   filter: blur(0.095rem);
-  opacity: 0.7;
-  transition: filter 0.35s, opacity 0.35s;
+  transition: filter 0.35s;
 }
 
+/* :focus-within as well as :hover. Tabbing into a code block - to its copy
+ * control, or to a link inside it - is how a keyboard reader gets here, and
+ * "hover to read the rest" is not an answer for them. */
 .bp-doc [class*='language-']:hover .line.dimmed,
-.bp-doc pre[data-lang]:hover .line.dimmed {
+.bp-doc [class*='language-']:focus-within .line.dimmed,
+.bp-doc pre[data-lang]:hover .line.dimmed,
+.bp-doc pre[data-lang]:focus-within .line.dimmed {
   filter: blur(0);
-  opacity: 1;
+}
+
+/* A reader who has asked their system for more contrast, or for less in the
+ * way of visual effects, has asked for this one to stop. */
+@media (prefers-contrast: more), (prefers-reduced-transparency: reduce) {
+  .bp-doc [class*='language-'] .line.dimmed,
+  .bp-doc pre[data-lang] .line.dimmed {
+    filter: none;
+  }
 }
 
 /* Both class spellings: \`.diff.remove\` is the upstream form, \`.diff-remove\`
@@ -2674,7 +2770,9 @@ export const layoutCSS = `/**
   text-align: left;
   color: var(--bp-c-text-3);
   background-color: var(--bp-c-bg-alt);
-  border: 1px solid var(--bp-c-divider);
+  /* The control edge, not the content hairline: this is the only thing on the
+   * bar that says search is a field you can type into. */
+  border: 1px solid var(--bp-c-border);
   border-radius: 6px;
   cursor: pointer;
   transition: border-color 0.25s, background-color 0.25s, color 0.25s;
@@ -2714,7 +2812,7 @@ export const layoutCSS = `/**
   line-height: 1.5;
   color: var(--bp-c-text-3);
   background-color: var(--bp-c-bg);
-  border: 1px solid var(--bp-c-divider);
+  border: 1px solid var(--bp-c-border);
   border-radius: 4px;
 }
 
@@ -2973,13 +3071,21 @@ export const layoutCSS = `/**
   font-size: inherit;
 }
 
+/* Gradient-filled, which means no contrast checker will ever look at it: the
+ * computed colour is transparent and the text is a clipped background. Both
+ * stops still have to be read, and at the bottom of the clamp this is 18px -
+ * under the 18.66px where bold counts as large text, so the floor is 4.5:1,
+ * not 3:1. The light ramp passes end to end (7.08:1 and 5.86:1); the dark one
+ * ran from #a8b1ff to #5c73e7, finishing at 4.14:1, so its far stop is a pale
+ * tint instead - the same direction the dark filled button goes, and for the
+ * same reason. */
 .BPHero-name {
   font-size: clamp(18px, 4vw, 24px);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.2;
   margin: 0 0 8px;
-  background: linear-gradient(135deg, var(--bp-c-brand-1, #5672cd) 0%, var(--bp-c-brand-2, #8b9cf7) 100%);
+  background: linear-gradient(135deg, var(--bp-hero-name-from) 0%, var(--bp-hero-name-to) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -3031,21 +3137,25 @@ export const layoutCSS = `/**
   cursor: pointer;
 }
 
+/* The border defaults to the fill, so a theme whose fill is pale enough to
+ * disappear against the page can give the button an edge without the rule
+ * having to know about it. */
 .BPButton-brand {
-  color: var(--bp-button-brand-text, #03110b);
-  background-color: var(--bp-c-brand-1);
-  border-color: var(--bp-c-brand-1);
+  color: var(--bp-button-brand-text);
+  background-color: var(--bp-button-brand-bg);
+  border-color: var(--bp-button-brand-border);
 }
 
 .BPButton-brand:hover {
-  background-color: var(--bp-c-brand-2);
-  border-color: var(--bp-c-brand-2);
+  color: var(--bp-button-brand-hover-text);
+  background-color: var(--bp-button-brand-hover-bg);
+  border-color: var(--bp-button-brand-hover-border);
 }
 
 .BPButton-alt {
   color: var(--bp-c-text-1);
   background-color: transparent;
-  border-color: var(--bp-c-divider);
+  border-color: var(--bp-c-border);
 }
 
 .BPButton-alt:hover {
@@ -3221,10 +3331,15 @@ export const layoutCSS = `/**
 
 /* The UA default is pure yellow with forced black text, which is jarring in
  * light mode and unreadable against a dark page. */
+/* <mark> keeps its inherited colour, so the wash has to work under whatever it
+ * lands on - and the hardest case is a mark inside a code comment, where the
+ * text is already the faintest thing in the block. Its own token rather than
+ * --bp-c-warning-soft, because the dark wash needed thinning and the warning
+ * blocks that share that token did not. */
 .bp-doc mark {
   padding: 1px 3px;
   border-radius: 3px;
-  background-color: var(--bp-c-warning-soft, rgba(234, 179, 8, 0.28));
+  background-color: var(--bp-mark-bg);
   color: inherit;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
@@ -3297,7 +3412,7 @@ export const layoutCSS = `/**
 }
 .bp-doc [class*='language-'] pre::-webkit-scrollbar-thumb,
 .bp-doc pre[data-lang]::-webkit-scrollbar-thumb {
-  background-color: var(--bp-c-divider);
+  background-color: var(--bp-c-border);
   border-radius: 3px;
 }
 .bp-doc [class*='language-'] pre::-webkit-scrollbar-thumb:hover,
@@ -3326,7 +3441,7 @@ export const layoutCSS = `/**
 .BPSidebar,
 .BPContent--doc {
   scrollbar-width: thin;
-  scrollbar-color: var(--bp-c-divider) transparent;
+  scrollbar-color: var(--bp-c-border) transparent;
 }
 
 .BPSidebar::-webkit-scrollbar,
@@ -3342,7 +3457,7 @@ export const layoutCSS = `/**
 
 .BPSidebar::-webkit-scrollbar-thumb,
 .BPContent--doc::-webkit-scrollbar-thumb {
-  background-color: var(--bp-c-divider);
+  background-color: var(--bp-c-border);
   border-radius: 4px;
 }
 

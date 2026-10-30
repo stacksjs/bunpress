@@ -357,7 +357,7 @@ async function generate404Page(outdir: string, bunPressConfig: BunPressConfig): 
   margin: 24px auto 18px;
   width: 64px;
   height: 1px;
-  background-color: var(--vp-c-divider);
+  background-color: var(--bp-c-divider);
 }
 
 .NotFound .quote {
@@ -365,28 +365,33 @@ async function generate404Page(outdir: string, bunPressConfig: BunPressConfig): 
   max-width: 256px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--vp-c-text-2);
+  color: var(--bp-c-text-2);
 }
 
 .NotFound .action {
   padding-top: 20px;
 }
 
+/* --bp-, not --vp-. These six properties carried VitePress's prefix, which
+ * BunPress does not declare, so each one was invalid at computed-value time
+ * and silently fell back: the divider drew transparent, the quote inherited,
+ * and this link's border drew as currentColor with no colour of its own. The
+ * one page a lost reader lands on, and its way out had no outline. */
 .NotFound .link {
   display: inline-block;
-  border: 1px solid var(--vp-c-brand-1);
+  border: 1px solid var(--bp-c-brand-1);
   border-radius: 16px;
   padding: 3px 16px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--vp-c-brand-1);
+  color: var(--bp-c-brand-1);
   transition: border-color 0.25s, color 0.25s;
   text-decoration: none;
 }
 
 .NotFound .link:hover {
-  border-color: var(--vp-c-brand-2);
-  color: var(--vp-c-brand-2);
+  border-color: var(--bp-c-brand-2);
+  color: var(--bp-c-brand-2);
 }
 </style>
 

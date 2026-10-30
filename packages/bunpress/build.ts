@@ -60,10 +60,6 @@ async function copyDir(src: string, dest: string): Promise<void> {
 await copyDir('./src/templates', './dist/templates')
 console.log('Copied templates to dist/')
 
-// Copy theme CSS files
-await copyDir('./src/themes/vitepress', './dist/themes/vitepress')
-console.log('Copied theme CSS to dist/')
-
 const publicEntry = pathToFileURL(resolve('./dist/src/index.js')).href
 const publicApi = await import(publicEntry)
 const requiredExports = ['buildRssFeed', 'buildSitemap', 'generateRobotsTxt', 'markdownToHtml', 'wrapInLayout']

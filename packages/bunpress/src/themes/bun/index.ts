@@ -62,12 +62,15 @@ const varsCSS = `/**
   --bp-c-gray-soft: rgba(156, 163, 175, 0.14);
 
   /* Semantic colors */
-  --bp-c-green-1: #16a34a;
+  /* The -1 step is a title drawn on the page, so it is the 700 weight of the
+   * ramp rather than the 600: #16a34a is 3.15:1 here and #ca8a04 is 2.81:1,
+   * which are fill colours being asked to be text. */
+  --bp-c-green-1: #15803d;
   --bp-c-green-2: #22c55e;
   --bp-c-green-3: #4ade80;
   --bp-c-green-soft: rgba(22, 163, 74, 0.08);
 
-  --bp-c-yellow-1: #ca8a04;
+  --bp-c-yellow-1: #92400e;
   --bp-c-yellow-2: #eab308;
   --bp-c-yellow-3: #facc15;
   --bp-c-yellow-soft: rgba(234, 179, 8, 0.08);
@@ -135,34 +138,49 @@ const varsCSS = `/**
 
 /**
  * Colors: Borders
+ *
+ * --bp-c-divider is the hairline between pieces of content and --bp-c-border
+ * is the edge of a control, which WCAG 1.4.11 asks 3:1 of. The old pair came
+ * from a Tailwind grey ramp read as two neighbouring steps rather than as two
+ * jobs: #d1d5db managed 1.41:1 against the page and #3b3f4b managed 1.73:1,
+ * so the search field, the copy control and the outlined buttons all had an
+ * edge that was there in the stylesheet and not on the screen. See the same
+ * note in the vitepress theme.
  * -------------------------------------------------------------------------- */
 
 :root {
-  --bp-c-border: #d1d5db;
+  --bp-c-border: #858c99;
   --bp-c-divider: #e5e7eb;
   --bp-c-gutter: #e5e7eb;
 }
 
 .dark {
-  --bp-c-border: #3b3f4b;
+  --bp-c-border: #696f80;
   --bp-c-divider: #282a36;
   --bp-c-gutter: #14151a;
 }
 
 /**
  * Colors: Text (from bun.sh gray scale)
+ *
+ * All three steps are text, so all three clear 4.5:1 on every background the
+ * theme draws them on. text-3 was the bottom two steps of the bun.sh grey
+ * ramp, #9ca3af and #6b7280, which are 2.43:1 and 3.35:1 here - and it is the
+ * colour of the search trigger's label, the code block's language tag and the
+ * line numbers. Dark text-2 moved up with text-3 to keep the three steps
+ * distinguishable from one another.
  * -------------------------------------------------------------------------- */
 
 :root {
   --bp-c-text-1: #111827;
   --bp-c-text-2: #4b5563;
-  --bp-c-text-3: #9ca3af;
+  --bp-c-text-3: #676f7d;
 }
 
 .dark {
   --bp-c-text-1: #e5e7eb;
-  --bp-c-text-2: #9ca3af;
-  --bp-c-text-3: #6b7280;
+  --bp-c-text-2: #aeb4c0;
+  --bp-c-text-3: #8c93a1;
 }
 
 /**
@@ -175,23 +193,38 @@ const varsCSS = `/**
   --bp-c-default-3: var(--bp-c-gray-3);
   --bp-c-default-soft: var(--bp-c-gray-soft);
 
-  /* Brand = Bun Orange */
-  --bp-c-brand-1: var(--bp-c-bun-orange);
-  --bp-c-brand-2: var(--bp-c-bun-orange-light);
-  --bp-c-brand-3: var(--bp-c-bun-orange-dark);
+  /* Brand = Bun Orange, which is a fill colour, not a text colour.
+   *
+   * The ramp was the identity orange in both palettes, and brand-1 is what
+   * every link, every piece of inline code, the active code tab and the hero
+   * name are drawn in. On the light ground that is #f89b4b on #f9fafb:
+   * 2.05:1, the worst number anywhere in either theme, and it was every link
+   * on the page. In the dark palette the same orange is 8.49:1, which is why
+   * it was only ever half wrong and so stayed.
+   *
+   * So the ramp splits the way the vitepress one does: brand-1/2 are the text
+   * end and invert with the palette, brand-3 and --bp-c-brand-soft keep the
+   * identity orange for bars, washes and fills, and the filled button below
+   * names the orange directly so the Bun button is still the Bun button. */
+  --bp-c-brand-1: #9a4a07;
+  --bp-c-brand-2: #b45309;
+  --bp-c-brand-3: var(--bp-c-bun-orange);
   --bp-c-brand-soft: var(--bp-c-bun-orange-soft);
   --bp-c-brand: var(--bp-c-brand-1);
 
-  /* Tip = Bun Blue */
-  --bp-c-tip-1: var(--bp-c-bun-blue);
-  --bp-c-tip-2: var(--bp-c-bun-blue-light);
-  --bp-c-tip-3: var(--bp-c-bun-blue-dark);
+  /* Tip and Note = Bun Blue, split the same way as the brand above: the -1
+   * step is the alert's title and its icon, so on the light ground it is a
+   * blue dark enough to read on the alert's own wash. #00a6e1 there is 2.31:1,
+   * which made "Note" the least legible word in the block it titles. The
+   * identity blue keeps -3, the washes and the filled alt button. */
+  --bp-c-tip-1: #026b96;
+  --bp-c-tip-2: #0077a8;
+  --bp-c-tip-3: var(--bp-c-bun-blue);
   --bp-c-tip-soft: var(--bp-c-bun-blue-soft);
 
-  /* Note = Bun Blue */
-  --bp-c-note-1: var(--bp-c-bun-blue);
-  --bp-c-note-2: var(--bp-c-bun-blue-light);
-  --bp-c-note-3: var(--bp-c-bun-blue-dark);
+  --bp-c-note-1: #026b96;
+  --bp-c-note-2: #0077a8;
+  --bp-c-note-3: var(--bp-c-bun-blue);
   --bp-c-note-soft: var(--bp-c-bun-blue-soft);
 
   --bp-c-success-1: var(--bp-c-green-1);
@@ -218,6 +251,28 @@ const varsCSS = `/**
   --bp-c-caution-2: var(--bp-c-red-2);
   --bp-c-caution-3: var(--bp-c-red-3);
   --bp-c-caution-soft: var(--bp-c-red-soft);
+
+  /* Drawn as text on the page (the sponsor button's label and border), where
+   * the identity pink is 3.66:1. */
+  --bp-c-sponsor: #b100b0;
+}
+
+.dark {
+  /* On the dark ground the identity colours are the readable ones - orange at
+   * 8.49:1, blue at 5.41:1 on its own wash, pink at 4.77:1 - so the text end
+   * of each ramp goes back to them and the -3 steps take the darker shades for
+   * bars and fills. */
+  --bp-c-brand-1: var(--bp-c-bun-orange);
+  --bp-c-brand-2: var(--bp-c-bun-orange-light);
+  --bp-c-brand-3: var(--bp-c-bun-orange-dark);
+
+  --bp-c-tip-1: var(--bp-c-bun-blue);
+  --bp-c-tip-2: var(--bp-c-bun-blue-light);
+  --bp-c-tip-3: var(--bp-c-bun-blue-dark);
+
+  --bp-c-note-1: var(--bp-c-bun-blue);
+  --bp-c-note-2: var(--bp-c-bun-blue-light);
+  --bp-c-note-3: var(--bp-c-bun-blue-dark);
 
   --bp-c-sponsor: var(--bp-c-bun-pink);
 }
@@ -322,7 +377,7 @@ const varsCSS = `/**
   --bp-code-line-warning-color: var(--bp-c-warning-soft);
   --bp-code-line-error-color: var(--bp-c-danger-soft);
 
-  --bp-code-copy-code-border-color: var(--bp-c-divider);
+  --bp-code-copy-code-border-color: var(--bp-c-border);
   --bp-code-copy-code-bg: var(--bp-c-bg-soft);
   --bp-code-copy-code-hover-border-color: var(--bp-c-brand-1);
   --bp-code-copy-code-hover-bg: var(--bp-c-bg);
@@ -353,15 +408,24 @@ const varsCSS = `/**
  * -------------------------------------------------------------------------- */
 
 :root {
-  --bp-button-brand-border: transparent;
+  /* The orange by name, not by ramp position: black on #f89b4b is 9.78:1 and
+   * it is what a Bun button looks like, whereas brand-1 is now the dark orange
+   * that links need.
+   *
+   * The edge is that dark orange, because the fill alone is 2.05:1 against
+   * this theme's near-white page: the label reads perfectly and the button's
+   * extent does not, which is the half of a control WCAG 1.4.11 is about.
+   * brand-1 inverts to the identity orange in the dark palette, where the fill
+   * is already 8.49:1 and the border simply matches it. */
+  --bp-button-brand-border: var(--bp-c-brand-1);
   --bp-button-brand-text: var(--bp-c-black);
-  --bp-button-brand-bg: var(--bp-c-brand-1);
-  --bp-button-brand-hover-border: transparent;
+  --bp-button-brand-bg: var(--bp-c-bun-orange);
+  --bp-button-brand-hover-border: var(--bp-c-brand-1);
   --bp-button-brand-hover-text: var(--bp-c-black);
-  --bp-button-brand-hover-bg: var(--bp-c-brand-2);
-  --bp-button-brand-active-border: transparent;
+  --bp-button-brand-hover-bg: var(--bp-c-bun-orange-light);
+  --bp-button-brand-active-border: var(--bp-c-brand-1);
   --bp-button-brand-active-text: var(--bp-c-black);
-  --bp-button-brand-active-bg: var(--bp-c-brand-3);
+  --bp-button-brand-active-bg: var(--bp-c-bun-orange-dark);
 
   /* Blue accent button (like bun.sh install button) */
   --bp-button-alt-border: transparent;

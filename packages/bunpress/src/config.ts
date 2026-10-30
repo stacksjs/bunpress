@@ -125,7 +125,7 @@ export const defaultConfig: BunPressConfig = {
     .copy-code-button svg {
       width: 16px;
       height: 16px;
-      color: var(--bp-c-text-2, #67676c);
+      color: var(--bp-c-text-2, #5c5c62);
     }
 
     .copy-code-button.copied svg {
@@ -314,7 +314,7 @@ export const defaultConfig: BunPressConfig = {
       font-size: 13px;
       font-weight: 600;
       text-align: left;
-      color: var(--bp-c-text-2, #67676c);
+      color: var(--bp-c-text-2, #5c5c62);
       border-bottom: 1px solid var(--bp-c-divider, #e2e2e3);
       white-space: nowrap;
     }
@@ -380,7 +380,7 @@ export const defaultConfig: BunPressConfig = {
     .image-figure figcaption {
       margin-top: 12px;
       font-size: 14px;
-      color: var(--bp-c-text-2, #67676c);
+      color: var(--bp-c-text-2, #5c5c62);
       font-style: italic;
       text-align: center;
     }
@@ -454,8 +454,8 @@ export const defaultConfig: BunPressConfig = {
       height: 32px;
       padding: 0 10px;
       background-color: transparent;
-      border: 1px solid var(--bp-c-divider, #e2e2e3);
-      color: var(--bp-c-text-2, #67676c);
+      border: 1px solid var(--bp-c-border, #8e8e92);
+      color: var(--bp-c-text-2, #5c5c62);
       font-family: inherit;
       font-size: 13px;
       font-weight: 500;
@@ -472,7 +472,7 @@ export const defaultConfig: BunPressConfig = {
     .copy-page-button.copy-page-toggle {
       border-radius: 0 6px 6px 0;
       padding: 0 6px;
-      border-left: 1px solid var(--bp-c-divider, #e2e2e3);
+      border-left: 1px solid var(--bp-c-border, #8e8e92);
     }
 
     .copy-page-button:hover {
@@ -481,16 +481,16 @@ export const defaultConfig: BunPressConfig = {
     }
 
     .copy-page-button:focus-visible {
-      outline: 2px solid var(--bp-c-brand-1, #5672cd);
+      outline: 2px solid var(--bp-c-brand-1, #3451b2);
       outline-offset: 2px;
     }
 
     .copy-page-button-group:hover .copy-page-button {
-      border-color: var(--bp-c-brand-1, #5672cd);
+      border-color: var(--bp-c-brand-1, #3451b2);
     }
 
     .copy-page-button-group:hover .copy-page-toggle {
-      border-left-color: var(--bp-c-brand-1, #5672cd);
+      border-left-color: var(--bp-c-brand-1, #3451b2);
     }
 
     .copy-page-button svg {
@@ -628,7 +628,7 @@ export const defaultConfig: BunPressConfig = {
 
     .copy-page-menu-item .description {
       font-size: 12px;
-      color: var(--bp-c-text-2, #67676c);
+      color: var(--bp-c-text-2, #5c5c62);
       margin-top: 2px;
     }
 
@@ -681,6 +681,11 @@ export const defaultConfig: BunPressConfig = {
     }
 
     /* Theme Toggle Button */
+    /* Tokens, with the old literals as fallbacks. Six hardcoded greys here
+     * were a private copy of the palette: a site that re-themed BunPress got a
+     * toggle in someone else's colours, and the three light values were the
+     * ones that moved for contrast - so the copy would have been the one place
+     * still holding them. */
     .theme-toggle {
       display: flex;
       align-items: center;
@@ -692,24 +697,14 @@ export const defaultConfig: BunPressConfig = {
       border: 1px solid transparent;
       border-radius: 8px;
       cursor: pointer;
-      color: #6b7280;
+      color: var(--bp-c-text-2, #5c5c62);
       transition: color 0.2s, background-color 0.2s, border-color 0.2s;
     }
 
     .theme-toggle:hover {
-      color: #3c3c43;
-      background-color: #f6f6f7;
-      border-color: #e2e2e3;
-    }
-
-    html.dark .theme-toggle {
-      color: #9ca3af;
-    }
-
-    html.dark .theme-toggle:hover {
-      color: #e6edf3;
-      background-color: #2e2e32;
-      border-color: #3c3f44;
+      color: var(--bp-c-text-1, #3c3c43);
+      background-color: var(--bp-c-bg-alt, #f6f6f7);
+      border-color: var(--bp-c-border, #8e8e92);
     }
 
     .theme-toggle svg {
@@ -753,27 +748,42 @@ function getPreferredTheme() {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
-function setTheme(theme) {
+// \`remember\` separates a choice from a reading of the machine.
+//
+// It used to always persist, which quietly turned the first page view into an
+// explicit preference: the OS value was written to localStorage, and from then
+// on the listener below - guarded on there being nothing stored - never fired
+// again. A reader who had never touched the toggle stopped following their own
+// machine after one visit.
+//
+// \`data-bp-theme\` records that script has resolved the theme, which stands
+// down the prefers-color-scheme fallback in the stylesheet. Only a resolved
+// choice sets it: left unset, the media query is what answers, which is what
+// should happen when the answer is the machine's anyway.
+function setTheme(theme, remember) {
   if (theme === 'dark') {
     document.documentElement.classList.add('dark');
   }
   else {
     document.documentElement.classList.remove('dark');
   }
-  localStorage.setItem('bunpress-theme', theme);
+  if (remember) {
+    localStorage.setItem('bunpress-theme', theme);
+    document.documentElement.setAttribute('data-bp-theme', theme);
+  }
 }
 
 function toggleTheme() {
   const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
   const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  setTheme(newTheme);
+  setTheme(newTheme, true);
 }
 
 // Initialize theme on page load
 (function() {
   const forced = document.documentElement.getAttribute('data-theme-mode');
   const theme = getPreferredTheme();
-  setTheme(theme);
+  setTheme(theme, Boolean(localStorage.getItem('bunpress-theme')));
 
   // A forced theme has no alternate to switch to; hide the toggle so nobody
   // lands on a broken half-themed page from clicking it.
@@ -791,7 +801,7 @@ function toggleTheme() {
     if (forced === 'dark' || forced === 'light')
       return;
     if (!localStorage.getItem('bunpress-theme')) {
-      setTheme(e.matches ? 'dark' : 'light');
+      setTheme(e.matches ? 'dark' : 'light', false);
     }
   });
 })();
