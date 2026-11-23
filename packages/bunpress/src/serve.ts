@@ -205,6 +205,13 @@ function formatShortcut(shortcuts: SearchRuntimeConfig['shortcuts']): { hint: st
  * It looks like a field but opens the search dialog, where the real input
  * lives. A second focusable text input in the bar would be a decoy: typing
  * into it did nothing, which is exactly how the old markup behaved.
+ *
+ * The shortcut hint is drawn by CSS from `data-hint` rather than written as
+ * text. As text it was part of what the button visibly says (its label,
+ * then "⌘K") but not of its accessible name (the label alone), and a control
+ * whose name does not contain its visible label is one a voice user cannot
+ * activate by reading it out (WCAG 2.5.3). `aria-keyshortcuts` already tells
+ * assistive technology what the hint tells the eye.
  */
 function searchTriggerButton(placeholder: string, shortcuts: SearchRuntimeConfig['shortcuts']): string {
   const { hint, aria } = formatShortcut(shortcuts)
@@ -215,7 +222,7 @@ function searchTriggerButton(placeholder: string, shortcuts: SearchRuntimeConfig
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
             <span class="BPNavBarSearch-label">${label}</span>
-            ${hint ? `<kbd class="BPNavBarSearch-kbd">${escapeHtmlAttribute(hint)}</kbd>` : ''}
+            ${hint ? `<kbd class="BPNavBarSearch-kbd" data-hint="${escapeHtmlAttribute(hint)}" aria-hidden="true"></kbd>` : ''}
           </button>`
 }
 
@@ -2059,6 +2066,11 @@ async function generateFeatures(features: any[]): Promise<string> {
     // screens with the rest of the grid.
     const span = Number(feature.span) > 1 ? ` style="--bp-feature-span:${Math.min(Math.trunc(Number(feature.span)), 3)}"` : ''
     const linkClass = link ? ' is-linked' : ''
+    // The title is an h2, not an h3: a home page is the hero's h1 and then
+    // these, with nothing in between, and a level skipped is a heading an
+    // outline (or a screen reader's heading list) cannot place. Its size comes
+    // from the class, so the level is free to be the right one.
+    //
     // A card that navigates says so. Without it a linked card and a static one
     // are indistinguishable until the pointer is already on them.
     const cta = link
@@ -2067,7 +2079,7 @@ async function generateFeatures(features: any[]): Promise<string> {
     return `
     <${tag} class="BPFeature${linkClass}"${linkAttr}${span}>
       ${iconHtml}
-      <h3 class="BPFeature-title">${feature.title || ''}</h3>
+      <h2 class="BPFeature-title">${feature.title || ''}</h2>
       <p class="BPFeature-details">${feature.details || ''}</p>
       ${cta}
     </${tag}>`

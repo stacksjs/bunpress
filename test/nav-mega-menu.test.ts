@@ -209,3 +209,23 @@ describe('stacked nav for narrow viewports', () => {
     expect(html).not.toContain('id="bp-nav-screen"')
   })
 })
+
+describe('the search button', () => {
+  it('says only its label, and draws the shortcut hint from an attribute', async () => {
+    const html = await render(FLAT)
+    const start = html.indexOf('<button class="BPNavBarSearch"')
+    const button = start === -1 ? '' : html.slice(start, html.indexOf('</button>', start))
+
+    expect(button).not.toBe('')
+
+    const label = button.match(/aria-label="([^"]*)"/)?.[1]
+    expect(label).toBeTruthy()
+
+    // What the button visibly says has to be inside its accessible name. The
+    // hint used to be text beside the label, so the two disagreed.
+    const visible = button.replace(/<svg[\s\S]*?<\/svg>/g, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+    expect(visible).toBe(label!)
+
+    expect(button).toMatch(/<kbd class="BPNavBarSearch-kbd" data-hint="[^"]+" aria-hidden="true"><\/kbd>/)
+  })
+})

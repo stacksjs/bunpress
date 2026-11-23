@@ -2803,6 +2803,10 @@ export const layoutCSS = `/**
   white-space: nowrap;
 }
 
+.BPNavBarSearch-kbd::before {
+  content: attr(data-hint);
+}
+
 .BPNavBarSearch-kbd {
   flex-shrink: 0;
   padding: 1px 5px;

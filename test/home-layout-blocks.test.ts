@@ -106,6 +106,22 @@ describe('hero code panel', () => {
 })
 
 describe('feature cards', () => {
+  it('titles each card with the heading level that follows the hero', async () => {
+    const { html } = await markdownToHtml(page([
+      'layout: home',
+      'hero:',
+      '  text: A language',
+      'features:',
+      '  - title: First',
+      '    details: One.',
+    ].join('\n')))
+
+    // The hero is the page's h1 and nothing sits between it and the cards,
+    // so an h3 here skipped a level.
+    expect(html).toContain('<h2 class="BPFeature-title">First</h2>')
+    expect(html).not.toContain('<h3 class="BPFeature-title">')
+  })
+
   it('adds a link affordance only to cards that navigate', async () => {
     const { html } = await markdownToHtml(page([
       'layout: home',
