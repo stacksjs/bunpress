@@ -1,3 +1,17 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.31...v0.2.32)
+
+## 🐛 Bug Fixes
+
+- **theme**: feature titles follow the hero's heading level, and the search button says only its label ([d10541e](https://github.com/stacksjs/bunpress/commit/d10541e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.32 ([c3308e4](https://github.com/stacksjs/bunpress/commit/c3308e4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.30...v0.2.31)
 
 ## 🐛 Bug Fixes
