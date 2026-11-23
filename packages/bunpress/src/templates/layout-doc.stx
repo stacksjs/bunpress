@@ -23,7 +23,7 @@
     <main class="BPContent BPContent--doc">
       <div class="BPDoc">
         <div class="BPDocContent">
-          <article class="bp-doc">
+          <article class="bp-doc{{ docClass }}">
             {!! content !!}
           </article>
           {!! docFooter !!}

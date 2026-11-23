@@ -9,6 +9,9 @@ import process from 'node:process'
 import { config, defaultConfig } from './config'
 import { clearDataCache, loadDataFiles } from './data-loader'
 import { darkModeFallbackCSS } from './dark-mode-fallback'
+import { hoistComponentStyles, HOISTED_STYLE_ATTRIBUTE } from './hoist-styles'
+import { minifyCss } from './minify-css'
+import { isLongPage, LONG_PAGE_CLASS, longPageCss } from './long-page'
 import { getSyntaxHighlightingStyles, highlightCode, setLanguageAliases } from './highlighter'
 import type { ResolvedI18n } from './i18n'
 import { buildEditUrl, formatLastUpdated, resolveLastUpdated } from './page-meta'
@@ -665,6 +668,19 @@ function generateSPARouterScript(basePath = ''): string {
       document.querySelectorAll('style[data-crosswind]').forEach(function(s) { s.remove(); });
       newStyles.forEach(function(s) { document.head.appendChild(s.cloneNode(true)); });
     }
+
+    // Component styles live in the head now (hoistComponentStyles), so they
+    // no longer travel with the markup swapped above. A page reached by
+    // navigation may use a component this document has never rendered: its
+    // styles are added here. Nothing is removed - a block for a component
+    // that is no longer on screen matches nothing and costs nothing.
+    var haveStyles = {};
+    document.querySelectorAll('style[${HOISTED_STYLE_ATTRIBUTE}]').forEach(function(s) { haveStyles[s.textContent] = true; });
+    doc.querySelectorAll('style[${HOISTED_STYLE_ATTRIBUTE}]').forEach(function(s) {
+      if (haveStyles[s.textContent]) return;
+      haveStyles[s.textContent] = true;
+      document.head.appendChild(s.cloneNode(true));
+    });
 
     lastPathname = target.pathname;
     lastSearch = target.search;
@@ -1481,7 +1497,7 @@ export async function wrapInLayout(
   // Get theme CSS (defaults to 'vitepress' theme)
   const themeName = config.theme || 'vitepress'
   const themeCSS = getThemeCSS(themeName)
-  const syntaxHighlightingStyles = getSyntaxHighlightingStyles()
+  const syntaxHighlightingStyles = getSyntaxHighlightingStyles(config.markdown?.syntaxHighlightTheme)
 
   // Base doc/widget CSS (code-copy buttons, the copy-page dropdown, etc.) ships
   // as the default markdown.css. It must always be present, so inject it
@@ -1620,7 +1636,7 @@ export async function wrapInLayout(
   if (layout === 'home') {
     const crosswindCSS = await generateCrosswindCSSFromHtml(`${content}\n${nav}`)
     const themedCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${messagePreviewCSS}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}\n${themeOverrideCss}`
-    const customCSS = `${themedCSS}\n${darkModeFallbackCSS(themedCSS)}`
+    const customCSS = minifyCss(`${themedCSS}\n${darkModeFallbackCSS(themedCSS)}`)
 
     const html = await render('layout-home', {
       htmlClass,
@@ -1636,14 +1652,14 @@ export async function wrapInLayout(
       footer,
       content,
     })
-    return prefixRootRelativeAttributes(injectSPARouter(injectThemeBootstrap(injectScripts(html, scripts)), getConfiguredBasePath(config)), config)
+    return prefixRootRelativeAttributes(injectSPARouter(injectThemeBootstrap(injectScripts(hoistComponentStyles(html), scripts)), getConfiguredBasePath(config)), config)
   }
 
   // Page layout - nav bar, full-width content, no sidebar, no TOC
   if (layout === 'page') {
     const crosswindCSS = await generateCrosswindCSSFromHtml(`${content}\n${nav}`)
     const themedCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${messagePreviewCSS}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}\n${themeOverrideCss}`
-    const customCSS = `${themedCSS}\n${darkModeFallbackCSS(themedCSS)}`
+    const customCSS = minifyCss(`${themedCSS}\n${darkModeFallbackCSS(themedCSS)}`)
 
     const html = await render('layout-page', {
       htmlClass,
@@ -1659,7 +1675,7 @@ export async function wrapInLayout(
       footer,
       content,
     })
-    return prefixRootRelativeAttributes(injectSPARouter(injectThemeBootstrap(injectScripts(html, scripts)), getConfiguredBasePath(config)), config)
+    return prefixRootRelativeAttributes(injectSPARouter(injectThemeBootstrap(injectScripts(hoistComponentStyles(html), scripts)), getConfiguredBasePath(config)), config)
   }
 
   // Documentation layout (default) - with sidebar and TOC
@@ -1672,8 +1688,8 @@ export async function wrapInLayout(
   const pageTOC = outline.aside
 
   const crosswindCSS = await generateCrosswindCSSFromHtml(`${docContent}\n${nav}\n${sidebar}`)
-  const themedCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${messagePreviewCSS}\n${crosswindCSS}\n${baseDocCss}\n${extraCss}\n${themeOverrideCss}`
-  const customCSS = `${themedCSS}\n${darkModeFallbackCSS(themedCSS)}`
+  const themedCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${messagePreviewCSS}\n${crosswindCSS}\n${baseDocCss}\n${longPageCss}\n${extraCss}\n${themeOverrideCss}`
+  const customCSS = minifyCss(`${themedCSS}\n${darkModeFallbackCSS(themedCSS)}`)
 
   const docFooter = await generateDocFooter(config, frontmatter, activeLocale, docsDir, sourceFile)
 
@@ -1686,6 +1702,8 @@ export async function wrapInLayout(
     description,
     meta: allMeta,
     customCSS,
+    // A very long article is rendered a screen at a time (see long-page.ts).
+    docClass: isLongPage(docContent) ? ` ${LONG_PAGE_CLASS}` : '',
     navbar: await navbarFor('doc'),
     search: searchOverlay,
     docFooter,
@@ -1697,7 +1715,7 @@ export async function wrapInLayout(
     pageTOC,
   })
 
-  return prefixRootRelativeAttributes(injectSPARouter(injectThemeBootstrap(injectScripts(html, scripts)), getConfiguredBasePath(config)), config)
+  return prefixRootRelativeAttributes(injectSPARouter(injectThemeBootstrap(injectScripts(hoistComponentStyles(html), scripts)), getConfiguredBasePath(config)), config)
 }
 
 let _crosswindModule: any = null

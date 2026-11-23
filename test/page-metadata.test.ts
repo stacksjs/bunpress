@@ -200,12 +200,12 @@ describe('themeConfig styling', () => {
       },
     } as BunPressConfig)
 
-    expect(html).toContain('--bp-c-brand-1: #e11d48;')
-    expect(html).toContain('--bp-c-text-1: #111827;')
-    expect(html).toContain('--bp-font-family-base: Inter, sans-serif;')
-    expect(html).toContain('--bp-font-family-mono: Fira Code, monospace;')
+    expect(html).toContain('--bp-c-brand-1:#e11d48')
+    expect(html).toContain('--bp-c-text-1:#111827')
+    expect(html).toContain('--bp-font-family-base:Inter,sans-serif')
+    expect(html).toContain('--bp-font-family-mono:Fira Code,monospace')
     // The heading font has no variable hook, so it is applied to the elements.
-    expect(html).toContain('font-family: Georgia, serif;')
+    expect(html).toContain('font-family:Georgia,serif')
   })
 
   it('accepts cssVars with or without the leading dashes, and raw css', async () => {
@@ -217,9 +217,9 @@ describe('themeConfig styling', () => {
       },
     } as BunPressConfig)
 
-    expect(html).toContain('--bp-sidebar-width: 300px;')
-    expect(html).toContain('--custom: 4px;')
-    expect(html).toContain('letter-spacing: 0.05em;')
+    expect(html).toContain('--bp-sidebar-width:300px')
+    expect(html).toContain('--custom:4px')
+    expect(html).toContain('letter-spacing:0.05em')
   })
 
   it('renders the logo and footer only when configured', async () => {
