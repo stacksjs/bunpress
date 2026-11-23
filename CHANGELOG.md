@@ -1,3 +1,21 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.32...v0.2.33)
+
+## 🐛 Bug Fixes
+
+- **highlighter**: a dark inline theme no longer leaves light-mode code unreadable ([97e200a](https://github.com/stacksjs/bunpress/commit/97e200a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **theme**: ship component styles once, in the head, and render long pages lazily ([3eb4982](https://github.com/stacksjs/bunpress/commit/3eb4982)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.33 ([8b3be08](https://github.com/stacksjs/bunpress/commit/8b3be08)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.31...v0.2.32)
 
 ## 🐛 Bug Fixes
