@@ -255,10 +255,105 @@ export function highlightCodeSync(code: string, language: string): string {
 }
 
 /**
+ * The light palette for every token, for a site that resolved a dark one.
+ *
+ * `markdown.syntaxHighlightTheme` decides which colours the highlighter
+ * writes inline. The sheet below is built around the light theme: it leaves
+ * the inline colours alone in light mode and replaces them in dark mode. A
+ * site that asked for `github-dark` therefore got the dark palette inline in
+ * both modes, and in light mode nothing corrected it: string literals at
+ * #a5d6ff on the light code block are 1.42:1, which is a page of code with
+ * its strings missing.
+ *
+ * So when the inline theme is not the light one, light mode is corrected the
+ * same way dark mode always has been: every token gets the light palette's
+ * colour for its scope, with !important because an inline style cannot be
+ * outranked. The rules run in the same order as the dark block, general to
+ * specific, and carry no \`html.dark\`, so the dark block outranks them in
+ * the dark and the two palettes cannot both apply.
+ *
+ * Colours are GitHub Light's, with the three the block already darkens for
+ * its ground (comment, function, keyword). test/theme-contrast.test.ts holds
+ * each of them to 4.5:1 on every surface code is drawn on.
+ */
+export const LIGHT_TOKEN_PALETTE: Record<string, string> = {
+  default: '#24292f',
+  variable: '#953800',
+  type: '#953800',
+  function: '#7a3fd0',
+  tag: '#116329',
+  constant: '#0550ae',
+  keyword: '#c5141f',
+  string: '#0a3069',
+  comment: '#5c636b',
+  invalid: '#82071e',
+}
+
+function lightPaletteForDarkInlineTheme(): string {
+  const c = LIGHT_TOKEN_PALETTE
+  return `
+/* Light palette over a dark inline theme (see lightPaletteForDarkInlineTheme). */
+.token {
+  color: ${c.default} !important;
+}
+
+.token[class*='variable'] {
+  color: ${c.variable} !important;
+}
+
+.token[class*='entity-name-type'],
+.token[class*='support-type'],
+.token[class*='support-class'] {
+  color: ${c.type} !important;
+}
+
+.token[class*='entity-name-function'],
+.token[class*='support-function'] {
+  color: ${c.function} !important;
+}
+
+.token[class*='entity-name-tag'],
+.token[class*='markup-inserted'] {
+  color: ${c.tag} !important;
+}
+
+.token[class*='constant'],
+.token[class*='entity-other-attribute'] {
+  color: ${c.constant} !important;
+}
+
+.token[class*='keyword'],
+.token[class*='storage'] {
+  color: ${c.keyword} !important;
+}
+
+.token[class*='string'] {
+  color: ${c.string} !important;
+}
+
+.token[class*='comment'] {
+  color: ${c.comment} !important;
+}
+
+.token[class*='invalid'] {
+  color: ${c.invalid} !important;
+}
+`
+}
+
+/**
  * Gets the CSS styles for syntax highlighting
  * Note: ts-syntax-highlighter includes its own theme CSS
+ *
+ * @param inlineTheme the theme the highlighter resolved inline
+ *   (`markdown.syntaxHighlightTheme`). Anything but the light theme gets the
+ *   light palette spelled out for light mode as well.
  */
-export function getSyntaxHighlightingStyles(): string {
+export function getSyntaxHighlightingStyles(inlineTheme: string = 'github-light'): string {
+  return `${baseSyntaxHighlightingStyles()}${inlineTheme === 'github-light' ? '' : lightPaletteForDarkInlineTheme()}`
+}
+
+function baseSyntaxHighlightingStyles(): string {
   return `
 /* Basic syntax highlighting styles for ts-syntax-highlighter */
 /* The actual theme colors are injected by ts-syntax-highlighter */
