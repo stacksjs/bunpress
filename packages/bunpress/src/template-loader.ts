@@ -20,9 +20,22 @@ export async function loadTemplate(name: string): Promise<string> {
     throw new Error(`Template not found: ${name}`)
   }
 
-  const content = await file.text()
+  const content = stripTemplateComments(await file.text())
   templateCache.set(name, content)
   return content
+}
+
+/**
+ * Remove Blade-style `{{-- ... --}}` comments from a template's source.
+ *
+ * The interpolator only knows `{{ key }}` and `{!! key !!}`, so a comment was
+ * shipped as visible page text: sidebar.stx's multi-line note about where its
+ * scripts live rendered under the nav on every docs page. Stripped here, from
+ * the template source only, so page content that documents the syntax is
+ * never touched.
+ */
+export function stripTemplateComments(source: string): string {
+  return source.replace(/\{\{--[\s\S]*?--\}\}\n?/g, '')
 }
 
 /**
