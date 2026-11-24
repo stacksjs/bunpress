@@ -105,7 +105,7 @@ jobs:
         continue-on-error: true
         run: pantry publish:commit './packages/*'
         env:
-          PANTRY_REGISTRY_TOKEN: ${{ secrets.PANTRY_TOKEN }}
+          PANTRY_TOKEN: ${{ secrets.PANTRY_TOKEN }}
 
   deploy-docs:
     name: deploy bunpress.org
