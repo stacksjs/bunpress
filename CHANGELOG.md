@@ -1,3 +1,22 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.33...v0.2.34)
+
+## 🐛 Bug Fixes
+
+- **templates**: strip {{-- --}} comments instead of rendering them ([b3a2a64](https://github.com/stacksjs/bunpress/commit/b3a2a64)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- name the Pantry publish token PANTRY_TOKEN ([75488c4](https://github.com/stacksjs/bunpress/commit/75488c4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.34 ([4841472](https://github.com/stacksjs/bunpress/commit/4841472)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.32...v0.2.33)
 
 ## 🐛 Bug Fixes
