@@ -18,7 +18,7 @@ describe('Custom Containers', () => {
         const html = await response.text()
 
         expect(html).toContain('<div class="custom-block info">')
-        expect(html).toContain('<p class="custom-block-title">INFO</p>')
+        expect(html).toContain('<p class="custom-block-title is-default">INFO</p>')
         expect(html).toContain('This is an info message.')
       }
       finally {
@@ -63,7 +63,7 @@ describe('Custom Containers', () => {
         const html = await response.text()
 
         expect(html).toContain('<div class="custom-block tip">')
-        expect(html).toContain('<p class="custom-block-title">TIP</p>')
+        expect(html).toContain('<p class="custom-block-title is-default">TIP</p>')
         expect(html).toContain('This is a helpful tip.')
       }
       finally {
@@ -87,7 +87,7 @@ describe('Custom Containers', () => {
         const html = await response.text()
 
         expect(html).toContain('<div class="custom-block warning">')
-        expect(html).toContain('<p class="custom-block-title">WARNING</p>')
+        expect(html).toContain('<p class="custom-block-title is-default">WARNING</p>')
         expect(html).toContain('This is a warning message.')
       }
       finally {
@@ -111,7 +111,7 @@ describe('Custom Containers', () => {
         const html = await response.text()
 
         expect(html).toContain('<div class="custom-block danger">')
-        expect(html).toContain('<p class="custom-block-title">DANGER</p>')
+        expect(html).toContain('<p class="custom-block-title is-default">DANGER</p>')
         expect(html).toContain('This is a danger message.')
       }
       finally {

@@ -3,7 +3,7 @@
  *
  * This module exports all available themes for BunPress.
  * The default theme is 'vitepress' which provides VitePress-compatible styling.
- * The 'bun' theme provides Bun-inspired styling with warm orange accents.
+ * The 'bun' theme follows bun.com/docs: pink accent, square corners, Archivo and Martian Mono.
  */
 
 import vitePressTheme, { getVitePressThemeCSS } from './vitepress'

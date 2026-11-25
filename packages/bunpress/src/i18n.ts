@@ -21,6 +21,10 @@ const UI_DEFAULTS: Record<string, string> = {
   'nav.menu': 'Menu',
   'search.noResults': 'No results for',
   'theme.toggle': 'Toggle dark mode',
+  'breadcrumb.label': 'Breadcrumb',
+  'docFooter.label': 'Pagination',
+  'docFooter.prev': 'Previous',
+  'docFooter.next': 'Next',
 }
 
 export interface ResolvedI18n {

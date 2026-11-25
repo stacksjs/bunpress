@@ -1,4 +1,5 @@
 import type { MarkdownLinkOrigins, MarkdownPageContext } from './markdown-pages'
+import { renderBreadcrumb, renderDocPager, resolveDocTrail, sidebarSectionsFor } from './doc-trail'
 import { createMarkdownPageCatalog, findMarkdownFiles, rewriteMarkdownSourceLinks } from './markdown-pages'
 import type { BunPressConfig, Frontmatter, NavItem, SidebarItem } from './types'
 import { Glob, YAML } from 'bun'
@@ -54,26 +55,9 @@ export { decodeHtmlEntities } from './html-entities'
  * site's own sidebar would lose to a stub listing pages it does not have.
  */
 async function generateSidebar(config: BunPressConfig, currentPath: string): Promise<string> {
-  const sidebarConfig = config.themeConfig?.sidebar || config.sidebar || config.markdown?.sidebar
-
-  if (!sidebarConfig) {
+  const sidebarSections = sidebarSectionsFor(config, currentPath)
+  if (sidebarSections.length === 0)
     return ''
-  }
-
-  let sidebarSections: any[] = []
-
-  // Handle different sidebar formats
-  if (Array.isArray(sidebarConfig)) {
-    // VitePress-style: array of sections directly
-    sidebarSections = sidebarConfig
-  }
-  else if (typeof sidebarConfig === 'object') {
-    // Path-based sidebar: { '/': [...], '/guide/': [...] }
-    // Sort keys longest-first so /guide/ matches before /
-    const sortedKeys = Object.keys(sidebarConfig).sort((a, b) => b.length - a.length)
-    const pathKey = sortedKeys.find(key => currentPath.startsWith(key)) || '/'
-    sidebarSections = sidebarConfig[pathKey] || []
-  }
 
   const sectionsHtml = await Promise.all(sidebarSections.map(async (section) => {
     // A top-level page is a destination, not an empty collapsible section.
@@ -352,6 +336,19 @@ function addHeadingIds(html: string): string {
 }
 
 /**
+ * Prepend a frontmatter `title` (and `description`, as the lead paragraph) to
+ * a page that has no `<h1>` of its own. Pages that do are returned as they are.
+ */
+function withFrontmatterTitle(html: string, frontmatter: Frontmatter): string {
+  const title = typeof frontmatter.title === 'string' ? frontmatter.title.trim() : ''
+  if (!title || /<h1[\s>]/i.test(html))
+    return html
+  const description = typeof frontmatter.description === 'string' ? frontmatter.description.trim() : ''
+  const escape = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  return `<h1>${escape(title)}</h1>${description ? `<p>${escape(description)}</p>` : ''}${html}`
+}
+
+/**
  * Pair the page's <h1> with the copy-page control in a flex header row.
  *
  * This is done server-side, inside the content, rather than by moving the
@@ -365,8 +362,10 @@ function addHeadingIds(html: string): string {
  * anchor the control to, and floating it alone above the body reads as chrome
  * belonging to whatever follows it.
  */
-function attachPageHeader(html: string, copyPageHtml: string, inlineOutline = ''): string {
-  if (!copyPageHtml && !inlineOutline)
+const OUTLINE_SLOT = '<!--bp-outline-slot-->'
+
+function attachPageHeader(html: string, copyPageHtml: string, inlineOutline = '', breadcrumbHtml = ''): string {
+  if (!copyPageHtml && !inlineOutline && !breadcrumbHtml)
     return html
 
   let matched = false
@@ -376,14 +375,25 @@ function attachPageHeader(html: string, copyPageHtml: string, inlineOutline = ''
     /<h1(?:\s[^>]*)?>[\s\S]*?<\/h1>/,
     (match) => {
       matched = true
-      return `<div class="bp-page-header">${match}${copyPageHtml}</div>${inlineOutline}`
+      return `<div class="bp-page-header${breadcrumbHtml ? ' has-breadcrumb' : ''}">${breadcrumbHtml}${match}${copyPageHtml}</div>${OUTLINE_SLOT}`
     },
   )
+
+  if (matched) {
+    // With a breadcrumb (the bun theme) the paragraph under the title is its
+    // lead and stays with it, so the outline follows the lead instead.
+    const slot = withHeader.indexOf(OUTLINE_SLOT)
+    const rest = withHeader.slice(slot + OUTLINE_SLOT.length)
+    const lead = breadcrumbHtml ? /^\s*<p(?:\s[^>]*)?>[\s\S]*?<\/p>/.exec(rest) : null
+    return lead
+      ? `${withHeader.slice(0, slot)}${lead[0]}${inlineOutline}${rest.slice(lead[0].length)}`
+      : `${withHeader.slice(0, slot)}${inlineOutline}${rest}`
+  }
 
   // No h1 to anchor to. The outline still belongs at the top of the page, but
   // the copy control does not — alone above the body it reads as chrome for
   // whatever follows it.
-  return matched ? withHeader : `${inlineOutline}${html}`
+  return `${inlineOutline}${html}`
 }
 
 /**
@@ -1200,8 +1210,16 @@ function generateStructuredData(
  * Google Fonts stylesheet) for the document head, and raw `@font-face` CSS for
  * self-hosted fonts. Returns empty strings when no fonts are configured.
  */
+/**
+ * The faces the bun theme is drawn in: Archivo, condensed and heavy, for the
+ * headings, and Martian Mono for code and labels. Both are on Google Fonts
+ * with the width axes the theme asks for. A site that sets `fonts` itself
+ * keeps exactly what it set.
+ */
+export const BUN_THEME_FONTS: string[] = ['Archivo:wdth,wght@62..100,700..900', 'Martian Mono:wdth,wght@87.5..100,400..600']
+
 function generateFontTags(config: BunPressConfig): { fontLinks: string, fontFaceCss: string } {
-  const fonts = config.fonts
+  const fonts = config.fonts ?? (config.theme === 'bun' ? { google: BUN_THEME_FONTS } : undefined)
   if (!fonts)
     return { fontLinks: '', fontFaceCss: '' }
 
@@ -1684,14 +1702,24 @@ export async function wrapInLayout(
   const contentWithIds = addHeadingIds(content)
   const outline = await generatePageOutline(contentWithIds, t('toc.title'))
   const sidebar = await generateSidebar(config, currentPath)
-  const docContent = attachPageHeader(contentWithIds, await render('copy-page', {}), outline.inline)
+  // The bun theme files each page under its section, like bun.com/docs: a
+  // breadcrumb above the title and previous/next cards below the page.
+  const trail = themeName === 'bun' ? resolveDocTrail(sidebarSectionsFor(config, currentPath), currentPath) : undefined
+  const breadcrumb = trail ? renderBreadcrumb(trail, t('breadcrumb.label')) : ''
+  const pager = trail
+    ? renderDocPager(trail, link => prefixRootPath(config, link), { prev: t('docFooter.prev'), next: t('docFooter.next'), nav: t('docFooter.label') })
+    : ''
+  // A page whose title lives only in frontmatter still opens with it under
+  // the bun theme, its description as the lead, as every bun.com page does.
+  const titledContent = trail ? withFrontmatterTitle(contentWithIds, frontmatter) : contentWithIds
+  const docContent = attachPageHeader(titledContent, await render('copy-page', {}), outline.inline, breadcrumb)
   const pageTOC = outline.aside
 
   const crosswindCSS = await generateCrosswindCSSFromHtml(`${docContent}\n${nav}\n${sidebar}`)
   const themedCSS = `${fontFaceCss}\n${themeCSS}\n${syntaxHighlightingStyles}\n${messagePreviewCSS}\n${crosswindCSS}\n${baseDocCss}\n${longPageCss}\n${extraCss}\n${themeOverrideCss}`
   const customCSS = minifyCss(`${themedCSS}\n${darkModeFallbackCSS(themedCSS)}`)
 
-  const docFooter = await generateDocFooter(config, frontmatter, activeLocale, docsDir, sourceFile)
+  const docFooter = `${pager}${await generateDocFooter(config, frontmatter, activeLocale, docsDir, sourceFile)}`
 
   const html = await render('layout-doc', {
     htmlClass,
@@ -2765,10 +2793,15 @@ async function processContainers(content: string): Promise<string> {
 
     const title = (customTitle && customTitle.trim()) || defaultTitles[type]
 
-    const containerHtml = await render(`blocks/containers/${type}`, {
+    const rendered = await render(`blocks/containers/${type}`, {
       title,
       content: asEmbeddedMarkdown(innerContent),
     })
+    // A title the author did not write is only the block's type spelled out.
+    // Marked, so a theme that shows the type another way (an icon) can drop it.
+    const containerHtml = customTitle?.trim()
+      ? rendered
+      : rendered.replace('class="custom-block-title"', 'class="custom-block-title is-default"')
 
     result = `${result.slice(0, match.index)}\n\n${containerHtml}\n\n${result.slice(match.index! + fullMatch.length)}`
   }

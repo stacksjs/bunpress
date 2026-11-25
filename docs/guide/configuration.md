@@ -69,6 +69,18 @@ toc: {
 }
 ```
 
+### Themes
+
+BunPress ships two themes. `vitepress` is the default. `bun` follows the documentation at bun.com/docs: a white page (warm near-black in dark mode), a pink accent drawn as rails and underlines, square corners, Archivo condensed headings and Martian Mono for code.
+
+```typescript
+export default {
+  theme: 'bun',
+}
+```
+
+The `bun` theme also files each page under its section the way bun.com does. It draws a breadcrumb above the title and previous/next cards below the page, both taken from the sidebar. A page whose title is only in frontmatter opens with that title, and its `description` becomes the lead paragraph. It loads Archivo and Martian Mono from Google Fonts unless you set `fonts` yourself.
+
 ### Theme Configuration
 
 Customize the visual appearance:

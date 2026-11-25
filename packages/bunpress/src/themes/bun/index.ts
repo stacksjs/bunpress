@@ -1,2147 +1,1694 @@
 /**
  * Bun Theme for BunPress
  *
- * This theme provides Bun-inspired styling for BunPress documentation sites.
- * Colors and styling are extracted directly from bun.sh for accuracy.
+ * Mirrors the documentation at bun.com/docs, measured off the live site
+ * (November 2026) rather than remembered: a white page (a warm near-black one
+ * in the dark), near-black type, a hot pink accent drawn as rails, underlines
+ * and icons, square corners, no shadows, Archivo condensed for headings and
+ * Martian Mono for code and labels.
  *
- * Key colors from bun.sh:
- * - Bun Orange: #f89b4b
- * - Bun Blue: #00a6e1
- * - Bun Pink: #e600e5
- * - Dark backgrounds: #0d0e11, #14151a, #282a36
+ * It is the complete default theme with a Bun layer on top, so every
+ * component keeps its structure and behaviour and only its look changes. The
+ * layer's rules carry an `html` prefix because the component sheets land
+ * later in the head than the theme does.
+ *
+ * Where Bun's own colours miss WCAG AA as text, the text uses the next step
+ * of Bun's ramp and the original stays as decoration: links and inline code
+ * are drawn in Bun's accent-strong (#d60066, 5.2:1), and the accent pink
+ * (#ff1f8f, 3.3:1) only ever marks a rail, an underline or an icon, exactly as
+ * it does on bun.com. test/theme-contrast.test.ts holds every pair.
  */
 
-import { layoutCSS } from '../vitepress'
+import { getVitePressThemeCSS } from '../vitepress'
 
-// CSS Variables - Exact values from bun.sh
-const varsCSS = `/**
- * Bun Theme for BunPress
- * Colors extracted from bun.sh
- * -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+/* Tokens                                                                     */
+/* -------------------------------------------------------------------------- */
 
+// Hex only in the two palette blocks: the contrast test reads them as written.
+const varsCSS = `
+/* Bun theme palette (bun.com/docs) */
 :root {
-  --bp-c-white: #ffffff;
-  --bp-c-black: #000000;
+  --bun-canvas: #ffffff;
+  --bun-subtle: #f6f6f6;
+  --bun-line: #e2e2e2;
+  --bun-line-strong: #0a0a0a;
+  --bun-rule: #181818;
+  --bun-fg: #0a0a0a;
+  --bun-fg-muted: #525252;
+  --bun-fg-faint: #707070;
+  --bun-accent: #ff1f8f;
+  --bun-accent-strong: #d60066;
+  --bun-accent-soft: #ffebf5;
+  --bun-code-bg: #f6f6f6;
+  --bun-info: #1450dc;
+  --bun-success: #007a43;
+  --bun-warning: #9a5f02;
+  --bun-danger: #d61f2d;
+  --bun-important: #7a3ed4;
 
-  --bp-c-neutral: var(--bp-c-black);
-  --bp-c-neutral-inverse: var(--bp-c-white);
-}
+  --bun-sk-text: #24211d;
+  --bun-sk-keyword: #c41a68;
+  --bun-sk-type: #0a7583;
+  --bun-sk-fn: #2f5fd0;
+  --bun-sk-const: #7a3ed4;
+  --bun-sk-param: #a8520a;
+  --bun-sk-string: #4d7c1b;
+  --bun-sk-comment: #736c62;
 
-.dark {
-  --bp-c-neutral: var(--bp-c-white);
-  --bp-c-neutral-inverse: var(--bp-c-black);
-}
-
-/**
- * Colors: Bun Brand Palette (exact values from bun.sh)
- * -------------------------------------------------------------------------- */
-
-:root {
-  /* Bun's signature warm orange - exact from bun.sh */
-  --bp-c-bun-orange: #f89b4b;
-  --bp-c-bun-orange-light: #fbb175;
-  --bp-c-bun-orange-dark: #e88a3a;
-  --bp-c-bun-orange-soft: rgba(248, 155, 75, 0.14);
-
-  /* Bun blue accent - exact from bun.sh */
-  --bp-c-bun-blue: #00a6e1;
-  --bp-c-bun-blue-light: #33b8e8;
-  --bp-c-bun-blue-dark: #0095cc;
-  --bp-c-bun-blue-soft: rgba(0, 166, 225, 0.14);
-
-  /* Bun pink/magenta accent - exact from bun.sh */
-  --bp-c-bun-pink: #e600e5;
-  --bp-c-bun-pink-light: #f033ef;
-  --bp-c-bun-pink-dark: #c700c6;
-  --bp-c-bun-pink-soft: rgba(230, 0, 229, 0.14);
-
-  /* Gray scale - Light mode (from bun.sh) */
-  --bp-c-gray-1: #d1d5db;
-  --bp-c-gray-2: #e5e7eb;
-  --bp-c-gray-3: #f3f4f6;
-  --bp-c-gray-soft: rgba(156, 163, 175, 0.14);
-
-  /* Semantic colors */
-  /* The -1 step is a title drawn on the page, so it is the 700 weight of the
-   * ramp rather than the 600: #16a34a is 3.15:1 here and #ca8a04 is 2.81:1,
-   * which are fill colours being asked to be text. */
-  --bp-c-green-1: #15803d;
-  --bp-c-green-2: #22c55e;
-  --bp-c-green-3: #4ade80;
-  --bp-c-green-soft: rgba(22, 163, 74, 0.08);
-
-  --bp-c-yellow-1: #92400e;
-  --bp-c-yellow-2: #eab308;
-  --bp-c-yellow-3: #facc15;
-  --bp-c-yellow-soft: rgba(234, 179, 8, 0.08);
-
-  --bp-c-red-1: #dc2626;
-  --bp-c-red-2: #ef4444;
-  --bp-c-red-3: #f87171;
-  --bp-c-red-soft: rgba(220, 38, 38, 0.08);
-
-  --bp-c-purple-1: #7c3aed;
-  --bp-c-purple-2: #8b5cf6;
-  --bp-c-purple-3: #a78bfa;
-  --bp-c-purple-soft: rgba(124, 58, 237, 0.08);
-}
-
-.dark {
-  /* Gray scale - Dark mode (exact from bun.sh) */
-  --bp-c-gray-1: #4f5666;
-  --bp-c-gray-2: #3b3f4b;
-  --bp-c-gray-3: #282a36;
-  --bp-c-gray-soft: rgba(79, 86, 102, 0.16);
-
-  /* Adjusted semantic colors for dark mode */
-  --bp-c-green-1: #4ade80;
-  --bp-c-green-2: #22c55e;
-  --bp-c-green-3: #16a34a;
-  --bp-c-green-soft: rgba(74, 222, 128, 0.16);
-
-  --bp-c-yellow-1: #fde047;
-  --bp-c-yellow-2: #facc15;
-  --bp-c-yellow-3: #eab308;
-  --bp-c-yellow-soft: rgba(253, 224, 71, 0.16);
-
-  --bp-c-red-1: #f87171;
-  --bp-c-red-2: #ef4444;
-  --bp-c-red-3: #dc2626;
-  --bp-c-red-soft: rgba(248, 113, 113, 0.16);
-
-  --bp-c-purple-1: #a78bfa;
-  --bp-c-purple-2: #8b5cf6;
-  --bp-c-purple-3: #7c3aed;
-  --bp-c-purple-soft: rgba(167, 139, 250, 0.16);
-}
-
-/**
- * Colors: Background (exact from bun.sh dark theme)
- * --gray-950: #0d0e11 (darkest)
- * --gray-900: #14151a (main dark bg)
- * --gray-800: #282a36 (code blocks - Dracula bg)
- * -------------------------------------------------------------------------- */
-
-:root {
-  --bp-c-bg: #f9fafb;
-  --bp-c-bg-alt: #f3f4f6;
+  --bp-c-bg: #ffffff;
+  --bp-c-bg-alt: #f6f6f6;
   --bp-c-bg-elv: #ffffff;
-  --bp-c-bg-soft: #f3f4f6;
+  --bp-c-bg-soft: #f6f6f6;
+
+  --bp-c-text-1: #0a0a0a;
+  --bp-c-text-2: #525252;
+  --bp-c-text-3: #707070;
+
+  --bp-c-border: #8a8a8a;
+  --bp-c-divider: #e2e2e2;
+  --bp-c-gutter: #e2e2e2;
+
+  --bp-c-brand-1: #d60066;
+  --bp-c-brand-2: #b8005a;
+  --bp-c-brand-3: #ff1f8f;
+  --bp-c-brand: #d60066;
+  --bp-c-indigo-1: #d60066;
+  --bp-c-indigo-2: #b8005a;
+  --bp-c-indigo-3: #ff1f8f;
+
+  --bp-c-note-1: #1450dc;
+  --bp-c-tip-1: #007a43;
+  --bp-c-success-1: #007a43;
+  --bp-c-warning-1: #9a5f02;
+  --bp-c-caution-1: #d61f2d;
+  --bp-c-danger-1: #d61f2d;
+  --bp-c-important-1: #7a3ed4;
+  --bp-c-sponsor: #d60066;
+
+  --bp-button-brand-text: #ffffff;
+  --bp-button-brand-bg: #0a0a0a;
+  --bp-button-brand-border: #0a0a0a;
+  --bp-button-brand-hover-text: #ffffff;
+  --bp-button-brand-hover-bg: #d60066;
+  --bp-button-brand-hover-border: #d60066;
+  --bp-button-brand-active-text: #ffffff;
+  --bp-button-brand-active-bg: #b8005a;
+  --bp-button-brand-active-border: #b8005a;
+  --bp-button-alt-text: #0a0a0a;
+  --bp-button-alt-bg: #ffffff;
+  --bp-button-alt-border: #e2e2e2;
+  --bp-button-alt-hover-text: #0a0a0a;
+  --bp-button-alt-hover-bg: #f6f6f6;
+  --bp-button-alt-hover-border: #181818;
+
+  --bp-code-bg: #f6f6f6;
+  --bp-code-color: #0a0a0a;
+  --bp-code-block-bg: #f6f6f6;
+  --bp-code-block-color: #24211d;
+  --bp-code-lang-color: #525252;
+  --bp-code-tab-bg: #f6f6f6;
+  --bp-nav-bg-color: #ffffff;
+  --bp-sidebar-bg-color: #ffffff;
 }
 
 .dark {
-  --bp-c-bg: #14151a;
-  --bp-c-bg-alt: #0d0e11;
-  --bp-c-bg-elv: #1f2028;
-  --bp-c-bg-soft: #1f2028;
-}
+  --bun-canvas: #0d0a0c;
+  --bun-subtle: #171316;
+  --bun-line: #28282b;
+  --bun-line-strong: #48484c;
+  --bun-rule: #3e3e42;
+  --bun-fg: #eaeae8;
+  --bun-fg-muted: #a8a8a5;
+  --bun-fg-faint: #8a8a87;
+  --bun-accent: #ff2e97;
+  --bun-accent-strong: #ff5cb0;
+  --bun-accent-soft: #280016;
+  --bun-code-bg: #0e0e0e;
+  --bun-info: #78aaff;
+  --bun-success: #28dc82;
+  --bun-warning: #f5b43c;
+  --bun-danger: #ff5a5a;
+  --bun-important: #c4a5ff;
 
-/**
- * Colors: Borders
- *
- * --bp-c-divider is the hairline between pieces of content and --bp-c-border
- * is the edge of a control, which WCAG 1.4.11 asks 3:1 of. The old pair came
- * from a Tailwind grey ramp read as two neighbouring steps rather than as two
- * jobs: #d1d5db managed 1.41:1 against the page and #3b3f4b managed 1.73:1,
- * so the search field, the copy control and the outlined buttons all had an
- * edge that was there in the stylesheet and not on the screen. See the same
- * note in the vitepress theme.
- * -------------------------------------------------------------------------- */
+  --bun-sk-text: #e9e6e1;
+  --bun-sk-keyword: #ff7eb6;
+  --bun-sk-type: #7fdbec;
+  --bun-sk-fn: #8fb4ff;
+  --bun-sk-const: #c4a5ff;
+  --bun-sk-param: #ffb977;
+  --bun-sk-string: #b5e48c;
+  --bun-sk-comment: #8f8b9e;
+
+  --bp-c-bg: #0d0a0c;
+  --bp-c-bg-alt: #171316;
+  --bp-c-bg-elv: #1a1a1c;
+  --bp-c-bg-soft: #171316;
+
+  --bp-c-text-1: #eaeae8;
+  --bp-c-text-2: #a8a8a5;
+  --bp-c-text-3: #8a8a87;
+
+  --bp-c-border: #6b6b6e;
+  --bp-c-divider: #28282b;
+  --bp-c-gutter: #28282b;
+
+  --bp-c-brand-1: #ff5cb0;
+  --bp-c-brand-2: #ff7ec2;
+  --bp-c-brand-3: #ff2e97;
+  --bp-c-brand: #ff5cb0;
+  --bp-c-indigo-1: #ff5cb0;
+  --bp-c-indigo-2: #ff7ec2;
+  --bp-c-indigo-3: #ff2e97;
+
+  --bp-c-note-1: #78aaff;
+  --bp-c-tip-1: #28dc82;
+  --bp-c-success-1: #28dc82;
+  --bp-c-warning-1: #f5b43c;
+  --bp-c-caution-1: #ff5a5a;
+  --bp-c-danger-1: #ff5a5a;
+  --bp-c-important-1: #c4a5ff;
+  --bp-c-sponsor: #ff5cb0;
+
+  --bp-button-brand-text: #0d0a0c;
+  --bp-button-brand-bg: #eaeae8;
+  --bp-button-brand-border: #eaeae8;
+  --bp-button-brand-hover-text: #0d0a0c;
+  --bp-button-brand-hover-bg: #ff5cb0;
+  --bp-button-brand-hover-border: #ff5cb0;
+  --bp-button-brand-active-text: #0d0a0c;
+  --bp-button-brand-active-bg: #ff2e97;
+  --bp-button-brand-active-border: #ff2e97;
+  --bp-button-alt-text: #eaeae8;
+  --bp-button-alt-bg: #0d0a0c;
+  --bp-button-alt-border: #28282b;
+  --bp-button-alt-hover-text: #eaeae8;
+  --bp-button-alt-hover-bg: #171316;
+  --bp-button-alt-hover-border: #3e3e42;
+
+  --bp-code-bg: #171316;
+  --bp-code-color: #eaeae8;
+  --bp-code-block-bg: #0e0e0e;
+  --bp-code-block-color: #e9e6e1;
+  --bp-code-lang-color: #a8a8a5;
+  --bp-code-tab-bg: #0e0e0e;
+  --bp-nav-bg-color: #0d0a0c;
+  --bp-sidebar-bg-color: #0d0a0c;
+}
 
 :root {
-  --bp-c-border: #858c99;
-  --bp-c-divider: #e5e7eb;
-  --bp-c-gutter: #e5e7eb;
-}
-
-.dark {
-  --bp-c-border: #696f80;
-  --bp-c-divider: #282a36;
-  --bp-c-gutter: #14151a;
-}
-
-/**
- * Colors: Text (from bun.sh gray scale)
- *
- * All three steps are text, so all three clear 4.5:1 on every background the
- * theme draws them on. text-3 was the bottom two steps of the bun.sh grey
- * ramp, #9ca3af and #6b7280, which are 2.43:1 and 3.35:1 here - and it is the
- * colour of the search trigger's label, the code block's language tag and the
- * line numbers. Dark text-2 moved up with text-3 to keep the three steps
- * distinguishable from one another.
- * -------------------------------------------------------------------------- */
-
-:root {
-  --bp-c-text-1: #111827;
-  --bp-c-text-2: #4b5563;
-  --bp-c-text-3: #676f7d;
-}
-
-.dark {
-  --bp-c-text-1: #e5e7eb;
-  --bp-c-text-2: #aeb4c0;
-  --bp-c-text-3: #8c93a1;
-}
-
-/**
- * Colors: Function - Using Bun orange as brand
- * -------------------------------------------------------------------------- */
-
-:root {
-  --bp-c-default-1: var(--bp-c-gray-1);
-  --bp-c-default-2: var(--bp-c-gray-2);
-  --bp-c-default-3: var(--bp-c-gray-3);
-  --bp-c-default-soft: var(--bp-c-gray-soft);
-
-  /* Brand = Bun Orange, which is a fill colour, not a text colour.
-   *
-   * The ramp was the identity orange in both palettes, and brand-1 is what
-   * every link, every piece of inline code, the active code tab and the hero
-   * name are drawn in. On the light ground that is #f89b4b on #f9fafb:
-   * 2.05:1, the worst number anywhere in either theme, and it was every link
-   * on the page. In the dark palette the same orange is 8.49:1, which is why
-   * it was only ever half wrong and so stayed.
-   *
-   * So the ramp splits the way the vitepress one does: brand-1/2 are the text
-   * end and invert with the palette, brand-3 and --bp-c-brand-soft keep the
-   * identity orange for bars, washes and fills, and the filled button below
-   * names the orange directly so the Bun button is still the Bun button. */
-  --bp-c-brand-1: #9a4a07;
-  --bp-c-brand-2: #b45309;
-  --bp-c-brand-3: var(--bp-c-bun-orange);
-  --bp-c-brand-soft: var(--bp-c-bun-orange-soft);
-  --bp-c-brand: var(--bp-c-brand-1);
-
-  /* Tip and Note = Bun Blue, split the same way as the brand above: the -1
-   * step is the alert's title and its icon, so on the light ground it is a
-   * blue dark enough to read on the alert's own wash. #00a6e1 there is 2.31:1,
-   * which made "Note" the least legible word in the block it titles. The
-   * identity blue keeps -3, the washes and the filled alt button. */
-  --bp-c-tip-1: #026b96;
-  --bp-c-tip-2: #0077a8;
-  --bp-c-tip-3: var(--bp-c-bun-blue);
-  --bp-c-tip-soft: var(--bp-c-bun-blue-soft);
-
-  --bp-c-note-1: #026b96;
-  --bp-c-note-2: #0077a8;
-  --bp-c-note-3: var(--bp-c-bun-blue);
-  --bp-c-note-soft: var(--bp-c-bun-blue-soft);
-
-  --bp-c-success-1: var(--bp-c-green-1);
-  --bp-c-success-2: var(--bp-c-green-2);
-  --bp-c-success-3: var(--bp-c-green-3);
-  --bp-c-success-soft: var(--bp-c-green-soft);
-
-  --bp-c-important-1: var(--bp-c-purple-1);
-  --bp-c-important-2: var(--bp-c-purple-2);
-  --bp-c-important-3: var(--bp-c-purple-3);
-  --bp-c-important-soft: var(--bp-c-purple-soft);
-
-  --bp-c-warning-1: var(--bp-c-yellow-1);
-  --bp-c-warning-2: var(--bp-c-yellow-2);
-  --bp-c-warning-3: var(--bp-c-yellow-3);
-  --bp-c-warning-soft: var(--bp-c-yellow-soft);
-
-  --bp-c-danger-1: var(--bp-c-red-1);
-  --bp-c-danger-2: var(--bp-c-red-2);
-  --bp-c-danger-3: var(--bp-c-red-3);
-  --bp-c-danger-soft: var(--bp-c-red-soft);
-
-  --bp-c-caution-1: var(--bp-c-red-1);
-  --bp-c-caution-2: var(--bp-c-red-2);
-  --bp-c-caution-3: var(--bp-c-red-3);
-  --bp-c-caution-soft: var(--bp-c-red-soft);
-
-  /* Drawn as text on the page (the sponsor button's label and border), where
-   * the identity pink is 3.66:1. */
-  --bp-c-sponsor: #b100b0;
-}
-
-.dark {
-  /* On the dark ground the identity colours are the readable ones - orange at
-   * 8.49:1, blue at 5.41:1 on its own wash, pink at 4.77:1 - so the text end
-   * of each ramp goes back to them and the -3 steps take the darker shades for
-   * bars and fills. */
-  --bp-c-brand-1: var(--bp-c-bun-orange);
-  --bp-c-brand-2: var(--bp-c-bun-orange-light);
-  --bp-c-brand-3: var(--bp-c-bun-orange-dark);
-
-  --bp-c-tip-1: var(--bp-c-bun-blue);
-  --bp-c-tip-2: var(--bp-c-bun-blue-light);
-  --bp-c-tip-3: var(--bp-c-bun-blue-dark);
-
-  --bp-c-note-1: var(--bp-c-bun-blue);
-  --bp-c-note-2: var(--bp-c-bun-blue-light);
-  --bp-c-note-3: var(--bp-c-bun-blue-dark);
-
-  --bp-c-sponsor: var(--bp-c-bun-pink);
-}
-
-/**
- * Typography - Exact font stacks from bun.sh
- * -------------------------------------------------------------------------- */
-
-:root {
-  --bp-font-family-base: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  --bp-font-family-mono: 'JetBrains Mono', 'Fira Code', 'Hack', 'Source Code Pro', 'SF Mono', 'Inconsolata', monospace;
-  font-optical-sizing: auto;
-}
-
-/**
- * Shadows
- * -------------------------------------------------------------------------- */
-
-:root {
-  --bp-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --bp-shadow-2: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --bp-shadow-3: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --bp-shadow-4: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --bp-shadow-5: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-}
-
-.dark {
-  --bp-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --bp-shadow-2: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-  --bp-shadow-3: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
-  --bp-shadow-4: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
-  --bp-shadow-5: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-}
-
-/**
- * Z-indexes
- * -------------------------------------------------------------------------- */
-
-:root {
-  --bp-z-index-footer: 10;
-  --bp-z-index-local-nav: 20;
-  --bp-z-index-nav: 30;
-  --bp-z-index-layout-top: 40;
-  --bp-z-index-backdrop: 50;
-  --bp-z-index-sidebar: 60;
-}
-
-@media (min-width: 960px) {
-  :root {
-    --bp-z-index-sidebar: 25;
-  }
-}
-
-/**
- * Layouts - exact from bun.sh
- * --max-width: 1280px
- * -------------------------------------------------------------------------- */
-
-:root {
-  --bp-layout-max-width: 1280px;
-}
-
-/**
- * Component: Header Anchor
- * -------------------------------------------------------------------------- */
-
-:root {
-  --bp-header-anchor-symbol: '#';
-}
-
-/**
- * Component: Code - Bun's code styling
- * Code blocks use #282a36 (Dracula theme background)
- * line-height: 20px from bun.sh
- * padding: 3px 2.5rem 3px 1rem from bun.sh
- * border-radius: 5px from bun.sh
- * -------------------------------------------------------------------------- */
-
-:root {
-  --bp-code-line-height: 1.5;
-  --bp-code-font-size: 0.875em;
-  --bp-code-color: var(--bp-c-brand-1);
-  --bp-code-link-color: var(--bp-c-brand-1);
-  --bp-code-link-hover-color: var(--bp-c-brand-2);
-  --bp-code-bg: var(--bp-c-default-soft);
-
-  --bp-code-block-color: var(--bp-c-text-2);
-  --bp-code-block-bg: #f6f8fa;
-  --bp-code-block-divider-color: var(--bp-c-gutter);
-
-  --bp-code-lang-color: var(--bp-c-text-3);
-
-  --bp-code-line-highlight-color: var(--bp-c-default-soft);
-  --bp-code-line-number-color: var(--bp-c-text-3);
-
-  --bp-code-line-diff-add-color: rgba(22, 163, 74, 0.08);
-  --bp-code-line-diff-add-symbol-color: var(--bp-c-success-1);
-
-  --bp-code-line-diff-remove-color: rgba(220, 38, 38, 0.08);
-  --bp-code-line-diff-remove-symbol-color: var(--bp-c-danger-1);
-
-  --bp-code-line-warning-color: var(--bp-c-warning-soft);
-  --bp-code-line-error-color: var(--bp-c-danger-soft);
-
-  --bp-code-copy-code-border-color: var(--bp-c-border);
-  --bp-code-copy-code-bg: var(--bp-c-bg-soft);
-  --bp-code-copy-code-hover-border-color: var(--bp-c-brand-1);
-  --bp-code-copy-code-hover-bg: var(--bp-c-bg);
-  --bp-code-copy-code-active-text: var(--bp-c-text-2);
-  --bp-code-copy-copied-text-content: 'Copied';
-
-  --bp-code-tab-divider: var(--bp-code-block-divider-color);
-  --bp-code-tab-text-color: var(--bp-c-text-2);
-  --bp-code-tab-bg: var(--bp-code-block-bg);
-  --bp-code-tab-hover-text-color: var(--bp-c-text-1);
-  --bp-code-tab-active-text-color: var(--bp-c-brand-1);
-  --bp-code-tab-active-bar-color: var(--bp-c-brand-1);
-}
-
-.dark {
-  /* Code blocks use Dracula background #282a36 */
-  --bp-code-block-bg: #282a36;
-  --bp-code-block-color: #e5e7eb;
-  --bp-code-tab-bg: #282a36;
-
-  --bp-code-line-diff-add-color: rgba(74, 222, 128, 0.16);
-  --bp-code-line-diff-remove-color: rgba(248, 113, 113, 0.16);
-}
-
-/**
- * Component: Button - Bun style buttons
- * Install button: bg #00a6e1, border-radius: 100px, padding: 8px 16px
- * -------------------------------------------------------------------------- */
-
-:root {
-  /* The orange by name, not by ramp position: black on #f89b4b is 9.78:1 and
-   * it is what a Bun button looks like, whereas brand-1 is now the dark orange
-   * that links need.
-   *
-   * The edge is that dark orange, because the fill alone is 2.05:1 against
-   * this theme's near-white page: the label reads perfectly and the button's
-   * extent does not, which is the half of a control WCAG 1.4.11 is about.
-   * brand-1 inverts to the identity orange in the dark palette, where the fill
-   * is already 8.49:1 and the border simply matches it. */
-  --bp-button-brand-border: var(--bp-c-brand-1);
-  --bp-button-brand-text: var(--bp-c-black);
-  --bp-button-brand-bg: var(--bp-c-bun-orange);
-  --bp-button-brand-hover-border: var(--bp-c-brand-1);
-  --bp-button-brand-hover-text: var(--bp-c-black);
-  --bp-button-brand-hover-bg: var(--bp-c-bun-orange-light);
-  --bp-button-brand-active-border: var(--bp-c-brand-1);
-  --bp-button-brand-active-text: var(--bp-c-black);
-  --bp-button-brand-active-bg: var(--bp-c-bun-orange-dark);
-
-  /* Blue accent button (like bun.sh install button) */
-  --bp-button-alt-border: transparent;
-  --bp-button-alt-text: var(--bp-c-black);
-  --bp-button-alt-bg: var(--bp-c-bun-blue);
-  --bp-button-alt-hover-border: transparent;
-  --bp-button-alt-hover-text: var(--bp-c-black);
-  --bp-button-alt-hover-bg: var(--bp-c-bun-blue-light);
-  --bp-button-alt-active-border: transparent;
-  --bp-button-alt-active-text: var(--bp-c-black);
-  --bp-button-alt-active-bg: var(--bp-c-bun-blue-dark);
-
-  --bp-button-sponsor-border: var(--bp-c-text-2);
-  --bp-button-sponsor-text: var(--bp-c-text-2);
-  --bp-button-sponsor-bg: transparent;
-  --bp-button-sponsor-hover-border: var(--bp-c-sponsor);
-  --bp-button-sponsor-hover-text: var(--bp-c-sponsor);
-  --bp-button-sponsor-hover-bg: transparent;
-  --bp-button-sponsor-active-border: var(--bp-c-sponsor);
-  --bp-button-sponsor-active-text: var(--bp-c-sponsor);
-  --bp-button-sponsor-active-bg: transparent;
-}
-
-/**
- * Component: Custom Block
- * -------------------------------------------------------------------------- */
-
-:root {
-  --bp-custom-block-font-size: 14px;
-  --bp-custom-block-code-font-size: 13px;
-
-  --bp-custom-block-info-border: transparent;
-  --bp-custom-block-info-text: var(--bp-c-text-1);
-  --bp-custom-block-info-bg: var(--bp-c-default-soft);
-  --bp-custom-block-info-code-bg: var(--bp-c-default-soft);
-
-  --bp-custom-block-note-border: transparent;
-  --bp-custom-block-note-text: var(--bp-c-text-1);
-  --bp-custom-block-note-bg: var(--bp-c-note-soft);
-  --bp-custom-block-note-code-bg: var(--bp-c-note-soft);
-
-  --bp-custom-block-tip-border: transparent;
-  --bp-custom-block-tip-text: var(--bp-c-text-1);
-  --bp-custom-block-tip-bg: var(--bp-c-tip-soft);
-  --bp-custom-block-tip-code-bg: var(--bp-c-tip-soft);
-
-  --bp-custom-block-important-border: transparent;
-  --bp-custom-block-important-text: var(--bp-c-text-1);
-  --bp-custom-block-important-bg: var(--bp-c-important-soft);
-  --bp-custom-block-important-code-bg: var(--bp-c-important-soft);
-
-  --bp-custom-block-warning-border: transparent;
-  --bp-custom-block-warning-text: var(--bp-c-text-1);
-  --bp-custom-block-warning-bg: var(--bp-c-warning-soft);
-  --bp-custom-block-warning-code-bg: var(--bp-c-warning-soft);
-
-  --bp-custom-block-danger-border: transparent;
-  --bp-custom-block-danger-text: var(--bp-c-text-1);
-  --bp-custom-block-danger-bg: var(--bp-c-danger-soft);
-  --bp-custom-block-danger-code-bg: var(--bp-c-danger-soft);
-
-  --bp-custom-block-caution-border: transparent;
-  --bp-custom-block-caution-text: var(--bp-c-text-1);
-  --bp-custom-block-caution-bg: var(--bp-c-caution-soft);
-  --bp-custom-block-caution-code-bg: var(--bp-c-caution-soft);
-
-  --bp-custom-block-details-border: var(--bp-custom-block-info-border);
-  --bp-custom-block-details-text: var(--bp-custom-block-info-text);
-  --bp-custom-block-details-bg: var(--bp-custom-block-info-bg);
-  --bp-custom-block-details-code-bg: var(--bp-custom-block-info-code-bg);
-}
-
-/**
- * Component: Nav - Bun style header
- * --navbar-height: 60px from bun.sh
- * -------------------------------------------------------------------------- */
-
-:root {
-  --bp-nav-height: 60px;
-  --bp-nav-bg-color: var(--bp-c-bg);
-  --bp-nav-screen-bg-color: var(--bp-c-bg);
-  --bp-nav-logo-height: 24px;
-}
-
-.dark {
-  --bp-nav-bg-color: var(--bp-c-bg);
-}
-
-/**
- * Component: Sidebar
- * -------------------------------------------------------------------------- */
-
-:root {
-  --bp-sidebar-width: 272px;
-  --bp-sidebar-bg-color: var(--bp-c-bg-alt);
-}
-
-/**
- * Colors Backdrop
- * -------------------------------------------------------------------------- */
-
-:root {
-  --bp-backdrop-bg-color: rgba(0, 0, 0, 0.6);
-}
-
-/**
- * Component: Home - Hero with Bun branding
- * -------------------------------------------------------------------------- */
-
-:root {
-  --bp-home-hero-name-color: var(--bp-c-brand-1);
-  --bp-home-hero-name-background: linear-gradient(135deg, var(--bp-c-bun-orange) 0%, var(--bp-c-bun-pink) 100%);
-  --bp-home-hero-image-background-image: none;
-  --bp-home-hero-image-filter: none;
-}
-
-/**
- * Component: Badge
- * -------------------------------------------------------------------------- */
-
-:root {
-  --bp-badge-info-border: transparent;
-  --bp-badge-info-text: var(--bp-c-text-2);
-  --bp-badge-info-bg: var(--bp-c-default-soft);
-
-  --bp-badge-tip-border: transparent;
-  --bp-badge-tip-text: var(--bp-c-tip-1);
-  --bp-badge-tip-bg: var(--bp-c-tip-soft);
-
-  --bp-badge-warning-border: transparent;
-  --bp-badge-warning-text: var(--bp-c-warning-1);
-  --bp-badge-warning-bg: var(--bp-c-warning-soft);
-
-  --bp-badge-danger-border: transparent;
-  --bp-badge-danger-text: var(--bp-c-danger-1);
-  --bp-badge-danger-bg: var(--bp-c-danger-soft);
-}
-
-/**
- * Icons
- * -------------------------------------------------------------------------- */
-
-:root {
-  --bp-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='rgba(128,128,128,1)' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Crect width='8' height='4' x='8' y='2' rx='1' ry='1'/%3E%3Cpath d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'/%3E%3C/g%3E%3C/svg%3E");
-  --bp-icon-copied: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='rgba(128,128,128,1)' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Crect width='8' height='4' x='8' y='2' rx='1' ry='1'/%3E%3Cpath d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'/%3E%3Cpath d='m9 14l2 2l4-4'/%3E%3C/g%3E%3C/svg%3E");
-  --bp-icon-external: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M0 0h24v24H0V0z' fill='none'/%3E%3Cpath d='M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5H9z'/%3E%3C/svg%3E");
-}
-
-/**
- * Icon Classes
- * -------------------------------------------------------------------------- */
-
-[class^='bpi-'],
-[class*=' bpi-'],
-.bp-icon {
-  width: 1em;
-  height: 1em;
-}
-
-[class^='bpi-'].bg,
-[class*=' bpi-'].bg,
-.bp-icon.bg {
-  background-size: 100% 100%;
-  background-color: transparent;
-}
-
-[class^='bpi-']:not(.bg),
-[class*=' bpi-']:not(.bg),
-.bp-icon:not(.bg) {
-  -webkit-mask: var(--icon) no-repeat;
-  mask: var(--icon) no-repeat;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
-  background-color: currentColor;
-  color: inherit;
-}
-
-.bpi-sun {
-  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='4'/%3E%3Cpath d='M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41'/%3E%3C/g%3E%3C/svg%3E");
-}
-
-.bpi-moon {
-  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 3a6 6 0 0 0 9 9a9 9 0 1 1-9-9'/%3E%3C/svg%3E");
-}
-
-.bpi-chevron-right,
-.bpi-chevron-down,
-.bpi-chevron-left,
-.bpi-chevron-up {
-  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m9 18l6-6l-6-6'/%3E%3C/svg%3E");
-}
-
-.bpi-chevron-down {
-  transform: rotate(90deg);
-}
-
-.bpi-chevron-left {
-  transform: rotate(180deg);
-}
-
-.bpi-chevron-up {
-  transform: rotate(-90deg);
-}
-
-.bpi-search {
-  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.6'%3E%3Cpath d='m21 21l-4.34-4.34'/%3E%3Ccircle cx='11' cy='11' r='8' stroke-width='1.4'/%3E%3C/g%3E%3C/svg%3E");
-}`
-
-// Base CSS - Bun theme base styles
-const baseCSS = `/**
- * Bun Theme for BunPress - Base Styles
- * -------------------------------------------------------------------------- */
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  ::before,
-  ::after {
-    animation-delay: -1ms !important;
-    animation-duration: 1ms !important;
-    animation-iteration-count: 1 !important;
-    background-attachment: initial !important;
-    scroll-behavior: auto !important;
-    transition-duration: 0s !important;
-    transition-delay: 0s !important;
-  }
-}
-
-*,
-::before,
-::after {
-  box-sizing: border-box;
-}
-
-html {
-  line-height: 1.4;
-  font-size: 16px;
-  -webkit-text-size-adjust: 100%;
-  scroll-behavior: smooth;
+  --bp-font-family-base: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --bp-font-family-mono: "Martian Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --bun-font-display: "Archivo", "Arial Narrow", ui-sans-serif, system-ui, sans-serif;
+  --bun-radius: 3px;
+  --bun-radius-lg: 4px;
+  --bun-cut: 10px;
+  --bp-c-brand-soft: rgba(255, 31, 143, 0.09);
+  --bp-c-default-soft: rgba(10, 10, 10, 0.05);
+  --bp-code-font-size: 13.5px;
+  --bp-code-line-height: 20px;
+  --bp-code-line-highlight-color: rgba(255, 31, 143, 0.09);
+  --bp-shadow-1: none;
+  --bp-shadow-2: none;
+  --bp-shadow-3: none;
+  --bp-shadow-4: none;
+  --bp-shadow-5: none;
+  --bp-nav-height: 64px;
+  --bp-sidebar-width: 288px;
+  --bp-layout-max-width: 1600px;
+  --bun-aside-width: 240px;
+  --bun-gutter: 56px;
 }
 
 html.dark {
-  color-scheme: dark;
+  --bp-c-brand-soft: rgba(255, 46, 151, 0.12);
+  --bp-c-default-soft: rgba(234, 234, 232, 0.06);
+  --bp-code-line-highlight-color: rgba(255, 46, 151, 0.12);
 }
+`
 
-body {
-  margin: 0;
-  width: 100%;
-  min-width: 320px;
-  min-height: 100vh;
-  line-height: 1.75;
+/* -------------------------------------------------------------------------- */
+/* Chrome: header, sidebar, layout, page header, TOC, pager                   */
+/* -------------------------------------------------------------------------- */
+
+const baseCSS = `
+/* Bun theme: chrome */
+html body {
   font-family: var(--bp-font-family-base);
-  font-size: 16px;
-  font-weight: 400;
-  color: var(--bp-c-text-1);
-  background-color: var(--bp-c-bg);
-  font-synthesis: style;
-  text-rendering: optimizeLegibility;
+  background: var(--bun-canvas);
+  color: var(--bun-fg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-main {
-  display: block;
+html ::selection {
+  background: color-mix(in srgb, var(--bun-accent) 25%, transparent);
+  color: var(--bun-fg);
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  margin: 0;
-  line-height: 1.25;
-  font-weight: 600;
-}
-
-p {
-  margin: 0;
-}
-
-strong,
-b {
-  font-weight: 600;
-}
-
-a,
-area,
-button,
-[role='button'],
-input,
-label,
-select,
-summary,
-textarea {
-  touch-action: manipulation;
-}
-
-a {
-  color: inherit;
-  text-decoration: inherit;
-}
-
-ol,
-ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-blockquote {
-  margin: 0;
-}
-
-pre,
-code,
-kbd,
-samp {
-  font-family: var(--bp-font-family-mono);
-}
-
-img,
-svg,
-video,
-canvas,
-audio,
-iframe,
-embed,
-object {
-  display: block;
-}
-
-figure {
-  margin: 0;
-}
-
-img,
-video {
-  max-width: 100%;
-  height: auto;
-}
-
-button,
-input,
-optgroup,
-select,
-textarea {
-  border: 0;
-  padding: 0;
-  line-height: inherit;
-  color: inherit;
-}
-
-button {
-  padding: 0;
-  font-family: inherit;
-  background-color: transparent;
-  background-image: none;
-}
-
-button:enabled,
-[role='button']:enabled {
-  cursor: pointer;
-}
-
-button:focus,
-button:focus-visible {
-  outline: 2px solid var(--bp-c-brand-1);
+html :focus-visible {
+  outline: 2px solid var(--bun-accent);
   outline-offset: 2px;
 }
 
-button:focus:not(:focus-visible) {
-  outline: none !important;
+html code, html kbd, html pre, html samp {
+  font-family: var(--bp-font-family-mono);
+  font-variant-ligatures: none;
 }
 
-input:focus,
-textarea:focus,
-select:focus {
-  outline: none;
+/* Header ------------------------------------------------------------------ */
+
+html .BPNav {
+  background: var(--bun-canvas);
+  border-bottom: 1px solid var(--bun-line);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
-table {
-  border-collapse: collapse;
+/* The start and end groups dissolve so the bar can be ordered the way Bun's
+ * is: brand, section pills, search, then the icons. */
+html .BPNavBar {
+  max-width: none;
+  padding: 0 40px;
+  gap: 8px;
+  justify-content: flex-start;
 }
 
-input {
-  background-color: transparent;
+html .BPNavBarStart,
+html .BPNavBarEnd {
+  display: contents;
 }
 
-input:-ms-input-placeholder,
-textarea:-ms-input-placeholder {
-  color: var(--bp-c-text-3);
+html .BPNavBarHamburger { order: 0; }
+html .BPNavBarTitle { order: 1; }
+html .BPNavBarMenu { order: 2; }
+html .BPNavBarSearch { order: 3; }
+html .BPSocialLinks { order: 4; }
+html .BPNavToggle { order: 5; }
+
+html .BPNavBarTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  margin-right: 8px;
+  font-family: var(--bun-font-display);
+  font-size: 23px;
+  font-weight: 800;
+  font-stretch: 75%;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--bun-fg);
 }
 
-input::-ms-input-placeholder,
-textarea::-ms-input-placeholder {
-  color: var(--bp-c-text-3);
+html .BPNavBarTitle:hover {
+  color: var(--bun-fg);
 }
 
-input::placeholder,
-textarea::placeholder {
-  color: var(--bp-c-text-3);
+html .BPNavBarTitle-logo {
+  height: 34px;
+  width: auto;
+  border-radius: 0;
+  transition: transform 0.3s cubic-bezier(.22, 1, .36, 1);
 }
 
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
+html .BPNavBarTitle:hover .BPNavBarTitle-logo {
+  transform: rotate(-10deg);
+}
+
+html .BPNavBarMenu {
+  gap: 2px;
+}
+
+html .BPNavBarMenu a,
+html .BPNavBarMenu .BPNavBarMenu-link,
+html .BPNavBarMenu-group-button {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--bun-fg-muted);
+  transition: background-color 0.15s, color 0.15s;
+}
+
+html .BPNavBarMenu a:hover,
+html .BPNavBarMenu .BPNavBarMenu-link:hover,
+html .BPNavBarMenu-group-button:hover,
+html .BPNavBarMenu a.is-active,
+html .BPNavBarMenu-group.is-active > .BPNavBarMenu-group-button {
+  background: var(--bun-subtle);
+  color: var(--bun-fg);
+}
+
+html .BPNavBarMenu-group-items::before {
+  background: var(--bun-canvas);
+  border: 1px solid var(--bun-line);
+  border-radius: var(--bun-radius-lg);
+  box-shadow: none;
+}
+
+html .BPNavBarMenu-group-items a {
+  height: auto;
+  border-radius: 0;
+  padding: 7px 14px;
+  font-size: 14px;
+}
+
+html .BPNavBarSearch {
+  flex: 1 1 auto;
+  max-width: 26rem;
+  height: 36px;
+  margin-left: 8px;
+  margin-right: auto;
+  padding: 0 12px;
+  gap: 10px;
+  border: 1px solid var(--bun-line);
+  border-radius: 0;
+  background: var(--bun-canvas);
+  color: var(--bun-fg-faint);
+  font-size: 13.5px;
+  transition: border-color 0.15s;
+}
+
+html .BPNavBarSearch:hover {
+  border-color: var(--bun-rule);
+  background: var(--bun-canvas);
+}
+
+html .BPNavBarSearch-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--bun-fg-faint);
+}
+
+html .BPNavBarSearch-label {
+  flex: 1;
+  text-align: left;
+  color: var(--bun-fg-faint);
+}
+
+html .BPNavBarSearch-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 18px;
+  min-width: 18px;
+  padding: 0 4px;
+  border: 1px solid var(--bun-line);
+  border-radius: 0;
+  background: transparent;
+  font-family: var(--bp-font-family-mono);
+  font-size: 10.5px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--bun-fg-faint);
+}
+
+html .BPSocialLinks {
+  gap: 0;
+  margin-left: 8px;
+  padding: 0;
+  border: 0;
+}
+
+html .BPSocialLinks a,
+html .BPSocialLinks .theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 0;
+  color: var(--bun-fg-muted);
+  transition: color 0.15s;
+}
+
+html .BPSocialLinks a:hover,
+html .BPSocialLinks .theme-toggle:hover {
+  color: var(--bun-fg);
+  background: transparent;
+}
+
+html .BPSocialLinks svg {
+  width: 18px;
+  height: 18px;
+}
+
+html .BPNavScreen {
+  background: var(--bun-canvas);
+}
+
+/* Layout ------------------------------------------------------------------ */
+
+html .BPDocContent {
+  max-width: 768px;
+}
+
+/* Below 960px the sidebar is a drawer and the default layout already spans
+ * the page, so Bun's geometry starts where the sidebar is docked. */
+@media (min-width: 960px) {
+  html .BPContent--doc {
+    left: max(var(--bp-sidebar-width), calc((100vw - var(--bp-layout-max-width)) / 2 + var(--bp-sidebar-width)));
+    right: max(0px, calc((100vw - var(--bp-layout-max-width)) / 2));
+  }
+
+  html .BPDoc {
+    padding: 40px var(--bun-gutter) 96px;
+  }
+}
+
+@media (min-width: 1280px) {
+  html .BPContent.BPContent--doc {
+    right: max(calc(var(--bun-aside-width) + var(--bun-gutter)), calc((100vw - var(--bp-layout-max-width)) / 2 + var(--bun-aside-width) + var(--bun-gutter))) !important;
+  }
+
+  html .BPDoc {
+    padding: 40px 48px 96px var(--bun-gutter);
+  }
+
+  html .BPDocContent {
+    max-width: 752px;
+  }
+}
+
+/* Sidebar ----------------------------------------------------------------- */
+
+html .BPSidebar {
+  width: min(var(--bp-sidebar-width), 85vw);
+  padding: 0;
+  background: var(--bun-canvas);
+  border-right: 1px solid var(--bun-line);
+  scrollbar-width: thin;
+  scrollbar-color: var(--bun-line-strong) transparent;
+}
+
+html .BPSidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+html .BPSidebar::-webkit-scrollbar-thumb {
+  background: var(--bun-line-strong);
+  border-radius: 999px;
+}
+
+html .sidebar-content {
+  padding: 24px 16px 40px 40px;
+}
+
+html .sidebar-section,
+html .sidebar-section + .sidebar-section {
   margin: 0;
+  padding: 0;
+  border: 0;
 }
 
-input[type='number'] {
-  -moz-appearance: textfield;
+html .sidebar-section + .sidebar-section {
+  margin-top: 28px;
 }
 
-textarea {
-  resize: vertical;
+html .sidebar-section-toggle {
+  padding: 0;
+  margin: 0 0 8px;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 19.5px;
+  color: var(--bun-fg);
 }
 
-select {
-  -webkit-appearance: none;
+html .sidebar-section-toggle:hover {
+  color: var(--bun-fg);
 }
 
-fieldset {
+html .sidebar-section-toggle .chevron {
+  width: 12px;
+  height: 12px;
+  color: var(--bun-fg-faint);
+}
+
+/* Bun rules the list and lays the active page's rail over it. The list clips
+ * (it animates open and shut), so each link draws its own stretch of the rule
+ * rather than overlapping one the list draws. */
+html .sidebar-items {
+  margin: 0;
+  padding: 0;
+  border-left: 0;
+}
+
+html .sidebar-items > li {
   margin: 0;
   padding: 0;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-li,
-p {
-  overflow-wrap: break-word;
+html .BPSidebarItem-link,
+html .BPSidebarGroup-link,
+html .BPSidebarGroup-text {
+  margin-left: 0;
+  padding: 5px 8px 5px calc(16px + var(--bp-sidebar-depth, 0) * 12px);
+  border-left: 1px solid var(--bun-line);
+  border-radius: 0;
+  background: transparent;
+  font-size: 14px;
+  line-height: 1.375;
+  color: var(--bun-fg-muted);
+  transition: color 0.15s, border-color 0.15s;
 }
 
-/**
- * Utility Classes
- * -------------------------------------------------------------------------- */
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  white-space: nowrap;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  overflow: hidden;
-}
-
-/**
- * BPDoc Styles - Documentation Content
- * -------------------------------------------------------------------------- */
-
-.bp-doc h1,
-.bp-doc h2,
-.bp-doc h3,
-.bp-doc h4,
-.bp-doc h5,
-.bp-doc h6 {
-  position: relative;
-  font-weight: 700;
-  outline: none;
-}
-
-.bp-doc h1 {
-  letter-spacing: -0.03em;
-  line-height: 1.2;
-  font-size: 2.25rem;
-}
-
-.bp-doc h2 {
-  margin: 48px 0 16px;
-  border-top: 1px solid var(--bp-c-divider);
-  padding-top: 24px;
-  letter-spacing: -0.02em;
-  line-height: 1.3;
-  font-size: 1.5rem;
-}
-
-.bp-doc h3 {
-  margin: 32px 0 0;
-  letter-spacing: -0.01em;
-  line-height: 1.4;
-  font-size: 1.25rem;
-}
-
-.bp-doc h4 {
-  margin: 24px 0 0;
-  letter-spacing: -0.01em;
-  line-height: 1.4;
-  font-size: 1.125rem;
-}
-
-.bp-doc h5 {
-  margin: 16px 0 0;
-  font-size: 1rem;
-}
-
-.bp-doc h6 {
-  margin: 16px 0 0;
-  font-size: 0.875rem;
-}
-
-.bp-doc .header-anchor {
-  position: absolute;
-  top: 0;
-  left: 0;
-  margin-left: -0.87em;
-  font-weight: 500;
-  user-select: none;
-  opacity: 0;
-  text-decoration: none;
-  color: var(--bp-c-brand-1);
-  transition: color 0.25s, opacity 0.25s;
-}
-
-.bp-doc .header-anchor:before {
-  content: var(--bp-header-anchor-symbol);
-}
-
-.bp-doc h1:hover .header-anchor,
-.bp-doc h1 .header-anchor:focus,
-.bp-doc h2:hover .header-anchor,
-.bp-doc h2 .header-anchor:focus,
-.bp-doc h3:hover .header-anchor,
-.bp-doc h3 .header-anchor:focus,
-.bp-doc h4:hover .header-anchor,
-.bp-doc h4 .header-anchor:focus,
-.bp-doc h5:hover .header-anchor,
-.bp-doc h5 .header-anchor:focus,
-.bp-doc h6:hover .header-anchor,
-.bp-doc h6 .header-anchor:focus {
-  opacity: 1;
-}
-
-@media (min-width: 768px) {
-  .bp-doc h1 {
-    font-size: 2.5rem;
-  }
-}
-
-.bp-doc h2 .header-anchor {
-  top: 24px;
-}
-
-/**
- * Paragraph and inline elements
- * -------------------------------------------------------------------------- */
-
-.bp-doc p,
-.bp-doc summary {
-  margin: 16px 0;
-}
-
-.bp-doc p {
-  line-height: 1.75;
-}
-
-.bp-doc blockquote {
-  margin: 16px 0;
-  border-left: 3px solid var(--bp-c-brand-1);
-  padding-left: 16px;
-  transition: border-color 0.5s;
-  color: var(--bp-c-text-2);
-}
-
-.bp-doc blockquote > p {
-  margin: 0;
-  font-size: 16px;
-  transition: color 0.5s;
-}
-
-.bp-doc a {
-  font-weight: 500;
-  color: var(--bp-c-brand-1);
-  text-decoration: none;
-  transition: color 0.25s;
-}
-
-.bp-doc a:hover {
-  color: var(--bp-c-brand-2);
-  text-decoration: underline;
-}
-
-.bp-doc strong {
+html .BPSidebarGroup-text,
+html .BPSidebarGroup-link {
+  color: var(--bun-fg);
   font-weight: 600;
 }
 
-/**
- * Lists
- * -------------------------------------------------------------------------- */
-
-.bp-doc ul,
-.bp-doc ol {
-  padding-left: 1.25rem;
-  margin: 16px 0;
+html .BPSidebarItem-link:hover,
+html .BPSidebarGroup-link:hover {
+  background: transparent;
+  color: var(--bun-fg);
+  border-left-color: var(--bun-line-strong);
 }
 
-.bp-doc ul {
-  list-style: disc;
+html .BPSidebarItem-link.is-active,
+html .BPSidebarGroup-link.is-active {
+  background: transparent;
+  color: var(--bun-fg);
+  font-weight: 600;
+  border-left-color: var(--bun-accent);
+  box-shadow: none;
 }
 
-.bp-doc ol {
-  list-style: decimal;
+
+
+/* Page header: breadcrumb and copy control on one row, the title under them. */
+
+html .bp-page-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "title copy";
+  align-items: start;
+  gap: 0 16px;
+  margin-bottom: 0;
 }
 
-.bp-doc li + li {
-  margin-top: 8px;
+html .bp-page-header.has-breadcrumb {
+  grid-template-areas: "crumb copy" "title title";
 }
 
-.bp-doc li > ol,
-.bp-doc li > ul {
-  margin: 8px 0 0;
+html .bp-page-header > h1 { grid-area: title; }
+html .bp-page-header > .bp-breadcrumb { grid-area: crumb; }
+html .bp-page-header > .copy-page-dropdown { grid-area: copy; align-self: start; margin-top: -4px; }
+
+html .bp-breadcrumb {
+  margin: 0 0 12px;
+  line-height: 1.5;
 }
 
-/* Task list styles */
-.bp-doc .task-list {
-  list-style: none;
-  padding-left: 0;
-}
-
-.bp-doc .task-list-item {
+html .bp-doc .bp-breadcrumb ol {
   display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--bun-fg-muted);
 }
 
-.bp-doc .task-list-checkbox {
-  margin-top: 0.25rem;
-  width: 1rem;
-  height: 1rem;
-  accent-color: var(--bp-c-brand-1);
-  cursor: default;
+html .bp-doc .bp-breadcrumb-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
 }
 
-/**
- * Table
- * -------------------------------------------------------------------------- */
-
-.bp-doc table {
-  display: block;
-  border-collapse: collapse;
-  margin: 20px 0;
-  overflow-x: auto;
+html .bp-breadcrumb-item + .bp-breadcrumb-item::before {
+  content: "\\203A";
+  color: color-mix(in srgb, var(--bun-fg-faint) 70%, transparent);
 }
 
-.bp-doc tr {
-  background-color: var(--bp-c-bg);
-  border-top: 1px solid var(--bp-c-divider);
-  transition: background-color 0.5s;
+html .bp-breadcrumb-item[aria-current="page"] {
+  color: var(--bun-accent-strong);
 }
 
-.bp-doc tr:nth-child(2n) {
-  background-color: var(--bp-c-bg-soft);
+html .bp-breadcrumb code {
+  font-size: 0.92em;
 }
 
-.bp-doc th,
-.bp-doc td {
-  border: 1px solid var(--bp-c-divider);
-  padding: 10px 16px;
+/* Copy page: two square buttons sharing a hairline. */
+html .copy-page-button-group {
+  gap: 0;
 }
 
-.bp-doc th {
-  text-align: left;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--bp-c-text-1);
-  background-color: var(--bp-c-bg-soft);
+html .copy-page-button {
+  height: 32px;
+  padding: 0 10px;
+  gap: 8px;
+  border: 1px solid var(--bun-line);
+  border-radius: 0 !important;
+  background: transparent;
+  color: var(--bun-fg-muted);
+  font-size: 13px;
+  font-weight: 400;
+  box-shadow: none;
+  transition: border-color 0.15s, color 0.15s;
 }
 
-.bp-doc td {
-  font-size: 14px;
+html .copy-page-button.copy-page-toggle {
+  width: 32px;
+  margin-left: -1px;
+  padding: 0;
+  justify-content: center;
 }
 
-/**
- * Decorational elements
- * -------------------------------------------------------------------------- */
-
-.bp-doc hr {
-  margin: 24px 0;
-  border: none;
-  border-top: 1px solid var(--bp-c-divider);
-}
-
-/**
- * Inline code - Bun style with orange tint
- * -------------------------------------------------------------------------- */
-
-.bp-doc :not(pre, h1, h2, h3, h4, h5, h6) > code {
-  font-size: var(--bp-code-font-size);
-  color: var(--bp-code-color);
-}
-
-.bp-doc :not(pre) > code {
-  border-radius: 4px;
-  padding: 3px 6px;
-  background-color: var(--bp-code-bg);
-  transition: color 0.25s, background-color 0.5s;
-}
-
-.bp-doc a > code {
-  color: var(--bp-code-link-color);
-}
-
-.bp-doc a:hover > code {
-  color: var(--bp-code-link-hover-color);
-}
-
-.bp-doc h1 > code,
-.bp-doc h2 > code,
-.bp-doc h3 > code,
-.bp-doc h4 > code {
-  font-size: 0.9em;
-}
-
-/**
- * Code blocks - Bun style
- * border-radius: 5px from bun.sh
- * line-height: 20px from bun.sh
- * -------------------------------------------------------------------------- */
-
-.bp-doc div[class*='language-'],
-.bp-doc pre[data-lang],
-.bp-block {
+html .copy-page-button:hover {
   position: relative;
-  margin: 16px -24px;
-  background-color: var(--bp-code-block-bg);
-  overflow-x: auto;
-  transition: background-color 0.5s;
+  z-index: 1;
+  border-color: var(--bun-rule);
+  background: transparent;
+  color: var(--bun-fg);
+}
+
+html .copy-page-menu {
+  border: 1px solid var(--bun-line);
+  border-radius: var(--bun-radius-lg);
+  background: var(--bun-canvas);
+  box-shadow: none;
+}
+
+html .copy-page-menu-item {
   border-radius: 0;
 }
 
-@media (min-width: 640px) {
-  .bp-doc div[class*='language-'],
-  .bp-doc pre[data-lang],
-  .bp-block {
-    border-radius: 5px;
-    margin: 16px 0;
-  }
+html .copy-page-menu-item:hover {
+  background: var(--bun-subtle);
+}
+
+/* On this page ------------------------------------------------------------ */
+
+html .BPDocAside {
+  width: var(--bun-aside-width);
+  padding: 40px 0 32px;
+  right: max(var(--bun-gutter), calc((100vw - var(--bp-layout-max-width)) / 2 + var(--bun-gutter)));
+  background: var(--bun-canvas);
+}
+
+html .outline-title {
+  margin-bottom: 12px;
+  font-family: var(--bp-font-family-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bun-fg-faint);
+}
+
+html .page-toc {
+  border-left: 1px solid var(--bun-line);
+}
+
+html .outline-marker {
+  left: -1px;
+  width: 1px;
+  border-radius: 0;
+  background-color: var(--bun-accent);
+}
+
+html .page-toc a {
+  margin-left: -1px;
+  padding: 4px 0 4px 16px;
+  border-left: 1px solid transparent;
+  font-size: 13px;
+  line-height: 1.375;
+  color: var(--bun-fg-faint);
+  transition: color 0.15s, border-color 0.15s;
+}
+
+html .page-toc a.level-3 {
+  padding-left: 28px;
+}
+
+html .page-toc a:hover {
+  color: var(--bun-fg-muted);
+  border-left-color: var(--bun-line-strong);
+}
+
+html .page-toc a.active {
+  color: var(--bun-fg);
+  font-weight: 400;
+  border-left-color: transparent;
+}
+
+html .page-toc code {
+  font-size: 0.92em;
+}
+
+html .bp-local-outline {
+  border: 1px solid var(--bun-line);
+  border-radius: var(--bun-radius-lg);
+  background: var(--bun-canvas);
+}
+
+html .bp-local-outline-label {
+  font-family: var(--bp-font-family-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bun-fg-faint);
+}
+
+/* Previous / next --------------------------------------------------------- */
+
+html .bp-pager {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 64px;
+}
+
+html .bp-pager-link {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid var(--bun-line);
+  border-radius: var(--bun-radius-lg);
+  background: var(--bun-canvas);
+  color: var(--bun-fg);
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+
+html .bp-pager-link:hover {
+  border-color: var(--bun-line-strong);
+}
+
+html .bp-pager-next {
+  align-items: flex-end;
+  text-align: right;
+}
+
+html .bp-pager-label {
+  font-family: var(--bp-font-family-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--bun-fg-faint);
+}
+
+html .bp-pager-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--bun-fg);
+}
+
+html .bp-pager-title svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+
+html .bp-pager-prev .bp-pager-title svg {
+  transform: rotate(180deg);
+}
+
+html .bp-pager-prev:hover .bp-pager-title svg {
+  transform: rotate(180deg) translateX(2px);
+}
+
+html .bp-pager-next:hover .bp-pager-title svg {
+  transform: translateX(2px);
 }
 
 @media (max-width: 639px) {
-  .bp-doc li div[class*='language-'],
-  .bp-doc li pre[data-lang] {
-    border-radius: 5px 0 0 5px;
+  html .bp-pager {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html .bp-pager-spacer {
+    display: none;
   }
 }
 
-.bp-doc div[class*='language-'] + div[class*='language-'],
-.bp-doc div[class$='-api'] + div[class*='language-'],
-.bp-doc div[class*='language-'] + div[class$='-api'] > div[class*='language-'],
-.bp-doc pre[data-lang] + pre[data-lang] {
-  margin-top: -8px;
+html .BPDocFooter {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--bun-line);
 }
 
-.bp-doc [class*='language-'] pre,
-.bp-doc [class*='language-'] code,
-.bp-doc pre[data-lang],
-.bp-doc pre[data-lang] code {
-  -moz-tab-size: 2;
-  -o-tab-size: 2;
-  tab-size: 2;
+html .BPFooter {
+  border-top: 1px solid var(--bun-line);
+  background: var(--bun-canvas);
 }
 
-.bp-doc [class*='language-'] pre,
-.bp-doc pre[data-lang] {
-  position: relative;
-  z-index: 1;
+/* Narrow screens ---------------------------------------------------------- */
+
+@media (max-width: 959px) {
+  html .BPNavBar {
+    padding: 0 20px;
+    gap: 8px;
+  }
+
+  html .BPNavBarMenu {
+    display: none;
+  }
+
+  /* On a phone the search is Bun's square icon button. */
+  html .BPNavBarSearch {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    margin-left: auto;
+    margin-right: 0;
+    padding: 0;
+    justify-content: center;
+    border-color: var(--bun-rule);
+  }
+
+  html .BPNavBarSearch-label,
+  html .BPNavBarSearch-kbd {
+    display: none;
+  }
+
+  html .BPNavBarHamburger {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--bun-rule);
+    border-radius: 0;
+    background: transparent;
+    color: var(--bun-fg);
+  }
+
+  html .BPNavBarSearch-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--bun-fg);
+  }
+
+  html .BPDoc {
+    padding: 32px 20px 80px;
+  }
+
+  html .sidebar-content {
+    padding: 24px 20px 40px;
+  }
+}
+`
+
+/* -------------------------------------------------------------------------- */
+/* Prose                                                                      */
+/* -------------------------------------------------------------------------- */
+
+const proseCSS = `
+/* Bun theme: prose */
+html .bp-doc {
+  font-size: 16.48px;
+  line-height: 1.75;
+  color: color-mix(in srgb, var(--bun-fg) 88%, transparent);
+}
+
+html .bp-doc h1,
+html .bp-doc h2,
+html .bp-doc h3,
+html .bp-doc h4,
+html .bp-doc h5,
+html .bp-doc h6 {
+  color: var(--bun-fg);
+}
+
+html .bp-doc h1 {
   margin: 0;
-  padding: 16px 0;
-  background: transparent;
-  overflow-x: auto;
-  text-align: left;
+  font-family: var(--bun-font-display);
+  font-size: clamp(2.4rem, 4.4vw, 3.2rem);
+  font-weight: 800;
+  font-stretch: 75%;
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
-.bp-doc [class*='language-'] code,
-.bp-doc pre[data-lang] code {
-  display: block;
-  padding: 3px 40px 3px 16px;
-  width: fit-content;
-  min-width: 100%;
-  line-height: 20px;
-  font-size: var(--bp-code-font-size);
-  color: var(--bp-code-block-color);
-  transition: color 0.5s;
+/* The paragraph under the title is the page's lead, as on bun.com. */
+html .bp-doc .bp-page-header + p {
+  max-width: 64ch;
+  margin: 12px 0 32px;
+  font-size: 1.05rem;
+  line-height: 1.625;
+  color: var(--bun-fg-muted);
+  text-wrap: pretty;
 }
 
-.bp-doc [class*='language-'] code .highlighted,
-.bp-doc pre[data-lang] code .highlighted {
-  background-color: var(--bp-code-line-highlight-color);
-  transition: background-color 0.5s;
-  margin: 0 -40px 0 -16px;
-  padding: 0 40px 0 16px;
-  width: calc(100% + 56px);
-  display: inline-block;
+html .bp-doc h2 {
+  margin: 2.2em 0 1em;
+  padding: 0 0 0.35em;
+  border-top: 0;
+  border-bottom: 1px solid var(--bun-line);
+  font-family: var(--bun-font-display);
+  font-size: 2.05em;
+  font-weight: 800;
+  font-stretch: 75%;
+  line-height: 1.08;
+  letter-spacing: -0.012em;
 }
 
-.bp-doc [class*='language-'] code .highlighted.error,
-.bp-doc pre[data-lang] code .highlighted.error {
-  background-color: var(--bp-code-line-error-color);
+html .bp-doc h2 code {
+  vertical-align: 0.1em;
+  font-size: 0.68em;
 }
 
-.bp-doc [class*='language-'] code .highlighted.warning,
-.bp-doc pre[data-lang] code .highlighted.warning {
-  background-color: var(--bp-code-line-warning-color);
-}
-
-.bp-doc [class*='language-'] code .diff,
-.bp-doc pre[data-lang] code .diff {
-  transition: background-color 0.5s;
-  margin: 0 -40px 0 -16px;
-  padding: 0 40px 0 16px;
-  width: calc(100% + 56px);
-  display: inline-block;
-}
-
-.bp-doc [class*='language-'] code .diff::before,
-.bp-doc pre[data-lang] code .diff::before {
-  position: absolute;
-  left: 6px;
-}
-
-/* Focus lines with blur effect */
-.bp-doc [class*='language-'] .has-focused-lines .line:not(.has-focus),
-.bp-doc pre[data-lang] .has-focused-lines .line:not(.has-focus) {
-  filter: blur(0.095rem);
-  opacity: 0.7;
-  transition: filter 0.35s, opacity 0.35s;
-}
-
-.bp-doc [class*='language-']:hover .has-focused-lines .line:not(.has-focus),
-.bp-doc pre[data-lang]:hover .has-focused-lines .line:not(.has-focus) {
-  filter: blur(0);
-  opacity: 1;
-}
-
-.bp-doc [class*='language-'] code .diff.remove,
-.bp-doc pre[data-lang] code .diff.remove {
-  background-color: var(--bp-code-line-diff-remove-color);
-  opacity: 0.7;
-}
-
-.bp-doc [class*='language-'] code .diff.remove::before,
-.bp-doc pre[data-lang] code .diff.remove::before {
-  content: '-';
-  color: var(--bp-code-line-diff-remove-symbol-color);
-}
-
-.bp-doc [class*='language-'] code .diff.add,
-.bp-doc pre[data-lang] code .diff.add {
-  background-color: var(--bp-code-line-diff-add-color);
-}
-
-.bp-doc [class*='language-'] code .diff.add::before,
-.bp-doc pre[data-lang] code .diff.add::before {
-  content: '+';
-  color: var(--bp-code-line-diff-add-symbol-color);
-}
-
-/* Line numbers */
-.bp-doc div[class*='language-'].line-numbers-mode,
-.bp-doc pre[data-lang].line-numbers-mode {
-  padding-left: 32px;
-}
-
-.bp-doc .line-numbers-wrapper {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 3;
-  border-right: 1px solid var(--bp-code-block-divider-color);
-  padding-top: 16px;
-  width: 32px;
-  text-align: center;
-  font-family: var(--bp-font-family-mono);
-  line-height: 20px;
-  font-size: var(--bp-code-font-size);
-  color: var(--bp-code-line-number-color);
-  transition: border-color 0.5s, color 0.5s;
-}
-
-/* Copy button - Bun style */
-.bp-doc [class*='language-'] > button.copy,
-.bp-doc pre[data-lang] > button.copy {
-  direction: ltr;
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 3;
-  border: 1px solid var(--bp-code-copy-code-border-color);
-  border-radius: 4px;
-  width: 36px;
-  height: 36px;
-  background-color: var(--bp-code-copy-code-bg);
-  opacity: 0;
-  cursor: pointer;
-  background-image: var(--bp-icon-copy);
-  background-position: 50%;
-  background-size: 18px;
-  background-repeat: no-repeat;
-  transition: border-color 0.25s, background-color 0.25s, opacity 0.25s, transform 0.1s linear;
-}
-
-.bp-doc [class*='language-']:hover > button.copy,
-.bp-doc [class*='language-'] > button.copy:focus,
-.bp-doc pre[data-lang]:hover > button.copy,
-.bp-doc pre[data-lang] > button.copy:focus {
-  opacity: 1;
-}
-
-.bp-doc [class*='language-'] > button.copy:hover,
-.bp-doc pre[data-lang] > button.copy:hover {
-  border-color: var(--bp-code-copy-code-hover-border-color);
-  background-color: var(--bp-code-copy-code-hover-bg);
-  transform: scale(1.06);
-}
-
-.bp-doc [class*='language-'] > button.copy.copied,
-.bp-doc pre[data-lang] > button.copy.copied {
-  border-color: var(--bp-c-success-1);
-  background-color: var(--bp-code-copy-code-hover-bg);
-  border-radius: 0 4px 4px 0;
-  background-image: var(--bp-icon-copied);
-}
-
-.bp-doc [class*='language-'] > button.copy.copied::before,
-.bp-doc pre[data-lang] > button.copy.copied::before {
-  position: relative;
-  top: -1px;
-  transform: translateX(calc(-100% - 1px));
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid var(--bp-c-success-1);
-  border-right: 0;
-  border-radius: 4px 0 0 4px;
-  padding: 0 8px;
-  width: fit-content;
-  height: 36px;
-  text-align: center;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--bp-c-success-1);
-  background-color: var(--bp-code-copy-code-hover-bg);
-  white-space: nowrap;
-  content: var(--bp-code-copy-copied-text-content);
-}
-
-/* Language label */
-.bp-doc [class*='language-'] > span.lang,
-.bp-doc pre[data-lang]::before {
-  position: absolute;
-  top: 4px;
-  right: 10px;
-  z-index: 2;
-  font-size: 12px;
-  font-weight: 500;
-  user-select: none;
-  color: var(--bp-code-lang-color);
-  transition: color 0.4s, opacity 0.4s;
-}
-
-.bp-doc pre[data-lang]::before {
-  content: attr(data-lang);
-}
-
-.bp-doc [class*='language-']:hover > button.copy + span.lang,
-.bp-doc [class*='language-'] > button.copy:focus + span.lang {
-  opacity: 0;
-}
-
-/**
- * External links
- * -------------------------------------------------------------------------- */
-
-:is(.bp-external-link-icon, .bp-doc a[href*='://'], .bp-doc a[target='_blank']):not(:is(.no-icon, svg a, :has(img, svg)))::after {
-  display: inline-block;
-  margin-top: -1px;
-  margin-left: 4px;
-  width: 11px;
-  height: 11px;
-  background: currentColor;
-  color: var(--bp-c-text-3);
-  flex-shrink: 0;
-  --icon: var(--bp-icon-external);
-  -webkit-mask-image: var(--icon);
-  mask-image: var(--icon);
-}
-
-.bp-external-link-icon::after {
-  content: '';
-}
-
-.external-link-icon-enabled :is(.bp-doc a[href*='://'], .bp-doc a[target='_blank']):not(:is(.no-icon, svg a, :has(img, svg)))::after {
-  content: '';
-  color: currentColor;
-}
-
-/**
- * Custom block code group tabs
- * -------------------------------------------------------------------------- */
-
-.bp-doc .custom-block .bp-code-group .tabs {
-  margin: 0;
-  border-radius: 5px 5px 0 0;
-}`
-
-// Custom Block CSS - Bun style custom containers
-const customBlockCSS = `/**
- * Bun Theme for BunPress - Custom Blocks
- * -------------------------------------------------------------------------- */
-
-.custom-block {
-  border: 1px solid transparent;
-  border-radius: 5px;
-  padding: 16px 16px 8px;
+html .bp-doc h3 {
+  margin: 1.6em 0 0.6em;
+  font-size: 1.22em;
+  font-weight: 650;
   line-height: 1.6;
-  font-size: var(--bp-custom-block-font-size);
-  color: var(--bp-c-text-2);
-  margin: 16px 0;
+  letter-spacing: -0.02em;
 }
 
-.custom-block.info {
-  border-color: var(--bp-custom-block-info-border);
-  color: var(--bp-custom-block-info-text);
-  background-color: var(--bp-custom-block-info-bg);
-}
-
-.custom-block.info a,
-.custom-block.info code {
-  color: var(--bp-c-brand-1);
-}
-
-.custom-block.info a:hover,
-.custom-block.info a:hover > code {
-  color: var(--bp-c-brand-2);
-}
-
-.custom-block.info code {
-  background-color: var(--bp-custom-block-info-code-bg);
-}
-
-.custom-block.note {
-  border-color: var(--bp-custom-block-note-border);
-  color: var(--bp-custom-block-note-text);
-  background-color: var(--bp-custom-block-note-bg);
-  border-left: 3px solid var(--bp-c-note-1);
-}
-
-.custom-block.note a,
-.custom-block.note code {
-  color: var(--bp-c-note-1);
-}
-
-.custom-block.note a:hover,
-.custom-block.note a:hover > code {
-  color: var(--bp-c-note-2);
-}
-
-.custom-block.note code {
-  background-color: var(--bp-custom-block-note-code-bg);
-}
-
-.custom-block.tip {
-  border-color: var(--bp-custom-block-tip-border);
-  color: var(--bp-custom-block-tip-text);
-  background-color: var(--bp-custom-block-tip-bg);
-  border-left: 3px solid var(--bp-c-tip-1);
-}
-
-.custom-block.tip a,
-.custom-block.tip code {
-  color: var(--bp-c-tip-1);
-}
-
-.custom-block.tip a:hover,
-.custom-block.tip a:hover > code {
-  color: var(--bp-c-tip-2);
-}
-
-.custom-block.tip code {
-  background-color: var(--bp-custom-block-tip-code-bg);
-}
-
-.custom-block.important {
-  border-color: var(--bp-custom-block-important-border);
-  color: var(--bp-custom-block-important-text);
-  background-color: var(--bp-custom-block-important-bg);
-  border-left: 3px solid var(--bp-c-important-1);
-}
-
-.custom-block.important a,
-.custom-block.important code {
-  color: var(--bp-c-important-1);
-}
-
-.custom-block.important a:hover,
-.custom-block.important a:hover > code {
-  color: var(--bp-c-important-2);
-}
-
-.custom-block.important code {
-  background-color: var(--bp-custom-block-important-code-bg);
-}
-
-.custom-block.warning {
-  border-color: var(--bp-custom-block-warning-border);
-  color: var(--bp-custom-block-warning-text);
-  background-color: var(--bp-custom-block-warning-bg);
-  border-left: 3px solid var(--bp-c-warning-1);
-}
-
-.custom-block.warning a,
-.custom-block.warning code {
-  color: var(--bp-c-warning-1);
-}
-
-.custom-block.warning a:hover,
-.custom-block.warning a:hover > code {
-  color: var(--bp-c-warning-2);
-}
-
-.custom-block.warning code {
-  background-color: var(--bp-custom-block-warning-code-bg);
-}
-
-.custom-block.danger {
-  border-color: var(--bp-custom-block-danger-border);
-  color: var(--bp-custom-block-danger-text);
-  background-color: var(--bp-custom-block-danger-bg);
-  border-left: 3px solid var(--bp-c-danger-1);
-}
-
-.custom-block.danger a,
-.custom-block.danger code {
-  color: var(--bp-c-danger-1);
-}
-
-.custom-block.danger a:hover,
-.custom-block.danger a:hover > code {
-  color: var(--bp-c-danger-2);
-}
-
-.custom-block.danger code {
-  background-color: var(--bp-custom-block-danger-code-bg);
-}
-
-.custom-block.caution {
-  border-color: var(--bp-custom-block-caution-border);
-  color: var(--bp-custom-block-caution-text);
-  background-color: var(--bp-custom-block-caution-bg);
-  border-left: 3px solid var(--bp-c-caution-1);
-}
-
-.custom-block.caution a,
-.custom-block.caution code {
-  color: var(--bp-c-caution-1);
-}
-
-.custom-block.caution a:hover,
-.custom-block.caution a:hover > code {
-  color: var(--bp-c-caution-2);
-}
-
-.custom-block.caution code {
-  background-color: var(--bp-custom-block-caution-code-bg);
-}
-
-.custom-block.details {
-  border-color: var(--bp-custom-block-details-border);
-  color: var(--bp-custom-block-details-text);
-  background-color: var(--bp-custom-block-details-bg);
-}
-
-.custom-block.details a {
-  color: var(--bp-c-brand-1);
-}
-
-.custom-block.details a:hover,
-.custom-block.details a:hover > code {
-  color: var(--bp-c-brand-2);
-}
-
-.custom-block.details code {
-  background-color: var(--bp-custom-block-details-code-bg);
-}
-
-.custom-block-title {
+html .bp-doc h4 {
+  margin: 1.5em 0 0.5em;
+  font-size: 1.05em;
   font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.custom-block p + p {
-  margin: 8px 0;
-}
-
-.custom-block.details summary {
-  margin: 0 0 8px;
-  font-weight: 600;
-  cursor: pointer;
-  user-select: none;
-}
-
-.custom-block.details summary + p {
-  margin: 8px 0;
-}
-
-.custom-block a {
-  color: inherit;
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  transition: opacity 0.25s;
-}
-
-.custom-block a:hover {
-  opacity: 0.75;
-}
-
-.custom-block code {
-  font-size: var(--bp-custom-block-code-font-size);
-}
-
-.custom-block.custom-block th,
-.custom-block.custom-block blockquote > p {
-  font-size: var(--bp-custom-block-font-size);
-  color: inherit;
-}
-
-/* Custom blocks in bp-doc context */
-.bp-doc .custom-block {
-  margin: 16px 0;
-}
-
-.bp-doc .custom-block p {
-  margin: 8px 0;
   line-height: 1.6;
+  letter-spacing: -0.01em;
 }
 
-.bp-doc .custom-block p:first-child {
-  margin: 0;
-}
-
-.bp-doc .custom-block div[class*='language-'],
-.bp-doc .custom-block pre[data-lang] {
-  margin: 8px 0 !important;
-  border-radius: 5px;
-}
-
-.bp-doc .custom-block div[class*='language-'] code,
-.bp-doc .custom-block pre[data-lang] code {
-  font-weight: 400;
-  background-color: transparent;
-}
-
-/**
- * GitHub-Flavored Alerts (Bun style)
- * -------------------------------------------------------------------------- */
-
-.github-alert {
-  border: 1px solid transparent;
-  border-radius: 5px;
-  padding: 16px 16px 8px;
-  line-height: 1.6;
-  font-size: var(--bp-custom-block-font-size);
-  margin: 16px 0;
-}
-
-.github-alert-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.github-alert-icon {
-  flex-shrink: 0;
-  width: 16px;
-  height: 16px;
-}
-
-.github-alert-content {
-  line-height: 1.6;
-}
-
-.github-alert-content p {
-  margin: 8px 0;
-}
-
-.github-alert-content p:first-child {
+html .bp-doc h2 + *,
+html .bp-doc h3 + *,
+html .bp-doc hr + * {
   margin-top: 0;
 }
 
-/* Note Alert */
-.github-alert-note {
-  border-color: var(--bp-custom-block-note-border);
-  color: var(--bp-custom-block-note-text);
-  background-color: var(--bp-custom-block-note-bg);
-  border-left: 3px solid var(--bp-c-note-1);
+html .bp-doc p {
+  margin: 0 0 1.25em;
+  line-height: 1.75;
 }
 
-.github-alert-note .github-alert-title {
-  color: var(--bp-c-note-1);
+html .bp-doc strong {
+  color: var(--bun-fg);
+  font-weight: 600;
 }
 
-.github-alert-note .github-alert-icon {
-  fill: var(--bp-c-note-1);
+html .bp-doc a:not([class]) {
+  color: var(--bun-fg);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--bun-accent) 45%, transparent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s, color 0.15s;
 }
 
-/* Tip Alert */
-.github-alert-tip {
-  border-color: var(--bp-custom-block-tip-border);
-  color: var(--bp-custom-block-tip-text);
-  background-color: var(--bp-custom-block-tip-bg);
-  border-left: 3px solid var(--bp-c-tip-1);
+html .bp-doc a:not([class]):hover {
+  color: var(--bun-accent-strong);
+  text-decoration-color: var(--bun-accent);
 }
 
-.github-alert-tip .github-alert-title {
-  color: var(--bp-c-tip-1);
+html .bp-doc ul,
+html .bp-doc ol {
+  margin: 1.25em 0;
+  padding-left: 1.625em;
 }
 
-.github-alert-tip .github-alert-icon {
-  fill: var(--bp-c-tip-1);
+html .bp-doc ul { list-style: disc; }
+html .bp-doc ol { list-style: decimal; }
+
+html .bp-doc li {
+  margin: 0.5em 0;
+  padding-left: 0.375em;
 }
 
-/* Important Alert */
-.github-alert-important {
-  border-color: var(--bp-custom-block-important-border);
-  color: var(--bp-custom-block-important-text);
-  background-color: var(--bp-custom-block-important-bg);
-  border-left: 3px solid var(--bp-c-important-1);
+html .bp-doc ul > li::marker {
+  color: color-mix(in srgb, var(--bun-accent) 70%, transparent);
 }
 
-.github-alert-important .github-alert-title {
-  color: var(--bp-c-important-1);
+html .bp-doc ol > li::marker {
+  color: var(--bun-fg-faint);
+  font-weight: 400;
 }
 
-.github-alert-important .github-alert-icon {
-  fill: var(--bp-c-important-1);
+html .bp-doc hr {
+  margin: 2.5em 0;
+  border: 0;
+  border-top: 1px solid var(--bun-line);
 }
 
-/* Warning Alert */
-.github-alert-warning {
-  border-color: var(--bp-custom-block-warning-border);
-  color: var(--bp-custom-block-warning-text);
-  background-color: var(--bp-custom-block-warning-bg);
-  border-left: 3px solid var(--bp-c-warning-1);
+html .bp-doc blockquote {
+  margin: 1.6em 0;
+  padding: 0 0 0 1em;
+  border-left: 3px solid color-mix(in srgb, var(--bun-accent) 50%, transparent);
+  color: var(--bun-fg-muted);
+  font-style: normal;
 }
 
-.github-alert-warning .github-alert-title {
-  color: var(--bp-c-warning-1);
+html .bp-doc blockquote > p {
+  color: inherit;
 }
 
-.github-alert-warning .github-alert-icon {
-  fill: var(--bp-c-warning-1);
+html .bp-doc :not(pre) > code {
+  padding: 0.12em 0.36em;
+  border: 1px solid var(--bun-line);
+  border-radius: 6px;
+  background: var(--bun-code-bg);
+  color: var(--bun-fg);
+  font-size: 0.875em;
+  font-weight: inherit;
+  word-break: break-word;
 }
 
-/* Caution Alert */
-.github-alert-caution {
-  border-color: var(--bp-custom-block-caution-border);
-  color: var(--bp-custom-block-caution-text);
-  background-color: var(--bp-custom-block-caution-bg);
-  border-left: 3px solid var(--bp-c-caution-1);
+html .bp-doc a:not([class]) > code {
+  color: inherit;
 }
 
-.github-alert-caution .github-alert-title {
-  color: var(--bp-c-caution-1);
+html .bp-doc mark {
+  background: var(--bun-accent-soft);
+  color: var(--bun-fg);
 }
 
-.github-alert-caution .github-alert-icon {
-  fill: var(--bp-c-caution-1);
-}`
-
-// Code Group CSS - Bun style tabbed code blocks
-const codeGroupCSS = `/**
- * Bun Theme for BunPress - Code Groups
- * -------------------------------------------------------------------------- */
-
-.bp-code-group {
-  margin-top: 16px;
+html .bp-doc img,
+html .bp-doc video {
+  border-radius: var(--bun-radius);
 }
 
-.bp-code-group .tabs,
-.code-group-tabs {
-  position: relative;
-  display: flex;
-  margin-right: -24px;
-  margin-left: -24px;
-  padding: 0 12px;
-  background-color: var(--bp-code-tab-bg);
-  overflow-x: auto;
-  overflow-y: hidden;
-  box-shadow: inset 0 -1px var(--bp-code-tab-divider);
+/* Tables: open, ruled between rows, no outer frame. */
+html .bp-doc .table-responsive {
+  margin: 24px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
-@media (min-width: 640px) {
-  .bp-code-group .tabs,
-  .code-group-tabs {
-    margin-right: 0;
-    margin-left: 0;
-    border-radius: 5px 5px 0 0;
-  }
+html .bp-doc .table-responsive > table {
+  margin: 0;
 }
 
-/* Hidden input for tab switching */
-.bp-code-group .tabs input {
-  position: fixed;
-  opacity: 0;
+html .bp-doc table {
+  display: table;
+  width: 100%;
+  margin: 24px 0;
+  border: 0;
+  border-collapse: collapse;
+  border-radius: 0;
+  font-size: 0.92em;
+  line-height: 1.71;
+}
+
+html .bp-doc :is(table, .enhanced-table) thead {
+  border-bottom: 1px solid var(--bun-line);
+  background: transparent;
+}
+
+html .bp-doc tr {
+  border: 0;
+  border-bottom: 1px solid var(--bun-line);
+  background: transparent;
+}
+
+html .bp-doc tbody tr:last-child {
+  border-bottom: 0;
+}
+
+html .bp-doc :is(table, .enhanced-table) tbody tr:nth-child(2n) {
+  background: transparent;
+}
+
+html .bp-doc :is(table, .enhanced-table) tbody tr:hover {
+  background: var(--bun-subtle);
+}
+
+html .bp-doc :is(table, .enhanced-table) :is(th, td) {
+  padding: 0.57em 0.57em 0.57em 0;
+  border: 0;
+  text-align: left;
+  vertical-align: top;
+}
+
+html .bp-doc :is(table, .enhanced-table) :is(th, td):last-child {
+  padding-right: 0;
+}
+
+html .bp-doc :is(table, .enhanced-table) th {
+  background: transparent;
+  color: var(--bun-fg);
+  font-size: inherit;
+  font-weight: 600;
+  vertical-align: bottom;
+}
+
+html .bp-doc :is(table, .enhanced-table) td {
+  color: color-mix(in srgb, var(--bun-fg) 88%, transparent);
+  border-bottom: 0;
+}
+`
+
+/* -------------------------------------------------------------------------- */
+/* Code                                                                       */
+/* -------------------------------------------------------------------------- */
+
+const FILE_ICON = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'1.75\' stroke-linecap=\'square\'%3E%3Cpath d=\'M14 3H6v18h12V7z\'/%3E%3Cpath d=\'M14 3v4h4\'/%3E%3C/svg%3E")'
+const TERMINAL_ICON = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'1.75\' stroke-linecap=\'square\'%3E%3Cpath d=\'m5 8 4 4-4 4\'/%3E%3Cpath d=\'M12 16h7\'/%3E%3C/svg%3E")'
+const SHELL_LANGS = ['bash', 'sh', 'shell', 'zsh', 'console', 'terminal', 'shellscript', 'fish', 'powershell', 'ps1']
+
+function shellSelector(suffix: string): string {
+  return SHELL_LANGS.map(lang => `html .bp-doc pre[data-lang="${lang}"]${suffix}`).join(',\n')
+}
+
+// One palette, written for whichever of light and dark is active: the token
+// variables change with the palette, so the rules do not have to.
+function tokenRules(scope: string): string {
+  const at = `${scope} :is(.bp-doc, .BPHeroCode)`
+  return `
+${at} .token { color: var(--bun-sk-text) !important; }
+${at} .token[class*='variable-parameter'],
+${at} .token[class*='parameter'] { color: var(--bun-sk-param) !important; }
+${at} .token[class*='entity-name-type'],
+${at} .token[class*='entity-name-class'],
+${at} .token[class*='support-type'],
+${at} .token[class*='support-class'],
+${at} .token[class*='entity-other-inherited'] { color: var(--bun-sk-type) !important; }
+${at} .token[class*='entity-name-function'],
+${at} .token[class*='support-function'],
+${at} .token[class*='meta-function-call'],
+${at} .token[class*='entity-other-attribute'] { color: var(--bun-sk-fn) !important; }
+${at} .token[class*='constant'],
+${at} .token[class*='support-constant'],
+${at} .token[class*='variable-language'] { color: var(--bun-sk-const) !important; }
+${at} .token[class*='keyword'],
+${at} .token[class*='storage'],
+${at} .token[class*='entity-name-tag'] { color: var(--bun-sk-keyword) !important; }
+${at} .token[class*='string'],
+${at} .token[class*='markup-inline-raw'] { color: var(--bun-sk-string) !important; }
+${at} .token[class*='comment'] { color: var(--bun-sk-comment) !important; font-style: italic; }
+${at} .token[class*='invalid'] { color: var(--bun-danger) !important; }`
+}
+
+const codeCSS = `
+/* Bun theme: code */
+html .bp-doc pre[data-lang],
+html .bp-doc div[class*='language-'] {
+  margin: 20px 0;
+  padding: 0 0 14px;
+  border: 1px solid var(--bun-line);
+  border-radius: var(--bun-radius);
+  background: var(--bun-code-bg);
+  color: var(--bun-sk-text);
+}
+
+/* The base doc sheet forces a background on every pre, in both modes. */
+html:root .bp-doc pre[data-lang],
+html:root .bp-doc pre {
+  background: var(--bun-code-bg) !important;
+}
+
+/* The file strip across the top: what the block is, as Bun labels it. */
+html .bp-doc pre[data-lang]::before {
+  content: attr(data-lang);
+  position: sticky;
+  left: 0;
+  top: auto;
+  right: auto;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 34px;
+  margin: 0 0 14px;
+  padding: 0 48px 0 36px;
+  border-bottom: 1px solid var(--bun-line);
+  background-color: color-mix(in srgb, var(--bun-subtle) 70%, var(--bun-code-bg));
+  font-family: var(--bp-font-family-mono);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 34px;
+  text-transform: none;
+  color: var(--bun-fg-muted);
+  opacity: 1;
+  z-index: 2;
+}
+
+/* The icon is a mask so it takes the label's colour in either palette. */
+html .bp-doc pre[data-lang]::after {
+  content: "";
+  position: absolute;
+  top: 9px;
+  left: 14px;
+  width: 16px;
+  height: 16px;
+  background-color: var(--bun-fg-muted);
+  -webkit-mask: ${FILE_ICON} center / contain no-repeat;
+  mask: ${FILE_ICON} center / contain no-repeat;
+  z-index: 3;
   pointer-events: none;
 }
 
-.bp-code-group .tabs label,
-.code-group-tab {
-  position: relative;
-  display: inline-block;
-  border-bottom: 2px solid transparent;
-  padding: 0 12px;
-  line-height: 44px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--bp-code-tab-text-color);
-  white-space: nowrap;
-  cursor: pointer;
-  transition: color 0.25s, border-color 0.25s;
+${shellSelector('::before')} {
+  content: "terminal";
+}
+
+${shellSelector('::after')} {
+  -webkit-mask-image: ${TERMINAL_ICON};
+  mask-image: ${TERMINAL_ICON};
+}
+
+html .bp-doc pre[data-lang] code,
+html .bp-doc [class*='language-'] code {
+  padding: 0 48px 0 17.6px;
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--bun-sk-text);
+}
+
+html .bp-doc pre .line-number {
+  color: var(--bun-fg-faint);
+}
+
+html .bp-doc pre code .highlighted {
+  background: color-mix(in srgb, var(--bun-accent) 9%, transparent);
+  box-shadow: inset 3px 0 0 var(--bun-accent);
+}
+
+html .bp-doc pre code .diff.add,
+html .bp-doc pre code .diff-add {
+  background: color-mix(in srgb, var(--bun-success) 14%, transparent);
+}
+
+html .bp-doc pre code .diff.remove,
+html .bp-doc pre code .diff-remove {
+  background: color-mix(in srgb, var(--bun-danger) 14%, transparent);
+}
+
+/* Copy: a quiet icon in the strip, always there. */
+html .bp-doc pre .copy-code-button,
+html .copy-code-button {
+  top: 3px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--bun-radius);
   background: transparent;
-  border-top: none;
-  border-left: none;
-  border-right: none;
-  font-family: inherit;
+  color: var(--bun-fg-faint);
+  opacity: 1;
+  transition: color 0.15s, background-color 0.15s;
 }
 
-.bp-code-group .tabs label::after,
-.code-group-tab::after {
-  position: absolute;
-  right: 8px;
-  bottom: -2px;
-  left: 8px;
-  z-index: 1;
-  height: 2px;
-  border-radius: 2px;
-  content: '';
-  background-color: transparent;
-  transition: background-color 0.25s;
+html .copy-code-button:hover {
+  background: color-mix(in srgb, var(--bun-fg) 6%, transparent);
+  border: 0;
+  color: var(--bun-fg);
 }
 
-.bp-code-group label:hover,
-.code-group-tab:hover {
-  color: var(--bp-code-tab-hover-text-color);
+html .copy-code-button.copied {
+  color: var(--bun-success);
 }
 
-.bp-code-group input:checked + label,
-.code-group-tab.active {
-  color: var(--bp-code-tab-active-text-color);
-}
-
-.bp-code-group input:checked + label::after,
-.code-group-tab.active::after {
-  background-color: var(--bp-code-tab-active-bar-color);
-}
-
-.bp-code-group div[class*='language-'],
-.bp-code-group pre[data-lang],
-.code-group-panel,
-.bp-block {
-  display: none;
-  margin-top: 0 !important;
-  border-top-left-radius: 0 !important;
-  border-top-right-radius: 0 !important;
-}
-
-.bp-code-group div[class*='language-'].active,
-.bp-code-group pre[data-lang].active,
-.code-group-panel.active,
-.bp-block.active {
-  display: block;
-}
-
-.bp-block,
-.code-group-panel {
-  padding: 16px;
-}
-
-/* Code group container */
-.code-group {
-  margin: 16px 0;
-  border: 1px solid var(--bp-c-divider);
-  border-radius: 5px;
+/* Tabs of code: one frame, and the strip holds the tabs. */
+html .bp-doc .code-group {
+  margin: 20px 0;
+  border: 1px solid var(--bun-line);
+  border-radius: var(--bun-radius);
+  background: var(--bun-code-bg);
   overflow: hidden;
 }
 
-@media (min-width: 640px) {
-  .code-group {
-    border: none;
-  }
-}
-
-.code-group-panels {
-  position: relative;
-}
-
-.code-group-panel pre {
+html .bp-doc .code-group-tabs {
+  display: flex;
   margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--bun-line);
   border-radius: 0;
-  border: none;
+  background: var(--bun-subtle);
+  box-shadow: none;
+}
+
+html.dark .bp-doc .code-group-tabs {
+  background: color-mix(in srgb, var(--bun-canvas) 60%, transparent);
+}
+
+html .bp-doc .code-group-tab {
+  position: relative;
+  height: auto;
+  margin: 0;
+  padding: 9px 14px;
+  border: 0;
+  background: transparent;
+  font-family: var(--bp-font-family-mono);
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.75;
+  white-space: nowrap;
+  color: var(--bun-fg-faint);
+  transition: color 0.15s;
+}
+
+html .bp-doc .code-group-tab:hover,
+html .bp-doc .code-group-tab.active {
+  color: var(--bun-fg);
+  background: transparent;
+}
+
+html .bp-doc .code-group-tab::after {
+  content: none;
+}
+
+html .bp-doc .code-group-tab.active::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -1px;
+  width: auto;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--bun-accent);
+  transform: none;
+}
+
+html .bp-doc .code-group pre[data-lang] {
+  margin: 0;
+  padding-top: 14px;
+  border: 0;
+  border-radius: 0;
+}
+
+html .bp-doc .code-group pre[data-lang]::before,
+html .bp-doc .code-group pre[data-lang]::after {
+  content: none;
+  display: none;
+}
+
+/* Syntax: Bun's palette, by scope, over whatever the highlighter wrote inline. */
+${tokenRules('html')}
+${tokenRules('html.dark')}
+`
+
+/* -------------------------------------------------------------------------- */
+/* Callouts                                                                   */
+/* -------------------------------------------------------------------------- */
+
+const NOTE_ICON = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'1.75\' stroke-linecap=\'square\'%3E%3Ccircle cx=\'12\' cy=\'12\' r=\'9\'/%3E%3Cpath d=\'M12 11v6M12 7.5v.5\'/%3E%3C/svg%3E")'
+const TIP_ICON = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'1.75\' stroke-linecap=\'square\'%3E%3Cpath d=\'M9 18h6M10 21h4\'/%3E%3Cpath d=\'M12 3a6 6 0 0 0-3.5 10.9V15h7v-1.1A6 6 0 0 0 12 3z\'/%3E%3C/svg%3E")'
+const WARNING_ICON = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'1.75\' stroke-linecap=\'square\'%3E%3Cpath d=\'M12 3 2 20h20z\'/%3E%3Cpath d=\'M12 10v4M12 17v.5\'/%3E%3C/svg%3E")'
+const DANGER_ICON = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'1.75\' stroke-linecap=\'square\'%3E%3Cpath d=\'M8 3h8l5 5v8l-5 5H8l-5-5V8z\'/%3E%3Cpath d=\'M12 8v5M12 16v.5\'/%3E%3C/svg%3E")'
+
+function callout(selectors: string[], color: string, icon: string): string {
+  return `
+${selectors.map(selector => `html .bp-doc ${selector}`).join(',\n')} {
+  --bun-callout: var(${color});
+  --bun-callout-icon: ${icon};
 }`
+}
 
-// Bun-specific extra CSS
-const bunExtrasCSS = `/**
- * Bun Theme for BunPress - Extra Bun-specific styles
- * -------------------------------------------------------------------------- */
+const customBlockCSS = `
+/* Bun theme: callouts */
+html .bp-doc .custom-block,
+html .bp-doc .github-alert {
+  --bun-callout: var(--bun-info);
+  --bun-callout-icon: ${NOTE_ICON};
+  position: relative;
+  margin: 20px 0;
+  padding: 14px 16px 14px 44px;
+  border: 1px solid color-mix(in srgb, var(--bun-callout) 30%, transparent);
+  border-radius: var(--bun-radius-lg);
+  background: color-mix(in srgb, var(--bun-callout) 6%, transparent);
+  font-size: 94%;
+  line-height: 1.625;
+  color: color-mix(in srgb, var(--bun-fg) 90%, transparent);
+}
 
-/* Bun-style pill button (like the install button on bun.sh) */
-/* padding: 8px 16px, border-radius: 100px, transform: scale(1.06) on hover */
-.bun-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  border-radius: 100px;
-  background-color: var(--bp-c-bun-blue);
-  color: var(--bp-c-black);
-  border: none;
+html .bp-doc .custom-block::before,
+html .bp-doc .github-alert::before {
+  content: "";
+  position: absolute;
+  top: calc(14px + 0.32em);
+  left: 16px;
+  width: 16px;
+  height: 16px;
+  background-color: var(--bun-callout);
+  -webkit-mask: var(--bun-callout-icon) center / contain no-repeat;
+  mask: var(--bun-callout-icon) center / contain no-repeat;
+}
+${callout(['.custom-block.tip', '.github-alert-tip'], '--bun-success', TIP_ICON)}
+${callout(['.custom-block.warning', '.github-alert-warning'], '--bun-warning', WARNING_ICON)}
+${callout(['.custom-block.danger', '.custom-block.caution', '.github-alert-caution'], '--bun-danger', DANGER_ICON)}
+${callout(['.github-alert-important'], '--bun-important', NOTE_ICON)}
+${callout(['.custom-block.details'], '--bun-fg-muted', NOTE_ICON)}
+
+html .bp-doc .custom-block-title,
+html .bp-doc .github-alert-title {
+  display: block;
+  margin: 0 0 4px;
+  font-size: inherit;
+  font-weight: 600;
+  line-height: inherit;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--bun-callout);
+}
+
+html .bp-doc .github-alert-icon {
+  display: none;
+}
+
+/* A title that only names the type says what the icon already says. It stays
+ * for screen readers. */
+html .bp-doc .custom-block-title.is-default,
+html .bp-doc .github-alert-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+html .bp-doc .github-alert-content > p:first-child {
+  margin-top: 0;
+}
+
+html .bp-doc .custom-block p,
+html .bp-doc .github-alert p {
+  margin: 8px 0;
+  color: inherit;
+}
+
+html .bp-doc .custom-block-content > :first-child,
+html .bp-doc .github-alert-content > :first-child {
+  margin-top: 0;
+}
+
+html .bp-doc .custom-block-content > :last-child,
+html .bp-doc .github-alert-content > :last-child {
+  margin-bottom: 0;
+}
+
+html .bp-doc .custom-block a,
+html .bp-doc .github-alert a {
+  color: var(--bun-fg);
+}
+
+html .bp-doc .custom-block :not(pre) > code,
+html .bp-doc .github-alert :not(pre) > code {
+  background: color-mix(in srgb, var(--bun-callout) 8%, var(--bun-canvas));
+  border-color: color-mix(in srgb, var(--bun-callout) 22%, transparent);
+  color: var(--bun-fg);
+}
+
+html .bp-doc .custom-block pre[data-lang] {
+  margin: 12px 0;
+}
+
+html .bp-doc details.custom-block summary {
+  font-weight: 600;
+  color: var(--bun-fg);
   cursor: pointer;
-  transition: transform 0.1s linear, background-color 0.25s;
 }
+`
 
-.bun-button:hover {
-  transform: scale(1.06);
-  background-color: var(--bp-c-bun-blue-light);
-}
+/* -------------------------------------------------------------------------- */
+/* Home                                                                       */
+/* -------------------------------------------------------------------------- */
 
-.bun-button--orange {
-  background-color: var(--bp-c-bun-orange);
-}
-
-.bun-button--orange:hover {
-  background-color: var(--bp-c-bun-orange-light);
-}
-
-.bun-button--pink {
-  background-color: var(--bp-c-bun-pink);
-}
-
-.bun-button--pink:hover {
-  background-color: var(--bp-c-bun-pink-light);
-}
-
-/* Terminal command block styling */
-.command-block {
-  background: #111;
-  color: rgb(163, 255, 133);
-  border-radius: 5px;
-  padding: 12px 16px;
+const homeCSS = `
+/* Bun theme: home */
+html .BPHero-name {
   font-family: var(--bp-font-family-mono);
-  font-size: 14px;
-  line-height: 20px;
-  margin: 16px 0;
-}
-
-.command-block::before {
-  content: '$ ';
-  color: var(--bp-c-bun-orange);
-}
-
-/* Bun tag/badge styling */
-.bun-tag {
-  display: inline-flex;
-  align-items: center;
-  background-color: rgba(31, 31, 132, 0.15);
-  border-radius: 4px;
-  padding: 4px 4px;
-  border: none;
-  box-shadow: 0px 1px 0px rgb(111 111 111);
-  font-family: var(--bp-font-family-mono);
-  font-size: 13px;
-}
-
-.bun-tag--command {
-  background: #111;
-  color: rgb(163, 255, 133);
-}
-
-.bun-tag--orange {
-  background-color: rgba(248, 155, 75, 0.15);
-  color: var(--bp-c-bun-orange);
-}
-
-.bun-tag--blue {
-  background-color: rgba(0, 166, 225, 0.15);
-  color: var(--bp-c-bun-blue);
-}
-
-.bun-tag--pink {
-  background-color: rgba(230, 0, 229, 0.15);
-  color: var(--bp-c-bun-pink);
-}
-
-/* Speed badge styling */
-.speed-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
   font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1.6;
+  color: var(--bun-accent-strong);
+  background: none;
+  -webkit-text-fill-color: currentColor;
+}
+
+html .BPHero-text {
+  font-family: var(--bun-font-display);
+  font-weight: 800;
+  font-stretch: 75%;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+  color: var(--bun-fg);
+}
+
+html .BPHero-tagline {
+  color: var(--bun-fg-muted);
+  line-height: 1.6;
+}
+
+html .BPButton {
+  border-radius: 0;
+  font-size: 14px;
   font-weight: 600;
-  border-radius: 100px;
-  background-color: var(--bp-c-success-soft);
-  color: var(--bp-c-success-1);
+  letter-spacing: -0.005em;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
 
-/* Hero gradient text (orange to pink like bun.sh) */
-.hero-gradient-text {
-  background: linear-gradient(135deg, var(--bp-c-bun-orange) 0%, var(--bp-c-bun-pink) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+html .BPButton:active {
+  transform: translateY(1px);
 }
 
-/* Prefer/Avoid example styling from bun.sh */
-.prefer-example > div[class*='language-']::before,
-.prefer-example > pre[data-lang]::before {
-  content: 'Prefer';
-  position: absolute;
-  top: 8px;
-  left: 12px;
-  z-index: 3;
-  padding: 2px 8px;
-  font-size: 11px;
+/* The primary action is Bun's notched slab. */
+html .BPButton-brand {
+  clip-path: polygon(0 0, calc(100% - var(--bun-cut)) 0, 100% var(--bun-cut), 100% 100%, 0 100%);
+}
+
+html .BPButton-alt {
+  border: 1px solid var(--bun-rule);
+  background: var(--bun-canvas);
+  color: var(--bun-fg);
+}
+
+html .BPButton-alt:hover {
+  background: var(--bun-subtle);
+}
+
+html .BPFeature {
+  border: 1px solid var(--bun-line);
+  border-radius: var(--bun-radius-lg);
+  background: var(--bun-canvas);
+  box-shadow: none;
+  transition: border-color 0.15s;
+}
+
+html .BPFeature:hover {
+  border-color: var(--bun-accent);
+}
+
+html .BPFeature-icon {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--bun-accent);
+}
+
+html .BPFeature-title {
+  font-size: 15px;
   font-weight: 600;
-  border-radius: 4px;
-  background-color: rgba(22, 163, 74, 0.08);
-  border: 1px solid rgb(22, 163, 74);
-  color: rgb(22, 163, 74);
+  line-height: 1.375;
+  color: var(--bun-fg);
 }
 
-.avoid-example > div[class*='language-']::before,
-.avoid-example > pre[data-lang]::before {
-  content: 'Avoid';
-  position: absolute;
-  top: 8px;
-  left: 12px;
-  z-index: 3;
-  padding: 2px 8px;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 4px;
-  background-color: rgba(220, 38, 38, 0.08);
-  border: 1px solid rgb(185, 28, 28);
-  color: rgb(185, 28, 28);
+html .BPFeature-details {
+  font-size: 14px;
+  line-height: 1.625;
+  color: var(--bun-fg-muted);
 }
 
-/* Hover animation for interactive elements (transform: scale(1.06) from bun.sh) */
-.interactive-hover {
-  transition: transform 0.1s linear;
+html .BPFeature-link {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--bun-fg-muted);
 }
 
-.interactive-hover:hover {
-  transform: scale(1.06);
-}`
+html .BPFeature:hover .BPFeature-link {
+  color: var(--bun-accent-strong);
+}
+
+html .BPHeroCode {
+  border: 1px solid var(--bun-line);
+  border-radius: var(--bun-radius);
+  background: var(--bun-code-bg);
+  box-shadow: none;
+}
+
+html .BPHeroCode-head {
+  border-bottom: 1px solid var(--bun-line);
+  background: var(--bun-subtle);
+}
+
+html .BPHeroCode-tab {
+  font-family: var(--bp-font-family-mono);
+  font-size: 12.5px;
+  color: var(--bun-fg-faint);
+}
+
+html .BPHeroCode-tab.is-active {
+  color: var(--bun-fg);
+  box-shadow: inset 0 -2px 0 var(--bun-accent);
+}
+
+html .BPSearch-panel {
+  border: 1px solid var(--bun-line);
+  border-radius: var(--bun-radius-lg);
+  box-shadow: none;
+}
+`
 
 /**
- * Get all Bun theme CSS combined
+ * Get all Bun theme CSS combined: the default theme, then the Bun layer.
  */
 export function getBunThemeCSS(): string {
-  return `
-/* Bun Theme for BunPress */
-/* Colors extracted from bun.sh */
+  return `${getVitePressThemeCSS()}
+/* Bun Theme for BunPress (bun.com/docs) */
 ${varsCSS}
 ${baseCSS}
-${layoutCSS}
+${proseCSS}
+${codeCSS}
 ${customBlockCSS}
-${codeGroupCSS}
-${bunExtrasCSS}
+${homeCSS}
 `
 }
 
-/**
- * Get Bun theme CSS variables only
- */
+/** The Bun palette and tokens only. */
 export function getBunVars(): string {
   return varsCSS
 }
 
-/**
- * Get Bun base styles only
- */
+/** The Bun chrome and prose layer, without the default theme under it. */
 export function getBunBase(): string {
-  return baseCSS
+  return `${baseCSS}\n${proseCSS}`
 }
 
-/**
- * Get Bun custom block styles only
- */
+/** The Bun callout styles only. */
 export function getBunCustomBlocks(): string {
   return customBlockCSS
 }
 
-/**
- * Get Bun code group styles only
- */
+/** The Bun code block, code group and syntax styles only. */
 export function getBunCodeGroups(): string {
-  return codeGroupCSS
+  return codeCSS
 }
 
-/**
- * Get Bun extra styles only
- */
+/** The Bun home page styles only. */
 export function getBunExtras(): string {
-  return bunExtrasCSS
+  return homeCSS
 }
 
 export interface BunTheme {
