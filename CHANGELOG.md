@@ -1,3 +1,18 @@
+[Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.34...v0.2.35)
+
+## ✨ Features
+
+- **theme**: rebuild the bun theme on bun.com/docs ([e9d721e](https://github.com/stacksjs/bunpress/commit/e9d721e)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.35 ([9e6785c](https://github.com/stacksjs/bunpress/commit/9e6785c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/bunpress/compare/v0.2.33...v0.2.34)
 
 ## 🐛 Bug Fixes
